@@ -1,0 +1,8 @@
+[swarm:children]
+managers
+workers
+
+[managers]
+mbio-test ansible_host=78.46.226.220
+
+[workers]

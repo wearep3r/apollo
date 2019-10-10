@@ -1,0 +1,16 @@
+# Dockerfile Best Practices: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+FROM python:3.7-alpine
+LABEL maintainer "micro-biolytics GmbH, Software Development"
+
+# https://stackoverflow.com/a/33379487
+# RUN export BLAS=/usr/lib/libopenblas.so
+ENV BLAS=/usr/lib/libopenblas.so
+
+RUN useradd -r -u 1001 -g user user
+
+RUN apk update \
+    && apk add --no-cache rabbitmq-c build-base gcc python-dev gfortran openblas-dev cython bash nano htop git
+
+COPY ./requirements.txt /tmp/requirements.txt
+RUN pip install --trusted-host pypi.python.org -r /tmp/requirements.txt \
+    && rm /tmp/requirements.txt

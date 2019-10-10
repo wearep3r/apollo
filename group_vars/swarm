@@ -1,0 +1,19 @@
+# OS / User Settings
+deploy_user_name: devops
+
+# 
+security_sudoers_passwordless: 
+    - devops
+
+# Firewall
+firewall_allowed_tcp_ports:
+    - "22"
+    - "80"
+    - "443"
+    # Docker Swarm related
+    # https://docs.docker.com/engine/swarm/swarm-tutorial/#open-protocols-and-ports-between-the-hosts
+    - "2377"
+    - "7946"
+firewall_allowed_udp_ports:
+    - "7946"
+    - "4789"
