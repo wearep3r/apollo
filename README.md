@@ -54,6 +54,8 @@ This should provision the node with the tasks configured in `configure-node.yml`
 
 Within this repository, Ansible has a dedicated `ansible.cfg` that, if Ansible is used from within this directory, will be favored over your local ansible.cfg. Adjust according to you needs.
 
+**FUN FACT**: Executing this as of now (2019-10-10 14:50 UTC) doesn't work due to a security issue with Docker repositories changing labels and the APT Security Measures preventing updates from happening due to this: https://github.com/docker/for-linux/issues/812
+
 ## Provision Docker Node
 From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
 
