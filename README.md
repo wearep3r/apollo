@@ -42,6 +42,18 @@ Ansible does this on multiple nodes at a time in parallel which makes it the exc
 
 The overall paradigm is "Idempotency", meaning Ansible helps to use a server as a replaceable ressource that can be deleted, respawned and reconfigured at any given time with **always** the exact same outcome. This enables ease migration, upgrades and changes on whole fleets of servers and services.
 
+## PLAYGROUND
+I've spun up a dev-machine at HETZNER that is listed as "mbio-test" in `staging.yml`. Ansible (as of this repository) is configured to use a specific SSH-Key (in `.ssh`) for any connection made to the inventory nodes, so you should be able to do the following out of the box to see it in action:
+
+- [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+- `git clone git@gitlab.com:mbio/mbiosphere/infrastructure.git`
+- `cd infrastructure`
+- `ansible-playbook -i staging configure-node.yml`
+
+This should provision the node with the tasks configured in `configure-node.yml`. As it is already provisioned, there won't be (m)any changes, but it's a quick way to see how Ansible works.
+
+Within this repository, Ansible has a dedicated `ansible.cfg` that, if Ansible is used from within this directory, will be favored over your local ansible.cfg. Adjust according to you needs.
+
 ## Provision Docker Node
 From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
 
