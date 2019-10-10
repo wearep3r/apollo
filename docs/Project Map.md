@@ -162,8 +162,8 @@ Explore GitLab's available integrations for Sentry, Slack, SonarCube etc. Since 
 ## Make use of Sentry. A lot.
 Sentry gives deep and easy insights to what's happening within your services once they're getting used. Instead of simple Error Logging or custom Slack Notifications in the code, let Sentry handle it. Since it can be integrated with GitLab directly, you're on click away from creating a GitLab Issue out of a Sentry Event. Connections like these provide the development team with lots of data and context and helps making quicker and better decisions. Sentry itself has [additional integrations](https://sentry.io/integrations/) for Project Management, Notifications (Slack), Auth (Auth0) and Monitoring (Graphite).
 
-## Persistant Data
-Currently, there's no concept for data persistance within the Swarm, thus there's no real high-availability and auto-scaling possible for those services that require persistent volumes (Databases). I'd advised to prioritize finding a solution for this as the Data managed by MBIO Cloud is the most prominent part of the whole solution.
+## Data Persistence
+Currently, there's no concept for data persistence within the Swarm, thus there's no real high-availability and auto-scaling possible for those services that require persistent volumes (Databases). I'd advised to prioritize finding a solution for this as the Data managed by MBIO Cloud is the most prominent part of the whole solution.
 
 Possible solutions include GlusterFS, Storidge (Swarm-optimized), Ceph or S3-Volumes. 
 
