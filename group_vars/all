@@ -1,0 +1,14 @@
+# SSH Key to use to connect to managed nodes
+ansible_ssh_private_key_file: .ssh/id_rsa
+
+# Python interpreter to use on managed nodes
+ansible_python_interpreter: /usr/bin/python3
+
+# NTP Settings
+ntp_timezone: Etc/UTC
+
+# Locale Settings
+locale_lang: en_US.UTF-8
+
+# Python Settings
+pip_package: python3-pip

@@ -1,0 +1,128 @@
+# Basics
+- hosts: swarm
+  become: true
+  tasks:
+    - name: Install dependencies
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-setuptools
+        state: latest
+        update_cache: False
+
+# - Add users "devops" and "docker" (typically already existing)
+# - Add users to sudoers
+# - Make sudo passwordless
+# - Authorize SSH Key for both users
+- hosts: swarm
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  tasks:
+    - name: Add User "devops"
+      user:
+        name: devops
+        groups: sudo,docker
+        state: present
+        append: yes
+        shell: /bin/bash
+    
+    - name: Add User "docker"
+      user:
+        name: docker
+        group: docker
+        state: present
+        append: yes
+        shell: /bin/bash
+
+    - name: Set up authorized keys for the devops user
+      authorized_key: user=devops key="{{item}}"
+      with_file:
+        - .ssh/id_rsa.pub
+
+    # Add the SSH Key in .ssh/id_rsa to user "docker"
+    # This enables GitLab to connect to the Docker Socket on any Swarm-Manager
+    # via SSH.
+    # Example:
+    # DOCKER_HOST=ssh://docker@swarm-manager1 docker ps
+    - name: Set up authorized keys for the docker user
+      authorized_key: user=docker key="{{item}}"
+      with_file:
+        - .ssh/id_rsa.pub
+
+    # - name: Allow 'sudo' group to have passwordless sudo
+    #   lineinfile:
+    #     dest: /etc/sudoers
+    #     state: present
+    #     regexp: '^%sudo'
+    #     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    #     validate: 'visudo -cf %s'
+
+# NTP & Localization
+# Config in group_vars/all
+- hosts: swarm
+  become: true
+  roles:
+    - geerlingguy.ntp
+    - robertdebock.locale
+
+# OS Hardening
+# https://github.com/dev-sec/linux-baseline
+# https://github.com/dev-sec/ansible-os-hardening
+#
+# SSH Hardening
+# https://github.com/dev-sec/ansible-ssh-hardening
+- hosts: swarm
+  become: true
+  roles:
+    - geerlingguy.security
+    - geerlingguy.firewall
+    - dev-sec.os-hardening
+    - dev-sec.ssh-hardening
+  vars:
+    sysctl_overwrite:
+      # Enable IPv4 traffic forwarding
+      # This is needed for Docker
+      net.ipv4.ip_forward: 1
+
+# Install Docker & Toolchain
+- hosts: swarm
+  become: true
+  roles:
+    - geerlingguy.pip
+    - geerlingguy.git
+    - geerlingguy.docker
+  # Install "docker" python-module to control containers/images/etc from Ansible
+  vars:
+    pip_install_packages:
+      - name: docker
+  
+    #   tasks:
+    # - name: Install aptitude using apt
+    #   apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    # - name: Install required system packages
+    #   apt: name={{ item }} state=latest update_cache=yes
+    #   loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools', 'gnupg2']
+
+    # - name: Add Docker GPG apt Key
+    #   apt_key:
+    #     url: https://download.docker.com/linux/ubuntu/gpg
+    #     state: present
+
+    # - name: Add Docker Repository
+    #   apt_repository:
+    #     repo: deb [arch=amd64] https://download.docker.com/linux/{{ansible_distribution|lower}} {{ansible_distribution_release}} stable
+    #     state: present
+
+    # - name: Update apt and install docker-ce
+    #   apt: name={{ item }} state=latest update_cache=yes
+    #   loop: [ "docker-ce", "docker-ce-cli", "containerd.io" ]
+
+    # - name: Install Docker Module for Python
+    #   pip:
+    #     name: docker
+
+    # - name: Install docker-compose
+    #   pip:
+    #     name: docker-compose

@@ -1,0 +1,20 @@
+---
+dependency:
+  name: galaxy
+  options:
+    role-file: requirements.yml
+lint:
+  name: yamllint
+driver:
+  name: docker
+platforms:
+  - name: locale-debian-unstable
+    image: debian:unstable
+    pre_build_image: yes
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../resources/prepare.yml
+    converge: ../resources/playbook.yml
+scenario:
+  name: debian-unstable
