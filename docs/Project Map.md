@@ -156,16 +156,16 @@ Explore GitLab's available integrations for Sentry, Slack, SonarCube etc. Since 
 Sentry gives deep and easy insights to what's happening within your services once they're getting used. Instead of simple Error Logging or custom Slack Notifications in the code, let Sentry handle it. Since it can be integrated with GitLab directly, you're on click away from creating a GitLab Issue out of a Sentry Event. Connections like these provide the development team with lots of data and context and helps making quicker and better decisions. Sentry itself has [additional integrations](https://sentry.io/integrations/) for Project Management, Notifications (Slack), Auth (Auth0) and Monitoring (Graphite).
 
 ## Persistant Data
-Currently, there's no concept for data persistance within the Swarm, thus there's no real high-availability and auto-scaling possible for those services that require persistant volumes (Databases). I'd advised to prioritize finding a solution for this as the Data managed by MBIO Cloud is the most prominent part of the whole solution.
+Currently, there's no concept for data persistance within the Swarm, thus there's no real high-availability and auto-scaling possible for those services that require persistent volumes (Databases). I'd advised to prioritize finding a solution for this as the Data managed by MBIO Cloud is the most prominent part of the whole solution.
 
 Possible solutions include GLusterFS, Storidge (Swarm-optimized), Ceph or S3-Volumes. 
 
 ## Databases
-Make good decisions on the databases you use. There are lots of general purpose as well as highly optimized database-solutions out there that can be leveraged for long-term relational storage as well as analytical/statistical compute operations and each solution has it's pros and cons. Making a good and future-proof decision for each service that needs a database-backend is key for low frustration in the long run as migrating databases is a painful task in a live-system.
+Make good decisions on the databases you use. There are lots of general purpose as well as highly optimized database-solutions out there that can be leveraged for long-term relational storage as well as analytical/statistical compute operations and each solution has its pros and cons. Making a good and future-proof decision for each service that needs a database-backend is key for low frustration in the long run as migrating databases is a painful task in a live-system.
 
 ## Misc
-- Log to STDOUT in any app or service. Don't use logfiles. STDOUT will be collected by the Docker Daemon and can then be redistributed to a central Logging Service (e.g. Graylog, ELK, Datadog, etc)
-- Implement a HEALTHCHECK for every app or service (e.g. `curl http://miradock/ping` should return 200 if the service is operational); these will be use on Image Level by the Swarm to check the health of a single container and act upon it if necessary (re-scale, re-start, etc)
+- Log to STDOUT in any app or service. Don't use logfiles. STDOUT will be collected by the Docker Daemon and can then be redistributed to a central Logging Service (e.g. Graylog, ELK, Datadog, etc) or viewed within Portainer directly
+- Implement a [HEALTHCHECK](https://docs.docker.com/engine/reference/builder/#healthcheck) for every app or service (e.g. `curl http://miradock/ping` should return 200 if the service is operational); these will be used on image-level by the Swarm to check the health of a single container and act upon it if necessary (re-scale, re-start, etc)
 - Pick a namespace for the environments as well as Infrastructure parts, for example:
   - mbiosphere.com (Production)
   - staging.mbiosphere.com (Staging)
@@ -173,4 +173,3 @@ Make good decisions on the databases you use. There are lots of general purpose 
   - dev.mbiosphere.com (Resolving to 127.0.0.1 -> Developer Machine)
   - ...
 - Pick a good DNS provider (Cloudflare, Digitalocean) that can be automated (Infrastructure and Cloud-Platform can make use of Auto-SSL and Auto-DNS and thus reduce administrative tasks when implementing anything new or changing anything within the Cloud); this also eases on-site/behind-firewall implementations of the MBIO Cloud for customers if needed in the future
-- 
