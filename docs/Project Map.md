@@ -20,6 +20,7 @@ Below is a very high-level overview of the underlying infrastructure and how it'
 All infrastructure is written in code and will be deployed according to a fine-tuned workflow that guarantees consistency throughout the entire system. The infrastructure design is idempotent, meaning any app, service or resource is designed to be stateless and exchangable. All of this will be handled by [Ansible](https://www.ansible.com/). This concept is called [Immutable Infrastructure](https://www.hashicorp.com/resources/what-is-mutable-vs-immutable-infrastructure).
 
 The whole system will be designed according to the following principles:
+
 - Everything is Code
 - Prepare for Scale
 - Prepare for Features
@@ -30,6 +31,7 @@ The whole system will be designed according to the following principles:
 - Best User and Developer experience
 
 The design will account for a later implementation of:
+
 - Hashi-Stack (further Automation of Infrastructure)
 - On-Premise installations
 - Log-Aggregation
@@ -55,6 +57,7 @@ Additionally, well designed Notifications (with reduced false-positive rates) gi
 Monitoring and Notifications are part of Systems Reliability Engineering (SRE).
 
 The SRE Measurements include:
+
 - Submitting monitoring data from as much parts of the infrastructure as possible to a TSDB (InfluxDB)
 - Aggregating the data to make decisions about platform health
 - Display the state of the infrastructure in informative Grafana Dashboards according to best practices and specific needs of Micro-Biolytics
@@ -62,7 +65,7 @@ The SRE Measurements include:
 - If possible, automatically handle errors (e.g. re-start a service)
 
 ## 5. Backup & Recovery (10d)
-The will be multi-level backups. All named Docker-Volumes of any environment (except Development) will be regularily backed up to an S3-compatible data-store that can be hosted on an additional machine. Backups can be encrypted as well.
+There will be multi-level backups. All named Docker-Volumes of any environment (except Development) will be regularily backed up to an S3-compatible data-store that can be hosted on an additional machine. Backups can be encrypted as well.
 
 An additional level of backups will be needed for databases which will be logically backed up (i.e. SQL-Dumps vs. Block-level Snapshots).
 
@@ -96,10 +99,11 @@ The [12 Factor App](https://www.12factor.net) is a methodology for building soft
 
 The twelve-factor methodology can be applied to apps written in any programming language, and which use any combination of backing services (database, queue, memory cache, etc).
 
-It makes sense to get familiar with these coding and architecturing paradigms as distributed containerized applications are typically meant to be platform- and service-independent, stateless and quick to run/dispose. This implies a certain abstraction between parts of the software (code, data, config) as well as mechanisms that support scaling and quick setups. 
+It makes sense to get familiar with these coding and architecturing paradigms as distributed containerized applications are typically meant to be platform- and service-independent, stateless and quick to run/dispose. This implies a certain abstraction between parts of the software (code, data, config) as well as mechanisms that support scaling and quick setups.
 
 Even if the current version (or vision) of the MBIO Cloud consists of "only" 10-15 services, it's absolutely necessary to plan for scale, migration, cloning of environments and quick recovery from desaster. This means additional work for the developer in the beginning, on the other hand frees the developer from being responsible for certain tasks that any 24/7 infrastructure comes with:
-- Logging and Log Rotation
+
+- Logging and Log-Rotation
 - Error Handling
 - App-internal Health-Checks
 - Integrations with other services
@@ -111,6 +115,7 @@ Keeping a clean code-style for backend-services also eases development in the lo
 
 ## Docker, CI/CD
 Within this repository there are templates for optimized docker-related configuration files, such as:
+
 - .gitlab-ci.yml (advanced caching & secure eployment)
 - Dockerfile (advanced caching & versioning)
 
@@ -118,7 +123,7 @@ The configs have been optimized to reduce code-redundancy and increase the speed
 
 Additionally, make good use of the **ENTRYPOINT** feature as discussed. This enables things like DB Migrations or other service-bound maintenance tasks on certain conditions on container startup and removes the need to manually execute commands within the container with `docker run`.
 
-The templates should be taken as a **Best Practice** advice and will (should) be optimized further during the development and operation of the MBIO Cloud (e.g. Multi-Layer builds are a necessity for dependency-heavy apps based on NodeJS/Angular to keep containers small).
+The templates should be taken as a **Best Practice** advice and will (should) be optimized further during the development and operation of the MBIO Cloud (e.g. Multi-Stage builds are a necessity for dependency-heavy apps based on NodeJS/Angular to keep containers small).
 
 ## Docker Volumes
 Use Docker Named Volumes instead of Filesystem paths. This enables you to later move those volumes to another storage driver (a distributed block-storage for example) without changing the Stack Files.
@@ -131,6 +136,8 @@ Instead of hosting on dedicated root servers, I'd advise to move to a german "Cl
 3. Servers can be scaled out if needed
 4. Pricing is very transparent
 5. Internal networks between nodes are possible (++ Security)
+
+HETZNER is just one possible option, but with pricing and features it can be compared to DigitalOcean/AWS while still being responsible for execution of GDPR. Of course any other Hoster is viable, too. HETZNER would be a good choice though.
 
 ## Python Apps
 Python-based services should be reviewed if they can make use of a WSGI server instead of direct execution (e.g. GUnicorn). Also, stick with *requirements.txt* for any Python-dependency instead of installing it manually in a Dockerfile. This speeds up build-times and simplifies development by reducing edge-cases.
@@ -158,7 +165,7 @@ Sentry gives deep and easy insights to what's happening within your services onc
 ## Persistant Data
 Currently, there's no concept for data persistance within the Swarm, thus there's no real high-availability and auto-scaling possible for those services that require persistent volumes (Databases). I'd advised to prioritize finding a solution for this as the Data managed by MBIO Cloud is the most prominent part of the whole solution.
 
-Possible solutions include GLusterFS, Storidge (Swarm-optimized), Ceph or S3-Volumes. 
+Possible solutions include GlusterFS, Storidge (Swarm-optimized), Ceph or S3-Volumes. 
 
 ## Databases
 Make good decisions on the databases you use. There are lots of general purpose as well as highly optimized database-solutions out there that can be leveraged for long-term relational storage as well as analytical/statistical compute operations and each solution has its pros and cons. Making a good and future-proof decision for each service that needs a database-backend is key for low frustration in the long run as migrating databases is a painful task in a live-system.
