@@ -1,0 +1,30 @@
+# Connect to the first Swarm Manager
+# Deploy Controlplane from Stack-File:
+# - Copy to Manager from Jinja Template
+# - Deploy the Stack
+# - Delete the Stack File
+- hosts: rolemanager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  tasks:
+    - name: Create network for Traefik
+      docker_network:
+        name: traefik
+        driver: overlay
+    - name: Copy docker-stack.yml
+      template:
+        src: docker-stack.yml.j2
+        dest: /tmp/docker-stack.yml
+        owner: docker
+        group: docker
+        mode: '0644'
+    - name: Deploy Controlplane
+      docker_stack:
+        state: present
+        name: controlplane
+        compose:
+          - /tmp/docker-stack.yml
+    - name: Remove docker-stack.yml
+      file:
+        path: /tmp/docker-stack.yml
+        state: absent

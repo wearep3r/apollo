@@ -1,0 +1,166 @@
+version: '3.7'
+
+services:   
+  traefik:
+    image: traefik:v1.7
+    command: >
+      --docker
+      --docker.swarmmode
+      --docker.watch
+      --docker.exposedbydefault=false
+      --insecureSkipVerify
+      --constraints=tag==traefik
+      --entrypoints='Name:http Address::80'
+      --entrypoints='Name:https Address::443 TLS'
+      --metrics
+      --metrics.prometheus
+      --acme
+      --acme.email={{ letsencrypt_mail }}
+      --acme.storage="/etc/traefik/acme.json"
+      --acme.entryPoint=https
+      --acme.dnsChallenge.provider=digitalocean
+      --acme.dnsChallenge.resolvers='1.1.1.1:53'
+      --acme.onhostrule=true
+      --acme.acmelogging=true
+      --logLevel=INFO
+      --accessLog
+      --api
+      --debug
+      --docker.domain={{ environment_domain }}
+      --logLevel=DEBUG
+      --ping
+      --rest
+      --retry
+    networks:
+      - traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-config:/etc/traefik
+    environment:
+      DO_AUTH_TOKEN: {{ do_token }}
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.tags=traefik
+        - traefik.docker.network=traefik
+        - traefik.traefik.port=8080
+        - traefik.traefik.healthcheck.path=/health
+        - traefik.traefik.healthcheck.interval=10s
+        - traefik.traefik.frontend.rule=Host:traefik.{{ environment_domain }}
+        - traefik.traefik.backend=traefik
+        - traefik.traefik.protocol=http
+        - traefik.traefik.frontend.headers.SSLRedirect=true
+        - traefik.traefik.frontend.entryPoints=http,https
+        - traefik.traefik.backend.loadbalancer.sticky=true
+      # printf "testuser:$(openssl passwd -apr1 pass0815word)\n" |sed 's/\$/\$\$/g'
+      #- traefik.edge.frontend.auth.basic.users=${ADMIN_USER}:${ADMIN_PASSWORD}
+  
+  # This service dumps Traefik's certificates into PEM format to a 
+  # subdirectory (ssl/) of Traefik's volume (traefik-config). This way other services
+  # can access the Certs/Keys and re-use them (i.e. a database or e-mail service can mount
+  # the volume and load the PEM certificates for SSL encryption)
+  # It's a supportive service and NOT needed for the infrastructure to operate
+  certs:
+    networks:
+      - traefik
+    image: alpine:latest
+    volumes:
+      - traefik-config:/traefik
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    command: >
+      ash -c " \
+        apk --no-cache add inotify-tools jq openssl util-linux bash && \
+        wget https://raw.githubusercontent.com/containous/traefik/v1.7/contrib/scripts/dumpcerts.sh -O dumpcerts.sh && \
+        mkdir -p /traefik/ssl/ && \
+        while true; do \
+          inotifywait -e modify -e attrib /traefik/acme.json && \
+            bash dumpcerts.sh /traefik/acme.json /traefik/ssl/ && \
+            ln -f /traefik/ssl/certs/* /traefik/ssl/ && \
+            ln -f /traefik/ssl/private/* /traefik/ssl/; \
+        done"
+
+  # The Portainer Agent runs on each Swarm Node (mode: global) and 
+  # will be used by Portainer as the Docker Endpoint to this Swarm. 
+  # The Agent collects data on each Swarm Node and can be used to control
+  # the Node from within Portainer
+  portainer-agent:
+    image: portainer/agent
+    environment:
+      # REQUIRED: Should be equal to the service name prefixed by "tasks." when
+      # deployed inside an overlay network
+      AGENT_CLUSTER_ADDR: tasks.portainer-agent
+      CAP_HOST_MANAGEMENT: 1
+      # AGENT_PORT: 9001
+      # LOG_LEVEL: debug
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - portainer
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.platform.os == linux]
+  
+  # The actual Controlplane; a professional interface to the Swarm
+  portainer:
+    image: portainer/portainer
+    command: -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics
+    ports:
+      - "9000:9000"
+    volumes:
+      - portainer-data:/data
+    networks:
+      - portainer
+      - traefik
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.tags=traefik
+        - traefik.docker.network=traefik
+        - traefik.console.port=9000
+        - traefik.console.frontend.rule=Host:portainer.{{ environment_domain }}
+        - traefik.console.backend=console
+        - traefik.console.protocol=http
+        - traefik.console.frontend.headers.SSLRedirect=true
+        - traefik.console.frontend.entryPoints=http,https
+        - traefik.console.backend.loadbalancer.sticky=true
+
+networks:
+  traefik:
+    external: true
+  portainer:
+    driver: overlay
+    attachable: true
+
+volumes:
+  traefik-config:
+  portainer-data:

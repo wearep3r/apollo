@@ -1,0 +1,11 @@
+---
+# Check git Status
+- import_playbook: git-status.yml
+  # See group_vars/all
+  when: check_git == True
+# Create/Update Nodes on HETZNER Cloud
+- import_playbook: provision-hetzner.yml
+# Configure each Node: install software, set config, harden security 
+- import_playbook: provision-node.yml
+# Bootstrap/Update the Swarm
+- import_playbook: provision-swarm.yml
