@@ -1,25 +1,24 @@
 # DevOps for MBIO Cloud
-This README will hold an overview of the contents of this repo. This iw WIP.
+This README will hold an overview of the contents of this repo. This is **WIP**.
 
 
 # Ansible
+## References
+- Docker Swarm: https://thisendout.com/2016/09/13/deploying-docker-swarm-with-ansible/
 ## Installation
+We use the Development Version of Ansible to use the latest HCLOUD modules:
+
+`pip install --user git+https://github.com/ansible/ansible.git@devel`
 
 - https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
 
 ## Prerequisites
 The Playbooks used to build and maintain this infrastructure have some dependencies that are listed below.
 
-```
-ansible-galaxy install dev-sec.os-hardening
-ansible-galaxy install dev-sec.ssh-hardening
-ansible-galaxy install geerlingguy.ntp
-ansible-galaxy install robertdebock.locale
-ansible-galaxy install geerlingguy.pip
-ansible-galaxy install geerlingguy.docker
-ansible-galaxy install geerlingguy.security
-ansible-galaxy install geerlingguy.git
-```
+### Local Dependencies
+- `sudo pip install hcloud`
+- `sudo pip install jsondiff`
+- Install Requirements: `ansible-galaxy install -r requirements.yml`
 
 ## Overview
 To get an idea of what Ansible does and how it works, please (for now) refer to [this link](https://docs.ansible.com/ansible/latest/user_guide/index.html). Over time, most of the functionality used for this project will be highlighted and explained in this README and complementing docs in [this directory](docs/).
@@ -58,6 +57,13 @@ Within this repository, Ansible has a dedicated `ansible.cfg` that, if Ansible i
 
 ## Provision Docker Node
 From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
+
+### First Run
+For the first run, a different user is needed (root) as typically Hosts are provisioned with this user. We can connect with our `devops` user afterwards.
+
+```
+ansible-playbook -u root -i staging configure-node.yml
+```
 
 ### For Staging
 `ansible-playbook -i staging configure-node.yml`
