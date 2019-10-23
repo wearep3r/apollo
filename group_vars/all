@@ -19,6 +19,7 @@ locale_lang: en_US.UTF-8
 pip_package: python3-pip
 
 # HETZNER Settings
+<<<<<<< HEAD
 hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
 
 # DigitalOcean Settings (DNS)
@@ -32,3 +33,6 @@ environment_domain: if0.co
 # LetsEncrypt
 # Needed to obtain certificates from LetsEncrypt
 letsencrypt_mail: info@peter.saarland
+=======
+hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
+>>>>>>> Prepared HETZNER Infrastructure as Code
