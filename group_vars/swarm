@@ -19,6 +19,7 @@ firewall_allowed_udp_ports:
     - "4789"
 
 # GitLab Runner Settings
+gitlab_runner_package_name: 'gitlab-runner'
 #gitlab_runner_coordinator_url: "https://gitlab.com"
 gitlab_runner_registration_token: "Y3Ae_Vx-T7B2EC7WKqbT"
 gitlab_runner_runners:
