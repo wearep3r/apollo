@@ -6,4 +6,5 @@
 - src: geerlingguy.docker
 - src: geerlingguy.security
 - src: geerlingguy.git
-- src: atosatto.docker-swarm
+#- src: atosatto.docker-swarm
+- src: riemers.gitlab-runner

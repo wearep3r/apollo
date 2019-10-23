@@ -18,14 +18,10 @@
       register: swarm_status
       changed_when: False
 
-    - name: Set Node Labels
-      shell: >
-        docker node update --label-add role=manager {{ inventory_hostname }}
-
     - name: Save Swarm Status
       set_fact: 
         swarm: "{{ swarm_status }}"
-        
+
     # Create dynamic in-memory groups "swarm_manager_active"
     # and "swarm_manager_inactive" depending on the output of `docker info`
     - name: Create swarm_manager_* Group
@@ -41,10 +37,6 @@
         docker info | egrep 'Swarm: ' | cut -d ' ' -f3
       register: swarm_status
       changed_when: False
-
-    - name: Set Node Labels
-      shell: >
-        docker node update --label-add role=worker {{ inventory_hostname }}
 
     - name: Save Worker Swarm Status
       set_fact: 
@@ -74,6 +66,10 @@
         hostname: "{{ play_hosts[0] }}"
         groups: swarm_manager_active
       when: bootstrap_first_node.changed
+
+    - name: Set Node Labels
+      shell: >
+        docker node update --label-add role=manager {{ inventory_hostname }}
 
 # Gather Swarm related information (Join tokens)
 - hosts: swarm_manager_active[0]
@@ -115,6 +111,10 @@
         --token={{ token }}
         {{ groups['swarm_manager_ips'][0] }}:2377
 
+    - name: Set Node Labels
+      shell: >
+        docker node update --label-add role=manager {{ inventory_hostname }}
+
 # Have all inactive Swarm Workers join the existing Swarm as Worker
 - hosts: swarm_worker_inactive
   remote_user: "{{ deploy_user_name }}"
@@ -128,3 +128,16 @@
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['swarm_manager_ips'][0] }}:2377
+    
+    #- name: Set Node Labels
+    #  shell: >
+    #    docker node update --label-add role=worker {{ inventory_hostname }}
+
+- hosts: swarm_manager_active[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  tasks:
+    - name: Set Worker Node Labels
+      shell: >
+          docker node update --label-add role=worker {{ hostvars[item]["ansible_hostname"] }}
+      with_items: "{{ groups['roleworker'] }}"

@@ -17,3 +17,23 @@ firewall_allowed_tcp_ports:
 firewall_allowed_udp_ports:
     - "7946"
     - "4789"
+
+# GitLab Runner Settings
+#gitlab_runner_coordinator_url: "https://gitlab.com"
+gitlab_runner_registration_token: "Y3Ae_Vx-T7B2EC7WKqbT"
+gitlab_runner_runners:
+  - name: '{{ ansible_hostname }}'
+    executor: docker
+    docker_image: 'docker:dind'
+    tags:
+      - docker
+      - staging
+    #docker_volumes:
+      #- "/var/run/docker.sock:/var/run/docker.sock"
+      #- "/cache"
+    #extra_configs:
+    #  runners.docker:
+    #    memory: 512m
+    #    #allowed_images: ["ruby:*", "python:*", "php:*"]
+    #  runners.docker.sysctls:
+    #    net.ipv4.ip_forward: "1"

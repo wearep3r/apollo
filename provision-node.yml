@@ -43,18 +43,26 @@
   become: true
   remote_user: "{{ deploy_user_name }}"
   tasks:
-    - name: Add User {{ deploy_user_name }}"
+    - name: Add User devops
       user:
-        name: "{{ deploy_user_name }}"
+        name: devops
         groups: sudo
         state: present
         append: yes
         shell: /bin/bash
 
-    - name: Set up authorized keys for user "{{ deploy_user_name }}"
-      authorized_key: user="{{ deploy_user_name }}" key="{{item}}"
+    - name: Set up authorized keys for user devops
+      authorized_key: user=devops key="{{item}}"
       with_file:
         - .ssh/id_rsa.pub
+
+    - name: Enable passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
 
 # Basics
 # - apt / pip dependencies
@@ -131,9 +139,9 @@
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   tasks:
-    - name: Add User "{{ deploy_user_name }}"
+    - name: Add User "devops"
       user:
-        name: "{{ deploy_user_name }}"
+        name: devops
         groups: sudo,docker
         state: present
         append: yes
@@ -147,8 +155,8 @@
         append: yes
         shell: /bin/bash
 
-    - name: Set up authorized keys for user {{ deploy_user_name }}
-      authorized_key: user="{{ deploy_user_name }}" key="{{item}}"
+    - name: Set up authorized keys for user devops
+      authorized_key: user=devops key="{{item}}"
       with_file:
         - .ssh/id_rsa.pub
 
