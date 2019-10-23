@@ -41,11 +41,11 @@ stages:
   - deploy
 
 # Lint Ansible files
-ansible:
-  stage: lint
-  image: yokogawa/ansible-lint
-  script:
-    - sh -c 'ansible-lint --force-color *.yml'
+# ansible:
+#   stage: lint
+#   image: yokogawa/ansible-lint
+#   script:
+#     - sh -c 'ansible-lint --force-color *.yml'
 
 # Build
 # build:
