@@ -45,7 +45,7 @@ ansible:
   stage: lint
   image: yokogawa/ansible-lint
   script:
-    - sh -c 'find . -name "*.yml" | xargs -r ansible-lint --force-color'
+    - sh -c 'ansible-lint --force-color *.yml'
 
 # Build
 # build:
