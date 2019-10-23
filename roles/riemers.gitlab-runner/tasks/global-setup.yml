@@ -1,0 +1,29 @@
+---
+- name: Ensure config.toml exists
+  file:
+    path: /etc/gitlab-runner/config.toml
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  become: true
+
+- name: Set concurrent option
+  lineinfile:
+    dest: /etc/gitlab-runner/config.toml
+    regexp: '^(\s*)concurrent ='
+    line: '\1concurrent = {{ gitlab_runner_concurrent }}'
+    state: present
+    backrefs: yes
+  notify: restart_gitlab_runner
+  become: true
+
+- name: Add sentry dsn to config
+  lineinfile:
+    dest: /etc/gitlab-runner/config.toml
+    regexp: '^sentry_dsn ='
+    line: 'sentry_dsn = "{{ gitlab_runner_sentry_dsn }}"'
+    insertafter: '\s*concurrent.*'
+    state: present
+  when: gitlab_runner_sentry_dsn | length > 0  # Ensure value is set
+  notify: restart_gitlab_runner
+  become: true

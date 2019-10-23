@@ -1,0 +1,101 @@
+# Do not use "latest" here as it makes rollbacks and
+# error tracking harder
+image: docker:19.03.2
+
+services:
+  - docker:19.03.2-dind
+
+# enable per-job and per-branch caching
+cache:
+  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+  
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: ssh://docker@swarm.${DOMAIN}
+  PROJECT_NAME: scenarioservice
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+
+before_script:
+  # Setup SSH deploy keys
+  - 'which ssh-agent || ( apt update -y && apt install -qq openssh-client -y )'
+  - eval $(ssh-agent -s)
+  ##
+  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+
+# Stages
+stages:
+  - lint
+  - build
+  - test
+  - release
+  - deploy
+
+# Lint Ansible files
+ansible:
+  stage: lint
+  image: yokogawa/ansible-lint
+  script:
+    - sh -c 'find . -name "*.yml" | xargs -r ansible-lint --force-color'
+
+# Build
+# build:
+#   stage: build
+#   script:
+#     - docker pull $CONTAINER_RELEASE_IMAGE || true
+#     - docker build --cache-from $CONTAINER_RELEASE_IMAGE $CONTAINER_TEST_IMAGE .
+#     - docker push $CONTAINER_TEST_IMAGE
+
+# # Release
+# release-image:
+#   stage: release
+#   script:
+#     - docker pull $CONTAINER_TEST_IMAGE || true
+#     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+#     - docker push $CONTAINER_RELEASE_IMAGE
+#   only:
+#     - master
+
+# # Deploy: Staging
+# staging:
+#   stage: deploy
+#   image: alpine
+#   #script:
+#   #  - apk add --update curl
+#   #  - curl -XPOST $WWW_WEBHOOK
+#   only:
+#     - master
+#   environment:
+#     name: staging
+
+# # Deploy: Production
+# production:
+#   stage: deploy
+#   image: alpine
+#   #script:
+#   #  - apk add --update curl
+#   #  - curl -XPOST $WWW_WEBHOOK
+#   only:
+#     - master
+#   environment:
+#     name: production
+
+# Testing application:
+# test:
+#   stage: test
+#   script:
+#     - docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml config --quiet
+#     #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
+#   coverage: '/[\d\.]+\%\s*$/'
+#   artifacts:
+#     paths:
+#       - artifacts/
