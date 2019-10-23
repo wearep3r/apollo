@@ -4,7 +4,7 @@
   get_url:
     url: "https://packages.gitlab.com/install/repositories/runner/{{ gitlab_runner_package_name }}/script.deb.sh"
     dest: /tmp/gitlab-runner.script.deb.sh
-    mode: 0744
+    mode: 0766
 
 - name: (Debian) Install Gitlab repository
   command: bash /tmp/gitlab-runner.script.deb.sh
