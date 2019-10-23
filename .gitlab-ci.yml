@@ -30,7 +30,7 @@ before_script:
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  #- docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
 # Stages
 stages:
