@@ -65,17 +65,13 @@ ansible:
 #   only:
 #     - master
 
-# # Deploy: Staging
-# staging:
-#   stage: deploy
-#   image: alpine
-#   #script:
-#   #  - apk add --update curl
-#   #  - curl -XPOST $WWW_WEBHOOK
-#   only:
-#     - master
-#   environment:
-#     name: staging
+# Deploy: Staging
+staging:
+  stage: deploy
+  script:
+    - docker -H ssh://docker@staging.if0.co stack deploy --compose-file services/barbershop/docker-stack.yml barbershop
+  environment:
+    name: staging
 
 # # Deploy: Production
 # production:

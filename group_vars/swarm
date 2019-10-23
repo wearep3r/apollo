@@ -29,6 +29,7 @@ gitlab_runner_runners:
     tags:
       - docker
       - staging
+    docker_privileged: true
     docker_volumes:
       #- "/var/run/docker.sock:/var/run/docker.sock"
       - "/cache"
@@ -40,3 +41,8 @@ gitlab_runner_runners:
     #    #allowed_images: ["ruby:*", "python:*", "php:*"]
     #  runners.docker.sysctls:
     #    net.ipv4.ip_forward: "1"
+
+# Networks
+mbio_networks:
+  - traefik
+  - barbershop

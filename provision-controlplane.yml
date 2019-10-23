@@ -7,10 +7,11 @@
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
-    - name: Create network for Traefik
+    - name: Create Mbiosphere Overlay networks
       docker_network:
-        name: traefik
+        name: "{{ item }}"
         driver: overlay
+      with_items: "{{ mbio_networks }}"
     - name: Copy docker-stack.yml
       template:
         src: docker-stack.yml.j2
