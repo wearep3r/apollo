@@ -77,13 +77,15 @@
           - python3
           - python3-pip
           - python3-setuptools
+          - git
         state: latest
-        update_cache: False
+        update_cache: True
     - name: Install pip dependencies
       pip:
         name:
           - jsondiff
           - pyyaml
+          - docker
 
 # NTP & Localization
 # Config in group_vars/all
@@ -122,13 +124,7 @@
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   roles:
-    - geerlingguy.pip
-    - geerlingguy.git
     - geerlingguy.docker
-  # Install "docker" python-module to control containers/images/etc from Ansible
-  vars:
-    pip_install_packages:
-      - name: docker
 
 # Update users "devops" and "docker" (typically already existing)
 # We can't add any user to group "docker" before Docker is installed

@@ -31,5 +31,4 @@ environment_domain: if0.co
 
 # LetsEncrypt
 # Needed to obtain certificates from LetsEncrypt
-hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
 letsencrypt_mail: info@peter.saarland

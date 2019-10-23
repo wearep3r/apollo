@@ -11,7 +11,6 @@
       docker_network:
         name: traefik
         driver: overlay
-      changed_when: False
     - name: Copy docker-stack.yml
       template:
         src: docker-stack.yml.j2
@@ -19,6 +18,7 @@
         owner: docker
         group: docker
         mode: '0644'
+      changed_when: False
     - name: Deploy Controlplane
       docker_stack:
         state: present
