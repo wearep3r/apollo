@@ -11,6 +11,7 @@
       docker_network:
         name: traefik
         driver: overlay
+      changed_when: False
     - name: Copy docker-stack.yml
       template:
         src: docker-stack.yml.j2
@@ -28,3 +29,13 @@
       file:
         path: /tmp/docker-stack.yml
         state: absent
+      changed_when: False
+
+# Setup Gitlab Runners
+- hosts: roleworker
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  vars_files:
+    - group_vars/swarm
+  roles:
+    - { role: riemers.gitlab-runner }

@@ -144,5 +144,5 @@
     - name: Wait for Hosts to be up
       pause:
         prompt: "Waiting for servers to become fully available"
-        seconds: 100
+        seconds: 180
       when: server1.changed or server2.changed or server3.changed or server4.changed or server5.changed or server6.changed
