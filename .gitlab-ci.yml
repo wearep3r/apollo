@@ -18,7 +18,7 @@ variables:
 
 before_script:
   # Setup SSH deploy keys
-  - 'which ssh-agent || ( apt update -y && apt install -qq openssh-client -y )'
+  - 'which ssh-agent || ( apk add --no-cache openssh-client )'
   - eval $(ssh-agent -s)
   ##
   ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
