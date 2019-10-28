@@ -67,6 +67,10 @@ stages:
 # Testing Infrastructure Stack
 test:
   stage: test
+  before-script:
+    - apk add py-pip
+    - apk add python-dev libffi-dev openssl-dev gcc libc-dev make
+    - pip install docker-compose
   script:
     - docker-compose -f docker-stack.yml config --quiet
     #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
