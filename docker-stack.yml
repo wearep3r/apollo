@@ -32,7 +32,7 @@ services:
       --rest
       --retry
     networks:
-      - traefik
+      - proxy
     ports:
       - 80:80
       - 443:443
@@ -135,7 +135,7 @@ services:
       - portainer-data:/data
     networks:
       - portainer
-      - traefik
+      - proxy
     deploy:
       mode: replicated
       replicas: 1
@@ -156,8 +156,9 @@ services:
         - traefik.portainer.backend.loadbalancer.stickiness=true
 
 networks:
-  traefik:
-    external: true
+  proxy:
+    driver: overlay
+    attachable: true
   portainer:
     driver: overlay
     attachable: true
