@@ -1,13 +1,3 @@
-
-##########
-# DOCKER #
-##########
-
-# Networks
-mbio_networks:
-  - traefik
-  - barbernet
-
 ############
 # SECURITY #
 ############

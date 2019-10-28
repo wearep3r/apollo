@@ -54,19 +54,19 @@ services:
         delay: 10s
       restart_policy:
         condition: on-failure
-      labels:
-        - traefik.enable=true
-        - traefik.tags=traefik
-        - traefik.docker.network=traefik
-        - traefik.traefik.port=8080
-        - traefik.traefik.healthcheck.path=/health
-        - traefik.traefik.healthcheck.interval=10s
-        - traefik.traefik.frontend.rule=Host:traefik.{{ BASE_DOMAIN }}
-        - traefik.traefik.backend=traefik
-        - traefik.traefik.protocol=http
-        - traefik.traefik.frontend.headers.SSLRedirect=true
-        - traefik.traefik.frontend.entryPoints=http,https
-        - traefik.traefik.backend.loadbalancer.sticky=true
+      # labels:
+      #   - traefik.enable=true
+      #   - traefik.tags=traefik
+      #   - traefik.docker.network=traefik
+      #   - traefik.traefik.port=8080
+      #   - traefik.traefik.healthcheck.path=/health
+      #   - traefik.traefik.healthcheck.interval=10s
+      #   - traefik.traefik.frontend.rule=Host:traefik.{{ BASE_DOMAIN }}
+      #   - traefik.traefik.backend=traefik
+      #   - traefik.traefik.protocol=http
+      #   - traefik.traefik.frontend.headers.SSLRedirect=true
+      #   - traefik.traefik.frontend.entryPoints=http,https
+      #   - traefik.traefik.backend.loadbalancer.sticky=true
       # printf "testuser:$(openssl passwd -apr1 pass0815word)\n" |sed 's/\$/\$\$/g'
       #- traefik.edge.frontend.auth.basic.users=${ADMIN_USER}:${ADMIN_PASSWORD}
   
@@ -148,7 +148,7 @@ services:
         - traefik.tags=traefik
         - traefik.docker.network=traefik
         - traefik.console.port=9000
-        - traefik.console.frontend.rule=Host:portainer.{{ BASE_DOMAIN }}
+        - traefik.console.frontend.rule=Host:swarm.{{ BASE_DOMAIN }}
         - traefik.console.backend=console
         - traefik.console.protocol=http
         - traefik.console.frontend.headers.SSLRedirect=true

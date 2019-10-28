@@ -19,6 +19,14 @@ nodes:
         - runner-1
         - runner-2
 
+##########
+# DOCKER #
+##########
+
+# Networks
+mbio_networks:
+  - traefik
+
 ################
 # INTEGRATIONS #
 ################
