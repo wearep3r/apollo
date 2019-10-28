@@ -9,7 +9,7 @@ services:
       --docker.watch
       --docker.exposedbydefault=false
       --insecureSkipVerify
-      --constraints=tag==traefik
+      --constraints=tag==proxy
       --entrypoints='Name:http Address::80'
       --entrypoints='Name:https Address::443 TLS'
       --metrics
@@ -77,7 +77,7 @@ services:
   # It's a supportive service and NOT needed for the infrastructure to operate
   certs:
     networks:
-      - traefik
+      - proxy
     image: alpine:latest
     volumes:
       - traefik-config:/traefik
@@ -145,8 +145,8 @@ services:
         condition: on-failure
       labels:
         - traefik.enable=true
-        - traefik.tags=traefik
-        - traefik.docker.network=traefik
+        - traefik.tags=proxy
+        - traefik.docker.network=proxy
         - traefik.portainer.port=9000
         - traefik.portainer.frontend.rule=Host:swarm.${BASE_DOMAIN}
         - traefik.portainer.backend=portainer
