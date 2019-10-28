@@ -3,12 +3,12 @@
 # It determines the current Swarm Status of each Manager/Worker
 # and then bootstraps the Swarm or joins nodes if needed
 #
-# "rolemanager" and "roleworker" are dynamic groups composed of
+# "manager" and "worker" are dynamic groups composed of
 # HETZNER servers with labels "role: manager" and "role: worker"
 # More information on this composition can be found in "hcloud.yml"
 #
 # 
-- hosts: rolemanager
+- hosts: manager
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
@@ -28,7 +28,7 @@
       group_by:
         key: swarm_manager_{{ swarm.stdout }}
 
-- hosts: roleworker
+- hosts: worker
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
@@ -140,4 +140,4 @@
     - name: Set Worker Node Labels
       shell: >
           docker node update --label-add role=worker {{ hostvars[item]["ansible_hostname"] }}
-      with_items: "{{ groups['roleworker'] }}"
+      with_items: "{{ groups['worker'] }}"

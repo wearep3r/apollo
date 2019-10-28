@@ -7,10 +7,10 @@
   gather_facts: False
   user: root
   tasks:
-    - name: Create staging-manager-1
+    - name: Create Managers
       hcloud_server:
         api_token: "{{ hcloud_token }}"
-        name: staging-manager-1
+        name: "{{ item }}"
         server_type: cx11
         image: ubuntu-18.04
         location: nbg1
@@ -18,15 +18,15 @@
           - MBio DevOps
         state: present
         labels:
-          type: swarm
-          environment: staging
-          role: manager
+          swarm: ""
+          manager: ""
+          mbiosphere: ""
         backups: no
-      register: server1
-    - name: Create staging-manager-2
+      with_items: "{{ nodes.manager }}"
+    - name: Create Workers
       hcloud_server:
         api_token: "{{ hcloud_token }}"
-        name: staging-manager-2
+        name: "{{ item }}"
         server_type: cx11
         image: ubuntu-18.04
         location: nbg1
@@ -34,15 +34,15 @@
           - MBio DevOps
         state: present
         labels:
-          type: swarm
-          environment: staging
-          role: manager
+          swarm: ""
+          worker: ""
+          mbiosphere: ""
         backups: no
-      register: server2
-    - name: Create staging-manager-3
+      with_items: "{{ nodes.worker }}"
+    - name: Create Runners
       hcloud_server:
         api_token: "{{ hcloud_token }}"
-        name: staging-manager-3
+        name: "{{ item }}"
         server_type: cx11
         image: ubuntu-18.04
         location: nbg1
@@ -50,99 +50,147 @@
           - MBio DevOps
         state: present
         labels:
-          type: swarm
-          environment: staging
-          role: manager
+          runner: ""
+          mbiosphere: ""
         backups: no
-      register: server3
-    - name: Create staging-worker-1
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: staging-worker-1
-        server_type: cx11
-        image: ubuntu-18.04
-        location: nbg1
-        ssh_keys:
-          - MBio DevOps
-        state: present
-        labels:
-          type: swarm
-          environment: staging
-          role: worker
-        backups: no
-      register: server4
-    - name: Create staging-worker-2
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: staging-worker-2
-        server_type: cx11
-        image: ubuntu-18.04
-        location: nbg1
-        ssh_keys:
-          - MBio DevOps
-        state: present
-        labels:
-          type: swarm
-          environment: staging
-          role: worker
-        backups: no
-      register: server5
-    - name: Create staging-worker-3
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: staging-worker-3
-        server_type: cx11
-        image: ubuntu-18.04
-        location: nbg1
-        ssh_keys:
-          - MBio DevOps
-        state: present
-        labels:
-          type: swarm
-          environment: staging
-          role: worker
-        backups: no
-      register: server6
-    - name: Check staging-manager-1
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ server1.hcloud_server.name }}"
-        state: started
-      when: server1.changed
-    - name: Check staging-manager-2
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ server2.hcloud_server.name }}"
-        state: started
-      when: server2.changed
-    - name: Check staging-manager-3
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ server3.hcloud_server.name }}"
-        state: started
-      when: server3.changed
-    - name: Check staging-worker-1
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ server1.hcloud_server.name }}"
-        state: started
-      when: server4.changed
-    - name: Check staging-worker-2
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ server2.hcloud_server.name }}"
-        state: started
-      when: server5.changed
-    - name: Check staging-worker-3
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ server3.hcloud_server.name }}"
-        state: started
-      when: server6.changed
+      with_items: "{{ nodes.runner }}"
+    
+    # - name: Create staging-manager-1
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: staging-manager-1
+    #     server_type: cx11
+    #     image: ubuntu-18.04
+    #     location: nbg1
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       type: swarm
+    #       environment: staging
+    #       role: manager
+    #     backups: no
+    #   register: server1
+    # - name: Create staging-manager-2
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: staging-manager-2
+    #     server_type: cx11
+    #     image: ubuntu-18.04
+    #     location: nbg1
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       type: swarm
+    #       environment: staging
+    #       role: manager
+    #     backups: no
+    #   register: server2
+    # - name: Create staging-manager-3
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: staging-manager-3
+    #     server_type: cx11
+    #     image: ubuntu-18.04
+    #     location: nbg1
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       type: swarm
+    #       environment: staging
+    #       role: manager
+    #     backups: no
+    #   register: server3
+    # - name: Create staging-worker-1
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: staging-worker-1
+    #     server_type: cx11
+    #     image: ubuntu-18.04
+    #     location: nbg1
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       type: swarm
+    #       environment: staging
+    #       role: worker
+    #     backups: no
+    #   register: server4
+    # - name: Create staging-worker-2
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: staging-worker-2
+    #     server_type: cx11
+    #     image: ubuntu-18.04
+    #     location: nbg1
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       type: swarm
+    #       environment: staging
+    #       role: worker
+    #     backups: no
+    #   register: server5
+    # - name: Create staging-worker-3
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: staging-worker-3
+    #     server_type: cx11
+    #     image: ubuntu-18.04
+    #     location: nbg1
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       type: swarm
+    #       environment: staging
+    #       role: worker
+    #     backups: no
+    #   register: server6
+    # - name: Check staging-manager-1
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ server1.hcloud_server.name }}"
+    #     state: started
+    #   when: server1.changed
+    # - name: Check staging-manager-2
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ server2.hcloud_server.name }}"
+    #     state: started
+    #   when: server2.changed
+    # - name: Check staging-manager-3
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ server3.hcloud_server.name }}"
+    #     state: started
+    #   when: server3.changed
+    # - name: Check staging-worker-1
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ server1.hcloud_server.name }}"
+    #     state: started
+    #   when: server4.changed
+    # - name: Check staging-worker-2
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ server2.hcloud_server.name }}"
+    #     state: started
+    #   when: server5.changed
+    # - name: Check staging-worker-3
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ server3.hcloud_server.name }}"
+    #     state: started
+    #   when: server6.changed
     - name: Refresh inventory to ensure new instances exist in inventory
       meta: refresh_inventory
     - name: Wait for Hosts to be up
       pause:
         prompt: "Waiting for servers to become fully available"
         seconds: 180
-      when: server1.changed or server2.changed or server3.changed or server4.changed or server5.changed or server6.changed
+      #when: server1.changed or server2.changed or server3.changed or server4.changed or server5.changed or server6.changed

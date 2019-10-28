@@ -1,34 +1,73 @@
-# Functionality
-# 
+##################
+# INFRASTRUCTURE #
+##################
+
+# If using HETZNER Inventory, these will be the nodes deployed to HETZNER Cloud
+nodes:
+    # 3 Managers
+    manager:
+        - manager-1
+        - manager-2
+        - manager-3
+    # 3 Workers
+    worker:
+        - worker-1
+        - worker-2
+        - worker-3
+    # 2 Runners
+    runner:
+        - runner-1
+        - runner-2
+
+################
+# INTEGRATIONS #
+################
+
+# HETZNER
+hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
+
+# Sentry
+sentry_token: 9791fba31e0c4da9b66261a9ec8cc682a9096ebbcfca4798bef0bfe4b675970b
+
+# Cloudflare (DNS)
+cf_api_email: cloud@micro-biolytics.com
+cf_api_key: _aUw-i3wWGTh1bmYJEiVUl5A_zJ_cAB7tZFK24bl
+
+# LetsEncrypt
+letsencrypt_mail: cloud@micro-biolytics.com
+
+#################
+# Functionality #
+#################
+
 # Check if local Git Repository is on branch MASTER and up-to-date
+# If not, stop playbook execution
+# This is an additional security measure to ensure no untested infrastructure code
+# is deployed from development to production
+# If "true", Ansible only executes its tasks when on branch Master and everything is up-to-date
+# If "false", nothing will stop you from messing up the entire infrastructure with development code ;)
 check_git: False
 
-# SSH Key to use to connect to managed nodes
+# SSH Key used to connect to managed nodes
+# ATTENTION: Don't simply exchange the key 
+# Key-Rollovers need to be prepared with additional code
 ansible_ssh_private_key_file: .ssh/id_rsa
 
-# Python interpreter to use on managed nodes
+# Python interpreter used on managed nodes
 ansible_python_interpreter: /usr/bin/python3
 
 # NTP Settings
+# This can be changed to Europe/Berlin for german time 
+# TIP: when working with international clients, Etc/UTC makes the most sense
+# Everything logged by the managed nodes will then be timestamped with World Time (+0) 
+# and can then be translated to other timezones by those systems (e.g. Sentry) that need to 
 ntp_timezone: Etc/UTC
 
 # Locale Settings
+# Can be changed to de_DE.UTF-8 if needed 
+# Actually only relevant for direct Console access
+# SSH connections usually forwarded local settings 
 locale_lang: en_US.UTF-8
 
 # Python Settings
 pip_package: python3-pip
-
-# HETZNER Settings
-hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
-
-# DigitalOcean Settings (DNS)
-do_token: 9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc
-
-# Environment Domain
-# WIP: this will determine the domain for the current environment,
-# e.g. staging.$DOMAIN for Staging
-environment_domain: if0.co
-
-# LetsEncrypt
-# Needed to obtain certificates from LetsEncrypt
-letsencrypt_mail: info@peter.saarland

@@ -11,12 +11,13 @@ cache:
   
 variables:
   DOCKER_DRIVER: overlay2
-  DOCKER_HOST: ssh://docker@swarm.${DOMAIN}
-  PROJECT_NAME: scenarioservice
+  PROJECT_NAME: ${CI_PROJECT_NAME}
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 before_script:
+  # Source Environment Variables from .env
+  - export $(grep -v '^#' .env | xargs)
   # Setup SSH deploy keys
   - 'which ssh-agent || ( apk add --no-cache openssh-client )'
   - eval $(ssh-agent -s)
@@ -35,9 +36,7 @@ before_script:
 # Stages
 stages:
   - lint
-  - build
   - test
-  - release
   - deploy
 
 # Lint Ansible files
@@ -65,13 +64,22 @@ stages:
 #   only:
 #     - master
 
+# Testing Infrastructure Stack
+test:
+  stage: test
+  script:
+    - docker-compose -f docker-stack.yml config --quiet
+    #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
+  coverage: '/[\d\.]+\%\s*$/'
+  artifacts:
+    paths:
+      - artifacts/
+
 # Deploy: Staging
-staging:
+infrastructure:
   stage: deploy
   script:
-    - docker -H ssh://docker@staging.if0.co stack deploy --compose-file services/barbershop/docker-stack.yml barbershop
-  environment:
-    name: staging
+    - docker -H ssh://${SWARM_USER}@${SWARM_HOST} stack deploy --prune --compose-file docker-stack.yml ${PROJECT_NAME}
 
 # # Deploy: Production
 # production:
