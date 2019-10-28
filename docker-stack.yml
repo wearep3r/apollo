@@ -147,13 +147,13 @@ services:
         - traefik.enable=true
         - traefik.tags=traefik
         - traefik.docker.network=traefik
-        - traefik.console.port=9000
-        - traefik.console.frontend.rule=Host:swarm.${BASE_DOMAIN}
-        - traefik.console.backend=console
-        - traefik.console.protocol=http
-        - traefik.console.frontend.headers.SSLRedirect=true
-        - traefik.console.frontend.entryPoints=http,https
-        - traefik.console.backend.loadbalancer.sticky=true
+        - traefik.portainer.port=9000
+        - traefik.portainer.frontend.rule=Host:swarm.${BASE_DOMAIN}
+        - traefik.portainer.backend=portainer
+        - traefik.portainer.protocol=http
+        - traefik.portainer.frontend.headers.SSLRedirect=true
+        - traefik.portainer.frontend.entryPoints=http,https
+        - traefik.portainer.backend.loadbalancer.stickiness=true
 
 networks:
   traefik:
