@@ -15,7 +15,7 @@ services:
       --metrics
       --metrics.prometheus
       --acme
-      --acme.email={{ LETSENCRYPT_MAIL }}
+      --acme.email=${LETSENCRYPT_MAIL}
       --acme.storage="/etc/traefik/acme.json"
       --acme.entryPoint=https
       --acme.dnsChallenge.provider=cloudflare
@@ -26,7 +26,7 @@ services:
       --accessLog
       --api
       --debug
-      --docker.domain={{ base_domain }}
+      --docker.domain=${BASE_DOMAIN}
       --logLevel=DEBUG
       --ping
       --rest
@@ -40,8 +40,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - traefik-config:/etc/traefik
     environment:
-      - CF_API_EMAIL= {{ cf_api_email }}
-      - CF_API_KEY={{ cf_api_key }}
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
     deploy:
       mode: global
       placement:
@@ -148,7 +148,7 @@ services:
         - traefik.tags=traefik
         - traefik.docker.network=traefik
         - traefik.console.port=9000
-        - traefik.console.frontend.rule=Host:swarm.{{ BASE_DOMAIN }}
+        - traefik.console.frontend.rule=Host:swarm.${BASE_DOMAIN}
         - traefik.console.backend=console
         - traefik.console.protocol=http
         - traefik.console.frontend.headers.SSLRedirect=true
