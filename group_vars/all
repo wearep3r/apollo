@@ -79,19 +79,3 @@ locale_lang: en_US.UTF-8
 
 # Python Settings
 pip_package: python3-pip
-
-# HETZNER Settings
-hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
-
-# DigitalOcean Settings (DNS)
-do_token: 9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc
-
-# Environment Domain
-# WIP: this will determine the domain for the current environment,
-# e.g. staging.$DOMAIN for Staging
-environment_domain: if0.co
-
-# LetsEncrypt
-# Needed to obtain certificates from LetsEncrypt
-hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
-letsencrypt_mail: info@peter.saarland
