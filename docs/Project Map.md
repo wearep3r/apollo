@@ -47,6 +47,11 @@ This includes the implementation and adjustment of all necessary CI/CD Piplines.
 
 This takes into account signing, validation and scanning of Docker images, Code Quality Checks, Test- and Linter-Stages during Pipelines, automated as well as manually triggered deployments to environments and a path to implement further features to the design.
 
+## 3.1 Implementation of Data Persistence (10d)
+The Cloud Platform needs some kind of Data Persistence to function properly in a distributed environment. In a phone call with Adrian Marsch on Oct. 29th 2019 we concluded to go ahead with the implementation of [Storidge](https://storidge.com/) as storage controller. Further options (GlusterFS, Portworx, ...) have been discussed and discarded for now as the project is on a very tight schedule. 
+
+The implementation of Storidge imposes additional hosting-costs as it depends on the availability of 3 RAW block devices on the underlying node which will be achieved by mounting 3 additional block volumes from HETZNER into the server node. Block Storage costs depend on disk size.
+
 ## 4. Monitoring & Alerting (10d)
 This is a key part of the project. As long as everything is running as expected, everything is fine. But once something unexpected happens and users experience errors, you'll want to be able to inspect, analyze and change every bit of the infrastructure and platform.
 
