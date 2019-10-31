@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  barbershop:
+    image: rabbitmq:3-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - barbernet
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == worker]
+      restart_policy:
+        condition: on-failure
+        
+networks:
+  barbernet:
+    external: true
+    name: barbernet

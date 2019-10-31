@@ -3,15 +3,19 @@
 # - Copy to Manager from Jinja Template
 # - Deploy the Stack
 # - Delete the Stack File
-- hosts: rolemanager[0]
+- hosts: swarm
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
-    - name: Create network for Traefik
+    - name: Create Mbiosphere Overlay networks
       docker_network:
-        name: traefik
+        name: "{{ item }}"
         driver: overlay
-      changed_when: False
+      with_items: "{{ mbio_networks }}"
+- hosts: manager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  tasks:
     - name: Copy docker-stack.yml
       template:
         src: docker-stack.yml.j2
@@ -19,6 +23,7 @@
         owner: docker
         group: docker
         mode: '0644'
+      changed_when: False
     - name: Deploy Controlplane
       docker_stack:
         state: present
@@ -32,7 +37,7 @@
       changed_when: False
 
 # Setup Gitlab Runners
-- hosts: roleworker
+- hosts: worker
   remote_user: "{{ deploy_user_name }}"
   become: true
   vars_files:

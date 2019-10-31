@@ -5,6 +5,7 @@ This README will hold an overview of the contents of this repo. This is **WIP**.
 # Ansible
 ## References
 - Docker Swarm: https://thisendout.com/2016/09/13/deploying-docker-swarm-with-ansible/
+- Swarm + CI: https://medium.com/@ju5t_/how-were-using-gitlab-to-test-and-deploy-our-application-s-to-docker-swarm-e3f556dbf8fe
 ## Installation
 We use the Development Version of Ansible to use the latest HCLOUD modules:
 

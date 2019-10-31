@@ -9,16 +9,16 @@ services:
       --docker.watch
       --docker.exposedbydefault=false
       --insecureSkipVerify
-      --constraints=tag==traefik
+      --constraints=tag==proxy
       --entrypoints='Name:http Address::80'
       --entrypoints='Name:https Address::443 TLS'
       --metrics
       --metrics.prometheus
       --acme
-      --acme.email={{ letsencrypt_mail }}
+      --acme.email=${LETSENCRYPT_MAIL}
       --acme.storage="/etc/traefik/acme.json"
       --acme.entryPoint=https
-      --acme.dnsChallenge.provider=digitalocean
+      --acme.dnsChallenge.provider=cloudflare
       --acme.dnsChallenge.resolvers='1.1.1.1:53'
       --acme.onhostrule=true
       --acme.acmelogging=true
@@ -26,13 +26,13 @@ services:
       --accessLog
       --api
       --debug
-      --docker.domain={{ environment_domain }}
+      --docker.domain=${BASE_DOMAIN}
       --logLevel=DEBUG
       --ping
       --rest
       --retry
     networks:
-      - traefik
+      - proxy
     ports:
       - 80:80
       - 443:443
@@ -40,12 +40,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - traefik-config:/etc/traefik
     environment:
-      DO_AUTH_TOKEN: {{ do_token }}
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
-        constraints:
-          - node.role == manager
+        constraints: [node.hostname == manager-1]
         preferences:
           - spread: node.id
       update_config:
@@ -53,19 +54,19 @@ services:
         delay: 10s
       restart_policy:
         condition: on-failure
-      labels:
-        - traefik.enable=true
-        - traefik.tags=traefik
-        - traefik.docker.network=traefik
-        - traefik.traefik.port=8080
-        - traefik.traefik.healthcheck.path=/health
-        - traefik.traefik.healthcheck.interval=10s
-        - traefik.traefik.frontend.rule=Host:traefik.{{ environment_domain }}
-        - traefik.traefik.backend=traefik
-        - traefik.traefik.protocol=http
-        - traefik.traefik.frontend.headers.SSLRedirect=true
-        - traefik.traefik.frontend.entryPoints=http,https
-        - traefik.traefik.backend.loadbalancer.sticky=true
+      # labels:
+      #   - traefik.enable=true
+      #   - traefik.tags=traefik
+      #   - traefik.docker.network=traefik
+      #   - traefik.traefik.port=8080
+      #   - traefik.traefik.healthcheck.path=/health
+      #   - traefik.traefik.healthcheck.interval=10s
+      #   - traefik.traefik.frontend.rule=Host:traefik.{{ BASE_DOMAIN }}
+      #   - traefik.traefik.backend=traefik
+      #   - traefik.traefik.protocol=http
+      #   - traefik.traefik.frontend.headers.SSLRedirect=true
+      #   - traefik.traefik.frontend.entryPoints=http,https
+      #   - traefik.traefik.backend.loadbalancer.sticky=true
       # printf "testuser:$(openssl passwd -apr1 pass0815word)\n" |sed 's/\$/\$\$/g'
       #- traefik.edge.frontend.auth.basic.users=${ADMIN_USER}:${ADMIN_PASSWORD}
   
@@ -76,7 +77,7 @@ services:
   # It's a supportive service and NOT needed for the infrastructure to operate
   certs:
     networks:
-      - traefik
+      - proxy
     image: alpine:latest
     volumes:
       - traefik-config:/traefik
@@ -134,29 +135,30 @@ services:
       - portainer-data:/data
     networks:
       - portainer
-      - traefik
+      - proxy
     deploy:
       mode: replicated
       replicas: 1
       placement:
-        constraints: [node.role == manager]
+        constraints: [node.hostname == manager-1]
       restart_policy:
         condition: on-failure
       labels:
         - traefik.enable=true
-        - traefik.tags=traefik
-        - traefik.docker.network=traefik
-        - traefik.console.port=9000
-        - traefik.console.frontend.rule=Host:portainer.{{ environment_domain }}
-        - traefik.console.backend=console
-        - traefik.console.protocol=http
-        - traefik.console.frontend.headers.SSLRedirect=true
-        - traefik.console.frontend.entryPoints=http,https
-        - traefik.console.backend.loadbalancer.sticky=true
+        - traefik.tags=proxy
+        - traefik.docker.network=proxy
+        - traefik.portainer.port=9000
+        - traefik.portainer.frontend.rule=Host:swarm.${BASE_DOMAIN}
+        - traefik.portainer.backend=portainer
+        - traefik.portainer.protocol=http
+        - traefik.portainer.frontend.headers.SSLRedirect=true
+        - traefik.portainer.frontend.entryPoints=http,https
+        - traefik.portainer.backend.loadbalancer.stickiness=true
 
 networks:
-  traefik:
-    external: true
+  proxy:
+    driver: overlay
+    attachable: true
   portainer:
     driver: overlay
     attachable: true
