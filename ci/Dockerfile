@@ -12,7 +12,5 @@ RUN apk add --no-cache --virtual build-dependencies git build-base libffi-dev op
     ansible-autodoc \
     && ansible-galaxy install -r /tmp/requirements.yml \
     && apk del build-dependencies
-
 COPY . .
-RUN chmod 700 ansible/
 CMD ["ansible", "-v"]
