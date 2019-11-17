@@ -68,7 +68,7 @@ build:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CONTAINER_TEST_IMAGE || true
-    - DOCKER_BUILDKIT=1 docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
+    - docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
     - docker push $CONTAINER_TEST_IMAGE
     - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
     - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
