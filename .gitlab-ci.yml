@@ -53,6 +53,7 @@ version:
   script:
     - release test-git || true
     - release test-api
+    - release next-version --allow-current
     - release next-version --allow-current > .next-version
   artifacts:
     paths:
