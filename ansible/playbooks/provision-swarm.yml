@@ -14,11 +14,11 @@
   gather_facts: yes
   tasks:
     - name: Determine Manager Swarm Status
-      shell: >
+      shell: |
+        set -o pipefail
         docker info | egrep 'Swarm: ' | cut -d ' ' -f3
       register: swarm_status
       changed_when: False
-
     - name: Save Swarm Status
       set_fact: 
         swarm: "{{ swarm_status }}"
@@ -34,11 +34,11 @@
   become: true
   tasks:
     - name: Determine Worker Swarm Status
-      shell: >
+      shell: |
+        set -o pipefail
         docker info | egrep 'Swarm: ' | cut -d ' ' -f3
       register: swarm_status
       changed_when: False
-
     - name: Save Worker Swarm Status
       set_fact: 
         swarm: "{{ swarm_status }}"
@@ -67,10 +67,12 @@
         hostname: "{{ play_hosts[0] }}"
         groups: swarm_manager_active
       when: bootstrap_first_node.changed
+      register: swarm_manager_active
 
     - name: Set Node Labels
       shell: >
         docker node update --label-add role=manager {{ inventory_hostname }}
+      when: swarm_manager_active.changed
 
 # Gather Swarm related information (Join tokens)
 - hosts: swarm_manager_active[0]
@@ -83,12 +85,11 @@
       shell: docker swarm join-token -q manager
       register: swarm_manager_token
       changed_when: False
-
     - name: Retrieve Swarm Worker Token
       shell: docker swarm join-token -q worker
       register: swarm_worker_token
       changed_when: False
-
+      
     # This list will be used to feed new nodes an IP address
     # to join the Swarm (see below)
     - name: Populate list of Manager IPs
@@ -111,7 +112,6 @@
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['swarm_manager_ips'][0] }}:2377
-
     - name: Set Node Labels
       shell: >
         docker node update --label-add role=manager {{ inventory_hostname }}

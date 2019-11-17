@@ -113,7 +113,6 @@
           mbiosphere: ""
         backups: no
       with_items: "{{ nodes.runner }}"
-    
     # - name: Create staging-manager-1
     #   hcloud_server:
     #     api_token: "{{ hcloud_token }}"

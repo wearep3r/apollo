@@ -64,7 +64,10 @@ services:
         #  - spread: node.id
       update_config:
         parallelism: 1
-        delay: 10s
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
       restart_policy:
         condition: on-failure
       # labels:
@@ -154,6 +157,12 @@ services:
       replicas: 3
       restart_policy:
         condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
       placement:
         preferences:
           - spread: node.id
@@ -180,6 +189,12 @@ services:
       mode: global
       restart_policy:
         condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
       placement:
         constraints: [node.platform.os == linux]
   
@@ -211,100 +226,100 @@ services:
         - traefik.portainer.frontend.entryPoints=http,https
         - traefik.portainer.backend.loadbalancer.stickiness=true
   
-  graylog-mongo:
-    image: "mongo:3"
-    networks:
-      - graylog
-    volumes:
-      - graylog-mongo-data-cio:/data/db
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
-      restart_policy:
-        condition: on-failure
+  # graylog-mongo:
+  #   image: "mongo:3"
+  #   networks:
+  #     - graylog
+  #   volumes:
+  #     - graylog-mongo-data-cio:/data/db
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints: [node.role == manager]
+  #     restart_policy:
+  #       condition: on-failure
 
-  # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/docker.html
-  graylog-elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.2
-    #command: "elasticsearch -Des.cluster.name='graylog'"
-    volumes:
-      - graylog-elasticsearch-data-cio:/usr/share/elasticsearch/data
-    networks:
-      - graylog
-    environment:
-      - http.host=0.0.0.0
-      - transport.host=localhost
-      - network.host=0.0.0.0
-      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
-    healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 45s
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role == worker]
-      restart_policy:
-        condition: on-failure
-      resources:
-        limits:
-            memory: 4G
+  # # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/docker.html
+  # graylog-elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.2
+  #   #command: "elasticsearch -Des.cluster.name='graylog'"
+  #   volumes:
+  #     - graylog-elasticsearch-data-cio:/usr/share/elasticsearch/data
+  #   networks:
+  #     - graylog
+  #   environment:
+  #     - http.host=0.0.0.0
+  #     - transport.host=localhost
+  #     - network.host=0.0.0.0
+  #     - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 45s
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints: [node.role == worker]
+  #     restart_policy:
+  #       condition: on-failure
+  #     resources:
+  #       limits:
+  #           memory: 4G
 
-  graylog:
-    image: graylog/graylog:3.1
-    volumes:
-      - graylog-data-cio:/usr/share/graylog/data/journal
-      - graylog-config-cio:/usr/share/graylog/data/config
-    networks:
-      - graylog
-      - proxy
-    environment:
-      - GRAYLOG_PASSWORD_SECRET=senhadeexemplo123123123123
-      - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-      #- GRAYLOG_WEB_ENDPOINT_URI=https://logs.${BASE_DOMAIN}/api/
-      - GRAYLOG_HTTP_EXTERNAL_URI=https://logs.${BASE_DOMAIN}/
-      - GRAYLOG_HTTP_BIND_ADDRESS=0.0.0.0:9000
-      - GRAYLOG_MONGODB_URI=mongodb://graylog-mongo/graylog
-      - GRAYLOG_ELASTICSEARCH_HOSTS=http://graylog-elasticsearch:9200
-    ports:
-      # Syslog TCP
-      - 1514:1514
-      # Syslog UDP
-      - 1514:1514/udp
-      # GELF TCP
-      - 12201:12201
-      # GELF UDP
-      - 12201:12201/udp
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    # logging:
-    #   driver: gelf
-    #   options:
-    #     gelf-address: "tcp://graylog:12201"
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-      placement:
-        constraints: [node.role == manager]
-      labels:
-        - traefik.enable=true
-        - traefik.tags=proxy
-        - traefik.docker.network=infrastructure_proxy
-        - traefik.graylog.port=9000
-        - traefik.graylog.frontend.rule=Host:logs.${BASE_DOMAIN}
-        - traefik.graylog.backend=graylog
-        - traefik.graylog.protocol=http
-        - traefik.graylog.frontend.headers.SSLRedirect=true
-        - traefik.graylog.frontend.entryPoints=http,https
-        - traefik.graylog.backend.loadbalancer.stickiness=true
+  # graylog:
+  #   image: graylog/graylog:3.1
+  #   volumes:
+  #     - graylog-data-cio:/usr/share/graylog/data/journal
+  #     - graylog-config-cio:/usr/share/graylog/data/config
+  #   networks:
+  #     - graylog
+  #     - proxy
+  #   environment:
+  #     - GRAYLOG_PASSWORD_SECRET=senhadeexemplo123123123123
+  #     - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+  #     #- GRAYLOG_WEB_ENDPOINT_URI=https://logs.${BASE_DOMAIN}/api/
+  #     - GRAYLOG_HTTP_EXTERNAL_URI=https://logs.${BASE_DOMAIN}/
+  #     - GRAYLOG_HTTP_BIND_ADDRESS=0.0.0.0:9000
+  #     - GRAYLOG_MONGODB_URI=mongodb://graylog-mongo/graylog
+  #     - GRAYLOG_ELASTICSEARCH_HOSTS=http://graylog-elasticsearch:9200
+  #   ports:
+  #     # Syslog TCP
+  #     - 1514:1514
+  #     # Syslog UDP
+  #     - 1514:1514/udp
+  #     # GELF TCP
+  #     - 12201:12201
+  #     # GELF UDP
+  #     - 12201:12201/udp
+  #   healthcheck:
+  #     test: [ "CMD", "curl", "-f", "http://localhost:9000" ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   # logging:
+  #   #   driver: gelf
+  #   #   options:
+  #   #     gelf-address: "tcp://graylog:12201"
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #     placement:
+  #       constraints: [node.role == manager]
+  #     labels:
+  #       - traefik.enable=true
+  #       - traefik.tags=proxy
+  #       - traefik.docker.network=infrastructure_proxy
+  #       - traefik.graylog.port=9000
+  #       - traefik.graylog.frontend.rule=Host:logs.${BASE_DOMAIN}
+  #       - traefik.graylog.backend=graylog
+  #       - traefik.graylog.protocol=http
+  #       - traefik.graylog.frontend.headers.SSLRedirect=true
+  #       - traefik.graylog.frontend.entryPoints=http,https
+  #       - traefik.graylog.backend.loadbalancer.stickiness=true
 
 networks:
   proxy:
@@ -316,23 +331,23 @@ networks:
   portainer:
     driver: overlay
     attachable: true
-  graylog:
-    driver: overlay
-    attachable: true
+  # graylog:
+  #   driver: overlay
+  #   attachable: true
 
 volumes:
   traefik-config-cio:
     driver: cio
   portainer-data-cio:
     driver: cio
-  graylog-mongo-data-cio:
-    driver: cio
-  graylog-elasticsearch-data-cio:
-    driver: cio
-  graylog-data-cio:
-    driver: cio
-  graylog-config-cio:
-    driver: cio
+  # graylog-mongo-data-cio:
+  #   driver: cio
+  # graylog-elasticsearch-data-cio:
+  #   driver: cio
+  # graylog-data-cio:
+  #   driver: cio
+  # graylog-config-cio:
+  #   driver: cio
   consul-data-leader-cio:
     driver: cio
   consul-data-replica-cio:

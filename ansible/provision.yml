@@ -2,7 +2,7 @@
 # Check git Status
 - import_playbook: git-status.yml
   # See group_vars/all
-  when: check_git == True
+  when: check_git
 # Create/Update Nodes on HETZNER Cloud
 - import_playbook: playbooks/provision-hetzner.yml
 # Configure each Node: install software, set config, harden security 
