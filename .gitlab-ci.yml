@@ -46,24 +46,6 @@ before_script:
   # Source Environment Variables from .env
   - export $(grep -v '^#' .env | xargs)
 
-# Build
-# build:
-#   stage: build
-#   script:
-#     - docker pull $CONTAINER_RELEASE_IMAGE || true
-#     - docker build --cache-from $CONTAINER_RELEASE_IMAGE $CONTAINER_TEST_IMAGE .
-#     - docker push $CONTAINER_TEST_IMAGE
-
-# # Release
-# release-image:
-#   stage: release
-#   script:
-#     - docker pull $CONTAINER_TEST_IMAGE || true
-#     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-#     - docker push $CONTAINER_RELEASE_IMAGE
-#   only:
-#     - master
-
 version:
   stage: version
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
@@ -104,7 +86,9 @@ test:ansible:
   stage: test
   image: $CONTAINER_TEST_IMAGE
   script:
-    - ansible-lint .
+    - ansible-lint --version
+    - cd ansible
+    - ansible-lint *.yml
   allow_failure: true
 
 release:

@@ -1,9 +1,0 @@
-# Setup Gitlab Runners
-- hosts: runner
-  remote_user: "{{ deploy_user_name }}"
-  become: true
-  # Probably not needed (commented out on 28.10.2019)
-  # vars_files:
-  #   - group_vars/runner
-  roles:
-    - { role: riemers.gitlab-runner }
