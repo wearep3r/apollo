@@ -9,6 +9,7 @@ RUN apk add --no-cache --virtual build-dependencies git build-base libffi-dev op
     hcloud \
     jsondiff \
     ansible-lint \
+    ansible-autodoc \
     && ansible-galaxy install -r /tmp/requirements.yml \
     && apk del build-dependencies
 

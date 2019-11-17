@@ -96,6 +96,17 @@ test:ansible:
     - ansible-lint *.yml
   allow_failure: true
 
+release-image:
+  stage: release
+  image: docker:19.03.1
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+    - docker push $CONTAINER_RELEASE_IMAGE
+  only:
+    - master
+
 release:
   stage: release
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
@@ -112,7 +123,6 @@ release:
     - release commit-and-tag CHANGELOG.md release_info
   only:
     - master
-  #- release --ci-commit-tag v$RELEASE_VERSION add-download-link -n release -u $RELEASE_URL -d "$RELEASE_DESC"
 
 
 # release:
