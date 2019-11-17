@@ -38,7 +38,7 @@ The design will account for a later implementation of:
 
 The design also contains a clear path for scaling up or out.
 
-## 3. Implementation of the Environments (21d)
+## 3. Implementation of the Environments (21d +10d)
 After the actual design has been proven and approved, all 3 environments will be built and put to work so they can be tested intensively.
 
 This includes the implementation and adjustment of all necessary CI/CD Piplines. After this stage is finished, all 3 environments should be ready to run automated services deployed by pipelines triggered by Developer commits.
@@ -47,10 +47,31 @@ This includes the implementation and adjustment of all necessary CI/CD Piplines.
 
 This takes into account signing, validation and scanning of Docker images, Code Quality Checks, Test- and Linter-Stages during Pipelines, automated as well as manually triggered deployments to environments and a path to implement further features to the design.
 
-## 3.1 Implementation of Data Persistence (10d)
+## 3.1 Implementation of Data Persistence (+10d as of Oct 29th 2019)
 The Cloud Platform needs some kind of Data Persistence to function properly in a distributed environment. In a phone call with Adrian Marsch on Oct. 29th 2019 we concluded to go ahead with the implementation of [Storidge](https://storidge.com/) as storage controller. Further options (GlusterFS, Portworx, ...) have been discussed and discarded for now as the project is on a very tight schedule. 
 
 The implementation of Storidge imposes additional hosting-costs as it depends on the availability of 3 RAW block devices on the underlying node which will be achieved by mounting 3 additional block volumes from HETZNER into the server node. Block Storage costs depend on disk size.
+
+### Updates to the Infrastructure Layout
+Storidge comes with strict prerequisites and trade-offs, thus infrastructure needs to be adapted to ensure stable operations.
+
+1. Storidge only runs on Ubuntu 16.04, not 18.04+
+2. Storidge requires 3 RAW Block Devices to be available on a node for data parity (this means 3 Block Volumes need to be added to a HETZNER VM which means additional hosting cost)
+3. Storidge requires at least 16GB of Memory to operate at good performance while leaving ressources free for the actual services; 32GB are recommended. This means VMs at HETZNER need to be scaled up which also means additional hosting cost
+4. Storidge Community Edition only works with up to 10TB of storage and/or 5 nodes in a cluster and needs to be licensed to scale up
+
+These limitations in addition to some benefits that can be gained when making slight changes to the infrastructure architecture in this scenario would lead to the following layout for the MBIO infrastructure:
+
+![MBIO Cloud Infrastructure v2](mbio-v2.jpeg)
+
+- Services are isolated by environment
+- Services use the Controlplane Proxy Overlay Network for ingress traffic on Port 80/443
+- Controlplane is a service and will be deployed by CI/CD
+- Controlplane will handle DNS updates and SSL
+- Controlplane is integrated with Storidge Storage Layer and assists in maintenance and scaling
+- Further decouples App-Code from Infrastructure
+- Storage Layer is integrated with Orchestrator (Swarm) for best performance and stability
+- Gained additional Portability of the whole infrastructure (for bare-metal deployments, etc)
 
 ## 4. Monitoring & Alerting (10d)
 This is a key part of the project. As long as everything is running as expected, everything is fine. But once something unexpected happens and users experience errors, you'll want to be able to inspect, analyze and change every bit of the infrastructure and platform.

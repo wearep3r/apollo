@@ -1,0 +1,180 @@
+# This section checks if the nodes have been bootstrapped already
+# (i.e. has there been a "first run"?)
+# If not, the SSH Connection with {{ deploy_user_name }} (the unprivileged "devops" user)
+# will fail and Ansible will retry the connection as root
+# If yes, the Playbook will be executed as user "devops"
+# This removes the need to manually run a "bootstrap" playbook the first time 
+# you bring the infrastructure up.
+- hosts: mbiosphere
+  gather_facts: no
+  tasks:
+    - name: Check Provisioning Status
+      wait_for_connection:
+        connect_timeout: 1
+        timeout: 3
+      register: connection
+      ignore_errors: yes
+      vars:
+        ansible_ssh_user: "{{ deploy_user_name }}"
+    - name: Bootstrap
+      debug:
+        msg: "Cannot connect as user '{{ deploy_user_name }}'. The node needs to be bootstrapped"
+      when: connection.failed
+    - name: Change SSH User to root
+      set_fact:
+        deploy_user_name: root
+      when: connection.failed
+    - name: Check Bootsrapping Status
+      wait_for_connection:
+        connect_timeout: 1
+        timeout: 3
+      register: connection2
+      ignore_errors: yes
+      vars:
+        ansible_ssh_user: root
+      when: connection.failed
+    - name: Bootstrap
+      debug:
+        msg: "{% if connection2.failed %}Cannot connect as user 'root'. Bootstrapping failed. Please contact an Administrator{% else %}Starting Bootstrapping{% endif %}"
+      when: connection.failed
+
+# Create the deployment user and authorize our SSH Keys
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  tasks:
+    - name: Add User devops
+      user:
+        name: devops
+        groups: sudo
+        state: present
+        append: yes
+        shell: /bin/bash
+
+    - name: Set up authorized keys for user devops
+      authorized_key: user=devops key="{{item}}"
+      with_file:
+        - .ssh/id_rsa.pub
+
+    - name: Set up authorized keys for user root
+      authorized_key: user=root key="{{item}}"
+      with_file:
+        - .ssh/id_rsa.pub
+
+    - name: Set root SSH keys
+      copy:
+        src=.ssh/
+        dest=/root/.ssh/
+        owner=root
+        group=root
+        mode=0600
+
+    - name: Enable passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+# Basics
+# - apt / pip dependencies
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  tasks:
+    - name: Install apt dependencies
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-setuptools
+          - git
+        state: latest
+        update_cache: True
+    - name: Install pip dependencies
+      pip:
+        name:
+          - jsondiff
+          - pyyaml
+          - docker
+
+# NTP & Localization
+# Config in group_vars/all
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  roles:
+    - geerlingguy.ntp
+    - robertdebock.locale
+
+# OS Hardening
+# https://github.com/dev-sec/linux-baseline
+# https://github.com/dev-sec/ansible-os-hardening
+#
+# SSH Hardening
+# https://github.com/dev-sec/ansible-ssh-hardening
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  roles:
+    - geerlingguy.security
+    - geerlingguy.firewall
+    - dev-sec.os-hardening
+    - dev-sec.ssh-hardening
+  vars:
+    sysctl_overwrite:
+      # Enable IPv4 traffic forwarding
+      # This is needed for Docker
+      net.ipv4.ip_forward: 1
+
+# Install Docker & Toolchain
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  roles:
+    - geerlingguy.docker
+
+# Update users "devops" and "docker" (typically already existing)
+# We can't add any user to group "docker" before Docker is installed
+# Adding our deploy user to the docker group enables it to control
+# Docker without elevated privileges (sudo)
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  tasks:
+    - name: Add User "devops"
+      user:
+        name: devops
+        groups: sudo,docker
+        state: present
+        append: yes
+        shell: /bin/bash
+    
+    - name: Add User "docker"
+      user:
+        name: docker
+        group: docker
+        state: present
+        append: yes
+        shell: /bin/bash
+
+    - name: Set up authorized keys for user devops
+      authorized_key: user=devops key="{{item}}"
+      with_file:
+        - .ssh/id_rsa.pub
+
+    # Add the SSH Key in .ssh/id_rsa to user "docker"
+    # This enables GitLab to connect to the Docker Socket on any Swarm-Manager
+    # via SSH.
+    # Example:
+    # DOCKER_HOST=ssh://docker@swarm-manager1 docker ps
+    - name: Set up authorized keys for user docker
+      authorized_key: user=docker key="{{item}}"
+      with_file:
+        - .ssh/id_rsa.pub

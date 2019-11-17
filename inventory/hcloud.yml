@@ -1,0 +1,24 @@
+plugin: hcloud
+# Tokens can be obtained/renewed here: 
+# https://console.hetzner.cloud/projects/298976/access/tokens
+#token: "{{ hcloud_token }}"
+token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
+locations:
+  - nbg1
+  - fsn1
+types:
+  - cx11
+  - cx41
+keyed_groups:
+  - key: location
+    separator: ""
+  - key: image_os_flavor
+    separator: ""
+  - key: labels
+    separator: ""
+  - key: status
+    separator: ""
+groups:
+  staging: "labels['environment'] == 'staging'"
+  production: "labels['environment'] == 'production'"
+  swarm: "labels['type'] == 'swarm'"
