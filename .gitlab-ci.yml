@@ -41,7 +41,7 @@ variables:
   chmod 700 ~/.ssh
   [[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
   docker -H ssh://${SWARM_USER}@${SWARM_HOST} login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  docker -H ssh://${SWARM_USER}@${SWARM_HOST} stack deploy --with-registry-auth --prune -c docker-stack.yml $DEPLOYMENT
+  docker -H ssh://${SWARM_USER}@${SWARM_HOST} stack deploy --with-registry-auth --prune -c ci/docker-stack.yml $DEPLOYMENT
 
 
 before_script:
@@ -112,7 +112,7 @@ release:
   - . release_info
   - release -v
   - release changelog
-  - release commit-and-tag CHANGELOG.md release_info
+  - release commit-and-tag CHANGELOG.md
   #- release --ci-commit-tag v$RELEASE_VERSION add-download-link -n release -u $RELEASE_URL -d "$RELEASE_DESC"
   only:
   - master
