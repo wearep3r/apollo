@@ -47,13 +47,6 @@ before_script:
   # Source Environment Variables from .env
   - export $(grep -v '^#' .env | xargs)
 
-# Lint Ansible files
-# ansible:
-#   stage: lint
-#   image: yokogawa/ansible-lint
-#   script:
-#     - sh -c 'ansible-lint --force-color *.yml'
-
 # Build
 # build:
 #   stage: build
@@ -109,6 +102,14 @@ build:
   artifacts:
     paths:
     - build_info
+
+# Lint Ansible files
+ansible:
+  stage: lint
+  image: $CONTAINER_TEST_IMAGE
+  script:
+    - ansible-lint .
+  allow_failure: true
 
 release:
   stage: release

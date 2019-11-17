@@ -8,6 +8,7 @@ RUN apk add --no-cache --virtual build-dependencies git build-base libffi-dev op
     && pip install --no-cache-dir git+https://github.com/ansible/ansible.git@devel \
     hcloud \
     jsondiff \
+    ansible-lint \
     && ansible-galaxy install -r requirements.yml \
     && apk del build-dependencies
 
