@@ -101,7 +101,7 @@ test:stack:
 
 # Lint Ansible files
 test:ansible:
-  stage: lint
+  stage: test
   image: $CONTAINER_TEST_IMAGE
   script:
     - ansible-lint .
