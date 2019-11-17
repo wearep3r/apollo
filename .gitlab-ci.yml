@@ -81,6 +81,9 @@ test:
     - docker-compose -f ci/docker-stack.yml config --quiet
     #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
   coverage: '/[\d\.]+\%\s*$/'
+  only:
+    - master
+
 
 version:
   stage: version
