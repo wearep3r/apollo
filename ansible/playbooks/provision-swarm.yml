@@ -62,14 +62,14 @@
       when: "'swarm_manager_active' not in groups"
       register: bootstrap_first_node
 
-    - name: Add initialized host to swarm_manager_active Group
+    - name: Add initialized host to swarm_manager_active Group # noqa 403
       add_host:
         hostname: "{{ play_hosts[0] }}"
         groups: swarm_manager_active
       when: bootstrap_first_node.changed
       register: swarm_manager_active
 
-    - name: Set Node Labels
+    - name: Set Node Labels # noqa 403
       shell: >
         docker node update --label-add role=manager {{ inventory_hostname }}
       when: swarm_manager_active.changed
@@ -81,15 +81,14 @@
   vars:
     iface: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
   tasks:
-    - name: Retrieve Swarm Manager Token
-      shell: docker swarm join-token -q manager
+    - name: Retrieve Swarm Manager Token 
+      shell: docker swarm join-token -q manager # noqa 305
       register: swarm_manager_token
       changed_when: False
     - name: Retrieve Swarm Worker Token
       shell: docker swarm join-token -q worker
       register: swarm_worker_token
       changed_when: False
-      
     # This list will be used to feed new nodes an IP address
     # to join the Swarm (see below)
     - name: Populate list of Manager IPs
