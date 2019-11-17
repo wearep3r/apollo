@@ -1,9 +1,8 @@
 # Stages
 stages:
-  - lint
-  - test
   - version
   - build
+  - test
   - release
   - deploy
 
@@ -65,17 +64,6 @@ before_script:
 #   only:
 #     - master
 
-# Testing Infrastructure Stack
-test:
-  stage: test
-  image: tiangolo/docker-with-compose
-  script:
-    - docker-compose -f ci/docker-stack.yml config --quiet
-    #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
-  coverage: '/[\d\.]+\%\s*$/'
-  only:
-    - master
-
 version:
   stage: version
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
@@ -103,8 +91,16 @@ build:
     paths:
     - build_info
 
+test:stack:
+  stage: test
+  image: tiangolo/docker-with-compose
+  script:
+    - docker-compose -f ci/docker-stack.yml config --quiet
+    #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
+  allow_failure: true
+
 # Lint Ansible files
-ansible:
+test:ansible:
   stage: lint
   image: $CONTAINER_TEST_IMAGE
   script:
@@ -115,6 +111,10 @@ release:
   stage: release
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
   script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+    - docker push $CONTAINER_RELEASE_IMAGE
     - rm -f release_info
     - mv build_info release_info
     - . release_info
