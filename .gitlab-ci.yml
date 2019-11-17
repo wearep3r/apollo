@@ -89,7 +89,6 @@ version:
     - release test-git || true
     - release test-api
     - release -v
-    - release help
     - release next-version --allow-current > .next-version
     - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
     - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
@@ -114,8 +113,6 @@ release:
   - release changelog
   - release commit-and-tag CHANGELOG.md
   #- release --ci-commit-tag v$RELEASE_VERSION add-download-link -n release -u $RELEASE_URL -d "$RELEASE_DESC"
-  only:
-  - master
 
 
 # release:
