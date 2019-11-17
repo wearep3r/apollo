@@ -30,7 +30,6 @@ The Playbooks used to build and maintain this infrastructure have some dependenc
 
 ### Local Dependencies
 - `sudo pip install hcloud`
-- `sudo pip install jsondiff`
 - Install Requirements: `ansible-galaxy install -r requirements.yml`
 
 ## Overview
