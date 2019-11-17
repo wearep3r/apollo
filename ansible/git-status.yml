@@ -7,20 +7,22 @@
   gather_facts: False
   tasks:
     - name: Get current Git Branch
-      command: git rev-parse --abbrev-ref HEAD
+      shell: git rev-parse --abbrev-ref HEAD warn=no # noqa 303 305
       register: git_branch
       changed_when: 'git_branch.stdout != "master"'
     - name: Abort if current Git Branch not MASTER
       fail: msg="You're on Branch {{ git_branch.stdout }}. Please switch to MASTER to continue."
       when: 'git_branch.stdout != "master"'
     - name: Get local Git Status
-      command: git rev-parse @
+      shell: git rev-parse @  warn=no # noqa 303 305
       register: git_local_status
       changed_when: False
     - name: Get remote Git Status
-      command: git rev-parse '@{u}'
+      shell: git rev-parse '@{u}'  warn=no # noqa 303
       register: git_remote_status
       changed_when: False
     - name: Check for Updates
-      fail: msg="Your Branch (local MASTER@{{ git_local_status.stdout }}) is not up-to-date (remote MASTER@{{ git_remote_status.stdout }}). Please run 'git pull'."
+      fail: msg="Your Branch (local MASTER@{{ git_local_status.stdout }}) \
+            is not up-to-date (remote MASTER@{{ git_remote_status.stdout }}). \
+            Please run 'git pull'."
       when: 'git_local_status.stdout != git_remote_status.stdout'

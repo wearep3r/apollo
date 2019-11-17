@@ -35,7 +35,9 @@
       when: connection.failed
     - name: Bootstrap
       debug:
-        msg: "{% if connection2.failed %}Cannot connect as user 'root'. Bootstrapping failed. Please contact an Administrator{% else %}Starting Bootstrapping{% endif %}"
+        msg: "{% if connection2.failed %}Cannot connect as user 'root'. \
+              Bootstrapping failed. Please contact an Administrator\
+              {% else %}Starting Bootstrapping{% endif %}"
       when: connection.failed
 
 # Create the deployment user and authorize our SSH Keys
@@ -52,12 +54,12 @@
         shell: /bin/bash
 
     - name: Set up authorized keys for user devops
-      authorized_key: user=devops key="{{item}}"
+      authorized_key: user=devops key="{{ item }}"
       with_file:
         - .ssh/id_rsa.pub
 
     - name: Set up authorized keys for user root
-      authorized_key: user=root key="{{item}}"
+      authorized_key: user=root key="{{ item }}"
       with_file:
         - .ssh/id_rsa.pub
 
@@ -155,7 +157,6 @@
         state: present
         append: yes
         shell: /bin/bash
-    
     - name: Add User "docker"
       user:
         name: docker
@@ -163,9 +164,8 @@
         state: present
         append: yes
         shell: /bin/bash
-
     - name: Set up authorized keys for user devops
-      authorized_key: user=devops key="{{item}}"
+      authorized_key: user=devops key="{{ item }}"
       with_file:
         - .ssh/id_rsa.pub
 
@@ -175,6 +175,6 @@
     # Example:
     # DOCKER_HOST=ssh://docker@swarm-manager1 docker ps
     - name: Set up authorized keys for user docker
-      authorized_key: user=docker key="{{item}}"
+      authorized_key: user=docker key="{{ item }}"
       with_file:
         - .ssh/id_rsa.pub

@@ -89,6 +89,7 @@ ansible-playbook -u root -i staging configure-node.yml
 - https://github.com/thetechnick/hcloud-ansible/blob/master/docs/hcloud_server.md
 - https://beneke.cc/blog/hetzner-cloud-ansible-inventory-done-right
 - Cloud DNS: https://docs.ansible.com/ansible/latest/modules/cloudflare_dns_module.html
+- Traefik 2.0: https://github.com/trajano/trajano-swarm/blob/master/edge.yml
 
 
 # Versioning
