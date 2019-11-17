@@ -13,4 +13,5 @@ RUN apk add --no-cache --virtual build-dependencies git build-base libffi-dev op
     && apk del build-dependencies
 
 COPY . .
+RUN chmod 700 ./
 CMD ["ansible", "-v"]
