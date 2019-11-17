@@ -84,37 +84,45 @@ test:
   only:
     - master
 
-
 version:
   stage: version
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
   script:
     - release test-git || true
     - release test-api
-    - release -v
     - release next-version --allow-current > .next-version
+  artifacts:
+    paths:
+    - .next-version
+  except:
+    - tags
+
+build:
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build --pull -t $CONTAINER_TEST_IMAGE .
+    - docker push $CONTAINER_TEST_IMAGE
     - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
     - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
     - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
     - echo "RELEASE_VERSION=$(<.next-version)" >> build_info
   artifacts:
     paths:
-    - .next-version
     - build_info
-  except:
-    - tags
-
 
 release:
   stage: release
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
   script:
-  - rm -f release_info
-  - mv build_info release_info
-  - . release_info
-  - release -v
-  - release changelog
-  - release commit-and-tag CHANGELOG.md
+    - rm -f release_info
+    - mv build_info release_info
+    - . release_info
+    - release -v
+    - release changelog 
+    - release commit-and-tag CHANGELOG.md release_info
+  only:
+    - master
   #- release --ci-commit-tag v$RELEASE_VERSION add-download-link -n release -u $RELEASE_URL -d "$RELEASE_DESC"
 
 
