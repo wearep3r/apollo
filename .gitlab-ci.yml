@@ -7,14 +7,13 @@ stages:
   - release
   - deploy
 
+services:
+  - docker:19.03.1-dind
 
 # Do not use "latest" here as it makes rollbacks and
 # error tracking harder
 #image: docker:19.03.2
 image: tiangolo/docker-with-compose
-
-#services:
-  #- docker:dind
 
 # enable per-job and per-branch caching
 cache:
