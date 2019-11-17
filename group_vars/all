@@ -3,21 +3,35 @@
 ##################
 
 # If using HETZNER Inventory, these will be the nodes deployed to HETZNER Cloud
+# Don't change intendation! this is valid YAML
 nodes:
     # 3 Managers
     manager:
-        - manager-1
-        - manager-2
-        - manager-3
+        -
+            name: manager-1
+            location: nbg1
+        -
+            name: manager-2
+            location: fsn1
+        -
+            name: manager-3
+            location: nbg1
     # 3 Workers
     worker:
-        - worker-1
-        - worker-2
-        - worker-3
+        -
+            name: worker-1
+            location: fsn1
+        -
+            name: worker-2
+            location: nbg1
     # 2 Runners
     runner:
-        - runner-1
-        - runner-2
+        -
+            name: runner-1
+            location: fsn1
+        -
+            name: runner-2
+            location: nbg1
 
 ##########
 # DOCKER #
@@ -26,6 +40,12 @@ nodes:
 # Networks
 mbio_networks:
   - traefik
+
+############
+# STORIDGE #
+############
+
+storidge_version: "3047"
 
 ################
 # INTEGRATIONS #

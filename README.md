@@ -1,11 +1,23 @@
-# DevOps for MBIO Cloud
+DevOps for MBIO Cloud
+===
+
 This README will hold an overview of the contents of this repo. This is **WIP**.
+
+# Table of Contents
+1. [Overview](#example)
+2. [Requirements](#example2)
+3. [Get Started](#fourth-examplehttpwwwfourthexamplecom)
+4. [Ansible](#third-example)
+5. [GitLab CI](#fourth-examplehttpwwwfourthexamplecom)
+6. [Versioning](#fourth-examplehttpwwwfourthexamplecom)
+7. [Changelog](#fourth-examplehttpwwwfourthexamplecom)
 
 
 # Ansible
 ## References
 - Docker Swarm: https://thisendout.com/2016/09/13/deploying-docker-swarm-with-ansible/
 - Swarm + CI: https://medium.com/@ju5t_/how-were-using-gitlab-to-test-and-deploy-our-application-s-to-docker-swarm-e3f556dbf8fe
+
 ## Installation
 We use the Development Version of Ansible to use the latest HCLOUD modules:
 
@@ -28,6 +40,9 @@ Ansible is an SSH-based orchestration software used in terms of **Immutable Infr
 
 ### Inventory
 Ansible works with static and dynamic inventories. For now, we're using static inventories in form of *files* (staging.yml, production.yml, development.yml) where all nodes our infrastructure is composed of will be listed alongside any meta-info we have about them.
+
+#### List Inventory HETZNER
+`ansible-inventory -i hcloud.yml --list`
 
 ### Playbooks
 Ansible can be told to apply a set of instructions (called **Playbook**) to these nodes. The procedure is always the same:
@@ -54,8 +69,6 @@ This should provision the node with the tasks configured in `configure-node.yml`
 
 Within this repository, Ansible has a dedicated `ansible.cfg` that, if Ansible is used from within this directory, will be favored over your local ansible.cfg. Adjust according to you needs.
 
-**FUN FACT**: Executing this as of now (2019-10-10 14:50 UTC) doesn't work due to a security issue with Docker repositories changing labels and the APT Security Measures preventing updates from happening due to this: https://github.com/docker/for-linux/issues/812
-
 ## Provision Docker Node
 From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
 
@@ -67,7 +80,19 @@ ansible-playbook -u root -i staging configure-node.yml
 ```
 
 ### For Staging
-`ansible-playbook -i staging configure-node.yml`
+`ansible-playbook provision.yml`
 
-### For Production
-`ansible-playbook -i production configure-node.yml`
+
+# Resources
+- https://medium.com/@ju5t_/how-were-using-gitlab-to-test-and-deploy-our-application-s-to-docker-swarm-e3f556dbf8fe
+- # Resources
+- https://github.com/mwiget/hetzner-ansible
+- https://github.com/thetechnick/hcloud-ansible/blob/master/docs/hcloud_server.md
+- https://beneke.cc/blog/hetzner-cloud-ansible-inventory-done-right
+- Cloud DNS: https://docs.ansible.com/ansible/latest/modules/cloudflare_dns_module.html
+
+
+# Versioning
+- https://juhani.gitlab.io/go-semrel-gitlab/get-started/
+- Semantic Versioning
+- GitLab Access Token: hxMptRX7KeHsqyxYR3Uf
