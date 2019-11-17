@@ -20,7 +20,7 @@
       register: swarm_status
       changed_when: False
     - name: Save Swarm Status
-      set_fact: 
+      set_fact:
         swarm: "{{ swarm_status }}"
 
     # Create dynamic in-memory groups "swarm_manager_active"
@@ -40,7 +40,7 @@
       register: swarm_status
       changed_when: False
     - name: Save Worker Swarm Status
-      set_fact: 
+      set_fact:
         swarm: "{{ swarm_status }}"
 
     # Create dynamic in-memory groups "swarm_worker_active"
