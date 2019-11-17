@@ -1,23 +1,101 @@
-# Functionality
-# 
+##################
+# INFRASTRUCTURE #
+##################
+
+# If using HETZNER Inventory, these will be the nodes deployed to HETZNER Cloud
+# Don't change intendation! this is valid YAML
+nodes:
+    # 3 Managers
+    manager:
+        -
+            name: manager-1
+            location: nbg1
+        -
+            name: manager-2
+            location: fsn1
+        -
+            name: manager-3
+            location: nbg1
+    # 3 Workers
+    worker:
+        -
+            name: worker-1
+            location: fsn1
+        -
+            name: worker-2
+            location: nbg1
+    # 2 Runners
+    runner:
+        -
+            name: runner-1
+            location: fsn1
+        -
+            name: runner-2
+            location: nbg1
+
+##########
+# DOCKER #
+##########
+
+# Networks
+mbio_networks:
+  - traefik
+
+############
+# STORIDGE #
+############
+
+storidge_version: "3047"
+
+################
+# INTEGRATIONS #
+################
+
+# HETZNER
+hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
+
+# Sentry
+sentry_token: 9791fba31e0c4da9b66261a9ec8cc682a9096ebbcfca4798bef0bfe4b675970b
+
+# Cloudflare (DNS)
+cf_api_email: cloud@micro-biolytics.com
+cf_api_key: _aUw-i3wWGTh1bmYJEiVUl5A_zJ_cAB7tZFK24bl
+
+# LetsEncrypt
+letsencrypt_mail: cloud@micro-biolytics.com
+
+#################
+# Functionality #
+#################
+
 # Check if local Git Repository is on branch MASTER and up-to-date
+# If not, stop playbook execution
+# This is an additional security measure to ensure no untested infrastructure code
+# is deployed from development to production
+# If "true", Ansible only executes its tasks when on branch Master and everything is up-to-date
+# If "false", nothing will stop you from messing up the entire infrastructure with development code ;)
 check_git: False
 
-# SSH Key to use to connect to managed nodes
+# SSH Key used to connect to managed nodes
+# ATTENTION: Don't simply exchange the key 
+# Key-Rollovers need to be prepared with additional code
 ansible_ssh_private_key_file: .ssh/id_rsa
 
-# Python interpreter to use on managed nodes
+# Python interpreter used on managed nodes
 ansible_python_interpreter: /usr/bin/python3
 
 # NTP Settings
+# This can be changed to Europe/Berlin for german time 
+# TIP: when working with international clients, Etc/UTC makes the most sense
+# Everything logged by the managed nodes will then be timestamped with World Time (+0) 
+# and can then be translated to other timezones by those systems (e.g. Sentry) that need to 
 ntp_timezone: Etc/UTC
 
 # Locale Settings
+# Can be changed to de_DE.UTF-8 if needed 
+# Actually only relevant for direct Console access
+# SSH connections usually forwarded local settings 
 locale_lang: en_US.UTF-8
 
 # Python Settings
 pip_package: python3-pip
-
-# HETZNER Settings
-hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
-letsencrypt_mail: info@peter.saarland

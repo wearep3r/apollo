@@ -4,8 +4,12 @@
   # See group_vars/all
   when: check_git == True
 # Create/Update Nodes on HETZNER Cloud
-- import_playbook: provision-hetzner.yml
+- import_playbook: playbooks/provision-hetzner.yml
 # Configure each Node: install software, set config, harden security 
-- import_playbook: provision-node.yml
+- import_playbook: playbooks/provision-node.yml
+# Bootstrap/Update GitLab Runners
+- import_playbook: playbooks/provision-runner.yml
 # Bootstrap/Update the Swarm
-- import_playbook: provision-swarm.yml
+- import_playbook: playbooks/provision-swarm.yml
+# Bootstrap/Update Storidge
+#- import_playbook: provision-storidge.yml

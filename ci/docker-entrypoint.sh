@@ -6,7 +6,7 @@
 
 #! /bin/bash
 set -e
-if [ "$1" = 'miradock' ]; then
+if [ "$1" = 'ansible' ]; then
     # Do bootstrapping, init, etc
     # Test for additional conditions (e.g. "is the database already up?"; useful for DB migrations or services that can't start properly without DB connection)
     # This helps to achieve coordinated container-startups (in a Swarm, 'depends_on' doesn't work and can be implemented with the Entrypoint)

@@ -8,6 +8,7 @@ locations:
   - fsn1
 types:
   - cx11
+  - cx41
 keyed_groups:
   - key: location
     separator: ""
