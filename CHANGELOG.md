@@ -6,6 +6,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.1.1
+2019-11-18
+
+### Fixes
+
+- **ci:** Ansible Linting and Testing (f5958a6ca24ac33414bc9e1ad9120335019515d5)
+- **ci:** Ansible Linting and Testing (29ba89c26a7164b4ab07db178b05aee5efdbec81)
+- **ansible:** Changed directory stucture (062748895052a81f9e35ad8d220a9ecfce4de620)
+- **ci:** DIND TLS missing (1ff5bdb04ac4f6a9f14a6ef36e0f1be20cc09164)
+- **ci:** Remove DOCKER_BUILDKIT (3d8f9f041b98bceff902ffa51c1a47a85c9bab20)
+- **ci:** Fix Dockerfile (7b3621aeea4fd3c99416d6ebeba9736b0ae76693)
+- **ci:** Fix Ansible world-writable issue (d1abf223907029174029a73ab3cf75cbe0cb5f3e)
+- **ci:** Fix some Ansible Lint issues (7b69b5f1d0f6d218e812c2f5b691af9d137a0e4f)
+- **ci:** Leverage Docker build cache (8c10dbe1a8b06e9c046686aace6a5f383b0b4625)
+- **ci:** Fix some Ansible Lint issues (d4fa5e7b3ec8855e25b99bd4d3c96935a89cbe53)
+- **ci:** Fix Image Release (35cef8b542da0640bd2babff88997f080e84bddf)
+- **ci:** Fix Docker Cache (aa2ff807e50627721b5c6bf531919956278b4308)
+- **ci:** Fix Docker Cache (7d8f9b0e780011cb39372a4b2ecfa1bd7a27b39b)
+- **ci:** Fix Docker Cache (22efdefb36f92ca42128c3f708046d1494f428b2)
+- **ci:** Fix Docker Cache (8ef3be41c3e9e2dfb91d56a4ad42f333ec8f5aec)
+- **ci:** Release Image order (117c2b9d2be8d48ec6a4e502408f940b85392a97)
+- **ci:** Fix Ansible Linting (1a500b080604897964262ef56afacde1a9fa33cd)
+
 ## 0.1.0
 2019-11-17
 
