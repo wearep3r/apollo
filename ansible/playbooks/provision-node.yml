@@ -56,16 +56,16 @@
     - name: Set up authorized keys for user devops
       authorized_key: user=devops key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
 
     - name: Set up authorized keys for user root
       authorized_key: user=root key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
 
     - name: Set root SSH keys
       copy:
-        src=.ssh/
+        src=../../.ssh/
         dest=/root/.ssh/
         owner=root
         group=root
@@ -111,6 +111,17 @@
   roles:
     - geerlingguy.ntp
     - robertdebock.locale
+
+# Prepare Firewall for Swarm Communication
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  tasks:
+    - name: Allow connections from Swarm hosts
+      set_fact: 
+        firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' + ansible_default_ipv4.address + ' -j ACCEPT' ] }}"
+      with_items:  groups['mbiosphere'] 
 
 # OS Hardening
 # https://github.com/dev-sec/linux-baseline
@@ -167,7 +178,7 @@
     - name: Set up authorized keys for user devops
       authorized_key: user=devops key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
 
     # Add the SSH Key in .ssh/id_rsa to user "docker"
     # This enables GitLab to connect to the Docker Socket on any Swarm-Manager
@@ -177,4 +188,4 @@
     - name: Set up authorized keys for user docker
       authorized_key: user=docker key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub

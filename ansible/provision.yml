@@ -4,7 +4,7 @@
 # @action provision # this action describes the installation  
 ---
 # Check git Status
-- import_playbook: git-status.yml
+- import_playbook: playbooks/git-status.yml
   # See group_vars/all
   when: check_git
 # Create/Update Nodes on HETZNER Cloud
