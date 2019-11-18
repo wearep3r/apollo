@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.1.3
+2019-11-18
+
+### Fixes
+
+- **ci:** Remove Traefik Healthcheck (0d36852fd8079e12fb3382225ae89e26dd551c5c)
+
 ## 0.1.2
 2019-11-18
 
