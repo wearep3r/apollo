@@ -20,7 +20,6 @@ services:
       --acme
       --acme.email=${LETSENCRYPT_MAIL}
       --acme.storage="/etc/traefik/acme.json"
-      --acme.storage="traefik/acme/account"
       --acme.entryPoint=https
       --acme.dnsChallenge.provider=cloudflare
       --acme.dnsChallenge.resolvers='1.1.1.1:53'
@@ -50,12 +49,12 @@ services:
     environment:
       - CF_API_EMAIL=${CF_API_EMAIL}
       - CF_API_KEY=${CF_API_KEY}
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ping || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 45s
+    # healthcheck:
+    #   test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ping || exit 1"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 45s
     deploy:
       mode: replicated
       replicas: 1
