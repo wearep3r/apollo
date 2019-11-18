@@ -93,7 +93,7 @@
           - python3-pip
           - python3-setuptools
           - git
-        state: latest
+        state: present
         update_cache: True
     - name: Install pip dependencies
       pip:
