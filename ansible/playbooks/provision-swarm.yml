@@ -19,6 +19,8 @@
         docker info | egrep 'Swarm: ' | cut -d ' ' -f3
       register: swarm_status
       changed_when: False
+      args:
+        executable: /bin/bash
     - name: Save Swarm Status
       set_fact:
         swarm: "{{ swarm_status }}"
@@ -39,6 +41,8 @@
         docker info | egrep 'Swarm: ' | cut -d ' ' -f3
       register: swarm_status
       changed_when: False
+      args:
+        executable: /bin/bash
     - name: Save Worker Swarm Status
       set_fact:
         swarm: "{{ swarm_status }}"

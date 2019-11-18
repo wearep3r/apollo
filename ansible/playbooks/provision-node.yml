@@ -121,7 +121,15 @@
   tasks:
     - name: Initialize List
       set_fact:
-        firewall_additional_rules: []
+        firewall_additional_rules:
+          - "iptables -N DOCKER"
+          # Masquerade outbound connections from containers
+          - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
+          # Accept established connections to the docker containers
+          - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+          # Allow docker containers to communicate with themselves & outside world
+          - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
+          - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
     - name: Allow connections from Swarm hosts
       set_fact: 
         firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
@@ -144,6 +152,18 @@
       # Enable IPv4 traffic forwarding
       # This is needed for Docker
       net.ipv4.ip_forward: 1
+
+# Prepare Firewall for Swarm Communication
+# This is fed to geerlingguy.firewall in the next task
+# - hosts: mbiosphere
+#   become: true
+#   remote_user: "{{ deploy_user_name }}"
+#   gather_facts: no
+#   tasks:
+#     - name: Restart Docker
+#       service:
+#         name: docker
+#         state: restarted
 
 # Install Docker & Toolchain
 - hosts: mbiosphere

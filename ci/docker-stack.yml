@@ -1,43 +1,7 @@
 version: '3.7'
 
 services:   
-  traefik-init:
-      image: traefik:1.7
-      command:
-         - "traefik"
-         - "storeconfig"
-         - "--api"
-         - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
-         - "--entrypoints=Name:https Address::443 TLS"
-         - "--defaultentrypoints=http,https"
-         - "--acme"
-         - "--acme.storage='traefik/acme/account'"
-         - "--acme.entryPoint=https"
-         - "--acme.httpChallenge.entryPoint=http"
-         - "--acme.onHostRule=false"
-         - "--acme.acmelogging=true"
-         - "--acme.onDemand=false"
-         - "--acme.email=roman@whatever.io"
-         - "--docker"
-         - "--docker.swarmMode"
-         - "--docker.domain=swarm.whatever.io"
-         - "--docker.watch"
-         - "--consul"
-         - "--consul.endpoint=consul:8500"
-         - "--consul.prefix=traefik"
-         - "--accesslogsfile=/dev/stdout"
-      networks:
-         - traefik
-      deploy:
-         placement:
-            constraints:
-              - node.role == manager
-         restart_policy:
-            condition: on-failure
-      depends_on:
-        - consul
-
-  traefik-init:
+  traefik:
     image: traefik:v1.7
     command: > 
       --docker
