@@ -131,8 +131,9 @@
           - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
           - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
     - name: Allow connections from Swarm hosts
-      set_fact: 
-        firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
+      set_fact:
+        firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
+          + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
       with_items:  "{{ groups['mbiosphere'] }}"
 
 # OS Hardening
