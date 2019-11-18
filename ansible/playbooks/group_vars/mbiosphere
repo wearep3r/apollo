@@ -17,8 +17,8 @@ firewall_allowed_tcp_ports:
     - "443" # HTTPS
     # Docker Swarm
     # https://docs.docker.com/engine/swarm/swarm-tutorial/#open-protocols-and-ports-between-the-hosts
-    - "2377" # Swarm
-    - "7946" # Swarm
+    #- "2377" # Swarm
+    #- "7946" # Swarm
     # Storidge
     # https://docs.storidge.com/prerequisites/ports.html
     - "3260" # Storidge
@@ -31,3 +31,4 @@ firewall_allowed_tcp_ports:
 firewall_allowed_udp_ports:
     - "7946"
     - "4789"
+firewall_additional_rules: []

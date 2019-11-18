@@ -3,7 +3,7 @@ version: '3.7'
 services:   
   traefik:
     image: traefik:v1.7
-    command: >
+    command: > 
       --docker
       --docker.swarmmode
       --docker.watch
@@ -14,11 +14,12 @@ services:
       --entrypoints='Name:https Address::443 TLS'
       --metrics
       --metrics.prometheus
-      --consul
-      --consul.endpoint="consul-leader:8500"
+      #--consul
+      #--consul.endpoint="consul-leader:8500"
+      #--consul.prefix=traefik
       --acme
       --acme.email=${LETSENCRYPT_MAIL}
-      #--acme.storage="/etc/traefik/acme.json"
+      --acme.storage="/etc/traefik/acme.json"
       --acme.storage="traefik/acme/account"
       --acme.entryPoint=https
       --acme.dnsChallenge.provider=cloudflare
@@ -60,13 +61,11 @@ services:
       replicas: 1
       placement:
         constraints: [node.role == manager]
-        #preferences:
-        #  - spread: node.id
       update_config:
         parallelism: 1
         delay: 60s
-        monitor: 30s
-        order: start-first
+        monitor: 60s
+        order: stop-first
         failure_action: rollback
       restart_policy:
         condition: on-failure

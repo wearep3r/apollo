@@ -56,16 +56,16 @@
     - name: Set up authorized keys for user devops
       authorized_key: user=devops key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
 
     - name: Set up authorized keys for user root
       authorized_key: user=root key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
 
     - name: Set root SSH keys
       copy:
-        src=.ssh/
+        src=../../.ssh/
         dest=/root/.ssh/
         owner=root
         group=root
@@ -112,12 +112,31 @@
     - geerlingguy.ntp
     - robertdebock.locale
 
+# Prepare Firewall for Swarm Communication
+# This is fed to geerlingguy.firewall in the next task
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: yes
+  tasks:
+    - name: Initialize List
+      set_fact:
+        firewall_additional_rules:
+          - "iptables -N DOCKER"
+          # Masquerade outbound connections from containers
+          - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
+          # Accept established connections to the docker containers
+          - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+          # Allow docker containers to communicate with themselves & outside world
+          - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
+          - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
+    - name: Allow connections from Swarm hosts
+      set_fact:
+        firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
+          + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
+      with_items:  "{{ groups['mbiosphere'] }}"
+
 # OS Hardening
-# https://github.com/dev-sec/linux-baseline
-# https://github.com/dev-sec/ansible-os-hardening
-#
-# SSH Hardening
-# https://github.com/dev-sec/ansible-ssh-hardening
 - hosts: mbiosphere
   become: true
   remote_user: "{{ deploy_user_name }}"
@@ -125,13 +144,27 @@
   roles:
     - geerlingguy.security
     - geerlingguy.firewall
-    - dev-sec.os-hardening
-    - dev-sec.ssh-hardening
+    - dev-sec.os-hardening # https://github.com/dev-sec/ansible-os-hardening
+    - dev-sec.ssh-hardening # https://github.com/dev-sec/ansible-ssh-hardening
   vars:
-    sysctl_overwrite:
+    firewall_additional_rules: hostvars[inventory_hostname]['firewall_additional_rules'] # geerlingguy.firewall
+    security_ssh_permit_root_login: yes # geerlingguy.security
+    sysctl_overwrite: # dev-sec.os-hardening
       # Enable IPv4 traffic forwarding
       # This is needed for Docker
       net.ipv4.ip_forward: 1
+
+# Prepare Firewall for Swarm Communication
+# This is fed to geerlingguy.firewall in the next task
+# - hosts: mbiosphere
+#   become: true
+#   remote_user: "{{ deploy_user_name }}"
+#   gather_facts: no
+#   tasks:
+#     - name: Restart Docker
+#       service:
+#         name: docker
+#         state: restarted
 
 # Install Docker & Toolchain
 - hosts: mbiosphere
@@ -167,7 +200,7 @@
     - name: Set up authorized keys for user devops
       authorized_key: user=devops key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
 
     # Add the SSH Key in .ssh/id_rsa to user "docker"
     # This enables GitLab to connect to the Docker Socket on any Swarm-Manager
@@ -177,4 +210,4 @@
     - name: Set up authorized keys for user docker
       authorized_key: user=docker key="{{ item }}"
       with_file:
-        - .ssh/id_rsa.pub
+        - ../../.ssh/id_rsa.pub
