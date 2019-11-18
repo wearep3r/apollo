@@ -1,5 +1,5 @@
 #exclude_paths:
 parseable: true
-quiet: false
+quiet: true
 use_default_rules: true
-verbosity: 1
+verbosity: 0

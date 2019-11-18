@@ -62,14 +62,14 @@
       when: "'swarm_manager_active' not in groups"
       register: bootstrap_first_node
 
-    - name: Add initialized host to swarm_manager_active Group
+    - name: Add initialized host to swarm_manager_active Group # noqa 403 503
       add_host:
         hostname: "{{ play_hosts[0] }}"
         groups: swarm_manager_active
       when: bootstrap_first_node.changed
       register: swarm_manager_active
 
-    - name: Set Node Labels
+    - name: Set Node Labels # noqa 403 503
       shell: >
         docker node update --label-add role=manager {{ inventory_hostname }}
       when: swarm_manager_active.changed
@@ -82,14 +82,13 @@
     iface: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
   tasks:
     - name: Retrieve Swarm Manager Token
-      shell: docker swarm join-token -q manager
+      shell: docker swarm join-token -q manager # noqa 305
       register: swarm_manager_token
       changed_when: False
-    - name: Retrieve Swarm Worker Token
+    - name: Retrieve Swarm Worker Token # noqa 305
       shell: docker swarm join-token -q worker
       register: swarm_worker_token
       changed_when: False
-      
     # This list will be used to feed new nodes an IP address
     # to join the Swarm (see below)
     - name: Populate list of Manager IPs
@@ -106,13 +105,13 @@
   vars:
     token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
   tasks:
-    - name: Join Manager Nodes to Cluster
+    - name: Join Manager Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['swarm_manager_ips'][0] }}:2377
-    - name: Set Node Labels
+    - name: Set Node Labels # noqa 301
       shell: >
         docker node update --label-add role=manager {{ inventory_hostname }}
 
@@ -123,22 +122,22 @@
   vars:
     token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_worker_token']['stdout'] }}"
   tasks:
-    - name: Join Worker Nodes to Cluster
+    - name: Join Worker Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['swarm_manager_ips'][0] }}:2377
-    
-    #- name: Set Node Labels
-    #  shell: >
-    #    docker node update --label-add role=worker {{ inventory_hostname }}
+
+    - name: Set Node Labels # noqa 301
+      shell: >
+        docker node update --label-add role=worker {{ inventory_hostname }}
 
 - hosts: swarm_manager_active[0]
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
-    - name: Set Worker Node Labels
+    - name: Set Worker Node Labels # noqa 301
       shell: >
           docker node update --label-add role=worker {{ hostvars[item]["ansible_hostname"] }}
       with_items: "{{ groups['worker'] }}"
