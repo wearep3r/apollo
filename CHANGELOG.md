@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.1.2
+2019-11-18
+
+### Fixes
+
+- **ci:** Restructured Ansible directories (40635166d7fd3e9d228d815b0d0f7408ee9c7a63)
+- **ci:** Changed update_config for Traefik (bd0312c1e763c275dc77bfc86227bb3e95c559bf)
+- **ci:** Changed update_config for Traefik (25048be76c7f89b4e42a41d2abb20c6e869c2d2c)
+- **ci:** Changed update_config for Traefik (2a699b45b66c15ec8f26ad419dec53c2f9a19ef5)
+- **ci:** Fix Ansible Lint (126cc42bd9c50d6498b696ea12e3839b73ad012e)
+
 ## 0.1.1
 2019-11-18
 
