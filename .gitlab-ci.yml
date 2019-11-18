@@ -113,10 +113,6 @@ release:
   stage: release
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
     - rm -f release_info
     - mv build_info release_info
     - . release_info
