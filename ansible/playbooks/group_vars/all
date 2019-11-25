@@ -38,14 +38,16 @@ nodes:
 ##########
 
 # Networks
-mbio_networks:
-  - traefik
+swarm_networks:
+  - proxy
+  - portainer
+  - consul
 
 ############
 # STORIDGE #
 ############
 
-storidge_version: "3047"
+storidge_version: "3071"
 
 ################
 # INTEGRATIONS #
@@ -58,8 +60,8 @@ hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
 sentry_token: 9791fba31e0c4da9b66261a9ec8cc682a9096ebbcfca4798bef0bfe4b675970b
 
 # Cloudflare (DNS)
-cf_api_email: cloud@micro-biolytics.com
-cf_api_key: _aUw-i3wWGTh1bmYJEiVUl5A_zJ_cAB7tZFK24bl
+cf_api_email: "cloud@micro-biolytics.com"
+cf_api_key: "0c7c9779d56df9b2cbd051aa35b7ca3801869"
 
 # LetsEncrypt
 letsencrypt_mail: cloud@micro-biolytics.com
@@ -99,3 +101,8 @@ locale_lang: en_US.UTF-8
 
 # Python Settings
 pip_package: python3-pip
+
+##########
+# CONFIG #
+##########
+base_domain: mbiosphere.com

@@ -9,8 +9,10 @@
   when: check_git
 # Create/Update Nodes on HETZNER Cloud
 - import_playbook: playbooks/provision-hetzner.yml
-# Configure each Node: install software, set config, harden security 
+# Configure each Node: install software, set config
 - import_playbook: playbooks/provision-node.yml
+# Security hardening
+- import_playbook: playbooks/harden-node.yml
 # Bootstrap/Update GitLab Runners
 - import_playbook: playbooks/provision-runner.yml
 # Bootstrap/Update the Swarm

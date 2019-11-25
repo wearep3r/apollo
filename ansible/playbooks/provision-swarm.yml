@@ -133,9 +133,9 @@
         --token={{ token }}
         {{ groups['swarm_manager_ips'][0] }}:2377
 
-    - name: Set Node Labels # noqa 301
-      shell: >
-        docker node update --label-add role=worker {{ inventory_hostname }}
+    # - name: Set Node Labels # noqa 301
+    #   shell: >
+    #     docker node update --label-add role=worker {{ inventory_hostname }}
 
 - hosts: swarm_manager_active[0]
   remote_user: "{{ deploy_user_name }}"
@@ -145,13 +145,3 @@
       shell: >
           docker node update --label-add role=worker {{ hostvars[item]["ansible_hostname"] }}
       with_items: "{{ groups['worker'] }}"
-
-- hosts: swarm_manager_active[0]
-  remote_user: "{{ deploy_user_name }}"
-  become: true
-  tasks:
-    - name: Create Mbiosphere Overlay networks
-      docker_network:
-        name: "{{ item }}"
-        driver: overlay
-      with_items: "{{ mbio_networks }}"

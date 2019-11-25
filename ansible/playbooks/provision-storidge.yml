@@ -3,32 +3,6 @@
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
-    # - name: Recursively remove directory
-    #   file:
-    #     path: /opt/storidge
-    #     state: absent
-    - name: Download Storidge
-      get_url:
-        # /u18 is for Ubuntu 18.04
-        url: ftp://download.storidge.com/pub/ce/u18/cio-{{ storidge_version }}-u18-ce.amd64.txz
-        dest: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
-        mode: '0775'
-
-    - name: Extract Storidge
-      unarchive:
-        src: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
-        dest: /usr/src
-        remote_src: yes
-        creates: /usr/src/cio-{{ storidge_version }}-u18.amd64
-    
-    - name: Symlink Storidge to /opt/storidge
-      file:
-        src: /usr/src/cio-{{ storidge_version }}-u18.amd64
-        dest: /opt/storidge
-        owner: root
-        group: root
-        state: link
-
     - name: Check Storidge is installed
       shell: command -v cio >/dev/null 2>&1
       register: cio_installed
@@ -45,35 +19,47 @@
       debug:
         var: cio_version
 
+    - name: Download Storidge
+      get_url:
+        # /u18 is for Ubuntu 18.04
+        url: ftp://download.storidge.com/pub/ce/u18/cio-{{ storidge_version }}-u18-ce.amd64.txz
+        dest: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
+        mode: '0775'
+      when: 'cio_installed.rc != 0'
+
+    - name: Extract Storidge
+      unarchive:
+        src: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
+        dest: /usr/src
+        remote_src: yes
+        creates: /usr/src/cio-{{ storidge_version }}-u18.amd64
+      when: 'cio_installed.rc != 0'
+    
+    - name: Symlink Storidge to /opt/storidge
+      file:
+        src: /usr/src/cio-{{ storidge_version }}-u18.amd64
+        dest: /opt/storidge
+        owner: root
+        group: root
+        state: link
+      when: 'cio_installed.rc != 0'
+
     - name: Install Storidge
       command: chdir=/opt/storidge ./install
+      register: cio_installer
       when: 'cio_installed.rc != 0'
       #when: "cio_version.stdout.find('v=' ~ storidge_version) == -1"
 
-- hosts: localhost
-  connection: local
-  gather_facts: False
-  user: root
-  tasks:
-    - name: Restart Managers
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ item.name }}"
-        state: restarted
-      with_items: "{{ nodes.manager }}"
-      when: 'cio_installed.rc != 0'
-    - name: Restart Workers
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ item.name }}"
-        state: restarted
-      with_items: "{{ nodes.worker }}"
-      when: 'cio_installed.rc != 0'
-    - name: Wait for Hosts to be up
+    - name: Reboot Node
+      reboot:
+        reboot_timeout: 180
+      when: "'skipped' not in cio_installer"
+
+    - name: Wait for Nodes to be fully up
       pause:
-        prompt: "Waiting for servers to become fully available"
+        prompt: "Waiting for nodes to become fully available"
         seconds: 180
-      when: 'cio_installed.rc != 0'
+      when: "'skipped' not in cio_installer"
 
 - name: Create Storidge Cluster
   hosts: manager[0]
@@ -94,6 +80,10 @@
         cioctl create --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
       register: clustertoken
       when: "jointoken.stdout == ''"
+
+    - name: Report Cluster Token
+      debug:
+        var: clustertoken
 
 - name: Join Storidge Nodes
   hosts: swarm
@@ -153,10 +143,21 @@
     - name: cioctl init
       command: "cioctl init {{ clustertoken.stdout.split('-')[1] }}"
       register: clusterinit
-      when: "clustertoken is not skipped"
+      when: "'skipped' not in clustertoken"
 
     - name: show cluster init output
       debug: var=clusterinit.stdout
 
     - name: show cluster init error
       debug: var=clusterinit.stderr
+
+- name: Cleanup Storidge Portainer
+  hosts: manager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Remove stack
+      docker_stack:
+        name: portainer
+        state: absent
