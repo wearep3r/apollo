@@ -1,0 +1,268 @@
+- hosts: manager[0]
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  tasks:
+    - name: Create Swarm Overlay networks
+      docker_network:
+        name: "{{ item }}"
+        driver: overlay
+        attachable: true
+      with_items: "{{ swarm_networks }}"
+
+    - name: Provision Traefik
+      docker_swarm_service:
+        name: traefik
+        state: present
+        mode: replicated
+        replicas: 1
+        image: traefik:v1.7.19-alpine
+        command: 
+          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=DEBUG --accessLog --api --debug --docker.domain={{ base_domain }} --logLevel=DEBUG --ping --rest --retry
+        env:
+          CF_API_EMAIL: "{{ cf_api_email }}"
+          CF_API_KEY: "{{ cf_api_key }}"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+        publish:
+          - mode: ingress
+            protocol: tcp
+            published_port: 443
+            target_port: 443
+          - mode: ingress
+            protocol: tcp
+            published_port: 80
+            target_port: 80
+        mounts:
+          - source: traefik-config-cio
+            target: /etc/traefik
+            type: volume
+            readonly: no
+            driver_config: 
+              name: "cio"
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: no
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        restart_config:
+          condition: on-failure
+        placement:
+          constraints: 
+            - node.role == manager
+      register: provision_traefik
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure traefik is up and running"
+        seconds: 30
+      when: provision_traefik.changed
+    
+    - name: Provision Portainer Agent
+      docker_swarm_service:
+        name: portainer-agent
+        state: present
+        mode: global
+        image: portainer/agent:1.5.1
+        env:
+          AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
+          CAP_HOST_MANAGEMENT: "1"
+        networks:
+          - name: "portainer"
+            aliases:
+              - "portainer"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: /var/lib/docker/volumes
+            target: /var/lib/docker/volumes
+            type: bind
+            readonly: no
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_portainer_agent
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure portainer-agent is up and running"
+        seconds: 30
+      when: provision_portainer_agent.changed
+
+    - name: Provision Portainer
+      docker_swarm_service:
+        command: /portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics
+        name: portainer-swarm
+        state: present
+        mode: replicated
+        replicas: 1
+        image: portainer/portainer:1.22.2
+        env:
+          AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
+          CAP_HOST_MANAGEMENT: "1"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "portainer"
+            aliases:
+              - "portainer"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: portainer-data-cio
+            target: /data
+            type: volume
+            readonly: no
+            driver_config: 
+              name: cio
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.role == manager
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9000"
+          traefik.frontend.rule: "Host:swarm.{{ base_domain }}"
+          traefik.backend: "portainer-swarm"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+      register: provision_portainer
+    
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure portainer is up and running"
+        seconds: 30
+      when: provision_portainer.changed
+
+    - name: Provision Consul Leader
+      docker_swarm_service:
+        command: >
+          /usr/local/bin/docker-entrypoint.sh agent -server -client=0.0.0.0 -bootstrap -ui
+        name: consul-leader
+        state: present
+        mode: replicated
+        replicas: 1
+        image: consul:1.6.2
+        env:
+          CONSUL_BIND_INTERFACE: "eth0"
+          CONSUL_LOCAL_CONFIG: '{"leave_on_terminate": true}'
+        networks:
+          - consul
+          - proxy
+        mounts:
+          - source: consul-data-leader-cio
+            target: /consul/data
+            type: volume
+            readonly: no
+            driver_config: 
+              name: cio
+        restart_config:
+          condition: on-failure
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8500"
+          traefik.frontend.rule: "Host:consul.{{ base_domain }}"
+          traefik.backend: "consul"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+      register: provision_consul_leader
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure consul-leader is up and running"
+        seconds: 30
+      when: provision_consul_leader.changed
+    
+    - name: Provision Consul Replicas
+      docker_swarm_service:
+        command: >
+         /usr/local/bin/docker-entrypoint.sh agent -server -client=0.0.0.0 -retry-join="consul-leader"
+        name: consul-replica
+        state: present
+        mode: replicated
+        replicas: 3
+        image: consul:1.6.2
+        env:
+          CONSUL_BIND_INTERFACE: "eth0"
+          CONSUL_LOCAL_CONFIG: '{"leave_on_terminate": true}'
+        networks:
+          - consul
+          - proxy
+        mounts:
+          - source: consul-data-replica-cio
+            target: /consul/data
+            type: volume
+            readonly: no
+            driver_config: 
+              name: cio
+              options:
+                volume: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 1
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.role == manager
+          preferences:
+            - spread: node.id
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8500"
+          traefik.frontend.rule: "Host:consul.{{ base_domain }}"
+          traefik.backend: "consul"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+      register: provision_consul_replica
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure consul-replica is up and running"
+        seconds: 30
+      when: provision_consul_replica.changed

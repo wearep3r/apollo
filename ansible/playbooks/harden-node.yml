@@ -1,0 +1,13 @@
+# OS Hardening
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  roles:
+    - dev-sec.os-hardening # https://github.com/dev-sec/ansible-os-hardening
+    - dev-sec.ssh-hardening # https://github.com/dev-sec/ansible-ssh-hardening
+  vars:
+    sysctl_overwrite: # dev-sec.os-hardening
+      # Enable IPv4 traffic forwarding
+      # This is needed for Docker
+      net.ipv4.ip_forward: 1
