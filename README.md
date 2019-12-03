@@ -97,3 +97,11 @@ ansible-playbook -u root -i staging configure-node.yml
 - https://juhani.gitlab.io/go-semrel-gitlab/get-started/
 - Semantic Versioning
 - GitLab Access Token: hxMptRX7KeHsqyxYR3Uf
+
+# Recommendations
+- Configure the services' logging-modules to output including timestamps. This eases debugging a lot
+- Add a LOG_LEVEL environment config option to all services to enable on-demand debugging
+- Have services output start-up info like "version", "status", "db connection", etc. In any scenario, this helps understanding if a service is doing what he should and has all dependencies (like databases, brokers, etc) fulfilled
+- Improve Error-Logging (try...catch, better messages) and -Handling
+- Add a [healthcheck URL](https://codeblog.dotsandbrackets.com/docker-health-check/) to each http-based service; this helps the swarm to know the state of a task/service and enables advanced monitoring from external apps (datadog, prometheus, etc); for non-http services a local or tcp-based socket works fine, too. The actual healthcheck command the swarm needs to use will be defined in the services stack-file
+- Improve docs on service dependencies, needed networks, minimum viable config, etc; for the full-time DevOps to optimally operate the platform, good service-based docs are a must; a good start is to design services around the [12-factor App](https://12factor.net/de/) methodology.
