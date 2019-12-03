@@ -102,7 +102,7 @@
       hcloud_server:
         api_token: "{{ hcloud_token }}"
         name: "{{ item.name }}"
-        server_type: cx11
+        server_type: cx41
         image: ubuntu-18.04
         location: "{{ item.location }}"
         ssh_keys:

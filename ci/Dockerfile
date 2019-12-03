@@ -10,6 +10,8 @@ ENV ZSH_THEME dracula
 
 WORKDIR /usr/src/app
 
+USER root
+
 COPY ansible/requirements.yml requirements.yml
 
 RUN apk add --no-cache \
