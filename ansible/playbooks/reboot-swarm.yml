@@ -1,0 +1,12 @@
+- hosts: swarm
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  tasks:
+    - name: Reboot Node
+      reboot:
+        reboot_timeout: 180
+
+    - name: Wait for Nodes to be fully up
+      pause:
+        prompt: "Waiting for nodes to become fully available"
+        seconds: 180
