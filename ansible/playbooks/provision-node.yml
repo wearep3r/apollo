@@ -114,46 +114,50 @@
 
 # Prepare Firewall for Swarm Communication
 # This is fed to geerlingguy.firewall in the next task
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: yes
-  tasks:
-    - name: Initialize List
-      set_fact:
-        firewall_additional_rules:
-          - "iptables -N DOCKER"
-          # Masquerade outbound connections from containers
-          - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
-          # Accept established connections to the docker containers
-          - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
-          # Allow docker containers to communicate with themselves & outside world
-          - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
-          - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
-          # Allow from docker_gwbridge (needed for Storidge API to respond to calls from Portainer container)
-          - "iptables -A INPUT -s 172.18.0.0/16 -j ACCEPT"
-    - name: Allow connections from Swarm hosts
-      set_fact:
-        firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
-          + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
-      with_items:  "{{ groups['mbiosphere'] }}"
+# DEPRECATED: replaced by own firewall handling;
+# Docker and iptables don't work together seemlessly so we need to manually get it going
+# Otherwise iptables will flush Docker's firewall rules upon every restart/reboot
+# and thus render cluster communication impossible
+# - hosts: mbiosphere
+#   become: true
+#   remote_user: "{{ deploy_user_name }}"
+#   gather_facts: yes
+#   tasks:
+#     - name: Initialize List
+#       set_fact:
+#         firewall_additional_rules:
+#           - "iptables -N DOCKER"
+#           # Masquerade outbound connections from containers
+#           - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
+#           # Accept established connections to the docker containers
+#           - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+#           # Allow docker containers to communicate with themselves & outside world
+#           - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
+#           - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
+#           # Allow from docker_gwbridge (needed for Storidge API to respond to calls from Portainer container)
+#           - "iptables -A INPUT -s 172.18.0.0/16 -j ACCEPT"
+#     - name: Allow connections from Swarm hosts
+#       set_fact:
+#         firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
+#           + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
+#       with_items:  "{{ groups['mbiosphere'] }}"
 
 # General Security
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
-  roles:
-    #- geerlingguy.security # Messes with Storidge
-    - geerlingguy.firewall
-  vars:
-    firewall_additional_rules: hostvars[inventory_hostname]['firewall_additional_rules'] # geerlingguy.firewall
-  handlers:
-    - name: Restart Docker service after firewall restarted
-      service:
-        name: docker
-        state: restarted
-      listen: restart firewall
+# - hosts: mbiosphere
+#   become: true
+#   remote_user: "{{ deploy_user_name }}"
+#   gather_facts: no
+#   roles:
+#     #- geerlingguy.security # Messes with Storidge
+#     - geerlingguy.firewall
+#   vars:
+#     firewall_additional_rules: hostvars[inventory_hostname]['firewall_additional_rules'] # geerlingguy.firewall
+#   handlers:
+#     - name: Restart Docker service after firewall restarted
+#       service:
+#         name: docker
+#         state: restarted
+#       listen: restart firewall
 
 # - name: Restart Docker when Firewall changed
 #   become: true
@@ -168,6 +172,50 @@
 #         state: restarted
 #       listen: restart firewall
 
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: yes
+  handlers:
+    - name: restart firewall
+      service:
+        name: firewall
+        state: restarted
+  tasks:
+    - name: Copy firewall config
+      template:
+        src: templates/iptables.conf.j2
+        dest: /etc/iptables.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart firewall
+    - name: Copy firewall service
+      template:
+        src: templates/iptables.service.j2
+        dest: /etc/systemd/system/iptables.service
+        owner: root
+        group: root
+        mode: '0744'
+      notify: restart firewall
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+    - name: Enable firewall service
+      service:
+        name: iptables
+        enabled: yes
+    - name: Remove old Firewall Config
+      file:
+        path: /etc/firewall.bash
+        state: absent
+    - name: Remove old Firewall Service
+      file:
+        path: /etc/systemd/system/firewall.service
+        state: absent
+
+
+        
 # Install Docker & Toolchain
 - hosts: mbiosphere
   become: true

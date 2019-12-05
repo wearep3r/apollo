@@ -19,27 +19,18 @@ RUN apk add --no-cache \
     curl \
     httpie \
     tar \
+    docker \
     build-base \
     libffi-dev \
     openssl-dev \
     python3-dev
-
-RUN curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" -o ~/docker.tgz \
-    && tar xzvf ~/docker.tgz \
-    && rm ~/docker.tgz \
-    && chmod +x ~/docker/* \
-    && sudo mv ~/docker/docker /usr/local/bin/ \
-    && groupadd docker -g 999 \
-    && usermod -aG docker coder \
-    && curl -fsSL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose \
-    && chmod +x ~/docker-compose \
-    && sudo mv ~/docker-compose /usr/local/bin/
     
 RUN pip install --no-cache-dir \
     git+https://github.com/ansible/ansible.git@devel \
     hcloud \
     jsondiff \
     ansible-lint \
+    docker-compose \
     && ansible-galaxy install -r requirements.yml
 
 COPY ansible .
