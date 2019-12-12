@@ -65,8 +65,8 @@
 
     - name: Set root SSH keys
       copy:
-        src=../../.ssh/
-        dest=/root/.ssh/
+        src=../../.ssh/id_rsa
+        dest=/root/id_rsa.pem
         owner=root
         group=root
         mode=0600
@@ -79,6 +79,25 @@
         line: '%sudo ALL=(ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
 
+    - name: Create A record at Cloudflare
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "{{ inventory_hostname }}.swarm"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+      register: record
+
+    # - name: Ensure SSH Host Key is known
+    #   delegate_to: localhost
+    #   become: false
+    #   lineinfile:
+    #     dest: ~/.ssh/known_hosts
+    #     create: yes
+    #     state: present
+    #     line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port|string + ' ' + inventory_hostname+'.swarm.'+base_domain) }}"
+
 # Basics
 # - apt / pip dependencies
 - hosts: mbiosphere
@@ -86,6 +105,26 @@
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   tasks:
+    - name: Check if iscsi-initiatorname backup exists
+      stat:
+        path: /etc/iscsi/initiatorname.iscsi.bak
+      register: initiatorname_bak
+    - name: Fix iscsi problem 1
+      copy:
+        src: /etc/iscsi/initiatorname.iscsi
+        dest: /etc/iscsi/initiatorname.iscsi.bak
+        remote_src: yes
+      when: initiatorname_bak.stat.exists == False 
+    - name: Fix iscsi problem 2
+      shell:
+        cmd: /sbin/iscsi-iname
+      register: iscsi_iname
+      when: initiatorname_bak.stat.exists == False 
+    - name: Copy iscsi-iname to file
+      copy:
+        content: "InitiatorName={{ iscsi_iname.stdout }}"
+        dest: /etc/iscsi/initiatorname.iscsi
+      when: initiatorname_bak.stat.exists == False 
     - name: Install apt dependencies
       apt:
         name:
@@ -111,6 +150,7 @@
   roles:
     - geerlingguy.ntp
     - robertdebock.locale
+    - geerlingguy.docker
 
 # Prepare Firewall for Swarm Communication
 # This is fed to geerlingguy.firewall in the next task
@@ -179,8 +219,11 @@
   handlers:
     - name: restart firewall
       service:
-        name: firewall
+        name: iptables
         state: restarted
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
   tasks:
     - name: Copy firewall config
       template:
@@ -196,68 +239,12 @@
         dest: /etc/systemd/system/iptables.service
         owner: root
         group: root
-        mode: '0744'
-      notify: restart firewall
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
+        mode: '0644'
+      notify: reload systemd
     - name: Enable firewall service
       service:
         name: iptables
         enabled: yes
-    - name: Remove old Firewall Config
-      file:
-        path: /etc/firewall.bash
-        state: absent
-    - name: Remove old Firewall Service
-      file:
-        path: /etc/systemd/system/firewall.service
-        state: absent
-
-
-        
-# Install Docker & Toolchain
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
-  roles:
-    - geerlingguy.docker
-
-# Update users "devops" and "docker" (typically already existing)
-# We can't add any user to group "docker" before Docker is installed
-# Adding our deploy user to the docker group enables it to control
-# Docker without elevated privileges (sudo)
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
-  tasks:
-    - name: Add User "devops"
-      user:
-        name: devops
-        groups: sudo,docker
-        state: present
-        append: yes
-        shell: /bin/bash
-    - name: Add User "docker"
-      user:
-        name: docker
-        group: docker
-        state: present
-        append: yes
-        shell: /bin/bash
-    - name: Set up authorized keys for user devops
-      authorized_key: user=devops key="{{ item }}"
-      with_file:
-        - ../../.ssh/id_rsa.pub
-
-    # Add the SSH Key in .ssh/id_rsa to user "docker"
-    # This enables GitLab to connect to the Docker Socket on any Swarm-Manager
-    # via SSH.
-    # Example:
-    # DOCKER_HOST=ssh://docker@swarm-manager1 docker ps
-    - name: Set up authorized keys for user docker
-      authorized_key: user=docker key="{{ item }}"
-      with_file:
-        - ../../.ssh/id_rsa.pub
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes

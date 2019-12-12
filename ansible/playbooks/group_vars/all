@@ -9,13 +9,13 @@ nodes:
     manager:
         -
             name: manager-1
-            location: nbg1
-        -
-            name: manager-2
             location: fsn1
         -
-            name: manager-3
+            name: manager-2
             location: nbg1
+        -
+            name: manager-3
+            location: fsn1
     # 3 Workers
     worker:
         -
@@ -31,7 +31,7 @@ nodes:
             location: fsn1
         -
             name: runner-2
-            location: nbg1
+            location: fsn1
 
 ##########
 # DOCKER #
@@ -47,7 +47,7 @@ swarm_networks:
 # STORIDGE #
 ############
 
-storidge_version: "3071"
+storidge_version: "3074"
 
 ################
 # INTEGRATIONS #

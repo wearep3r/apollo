@@ -12,24 +12,7 @@
         prompt: "Waiting for servers to become fully available"
         seconds: 180
   tasks:
-    - name: Create Swarm network
-      hcloud_network:
-        api_token: "{{ hcloud_token }}"
-        name: swarm
-        ip_range: 10.0.0.0/8
-        state: present
-        labels:
-          swarm: ""
-          mbiosphere: ""
-    - name: Create Swarm Subnet
-      hcloud_subnetwork:
-        api_token: "{{ hcloud_token }}"
-        network: swarm
-        ip_range: 10.0.0.0/16
-        network_zone: eu-central
-        type: server
-        state: present
-    - name: Create Managers
+    - name: Rebuild Managers
       hcloud_server:
         api_token: "{{ hcloud_token }}"
         name: "{{ item.name }}"
@@ -38,7 +21,7 @@
         location: "{{ item.location }}"
         ssh_keys:
           - MBio DevOps
-        state: present
+        state: rebuild
         labels:
           swarm: ""
           manager: ""
@@ -64,7 +47,7 @@
         server: "{{ item.name }}"
         state: present
       with_items: "{{ nodes.manager }}"
-    - name: Create Workers
+    - name: Rebuild Workers
       hcloud_server:
         api_token: "{{ hcloud_token }}"
         name: "{{ item.name }}"
@@ -73,7 +56,7 @@
         location: "{{ item.location }}"
         ssh_keys:
           - MBio DevOps
-        state: present
+        state: rebuild
         labels:
           swarm: ""
           worker: ""
@@ -99,21 +82,5 @@
         server: "{{ item.name }}"
         state: present
       with_items: "{{ nodes.worker }}"
-    - name: Create Runners
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ item.name }}"
-        server_type: cx41
-        image: ubuntu-18.04
-        location: "{{ item.location }}"
-        ssh_keys:
-          - MBio DevOps
-        state: present
-        labels:
-          runner: ""
-          mbiosphere: ""
-        backups: no
-      with_items: "{{ nodes.runner }}"
-      notify: wait
     - name: Refresh inventory to ensure new instances exist in inventory
       meta: refresh_inventory

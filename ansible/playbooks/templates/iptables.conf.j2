@@ -24,10 +24,10 @@
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 23 -j ACCEPT
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
--A FILTERS -m state --state NEW -s 1.2.3.4/32 -j ACCEPT
+-A FILTERS -s 10.0.0.0/8 -j ACCEPT
 {% for host in groups['mbiosphere'] %}
 -A FILTERS -s {{ hostvars[host]['ansible_default_ipv4']['address'] }} -j ACCEPT
 {% endfor %}
--A FILTERS -j REJECT --reject-with icmp-host-prohibited
 -A FILTERS -m limit --limit 15/min -j LOG --log-prefix "Dropped by firewall: " --log-level 7
+-A FILTERS -j REJECT --reject-with icmp-host-prohibited
 COMMIT

@@ -11,11 +11,19 @@
 - import_playbook: playbooks/provision-hetzner.yml
 # Configure each Node: install software, set config
 - import_playbook: playbooks/provision-node.yml
-# Security hardening
-- import_playbook: playbooks/harden-node.yml
+# Configure Logging
+- import_playbook: playbooks/provision-logging.yml
+# Configure each Node: install software, set config
+- import_playbook: playbooks/upgrade-node.yml
+# Bootstrap/Update the Swarm
+#- import_playbook: playbooks/provision-swarm.yml
+# Bootstrap/Update Storidge
+- import_playbook: playbooks/provision-storidge.yml
 # Bootstrap/Update GitLab Runners
 - import_playbook: playbooks/provision-runner.yml
-# Bootstrap/Update the Swarm
-- import_playbook: playbooks/provision-swarm.yml
-# Bootstrap/Update Storidge
-#- import_playbook: provision-storidge.yml
+# Provision Services
+- import_playbook: playbooks/provision-services.yml
+
+
+# Security hardening
+#- import_playbook: playbooks/harden-node.yml

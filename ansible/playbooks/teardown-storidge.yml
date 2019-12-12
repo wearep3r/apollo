@@ -1,0 +1,23 @@
+- hosts: swarm
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  tasks:
+    - name: Disable Storidge service
+      service:
+        name: cio
+        enabled: false
+
+    - name: Remove Cluster Config
+      file:
+        path: /etc/storidge/config/default.cfg
+        state: absent
+
+    - name: Reboot Node
+      reboot:
+        reboot_timeout: 180
+
+    - name: Wait for system to become reachable again
+      wait_for_connection:
+          delay: 60
+          timeout: 180

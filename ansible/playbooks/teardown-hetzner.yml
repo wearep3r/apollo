@@ -29,6 +29,10 @@
           mbiosphere: ""
         backups: no
       with_items: "{{ nodes.manager }}"
+    - name: Wait for Nodes to be down
+      pause:
+        prompt: "Waiting for nodes be fully shut down"
+        seconds: 30
     - name: Remove 3 Volumes for each Node
       hcloud_volume:
         api_token: "{{ hcloud_token }}"
@@ -56,6 +60,10 @@
           mbiosphere: ""
         backups: no
       with_items: "{{ nodes.worker }}"
+    - name: Wait for Nodes to be down
+      pause:
+        prompt: "Waiting for nodes be fully shut down"
+        seconds: 30
     - name: Remove 3 Volumes for each Node
       hcloud_volume:
         api_token: "{{ hcloud_token }}"
@@ -67,6 +75,24 @@
       with_nested:
         - "{{ nodes.worker }}"
         - ["block-1", "block-2", "block-3"]
+    - name: Remove Swarm Subnet
+      hcloud_subnetwork:
+        api_token: "{{ hcloud_token }}"
+        network: swarm
+        ip_range: 10.0.0.0/16
+        network_zone: eu-central
+        type: server
+        state: absent
+    - name: Remove Swarm network
+      hcloud_network:
+        api_token: "{{ hcloud_token }}"
+        name: swarm
+        ip_range: 10.0.0.0/8
+        state: absent
+        labels:
+          swarm: ""
+          mbiosphere: ""
+
     # - name: Remove Runners
     #   hcloud_server:
     #     api_token: "{{ hcloud_token }}"
