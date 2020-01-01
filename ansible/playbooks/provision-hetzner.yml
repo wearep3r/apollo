@@ -16,7 +16,7 @@
       hcloud_network:
         api_token: "{{ hcloud_token }}"
         name: swarm
-        ip_range: 10.0.0.0/8
+        ip_range: 10.13.0.0/16
         state: present
         labels:
           swarm: ""
@@ -25,7 +25,7 @@
       hcloud_subnetwork:
         api_token: "{{ hcloud_token }}"
         network: swarm
-        ip_range: 10.0.0.0/16
+        ip_range: 10.13.2.0/24
         network_zone: eu-central
         type: server
         state: present
@@ -115,5 +115,12 @@
         backups: no
       with_items: "{{ nodes.runner }}"
       notify: wait
+    - name: Join Runners to Swarm Network
+      hcloud_server_network:
+        api_token: "{{ hcloud_token }}"
+        network: swarm
+        server: "{{ item.name }}"
+        state: present
+      with_items: "{{ nodes.runner }}"
     - name: Refresh inventory to ensure new instances exist in inventory
       meta: refresh_inventory

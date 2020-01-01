@@ -1,0 +1,130 @@
+# Create Staging/Production Managers and Workers
+# Check if the provisioning succeeded
+# Wait 100s for hosts to come up if they've been recently created/changed
+- name: Create Swarm Infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+    api_token: "{{ do_auth_token }}"
+  user: root
+  handlers:
+    - name: wait
+      pause:
+        prompt: "Waiting for servers to become fully available"
+        seconds: 180
+  tasks:
+    - name: Create new Droplet.
+      digital_ocean:
+        api_token: "{{ do_auth_token }}"
+        state: present
+        command: droplet
+        name: ansible-test
+        private_networking: yes
+        size_id: s-1vcpu-1gb
+        image_id: ubuntu-18.04-minimal
+        region_id: fra1
+        # Customize this for your account.
+        ssh_key_ids: 23797886
+        # Required for idempotence/only one droplet creation.
+        unique_name: yes
+      register: do
+    - name: Report 
+      debug:
+        var: do
+    
+    # - name: Create Managers
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ item.name }}"
+    #     server_type: cx41
+    #     image: ubuntu-18.04
+    #     location: "{{ item.location }}"
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       swarm: ""
+    #       manager: ""
+    #       mbiosphere: ""
+    #     backups: no
+    #   with_items: "{{ nodes.manager }}"
+    #   notify: wait
+    # - name: Create 3 Volumes for each Node
+    #   hcloud_volume:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ item[0].name+'-'+item[1] }}"
+    #     server: "{{ item[0].name }}"
+    #     size: 50
+    #     state: present
+    #     automount: no
+    #   with_nested:
+    #     - "{{ nodes.manager }}"
+    #     - ["block-1", "block-2", "block-3"]
+    # - name: Join Managers to Swarm Network
+    #   hcloud_server_network:
+    #     api_token: "{{ hcloud_token }}"
+    #     network: swarm
+    #     server: "{{ item.name }}"
+    #     state: present
+    #   with_items: "{{ nodes.manager }}"
+    # - name: Create Workers
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ item.name }}"
+    #     server_type: cx41
+    #     image: ubuntu-18.04
+    #     location: "{{ item.location }}"
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       swarm: ""
+    #       worker: ""
+    #       mbiosphere: ""
+    #     backups: no
+    #   with_items: "{{ nodes.worker }}"
+    #   notify: wait
+    # - name: Create 3 Volumes for each Node
+    #   hcloud_volume:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ item[0].name+'-'+item[1] }}"
+    #     server: "{{ item[0].name }}"
+    #     size: 50
+    #     state: present
+    #     automount: no
+    #   with_nested:
+    #     - "{{ nodes.worker }}"
+    #     - ["block-1", "block-2", "block-3"]
+    # - name: Join Workers to Swarm Network
+    #   hcloud_server_network:
+    #     api_token: "{{ hcloud_token }}"
+    #     network: swarm
+    #     server: "{{ item.name }}"
+    #     state: present
+    #   with_items: "{{ nodes.worker }}"
+    # - name: Create Runners
+    #   hcloud_server:
+    #     api_token: "{{ hcloud_token }}"
+    #     name: "{{ item.name }}"
+    #     server_type: cx41
+    #     image: ubuntu-18.04
+    #     location: "{{ item.location }}"
+    #     ssh_keys:
+    #       - MBio DevOps
+    #     state: present
+    #     labels:
+    #       runner: ""
+    #       mbiosphere: ""
+    #     backups: no
+    #   with_items: "{{ nodes.runner }}"
+    #   notify: wait
+    # - name: Join Runners to Swarm Network
+    #   hcloud_server_network:
+    #     api_token: "{{ hcloud_token }}"
+    #     network: swarm
+    #     server: "{{ item.name }}"
+    #     state: present
+    #   with_items: "{{ nodes.runner }}"
+    # - name: Refresh inventory to ensure new instances exist in inventory
+    #   meta: refresh_inventory

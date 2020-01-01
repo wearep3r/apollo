@@ -112,11 +112,11 @@
     - name: Provision Portainer
       docker_swarm_service:
         command: /portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics
-        name: portainer-swarm
+        name: portainer
         state: present
         mode: replicated
         replicas: 1
-        image: portainer/portainer:1.22.2
+        image: portainer/portainer:1.23.0
         env:
           AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
           CAP_HOST_MANAGEMENT: "1"
@@ -161,6 +161,16 @@
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
       register: provision_portainer
+
+    - name: Create A record at Cloudflare
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "swarm"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+      register: record
     
     - name: Pause until Service is up
       pause: 
@@ -227,20 +237,20 @@
           - consul
           - proxy
         mounts:
-          - source: consul-data-replica-cio
+          - source: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
             target: /consul/data
             type: volume
             readonly: no
             driver_config: 
               name: cio
-              options:
-                volume: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
+              # options:
+              #   volume: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
         restart_config:
           condition: on-failure
         update_config:
           parallelism: 1
-          delay: 60s
-          monitor: 30s
+          delay: 120s
+          monitor: 120s
           order: start-first
           failure_action: rollback
         placement:
@@ -261,8 +271,8 @@
           traefik.backend.loadbalancer.stickiness: "true"
       register: provision_consul_replica
 
-    - name: Pause until Service is up
-      pause: 
-        prompt: "Make sure consul-replica is up and running"
-        seconds: 30
-      when: provision_consul_replica.changed
+    # - name: Pause until Service is up
+    #   pause: 
+    #     prompt: "Make sure consul-replica is up and running"
+    #     seconds: 30
+    #   when: provision_consul_replica.changed

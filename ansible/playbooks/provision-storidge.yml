@@ -92,6 +92,10 @@
         cio info
       register: cluster_init_status
 
+    - name: Report Cluster Init Status
+      debug:
+        var: cluster_init_status
+
 - name: Create Storidge Cluster
   hosts: manager[0]
   remote_user: "{{ deploy_user_name }}"
@@ -112,7 +116,7 @@
       shell: >
         cioctl create --noportainer --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
       register: clustertoken
-      when: "'Condition: Normal' not in cluster_init_status.stdout"
+      when: "'Condition: normal' not in cluster_init_status.stdout"
 
     - name: Report Cluster Token
       debug:
@@ -136,7 +140,7 @@
       #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
       shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_ens10']['ipv4']['address'] }}"
       register: result
-      when: "'Condition: Normal' not in hostvars[item]['cluster_init_status'].stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
+      when: "'Condition: normal' not in hostvars[item]['cluster_init_status'].stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
       delegate_to: "{{ item }}"
       run_once: true
       with_items: "{{ groups['swarm'] }}"

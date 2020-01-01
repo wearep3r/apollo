@@ -29,7 +29,7 @@ We use the Development Version of Ansible to use the latest HCLOUD modules:
 The Playbooks used to build and maintain this infrastructure have some dependencies that are listed below.
 
 ### Local Dependencies
-- `sudo pip install hcloud`
+- `sudo pip install hcloud dopy`
 - Install Requirements: `ansible-galaxy install -r requirements.yml`
 
 ## Overview

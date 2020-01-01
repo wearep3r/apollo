@@ -84,6 +84,7 @@
         zone: "{{ base_domain }}"
         record: "{{ inventory_hostname }}.swarm"
         type: A
+        solo: yes
         value: "{{ ansible_default_ipv4.address }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"

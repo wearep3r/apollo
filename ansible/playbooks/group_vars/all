@@ -12,7 +12,7 @@ nodes:
             location: fsn1
         -
             name: manager-2
-            location: nbg1
+            location: fsn1
         -
             name: manager-3
             location: fsn1
@@ -23,7 +23,7 @@ nodes:
             location: fsn1
         -
             name: worker-2
-            location: nbg1
+            location: fsn1
     # 2 Runners
     runner:
         -
@@ -47,7 +47,7 @@ swarm_networks:
 # STORIDGE #
 ############
 
-storidge_version: "3074"
+storidge_version: "3085"
 
 ################
 # INTEGRATIONS #
@@ -65,6 +65,9 @@ cf_api_key: "0c7c9779d56df9b2cbd051aa35b7ca3801869"
 
 # LetsEncrypt
 letsencrypt_mail: cloud@micro-biolytics.com
+
+# DigitalOcean
+do_auth_token: 9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc
 
 #################
 # Functionality #
@@ -102,7 +105,4 @@ locale_lang: en_US.UTF-8
 # Python Settings
 pip_package: python3-pip
 
-##########
-# CONFIG #
-##########
 base_domain: mbiosphere.com
