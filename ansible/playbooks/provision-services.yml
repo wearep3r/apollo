@@ -1,5 +1,6 @@
 - hosts: manager[0]
   become: true
+  gather_facts: false
   remote_user: "{{ deploy_user_name }}"
   tasks:
     - name: Create Swarm Overlay networks
@@ -40,13 +41,13 @@
           - source: traefik-config-cio
             target: /etc/traefik
             type: volume
-            readonly: no
+            readonly: yes
             driver_config: 
               name: "cio"
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
             type: bind
-            readonly: no
+            readonly: yes
         update_config:
           parallelism: 2
           delay: 60s
@@ -58,13 +59,30 @@
         placement:
           constraints: 
             - node.role == manager
-      register: provision_traefik
+      register: traefik_provision
+      tags:
+        - traefik
 
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure traefik is up and running"
         seconds: 30
-      when: provision_traefik.changed
+      when: traefik_provision.changed
+
+    - name: Get traefik Service Info
+      docker_swarm_info:
+        services: yes
+        services_filters:
+          name: traefik
+        verbose_output: yes
+      register: traefik_service
+      tags:
+        - traefik
+
+    - debug:
+        var: traefik_service
+    - debug:
+        var: traefik_provision
     
     - name: Provision Portainer Agent
       docker_swarm_service:
@@ -101,13 +119,13 @@
         placement:
           constraints: 
             - node.platform.os == linux
-      register: provision_portainer_agent
+      register: portainer_agent_provision
 
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure portainer-agent is up and running"
         seconds: 30
-      when: provision_portainer_agent.changed
+      when: portainer_agent_provision.changed
 
     - name: Provision cadvisor
       docker_swarm_service:
@@ -310,13 +328,18 @@
     - name: Get garbage-collector Service Info
       docker_swarm_info:
         services: yes
-        service_filters:
+        services_filters:
           name: garbage-collector
         verbose_output: yes
-      register: garbage-collector
+      register: garbage_collector_service
+      tags:
+        - garbage-collector
 
     - debug:
-        var: garbage-collector
+        var: garbage_collector_service
+
+    - debug:
+        var: provision_garbage_collector
 
     - name: Provision Portainer
       docker_swarm_service:
