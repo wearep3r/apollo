@@ -52,9 +52,15 @@ version:
     - release test-api
     - release next-version --allow-current
     - release next-version --allow-current > .next-version
+    - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
+    - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
+    - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
+    - echo "RELEASE_VERSION=$(<.next-version)" >> build_info
+    - echo $SSH_PRIVATE_KEY
   artifacts:
     paths:
     - .next-version
+    - build_info
   except:
     - tags
   tags: 
@@ -75,26 +81,19 @@ Build node-exporter:
     - docker
     - infrastructure
 
-Build infrastructure:
-  stage: build
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CONTAINER_TEST_IMAGE || true
-    - docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
-    - docker push $CONTAINER_TEST_IMAGE
-    - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
-    - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
-    - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
-    - echo "RELEASE_VERSION=$(<.next-version)" >> build_info
-  artifacts:
-    paths:
-    - build_info
-  tags: 
-    - infrastructure
-    - docker
+# Build infrastructure:
+#   stage: build
+#   image: docker:19.03.1
+#   services:
+#     - docker:19.03.1-dind
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CONTAINER_TEST_IMAGE || true
+#     - docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
+#     - docker push $CONTAINER_TEST_IMAGE
+#   tags: 
+#     - infrastructure
+#     - docker
 
 # Lint Ansible files
 test:ansible:
@@ -109,14 +108,14 @@ test:ansible:
   tags: 
     - infrastructure
 
-release-image:
+Release node-exporter:
   stage: release
   image: docker:19.03.1
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
+    # - docker pull $CONTAINER_TEST_IMAGE
+    # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+    # - docker push $CONTAINER_RELEASE_IMAGE
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG || true
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG -t $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
@@ -167,17 +166,17 @@ release:
 
 
 # Deploy: Staging
-deploy:
-  stage: deploy
-  variables:
-    ENVIRONMENT_DOMAIN: $CI_ENVIRONMENT_NAME.$BASE_DOMAIN
-    RELEASE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    DEPLOYMENT: ${CI_PROJECT_NAME}
-  script:
-    - *deployment 
-  only:
-    - master
-  when: manual
+# deploy:
+#   stage: deploy
+#   variables:
+#     ENVIRONMENT_DOMAIN: $CI_ENVIRONMENT_NAME.$BASE_DOMAIN
+#     RELEASE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+#     DEPLOYMENT: ${CI_PROJECT_NAME}
+#   script:
+#     - *deployment 
+#   only:
+#     - master
+#   when: manual
 
 # # Deploy: Production
 # production:
