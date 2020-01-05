@@ -2,7 +2,7 @@
 stages:
   - version
   - build
-  - test
+  #- test
   - release
   - deploy
 
