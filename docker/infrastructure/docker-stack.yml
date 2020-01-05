@@ -1,0 +1,352 @@
+version: '3.7'
+
+services:   
+  traefik:
+    image: traefik:v1.7
+    command: > 
+      --docker
+      --docker.swarmmode
+      --docker.watch
+      --docker.exposedbydefault=false
+      --insecureSkipVerify
+      --constraints=tag==proxy
+      --entrypoints='Name:http Address::80'
+      --entrypoints='Name:https Address::443 TLS'
+      --metrics
+      --metrics.prometheus
+      --acme
+      --acme.email=${LETSENCRYPT_MAIL}
+      --acme.storage="/etc/traefik/acme.json"
+      --acme.entryPoint=https
+      --acme.dnsChallenge.provider=cloudflare
+      --acme.dnsChallenge.resolvers='1.1.1.1:53'
+      --acme.onhostrule=true
+      --acme.acmelogging=true
+      --logLevel=DEBUG
+      --accessLog
+      --api
+      --debug
+      --docker.domain=${BASE_DOMAIN}
+      --logLevel=DEBUG
+      --ping
+      --rest
+      --retry
+    networks:
+      - proxy
+    # logging:
+    #   driver: gelf
+    #   options:
+    #     gelf-address: "tcp://logs.${BASE_DOMAIN}:12201"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-config-cio:/etc/traefik
+    environment:
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
+    # healthcheck:
+    #   test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ping || exit 1"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 45s
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      # update_config:
+      #   parallelism: 1
+      #   delay: 60s
+      #   monitor: 60s
+      #   order: stop-first
+      #   failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      # labels:
+      #   - traefik.enable=true
+      #   - traefik.tags=traefik
+      #   - traefik.docker.network=traefik
+      #   - traefik.traefik.port=8080
+      #   - traefik.traefik.healthcheck.path=/health
+      #   - traefik.traefik.healthcheck.interval=10s
+      #   - traefik.traefik.frontend.rule=Host:traefik.{{ BASE_DOMAIN }}
+      #   - traefik.traefik.backend=traefik
+      #   - traefik.traefik.protocol=http
+      #   - traefik.traefik.frontend.headers.SSLRedirect=true
+      #   - traefik.traefik.frontend.entryPoints=http,https
+      #   - traefik.traefik.backend.loadbalancer.sticky=true
+      # printf "testuser:$(openssl passwd -apr1 pass0815word)\n" |sed 's/\$/\$\$/g'
+      #- traefik.edge.frontend.auth.basic.users=${ADMIN_USER}:${ADMIN_PASSWORD}
+  
+  # This service dumps Traefik's certificates into PEM format to a 
+  # subdirectory (ssl/) of Traefik's volume (traefik-config). This way other services
+  # can access the Certs/Keys and re-use them (i.e. a database or e-mail service can mount
+  # the volume and load the PEM certificates for SSL encryption)
+  # It's a supportive service and NOT needed for the infrastructure to operate
+  certs:
+    networks:
+      - proxy
+    image: alpine:latest
+    volumes:
+      - traefik-config-cio:/traefik
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    command: >
+      ash -c " \
+        apk --no-cache add inotify-tools jq openssl util-linux bash && \
+        wget https://raw.githubusercontent.com/containous/traefik/v1.7/contrib/scripts/dumpcerts.sh -O dumpcerts.sh && \
+        mkdir -p /traefik/ssl/ && \
+        while true; do \
+          inotifywait -e modify -e attrib /traefik/acme.json && \
+            bash dumpcerts.sh /traefik/acme.json /traefik/ssl/ && \
+            ln -f /traefik/ssl/certs/* /traefik/ssl/ && \
+            ln -f /traefik/ssl/private/* /traefik/ssl/; \
+        done"
+
+  consul-leader:
+    image: consul
+    command: agent -server -client=0.0.0.0 -bootstrap -ui
+    volumes:
+      - consul-data-leader-cio:/consul/data
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
+    networks:
+      - consul
+      - proxy
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.tags=proxy
+        - traefik.docker.network=infrastructure_proxy
+        - traefik.consul.port=8500
+        - traefik.consul.frontend.rule=Host:consul.${BASE_DOMAIN}
+        - traefik.consul.backend=consul
+        - traefik.consul.protocol=http
+        - traefik.consul.frontend.headers.SSLRedirect=true
+        - traefik.consul.frontend.entryPoints=http,https
+        - traefik.consul.backend.loadbalancer.stickiness=true
+
+  consul-replica:
+    image: consul
+    command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
+    volumes:
+      - consul-data-replica-cio:/consul/data
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
+    networks:
+      - consul
+      - proxy
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      placement:
+        preferences:
+          - spread: node.id
+
+  # The Portainer Agent runs on each Swarm Node (mode: global) and 
+  # will be used by Portainer as the Docker Endpoint to this Swarm. 
+  # The Agent collects data on each Swarm Node and can be used to control
+  # the Node from within Portainer
+  portainer-agent:
+    image: portainer/agent
+    environment:
+      # REQUIRED: Should be equal to the service name prefixed by "tasks." when
+      # deployed inside an overlay network
+      AGENT_CLUSTER_ADDR: tasks.portainer-agent
+      CAP_HOST_MANAGEMENT: 1
+      # AGENT_PORT: 9001
+      # LOG_LEVEL: debug
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - portainer
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      placement:
+        constraints: [node.platform.os == linux]
+  
+  # The actual Controlplane; a professional interface to the Swarm
+  portainer:
+    image: portainer/portainer
+    command: -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics
+    volumes:
+      - portainer-data-cio:/data
+    networks:
+      - portainer
+      - proxy
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.tags=proxy
+        - traefik.docker.network=infrastructure_proxy
+        - traefik.portainer.port=9000
+        - traefik.portainer.frontend.rule=Host:swarm.${BASE_DOMAIN}
+        - traefik.portainer.backend=portainer
+        - traefik.portainer.protocol=http
+        - traefik.portainer.frontend.headers.SSLRedirect=true
+        - traefik.portainer.frontend.entryPoints=http,https
+        - traefik.portainer.backend.loadbalancer.stickiness=true
+  
+  # graylog-mongo:
+  #   image: "mongo:3"
+  #   networks:
+  #     - graylog
+  #   volumes:
+  #     - graylog-mongo-data-cio:/data/db
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints: [node.role == manager]
+  #     restart_policy:
+  #       condition: on-failure
+
+  # # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/docker.html
+  # graylog-elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.2
+  #   #command: "elasticsearch -Des.cluster.name='graylog'"
+  #   volumes:
+  #     - graylog-elasticsearch-data-cio:/usr/share/elasticsearch/data
+  #   networks:
+  #     - graylog
+  #   environment:
+  #     - http.host=0.0.0.0
+  #     - transport.host=localhost
+  #     - network.host=0.0.0.0
+  #     - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 45s
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints: [node.role == worker]
+  #     restart_policy:
+  #       condition: on-failure
+  #     resources:
+  #       limits:
+  #           memory: 4G
+
+  # graylog:
+  #   image: graylog/graylog:3.1
+  #   volumes:
+  #     - graylog-data-cio:/usr/share/graylog/data/journal
+  #     - graylog-config-cio:/usr/share/graylog/data/config
+  #   networks:
+  #     - graylog
+  #     - proxy
+  #   environment:
+  #     - GRAYLOG_PASSWORD_SECRET=senhadeexemplo123123123123
+  #     - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+  #     #- GRAYLOG_WEB_ENDPOINT_URI=https://logs.${BASE_DOMAIN}/api/
+  #     - GRAYLOG_HTTP_EXTERNAL_URI=https://logs.${BASE_DOMAIN}/
+  #     - GRAYLOG_HTTP_BIND_ADDRESS=0.0.0.0:9000
+  #     - GRAYLOG_MONGODB_URI=mongodb://graylog-mongo/graylog
+  #     - GRAYLOG_ELASTICSEARCH_HOSTS=http://graylog-elasticsearch:9200
+  #   ports:
+  #     # Syslog TCP
+  #     - 1514:1514
+  #     # Syslog UDP
+  #     - 1514:1514/udp
+  #     # GELF TCP
+  #     - 12201:12201
+  #     # GELF UDP
+  #     - 12201:12201/udp
+  #   healthcheck:
+  #     test: [ "CMD", "curl", "-f", "http://localhost:9000" ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   # logging:
+  #   #   driver: gelf
+  #   #   options:
+  #   #     gelf-address: "tcp://graylog:12201"
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #     placement:
+  #       constraints: [node.role == manager]
+  #     labels:
+  #       - traefik.enable=true
+  #       - traefik.tags=proxy
+  #       - traefik.docker.network=infrastructure_proxy
+  #       - traefik.graylog.port=9000
+  #       - traefik.graylog.frontend.rule=Host:logs.${BASE_DOMAIN}
+  #       - traefik.graylog.backend=graylog
+  #       - traefik.graylog.protocol=http
+  #       - traefik.graylog.frontend.headers.SSLRedirect=true
+  #       - traefik.graylog.frontend.entryPoints=http,https
+  #       - traefik.graylog.backend.loadbalancer.stickiness=true
+
+networks:
+  proxy:
+    driver: overlay
+    attachable: true
+  consul:
+    driver: overlay
+    attachable: true
+  portainer:
+    driver: overlay
+    attachable: true
+  # graylog:
+  #   driver: overlay
+  #   attachable: true
+
+volumes:
+  traefik-config-cio:
+    driver: cio
+  portainer-data-cio:
+    driver: cio
+  # graylog-mongo-data-cio:
+  #   driver: cio
+  # graylog-elasticsearch-data-cio:
+  #   driver: cio
+  # graylog-data-cio:
+  #   driver: cio
+  # graylog-config-cio:
+  #   driver: cio
+  consul-data-leader-cio:
+    driver: cio
+  consul-data-replica-cio:
+    driver: cio
+    driver_opts:
+      profile: "MYSQL"
+    name: '{{.Service.Name}}-{{.Task.Slot}}'

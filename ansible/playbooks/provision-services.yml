@@ -62,27 +62,13 @@
       register: traefik_provision
       tags:
         - traefik
+      changed_when: "'mounts' not in traefik_provision.changes"
 
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure traefik is up and running"
         seconds: 30
       when: traefik_provision.changed
-
-    - name: Get traefik Service Info
-      docker_swarm_info:
-        services: yes
-        services_filters:
-          name: traefik
-        verbose_output: yes
-      register: traefik_service
-      tags:
-        - traefik
-
-    - debug:
-        var: traefik_service
-    - debug:
-        var: traefik_provision
     
     - name: Provision Portainer Agent
       docker_swarm_service:
@@ -197,7 +183,7 @@
         registry: "{{ registry_url }}"
         username: "{{ registry_user }}"
         password: "{{ registry_password }}"
-        reauthorize: yes
+        reauthorize: no
       tags:
         - node-exporter
 
@@ -253,7 +239,8 @@
             - node.platform.os == linux
       tags:
         - node-exporter
-      register: provision_node_exporter
+      register: node_exporter_provision
+      changed_when: "'mounts' not in node_exporter_provision.changes"
 
     - name: Pause until Service is up
       pause: 
@@ -261,7 +248,7 @@
         seconds: 30
       tags:
         - node-exporter
-      when: provision_node_exporter.changed
+      when: node_exporter_provision.changed
 
     - name: Provision Docker garbage-collector
       docker_swarm_service:
@@ -315,7 +302,8 @@
             - node.platform.os == linux
       tags:
         - garbage-collector
-      register: provision_garbage_collector
+      register: garbage_collector_provision
+      changed_when: "'mounts' not in garbage_collector_provision.changes"
 
     - name: Pause until Service is up
       pause: 
@@ -323,23 +311,7 @@
         seconds: 30
       tags:
         - garbage-collector
-      when: provision_garbage_collector.changed
-
-    - name: Get garbage-collector Service Info
-      docker_swarm_info:
-        services: yes
-        services_filters:
-          name: garbage-collector
-        verbose_output: yes
-      register: garbage_collector_service
-      tags:
-        - garbage-collector
-
-    - debug:
-        var: garbage_collector_service
-
-    - debug:
-        var: provision_garbage_collector
+      when: garbage_collector_provision.changed
 
     - name: Provision Portainer
       docker_swarm_service:
@@ -392,7 +364,8 @@
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
-      register: provision_portainer
+      register: portainer_provision
+      changed_when: "'mounts' not in portainer_provision.changes"
 
     - name: Create A record at Cloudflare
       cloudflare_dns:
@@ -453,7 +426,8 @@
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
-      register: provision_consul_leader
+      register: consul_leader_provision
+      changed_when: "'mounts' not in consul_leader_provision.changes"
 
     - name: "Wait for consul.{{ base_domain }} to become ready"
       uri:
@@ -571,18 +545,8 @@
           interval: 25s
           timeout: 3s
           start_period: 60s
-      register: provision_prometheus
-
-    - name: Create A record at Cloudflare
-      cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "prometheus"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cf_api_email }}"
-        account_api_token: "{{ cf_api_key }}"
-        solo: yes
-      register: record
+      register: prometheus_provision
+      changed_when: "'mounts' not in prometheus_provision.changes"
 
     - name: "Wait for prometheus.{{ base_domain }} to become ready"
       uri:
