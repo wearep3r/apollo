@@ -81,6 +81,22 @@ Build node-exporter:
     - docker
     - infrastructure
 
+Build prometheus:
+  stage: build
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
+    - cd docker/prometheus
+    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest -t $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION .
+    - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
+  tags: 
+    - docker
+    - infrastructure
+
 # Build infrastructure:
 #   stage: build
 #   image: docker:19.03.5
@@ -108,6 +124,26 @@ Build node-exporter:
 #   tags: 
 #     - infrastructure
 
+Release prometheus:
+  stage: release
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    # - docker pull $CONTAINER_TEST_IMAGE
+    # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+    # - docker push $CONTAINER_RELEASE_IMAGE
+    - docker pull $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION || true
+    - docker tag $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION $CI_REGISTRY_IMAGE/prometheus:latest
+    - docker push $CI_REGISTRY_IMAGE/prometheus:latest
+  only:
+    - master
+  tags: 
+    - infrastructure
+    - docker
+
 Release node-exporter:
   stage: release
   image: docker:19.03.5
@@ -126,6 +162,7 @@ Release node-exporter:
     - master
   tags: 
     - infrastructure
+    - docker
 
 release:
   stage: release

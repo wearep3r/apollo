@@ -1,0 +1,106 @@
+- hosts: manager[0]
+  become: true
+  gather_facts: false
+  remote_user: "{{ deploy_user_name }}"
+  tasks:
+    - name: Create Docker Config prometheus.yml
+      docker_config:
+        name: foo
+        # If the file is JSON or binary, Ansible might modify it (because
+        # it is first decoded and later re-encoded). Base64-encoding the
+        # file directly after reading it prevents this to happen.
+        data: "{{ lookup('file', '/path/to/config/file') | b64encode }}"
+        data_is_b64: true
+        state: present
+    - name: Provision Prometheus
+      docker_swarm_service:
+        command: 
+          - "/bin/prometheus"
+          - "--config.file=/etc/prometheus/prometheus.yml"
+          #- "--web.console.libraries=/etc/prometheus/console_libraries"
+          #- "--web.console.templates=/etc/prometheus/consoles"
+          - "--storage.tsdb.path=/prometheus"
+          - "--storage.tsdb.retention.time=48h"
+          - "--web.enable-admin-api"
+        name: prometheus
+        state: present
+        mode: replicated
+        replicas: 1
+        image: prom/prometheus:latest
+        configs:
+          - config_name: node_rules
+            filename: /etc/prometheus/swarm_node.rules.yml
+          - config_name: task_rules
+            filename: /etc/prometheus/swarm_task.rules.yml
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: prometheus-data
+            target: /prometheus
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.hostname == satellite-1
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 1024M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9090"
+          traefik.frontend.rule: "Host:prometheus.{{ base_domain }}"
+          traefik.backend: "prometheus"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          prometheus.enable: "true"
+          prometheus.port: "9090"
+          prometheus.path: "/metrics"
+        healthcheck:
+          test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
+          interval: 25s
+          timeout: 3s
+          start_period: 60s
+      register: prometheus_provision
+      changed_when: "'mounts' not in prometheus_provision.changes"
+      tags:
+        - prometheus
+
+    - debug:
+        var: prometheus_provision
+      tags:
+        - prometheus
+      when: prometheus_provision.changed
+
+    - name: "Wait for prometheus.{{ base_domain }} to become ready"
+      uri:
+        url: "https://prometheus.{{ base_domain }}"
+        method: GET
+        status_code: 200
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - prometheus
