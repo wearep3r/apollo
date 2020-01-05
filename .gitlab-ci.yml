@@ -56,7 +56,6 @@ version:
     - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
     - echo "RELEASE_SHA=$CI_COMMIT_SHORT_SHA" >> build_info
     - echo "RELEASE_VERSION=$(<.next-version)" >> build_info
-    - echo $SSH_PRIVATE_KEY
   artifacts:
     paths:
     - .next-version
@@ -135,7 +134,6 @@ release:
     - rm -f release_info
     - mv build_info release_info
     - . release_info
-    - release -v
     - release changelog 
     - release commit-and-tag CHANGELOG.md release_info
   only:
