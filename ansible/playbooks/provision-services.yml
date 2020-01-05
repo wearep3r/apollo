@@ -242,6 +242,12 @@
       register: node_exporter_provision
       changed_when: "'mounts' not in node_exporter_provision.changes"
 
+    - debug:
+        var: node_exporter_provision
+      tags:
+        - node-exporter
+      when: node_exporter_provision.changed
+
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure node-exporter is up and running"
@@ -305,6 +311,12 @@
       register: garbage_collector_provision
       changed_when: "'mounts' not in garbage_collector_provision.changes"
 
+    - debug:
+        var: garbage_collector_provision
+      tags:
+        - garbage-collector
+      when: garbage_collector_provision.changed
+
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure gargabe-collector is up and running"
@@ -366,6 +378,8 @@
           traefik.backend.loadbalancer.stickiness: "true"
       register: portainer_provision
       changed_when: "'mounts' not in portainer_provision.changes"
+      tags:
+        - portainer
 
     - name: Create A record at Cloudflare
       cloudflare_dns:
@@ -378,6 +392,12 @@
         solo: yes
       register: record
 
+    - debug:
+        var: portainer_provision
+      tags:
+        - portainer
+      when: portainer_provision.changed
+
     - name: "Wait for swarm.{{ base_domain }} to become ready"
       uri:
         url: "https://swarm.{{ base_domain }}"
@@ -387,6 +407,8 @@
       until: _result.status == 200
       retries: 30 # retry X times  
       delay: 5 # pause for X sec b/w each call
+      tags:
+        - portainer
 
     - name: Provision Consul Leader
       docker_swarm_service:
@@ -428,6 +450,14 @@
           traefik.backend.loadbalancer.stickiness: "true"
       register: consul_leader_provision
       changed_when: "'mounts' not in consul_leader_provision.changes"
+      tags:
+        - consul-leader
+
+    - debug:
+        var: consul_leader_provision
+      tags:
+        - consul-leader
+      when: consul_leader_provision.changed
 
     - name: "Wait for consul.{{ base_domain }} to become ready"
       uri:
@@ -441,6 +471,8 @@
       until: _result.status == 200
       retries: 30 # retry X times  
       delay: 5 # pause for X sec b/w each call 
+      tags:
+        - consul-leader
     
     # - name: Provision Consul Replicas
     #   docker_swarm_service:
@@ -547,6 +579,14 @@
           start_period: 60s
       register: prometheus_provision
       changed_when: "'mounts' not in prometheus_provision.changes"
+      tags:
+        - prometheus
+
+    - debug:
+        var: prometheus_provision
+      tags:
+        - prometheus
+      when: prometheus_provision.changed
 
     - name: "Wait for prometheus.{{ base_domain }} to become ready"
       uri:
@@ -557,3 +597,5 @@
       until: _result.status == 200
       retries: 30 # retry X times  
       delay: 5 # pause for X sec b/w each call
+      tags:
+        - prometheus
