@@ -179,7 +179,7 @@
         name: node-exporter
         state: present
         mode: global
-        image: prom/node-exporter
+        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/node-exporter:latest
         networks:
           - name: "monitoring"
             aliases:
