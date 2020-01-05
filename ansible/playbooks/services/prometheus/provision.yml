@@ -1,17 +1,13 @@
 - hosts: manager[0]
-  become: true
-  gather_facts: false
-  remote_user: "{{ deploy_user_name }}"
   tasks:
-    - name: Create Docker Config prometheus.yml
-      docker_config:
-        name: foo
-        # If the file is JSON or binary, Ansible might modify it (because
-        # it is first decoded and later re-encoded). Base64-encoding the
-        # file directly after reading it prevents this to happen.
-        data: "{{ lookup('file', '/path/to/config/file') | b64encode }}"
-        data_is_b64: true
-        state: present
+    - name: Log into docker registry
+      docker_login:
+        registry: "{{ registry_url }}"
+        username: "{{ registry_user }}"
+        password: "{{ registry_password }}"
+        reauthorize: no
+      tags:
+        - prometheus
     - name: Provision Prometheus
       docker_swarm_service:
         command: 
@@ -26,7 +22,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: prom/prometheus:latest
+        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/prometheus:latest
         configs:
           - config_name: node_rules
             filename: /etc/prometheus/swarm_node.rules.yml

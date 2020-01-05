@@ -80,6 +80,7 @@ Build node-exporter:
   tags: 
     - docker
     - infrastructure
+  when: manual
 
 Build prometheus:
   stage: build
@@ -96,6 +97,24 @@ Build prometheus:
   tags: 
     - docker
     - infrastructure
+  when: manual
+
+Build grafana:
+  stage: build
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
+    - cd docker/grafana
+    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest -t $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION .
+    - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
+  tags: 
+    - docker
+    - infrastructure
+  when: manual
 
 # Build infrastructure:
 #   stage: build
@@ -143,6 +162,28 @@ Release prometheus:
   tags: 
     - infrastructure
     - docker
+  when: manual
+
+Release grafana:
+  stage: release
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    # - docker pull $CONTAINER_TEST_IMAGE
+    # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+    # - docker push $CONTAINER_RELEASE_IMAGE
+    - docker pull $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION || true
+    - docker tag $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION $CI_REGISTRY_IMAGE/grafana:latest
+    - docker push $CI_REGISTRY_IMAGE/grafana:latest
+  only:
+    - master
+  tags: 
+    - infrastructure
+    - docker
+  when: manual
 
 Release node-exporter:
   stage: release
@@ -163,6 +204,7 @@ Release node-exporter:
   tags: 
     - infrastructure
     - docker
+  when: manual
 
 release:
   stage: release
