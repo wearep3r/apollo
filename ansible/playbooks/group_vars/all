@@ -70,6 +70,13 @@ letsencrypt_mail: cloud@micro-biolytics.com
 # DigitalOcean
 do_auth_token: 9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc
 
+# GitLab
+# GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
+gl_token: hxMptRX7KeHsqyxYR3Uf
+registry_url: registry.gitlab.com
+registry_user: "derfabianpeter"
+registry_password: "{{ gl_token }}"
+
 #################
 # Functionality #
 #################

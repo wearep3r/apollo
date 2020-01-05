@@ -174,6 +174,15 @@
         seconds: 30
       when: provision_cadvisor.changed
 
+    - name: Log into docker registry and force re-authorization
+      docker_login:
+        registry: "{{ registry_url }}"
+        username: "{{ registry_user }}"
+        password: "{{ registry_password }}"
+        reauthorize: yes
+      tags:
+        - node-exporter
+
     - name: Provision node-exporter
       docker_swarm_service:
         name: node-exporter
@@ -224,12 +233,16 @@
         placement:
           constraints: 
             - node.platform.os == linux
+      tags:
+        - node-exporter
       register: provision_node_exporter
 
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure node-exporter is up and running"
         seconds: 30
+      tags:
+        - node-exporter
       when: provision_node_exporter.changed
 
     - name: Provision Docker garbage-collector
