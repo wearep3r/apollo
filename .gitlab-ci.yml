@@ -74,7 +74,7 @@ Build node-exporter:
     - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
-    - cd ci/node-exporter
+    - cd docker/node-exporter
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
   tags: 
