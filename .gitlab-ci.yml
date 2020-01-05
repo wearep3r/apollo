@@ -80,6 +80,7 @@ Build node-exporter:
   tags: 
     - docker
     - infrastructure
+  when: manual
 
 Build prometheus:
   stage: build
@@ -96,6 +97,7 @@ Build prometheus:
   tags: 
     - docker
     - infrastructure
+  when: manual
 
 # Build infrastructure:
 #   stage: build
@@ -143,6 +145,7 @@ Release prometheus:
   tags: 
     - infrastructure
     - docker
+  when: manual
 
 Release node-exporter:
   stage: release
@@ -163,6 +166,7 @@ Release node-exporter:
   tags: 
     - infrastructure
     - docker
+  when: manual
 
 release:
   stage: release
