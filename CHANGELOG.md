@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.4.0
+2020-01-05
+
+### Breaking changes
+
+#### BREAKING CHANGE: Cleanup (24bb49be68cf934c58da98eb8fdbe5ab74678225)
+
+Cleanup
+fix(ci): reordered
+
+### Fixes
+
+- **ci:** order (9b426e544396c93f9254df3fd5430ae7e2ac979b)
+- node-exporter dockerfile layout (93634cc45cfa6da13205e42e1077dafd148a93bf)
+- node-exporter dockerfile layout (5f51c98b5dd7f5361e942c4bbfb3baa9845de5bc)
+- node-exporter dockerfile layout (19031856e6843a58d680d6f91ef6c6673c798c25)
+- dat stupid typo tho... (970fff114db55c4dd5af3d4b6b4d9e01e0a0df97)
+- git (23ad04b1f4a9a38ba88bd10345d936213fe98613)
+- git (f6d2b0e237b1ea90f3d004f0869109bd6ed9529a)
+
 ## 0.3.0
 2020-01-05
 
