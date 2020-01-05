@@ -121,7 +121,7 @@ Release node-exporter:
     # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     # - docker push $CONTAINER_RELEASE_IMAGE
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION -t $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker tag $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
   only:
     - master
