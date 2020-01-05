@@ -28,6 +28,30 @@ See merge request mbio/mbiosphere/infrastructure!26
 - ci tuning (47ef0c9ec3f9d727478876770ee967af7404481f)
 - ci tuning (6b319c578f86332d1df871ee1dcbc9e0c7db46fa)
 - **ci:** included dind in release stage (14f827145214d771864b4232fec171943aeee830)
+- **ci:** order (9b426e544396c93f9254df3fd5430ae7e2ac979b)
+
+## 0.3.0
+2020-01-05
+
+### Breaking changes
+
+#### BREAKING CHANGE: updated node-exporter versioning (258035afeaebd435b16f1d3cd5d3ea1e1967f9ce)
+
+updated node-exporter versioning
+
+#### Merge branch 'fix-release' into 'master' (ad7c089a352b08d3fb561700df08cdfed9dac84f)
+
+updated node-exporter versioning
+
+See merge request mbio/mbiosphere/infrastructure!26
+
+### Fixes
+
+- ci tuning (3683e8c61d4b39507d418c51a2c6e0e18c48fd7d)
+- ci tuning (46cf4ce889c198d0d3a92ac5fe5dc1c320f30d1c)
+- ci tuning (47ef0c9ec3f9d727478876770ee967af7404481f)
+- ci tuning (6b319c578f86332d1df871ee1dcbc9e0c7db46fa)
+- **ci:** included dind in release stage (14f827145214d771864b4232fec171943aeee830)
 
 ## 0.2.0
 2020-01-05
