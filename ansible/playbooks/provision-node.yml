@@ -153,6 +153,15 @@
       with_file:
         - ../../.ssh/id_rsa.pub
 
+    - name: Copy Docker config
+      template:
+        src: templates/daemon.json.j2
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart docker
+
 # Prepare Firewall for Swarm Communication
 # This is fed to geerlingguy.firewall in the next task
 # DEPRECATED: replaced by own firewall handling;
