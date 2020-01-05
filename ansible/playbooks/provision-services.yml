@@ -295,13 +295,28 @@
         placement:
           constraints: 
             - node.platform.os == linux
+      tags:
+        - garbage-collector
       register: provision_garbage_collector
 
     - name: Pause until Service is up
       pause: 
         prompt: "Make sure gargabe-collector is up and running"
         seconds: 30
+      tags:
+        - garbage-collector
       when: provision_garbage_collector.changed
+
+    - name: Get garbage-collector Service Info
+      docker_swarm_info:
+        services: yes
+        service_filters:
+          name: garbage-collector
+        verbose_output: yes
+      register: garbage-collector
+
+    - debug:
+        var: garbage-collector
 
     - name: Provision Portainer
       docker_swarm_service:
