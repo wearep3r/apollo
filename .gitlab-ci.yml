@@ -2,7 +2,7 @@
 stages:
   - version
   - build
-  #- test
+  - test
   - release
   - deploy
 
@@ -95,18 +95,18 @@ Build node-exporter:
 #     - infrastructure
 #     - docker
 
-# Lint Ansible files
-test:ansible:
-  stage: test
-  image: $CONTAINER_TEST_IMAGE
-  script:
-    - ansible-lint --version
-    - cd ansible
-    - echo 'Ansible refuses to read from a world-writeable folder, hence' && chmod -v 700 $(pwd)
-    - ansible-lint *.yml
-  allow_failure: true
-  tags: 
-    - infrastructure
+# # Lint Ansible files
+# test:ansible:
+#   stage: test
+#   image: $CONTAINER_TEST_IMAGE
+#   script:
+#     - ansible-lint --version
+#     - cd ansible
+#     - echo 'Ansible refuses to read from a world-writeable folder, hence' && chmod -v 700 $(pwd)
+#     - ansible-lint *.yml
+#   allow_failure: true
+#   tags: 
+#     - infrastructure
 
 Release node-exporter:
   stage: release
