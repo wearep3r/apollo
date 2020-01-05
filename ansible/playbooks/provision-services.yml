@@ -596,7 +596,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/prometheus:latest
+        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/prometheus:v0.6.0
         networks:
           - name: "proxy"
             aliases:
@@ -619,7 +619,7 @@
           parallelism: 2
           delay: 60s
           monitor: 30s
-          order: start-first
+          order: stop-first
           failure_action: rollback
         placement:
           constraints: 
