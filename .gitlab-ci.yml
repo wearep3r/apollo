@@ -75,8 +75,8 @@ Build node-exporter:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
     - cd ci/node-exporter
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
   tags: 
     - docker
     - infrastructure
@@ -116,8 +116,8 @@ Release node-exporter:
     # - docker pull $CONTAINER_TEST_IMAGE
     # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     # - docker push $CONTAINER_RELEASE_IMAGE
-    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG -t $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
   only:
     - master
