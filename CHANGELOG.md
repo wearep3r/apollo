@@ -14,6 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added Prometheus image (a5c8e88f7777a0574178c94edf659ca725f9e34e)
 - added Prometheus image (bccb7ddfcf98cc2e80cf87d43937ed529f325444)
 - added Grafana (a3b1e9e7499e16b756ec8f12319d792b174b6f65)
+- added cio-exporter (d5e74496a62f53fcf9efb4f849c88c76b2e08210)
+
+### Fixes
+
+- prometheus chmod (8183b3f83c6d2f64e0b635a7de9f9a9862982e2a)
+- make build stages manual (1213f8a7af053463f39a79a2a0d8c1f334f8d41b)
+- **ci:** added grafana builds (86457eaca07d66a150ae7267e029856f72497d51)
+- **ci:** added grafana builds (7d08d5473739d75d4ee347d36228e5fa3a646fc0)
+
+## 0.5.0
+2020-01-05
+
+### Features
+
+- added Prometheus image (a5c8e88f7777a0574178c94edf659ca725f9e34e)
+- added Prometheus image (bccb7ddfcf98cc2e80cf87d43937ed529f325444)
+- added Grafana (a3b1e9e7499e16b756ec8f12319d792b174b6f65)
 
 ### Fixes
 
