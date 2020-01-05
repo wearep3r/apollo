@@ -1,5 +1,5 @@
 # Setup Gitlab Runners
-- hosts: runner
+- hosts: satellite
   remote_user: "{{ deploy_user_name }}"
   become: true
   # Probably not needed (commented out on 28.10.2019)
