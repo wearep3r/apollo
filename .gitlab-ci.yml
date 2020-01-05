@@ -57,6 +57,8 @@ version:
     - .next-version
   except:
     - tags
+  tags: 
+    - infrastructure
 
 Build node-exporter:
   stage: build
@@ -66,13 +68,15 @@ Build node-exporter:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG -f ci/node-exporter/Dockerfile .
+    - cd ci/node-exporter
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG
   artifacts:
     paths:
     - build_info
   tags: 
     - docker
+    - infrastructure
 
 Build infrastructure:
   stage: build
@@ -91,6 +95,9 @@ Build infrastructure:
   artifacts:
     paths:
     - build_info
+  tags: 
+    - infrastructure
+    - docker
 
 # Lint Ansible files
 test:ansible:
@@ -102,6 +109,8 @@ test:ansible:
     - echo 'Ansible refuses to read from a world-writeable folder, hence' && chmod -v 700 $(pwd)
     - ansible-lint *.yml
   allow_failure: true
+  tags: 
+    - infrastructure
 
 release-image:
   stage: release
@@ -116,6 +125,8 @@ release-image:
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
   only:
     - master
+  tags: 
+    - infrastructure
 
 release:
   stage: release
@@ -129,6 +140,8 @@ release:
     - release commit-and-tag CHANGELOG.md release_info
   only:
     - master
+  tags: 
+    - infrastructure
 
 
 # release:

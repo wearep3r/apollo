@@ -9,6 +9,7 @@ gitlab_runner_runners:
     tags:
       - docker
       - staging
+      - infrastructure
     docker_privileged: true
     docker_volumes:
       #- "/var/run/docker.sock:/var/run/docker.sock"
