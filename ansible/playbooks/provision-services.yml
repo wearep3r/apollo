@@ -188,7 +188,6 @@
               driver: "overlay"
         env:
           - NODE_ID={{ "{{.Node.ID}}" }}
-          - PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
         mounts:
           - source: /
             target: /rootfs
