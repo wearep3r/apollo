@@ -71,9 +71,6 @@ Build node-exporter:
     - cd ci/node-exporter
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG
-  artifacts:
-    paths:
-    - build_info
   tags: 
     - docker
     - infrastructure
