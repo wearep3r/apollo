@@ -53,6 +53,28 @@
       group_by:
         key: swarm_worker_{{ swarm.stdout }}
 
+- hosts: satellite
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  tasks:
+    - name: Determine Satellite Swarm Status
+      shell: |
+        set -o pipefail
+        docker info | egrep 'Swarm: ' | cut -d ' ' -f3
+      register: swarm_status
+      changed_when: False
+      args:
+        executable: /bin/bash
+    - name: Save Satellite Swarm Status
+      set_fact:
+        swarm: "{{ swarm_status }}"
+
+    # Create dynamic in-memory groups "swarm_worker_active"
+    # and "swarm_worker_inactive" depending on the output of `docker info` (Swarm: active/inactive)
+    - name: Create swarm_satellite_* Group
+      group_by:
+        key: swarm_satellite_{{ swarm.stdout }}
+
 # If there are inactive Swarm Managers (i.e. not yet part of a swarm)
 # check if the Swarm needs to be bootstrapped (initialized)
 - hosts: swarm_manager_inactive[0]
@@ -62,7 +84,7 @@
     - name: Initialize Swarm Cluster
       shell: >
         docker swarm init
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
       when: "'swarm_manager_active' not in groups"
       register: bootstrap_first_node
 
@@ -75,7 +97,7 @@
 
     - name: Set Node Labels # noqa 403 503
       shell: >
-        docker node update --label-add role=manager {{ inventory_hostname }}
+        docker node update --label-add role=manager --label-add storage=cio --label-add namespace=mbiosphere {{ ansible_hostname }}
       when: swarm_manager_active.changed
 
 # Gather Swarm related information (Join tokens)
@@ -83,7 +105,8 @@
   remote_user: "{{ deploy_user_name }}"
   become: true
   vars:
-    iface: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
+    # hostvars[ansible_hostname]['ansible_default_ipv4']['interface']
+    iface: "{{ hostvars[ansible_hostname]['ansible_eth1']['device'] }}"
   tasks:
     - name: Retrieve Swarm Manager Token
       shell: docker swarm join-token -q manager # noqa 305
@@ -95,12 +118,13 @@
       changed_when: False
     # This list will be used to feed new nodes an IP address
     # to join the Swarm (see below)
-    - name: Populate list of Manager IPs
-      add_host:
-        hostname: "{{ hostvars[item]['ansible_' + iface]['ipv4']['address'] }}"
-        groups: swarm_manager_ips
-      with_items: "{{ play_hosts }}"
-      changed_when: False
+    # - name: Populate list of Manager IPs
+    #   add_host:
+    #     hostname: "{{ hostvars[item.inventory_hostname]['ansible_' + iface]['ipv4']['address'] }}"
+    #     groups: swarm_manager_ips
+    #   #with_items: "{{ play_hosts }}"
+    #   with_items: "{{ groups['manager'] }}"
+    #   changed_when: False
 
 # Have all inactive Swarm Managers join the existing Swarm as Manager
 - hosts: swarm_manager_inactive:!swarm_manager_active
@@ -110,14 +134,15 @@
     token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
   tasks:
     - name: Join Manager Nodes to Cluster # noqa 301
+      # hostvars[ansible_hostname]['ansible_default_ipv4']['address']
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ groups['swarm_manager_ips'][0] }}:2377
+        {{ groups['manager'][0] }}:2377
     - name: Set Node Labels # noqa 301
       shell: >
-        docker node update --label-add role=manager {{ inventory_hostname }}
+        docker node update --label-add role=manager --label-add storage=cio --label-add namespace=mbiosphere {{ ansible_hostname }}
 
 # Have all inactive Swarm Workers join the existing Swarm as Worker
 - hosts: swarm_worker_inactive
@@ -129,13 +154,22 @@
     - name: Join Worker Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ groups['swarm_manager_ips'][0] }}:2377
+        {{ groups['manager'][0] }}:2377
 
-    - name: Set Node Labels # noqa 301
+- hosts: swarm_satellite_inactive
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  vars:
+    token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_worker_token']['stdout'] }}"
+  tasks:
+    - name: Join Satellite Nodes to Cluster # noqa 301
       shell: >
-        docker node update --label-add role=worker {{ inventory_hostname }}
+        docker swarm join
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
+        --token={{ token }}
+        {{ groups['manager'][0] }}:2377
 
 - hosts: swarm_manager_active[0]
   remote_user: "{{ deploy_user_name }}"
@@ -143,15 +177,12 @@
   tasks:
     - name: Set Worker Node Labels # noqa 301
       shell: >
-          docker node update --label-add role=worker {{ hostvars[item]["ansible_hostname"] }}
+          docker node update --label-add role=worker --label-add storage=cio --label-add namespace=mbiosphere {{ hostvars[item]["ansible_hostname"] }}
       with_items: "{{ groups['worker'] }}"
+      when: groups["worker"] is defined and (groups["worker"]|length>0)
+    - name: Set Satellite Node Labels # noqa 301
+      shell: >
+          docker node update --label-add role=satellite --label-add storage=local --label-add namespace=mbiosphere {{ hostvars[item]["ansible_hostname"] }}
+      with_items: "{{ groups['satellite'] }}"
+      when: groups["satellite"] is defined and (groups["satellite"]|length>0)
 
-- hosts: swarm_manager_active[0]
-  remote_user: "{{ deploy_user_name }}"
-  become: true
-  tasks:
-    - name: Create Mbiosphere Overlay networks
-      docker_network:
-        name: "{{ item }}"
-        driver: overlay
-      with_items: "{{ mbio_networks }}"

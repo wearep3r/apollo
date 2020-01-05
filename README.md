@@ -29,8 +29,9 @@ We use the Development Version of Ansible to use the latest HCLOUD modules:
 The Playbooks used to build and maintain this infrastructure have some dependencies that are listed below.
 
 ### Local Dependencies
-- `sudo pip install hcloud`
+- `sudo pip install hcloud dopy`
 - Install Requirements: `ansible-galaxy install -r requirements.yml`
+- Ansible Terraform Inventory: `brew install terraform-inventory`
 
 ## Overview
 To get an idea of what Ansible does and how it works, please (for now) refer to [this link](https://docs.ansible.com/ansible/latest/user_guide/index.html). Over time, most of the functionality used for this project will be highlighted and explained in this README and complementing docs in [this directory](docs/).
@@ -38,10 +39,14 @@ To get an idea of what Ansible does and how it works, please (for now) refer to 
 Ansible is an SSH-based orchestration software used in terms of **Immutable Infrastructure** and **Infrastructure as Code**. In short words, you define what your infrastructure (hosts, services, configs, etc) should look and behave like - and Ansible will force your will upon the infrastructure.
 
 ### Inventory
-Ansible works with static and dynamic inventories. For now, we're using static inventories in form of *files* (staging.yml, production.yml, development.yml) where all nodes our infrastructure is composed of will be listed alongside any meta-info we have about them.
+Ansible works with static and dynamic inventories. For now, we're using dynamic inventories in form of *terraform-inventory* which pulls information from `terraform/terraform.tfstate`.
 
-#### List Inventory HETZNER
-`ansible-inventory -i hcloud.yml --list`
+`TF_STATE=../terraform/ ansible-playbook --inventory-file=/usr/local/bin/terraform-inventory provision.yml`
+
+#### List Inventory
+`TF_STATE=terraform/ terraform-inventory -inventory`
+
+**DEPRECATED** (HETZNER): `ansible-inventory -i hcloud.yml --list`
 
 ### Playbooks
 Ansible can be told to apply a set of instructions (called **Playbook**) to these nodes. The procedure is always the same:
@@ -56,17 +61,10 @@ Ansible does this on multiple nodes at a time in parallel which makes it the exc
 
 The overall paradigm is "Idempotency", meaning Ansible helps to use a server as a replaceable ressource that can be deleted, respawned and reconfigured at any given time with **always** the exact same outcome. This enables ease migration, upgrades and changes on whole fleets of servers and services.
 
-## PLAYGROUND
-I've spun up a dev-machine at HETZNER that is listed as "mbio-test" in `staging.yml`. Ansible (as of this repository) is configured to use a specific SSH-Key (in `.ssh`) for any connection made to the inventory nodes, so you should be able to do the following out of the box to see it in action:
+## Provisioning
 
-- [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-- `git clone git@gitlab.com:mbio/mbiosphere/infrastructure.git`
-- `cd infrastructure`
-- `ansible-playbook -i staging configure-node.yml`
-
-This should provision the node with the tasks configured in `configure-node.yml`. As it is already provisioned, there won't be (m)any changes, but it's a quick way to see how Ansible works.
-
-Within this repository, Ansible has a dedicated `ansible.cfg` that, if Ansible is used from within this directory, will be favored over your local ansible.cfg. Adjust according to you needs.
+1. `cd terraform && terraform plan && terraform apply`
+2. `cd ansible && TF_STATE=../terraform/ ansible-playbook --inventory-file=/usr/local/bin/terraform-inventory provision.yml`
 
 ## Provision Docker Node
 From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
@@ -97,3 +95,11 @@ ansible-playbook -u root -i staging configure-node.yml
 - https://juhani.gitlab.io/go-semrel-gitlab/get-started/
 - Semantic Versioning
 - GitLab Access Token: hxMptRX7KeHsqyxYR3Uf
+
+# Recommendations
+- Configure the services' logging-modules to output including timestamps. This eases debugging a lot
+- Add a LOG_LEVEL environment config option to all services to enable on-demand debugging
+- Have services output start-up info like "version", "status", "db connection", etc. In any scenario, this helps understanding if a service is doing what he should and has all dependencies (like databases, brokers, etc) fulfilled
+- Improve Error-Logging (try...catch, better messages) and -Handling
+- Add a [healthcheck URL](https://codeblog.dotsandbrackets.com/docker-health-check/) to each http-based service; this helps the swarm to know the state of a task/service and enables advanced monitoring from external apps (datadog, prometheus, etc); for non-http services a local or tcp-based socket works fine, too. The actual healthcheck command the swarm needs to use will be defined in the services stack-file
+- Improve docs on service dependencies, needed networks, minimum viable config, etc; for the full-time DevOps to optimally operate the platform, good service-based docs are a must; a good start is to design services around the [12-factor App](https://12factor.net/de/) methodology.

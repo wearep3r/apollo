@@ -1,0 +1,86 @@
+# Create Staging/Production Managers and Workers
+# Check if the provisioning succeeded
+# Wait 100s for hosts to come up if they've been recently created/changed
+- name: Create Swarm Infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  user: root
+  handlers:
+    - name: wait
+      pause:
+        prompt: "Waiting for servers to become fully available"
+        seconds: 180
+  tasks:
+    - name: Rebuild Managers
+      hcloud_server:
+        api_token: "{{ hcloud_token }}"
+        name: "{{ item.name }}"
+        server_type: cx41
+        image: ubuntu-18.04
+        location: "{{ item.location }}"
+        ssh_keys:
+          - MBio DevOps
+        state: rebuild
+        labels:
+          swarm: ""
+          manager: ""
+          mbiosphere: ""
+        backups: no
+      with_items: "{{ nodes.manager }}"
+      notify: wait
+    - name: Create 3 Volumes for each Node
+      hcloud_volume:
+        api_token: "{{ hcloud_token }}"
+        name: "{{ item[0].name+'-'+item[1] }}"
+        server: "{{ item[0].name }}"
+        size: 50
+        state: present
+        automount: no
+      with_nested:
+        - "{{ nodes.manager }}"
+        - ["block-1", "block-2", "block-3"]
+    - name: Join Managers to Swarm Network
+      hcloud_server_network:
+        api_token: "{{ hcloud_token }}"
+        network: swarm
+        server: "{{ item.name }}"
+        state: present
+      with_items: "{{ nodes.manager }}"
+    - name: Rebuild Workers
+      hcloud_server:
+        api_token: "{{ hcloud_token }}"
+        name: "{{ item.name }}"
+        server_type: cx41
+        image: ubuntu-18.04
+        location: "{{ item.location }}"
+        ssh_keys:
+          - MBio DevOps
+        state: rebuild
+        labels:
+          swarm: ""
+          worker: ""
+          mbiosphere: ""
+        backups: no
+      with_items: "{{ nodes.worker }}"
+      notify: wait
+    - name: Create 3 Volumes for each Node
+      hcloud_volume:
+        api_token: "{{ hcloud_token }}"
+        name: "{{ item[0].name+'-'+item[1] }}"
+        server: "{{ item[0].name }}"
+        size: 50
+        state: present
+        automount: no
+      with_nested:
+        - "{{ nodes.worker }}"
+        - ["block-1", "block-2", "block-3"]
+    - name: Join Workers to Swarm Network
+      hcloud_server_network:
+        api_token: "{{ hcloud_token }}"
+        network: swarm
+        server: "{{ item.name }}"
+        state: present
+      with_items: "{{ nodes.worker }}"
+    - name: Refresh inventory to ensure new instances exist in inventory
+      meta: refresh_inventory

@@ -5,7 +5,7 @@
 # If yes, the Playbook will be executed as user "devops"
 # This removes the need to manually run a "bootstrap" playbook the first time 
 # you bring the infrastructure up.
-- hosts: mbiosphere
+- hosts: all
   gather_facts: no
   tasks:
     - name: Check Provisioning Status
@@ -40,24 +40,11 @@
               {% else %}Starting Bootstrapping{% endif %}"
       when: connection.failed
 
-# Create the deployment user and authorize our SSH Keys
-- hosts: mbiosphere
+# Standards
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   tasks:
-    - name: Add User devops
-      user:
-        name: devops
-        groups: sudo
-        state: present
-        append: yes
-        shell: /bin/bash
-
-    - name: Set up authorized keys for user devops
-      authorized_key: user=devops key="{{ item }}"
-      with_file:
-        - ../../.ssh/id_rsa.pub
-
     - name: Set up authorized keys for user root
       authorized_key: user=root key="{{ item }}"
       with_file:
@@ -65,8 +52,8 @@
 
     - name: Set root SSH keys
       copy:
-        src=../../.ssh/
-        dest=/root/.ssh/
+        src=../../.ssh/id_rsa
+        dest=/root/id_rsa.pem
         owner=root
         group=root
         mode=0600
@@ -79,13 +66,53 @@
         line: '%sudo ALL=(ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
 
+    - name: Create A record at Cloudflare
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "{{ ansible_hostname }}.nodes"
+        type: A
+        solo: yes
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+      register: record
+
+    # - name: Ensure SSH Host Key is known
+    #   delegate_to: localhost
+    #   become: false
+    #   lineinfile:
+    #     dest: ~/.ssh/known_hosts
+    #     create: yes
+    #     state: present
+    #     line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port|string + ' ' + inventory_hostname+'.swarm.'+base_domain) }}"
+
 # Basics
 # - apt / pip dependencies
-- hosts: mbiosphere
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   tasks:
+    - name: Check if iscsi-initiatorname backup exists
+      stat:
+        path: /etc/iscsi/initiatorname.iscsi.bak
+      register: initiatorname_bak
+    - name: Fix iscsi problem 1
+      copy:
+        src: /etc/iscsi/initiatorname.iscsi
+        dest: /etc/iscsi/initiatorname.iscsi.bak
+        remote_src: yes
+      when: initiatorname_bak.stat.exists == False 
+    - name: Fix iscsi problem 2
+      shell:
+        cmd: /sbin/iscsi-iname
+      register: iscsi_iname
+      when: initiatorname_bak.stat.exists == False 
+    - name: Copy iscsi-iname to file
+      copy:
+        content: "InitiatorName={{ iscsi_iname.stdout }}"
+        dest: /etc/iscsi/initiatorname.iscsi
+      when: initiatorname_bak.stat.exists == False 
     - name: Install apt dependencies
       apt:
         name:
@@ -104,110 +131,121 @@
 
 # NTP & Localization
 # Config in group_vars/all
-- hosts: mbiosphere
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   roles:
     - geerlingguy.ntp
     - robertdebock.locale
-
-# Prepare Firewall for Swarm Communication
-# This is fed to geerlingguy.firewall in the next task
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: yes
-  tasks:
-    - name: Initialize List
-      set_fact:
-        firewall_additional_rules:
-          - "iptables -N DOCKER"
-          # Masquerade outbound connections from containers
-          - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
-          # Accept established connections to the docker containers
-          - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
-          # Allow docker containers to communicate with themselves & outside world
-          - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
-          - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
-    - name: Allow connections from Swarm hosts
-      set_fact:
-        firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
-          + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
-      with_items:  "{{ groups['mbiosphere'] }}"
-
-# OS Hardening
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
-  roles:
-    - geerlingguy.security
-    - geerlingguy.firewall
-    - dev-sec.os-hardening # https://github.com/dev-sec/ansible-os-hardening
-    - dev-sec.ssh-hardening # https://github.com/dev-sec/ansible-ssh-hardening
-  vars:
-    firewall_additional_rules: hostvars[inventory_hostname]['firewall_additional_rules'] # geerlingguy.firewall
-    security_ssh_permit_root_login: yes # geerlingguy.security
-    sysctl_overwrite: # dev-sec.os-hardening
-      # Enable IPv4 traffic forwarding
-      # This is needed for Docker
-      net.ipv4.ip_forward: 1
-
-# Prepare Firewall for Swarm Communication
-# This is fed to geerlingguy.firewall in the next task
-# - hosts: mbiosphere
-#   become: true
-#   remote_user: "{{ deploy_user_name }}"
-#   gather_facts: no
-#   tasks:
-#     - name: Restart Docker
-#       service:
-#         name: docker
-#         state: restarted
-
-# Install Docker & Toolchain
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
-  roles:
     - geerlingguy.docker
-
-# Update users "devops" and "docker" (typically already existing)
-# We can't add any user to group "docker" before Docker is installed
-# Adding our deploy user to the docker group enables it to control
-# Docker without elevated privileges (sudo)
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
   tasks:
-    - name: Add User "devops"
+    - name: Add User devops
       user:
         name: devops
         groups: sudo,docker
         state: present
         append: yes
         shell: /bin/bash
-    - name: Add User "docker"
-      user:
-        name: docker
-        group: docker
-        state: present
-        append: yes
-        shell: /bin/bash
+
     - name: Set up authorized keys for user devops
       authorized_key: user=devops key="{{ item }}"
       with_file:
         - ../../.ssh/id_rsa.pub
 
-    # Add the SSH Key in .ssh/id_rsa to user "docker"
-    # This enables GitLab to connect to the Docker Socket on any Swarm-Manager
-    # via SSH.
-    # Example:
-    # DOCKER_HOST=ssh://docker@swarm-manager1 docker ps
-    - name: Set up authorized keys for user docker
-      authorized_key: user=docker key="{{ item }}"
-      with_file:
-        - ../../.ssh/id_rsa.pub
+# Prepare Firewall for Swarm Communication
+# This is fed to geerlingguy.firewall in the next task
+# DEPRECATED: replaced by own firewall handling;
+# Docker and iptables don't work together seemlessly so we need to manually get it going
+# Otherwise iptables will flush Docker's firewall rules upon every restart/reboot
+# and thus render cluster communication impossible
+# - hosts: mbiosphere
+#   become: true
+#   remote_user: "{{ deploy_user_name }}"
+#   gather_facts: yes
+#   tasks:
+#     - name: Initialize List
+#       set_fact:
+#         firewall_additional_rules:
+#           - "iptables -N DOCKER"
+#           # Masquerade outbound connections from containers
+#           - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
+#           # Accept established connections to the docker containers
+#           - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+#           # Allow docker containers to communicate with themselves & outside world
+#           - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
+#           - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
+#           # Allow from docker_gwbridge (needed for Storidge API to respond to calls from Portainer container)
+#           - "iptables -A INPUT -s 172.18.0.0/16 -j ACCEPT"
+#     - name: Allow connections from Swarm hosts
+#       set_fact:
+#         firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
+#           + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
+#       with_items:  "{{ groups['mbiosphere'] }}"
+
+# General Security
+# - hosts: mbiosphere
+#   become: true
+#   remote_user: "{{ deploy_user_name }}"
+#   gather_facts: no
+#   roles:
+#     #- geerlingguy.security # Messes with Storidge
+#     - geerlingguy.firewall
+#   vars:
+#     firewall_additional_rules: hostvars[inventory_hostname]['firewall_additional_rules'] # geerlingguy.firewall
+#   handlers:
+#     - name: Restart Docker service after firewall restarted
+#       service:
+#         name: docker
+#         state: restarted
+#       listen: restart firewall
+
+# - name: Restart Docker when Firewall changed
+#   become: true
+#   gather_facts: no
+#   service:
+#     name: docker
+#     state: restarted
+#   handlers:
+#     - name: Restart Docker service after firewall restarted
+#       service:
+#         name: docker
+#         state: restarted
+#       listen: restart firewall
+
+- hosts: all
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: yes
+  handlers:
+    - name: restart firewall
+      service:
+        name: iptables
+        state: restarted
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
+  tasks:
+    - name: Copy firewall config
+      template:
+        src: templates/iptables.conf.j2
+        dest: /etc/iptables.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart firewall
+    - name: Copy firewall service
+      template:
+        src: templates/iptables.service.j2
+        dest: /etc/systemd/system/iptables.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: reload systemd
+    - name: Enable firewall service
+      service:
+        name: iptables
+        enabled: yes
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes

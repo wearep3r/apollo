@@ -1,0 +1,26 @@
+# - hosts: swarm
+#   remote_user: "{{ deploy_user_name }}"
+#   become: true
+#   tasks:
+#     - name: Reboot Node
+#       reboot:
+#         reboot_timeout: 180
+
+#     - name: Wait for Nodes to be fully up
+#       pause:
+#         prompt: "Waiting for nodes to become fully available"
+#         seconds: 180
+
+- name: Reboot Swarm Nodes
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  user: root
+  tasks:
+    - name: Reboot Nodes
+      hcloud_server:
+        api_token: "{{ hcloud_token }}"
+        name: "{{ item }}"
+        state: restarted
+      with_inventory_hostnames:
+        - swarm

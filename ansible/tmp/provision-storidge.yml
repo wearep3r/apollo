@@ -1,0 +1,139 @@
+# Install Storidge
+- hosts: swarm
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  tasks:
+    - name: Check Storidge is installed
+      shell: command -v cio >/dev/null 2>&1
+      register: cio_installed
+      ignore_errors: yes
+
+    - name: Check Storidge version
+      command: cio version
+      register: cio_version
+      changed_when: False
+      ignore_errors: yes
+      when: 'cio_installed.rc == 0'
+
+    - name: CIO Version
+      debug:
+        var: cio_version
+
+    - name: Set sysctl stuff
+      sysctl:
+        name: net.ipv4.tcp_window_scaling
+        value: '0'
+        state: present
+  
+    - name: Download Storidge Installer
+      get_url: 
+        url: ftp://download.storidge.com/pub/ce/cio-ce
+        dest: /tmp/cio-installer.sh
+        mode: 0700
+      when: 'cio_installed.rc != 0'
+      
+    # Install Logs can be found in /var/lib/storidge/installed_packages on the nodes
+    - name: Install Storidge
+      shell: /tmp/cio-installer.sh
+      register: cio_installer
+      when: 'cio_installed.rc != 0'
+
+    - name: Remove Storidge Installer
+      file: 
+        path: /tmp/cio-installer.sh 
+        state: absent
+      when: 'cio_installed.rc != 0'
+
+    - name: Reboot Node
+      reboot:
+        reboot_timeout: 180
+      when: "'skipped' not in cio_installer"
+
+    - name: Wait for Nodes to be fully up
+      pause:
+        prompt: "Waiting for nodes to become fully available"
+        seconds: 180
+      when: "'skipped' not in cio_installer"
+
+    - name: Check Cluster Init Status
+      shell: >
+        cio info
+      register: cluster_init_status
+
+- name: Create Storidge Cluster
+  hosts: manager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Set private ip
+      set_fact:
+        #private_ip: "{{ ansible_default_ipv4.address }}"
+        private_ip: "{{ ansible_ens10['ipv4']['address'] }}"
+
+    - name: get join token from active cluster
+      shell: >
+        cioctl join-token | awk '/cioctl node add/ {print $5}'
+      register: jointoken
+
+    - name: create cluster
+      shell: >
+        cioctl create --noportainer --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
+      register: clustertoken
+      when: "'Condition: Normal' not in cluster_init_status.stdout"
+
+    - name: Report Cluster Token
+      debug:
+        var: clustertoken
+    
+    - name: Report Join Token
+      debug:
+        var: jointoken
+
+- name: Join Storidge Nodes
+  hosts: manager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  gather_facts: False
+  vars:
+    clustertoken: "{{ hostvars[groups['manager'][0]]['clustertoken'] }}"
+    jointoken: "{{ hostvars[groups['manager'][0]]['jointoken'] }}"
+    master: "{{ hostvars[groups['manager'][0]]['private_ip'] }}"
+  tasks:
+    - name: join nodes to cio cluster
+      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_ens10']['ipv4']['address'] }}"
+      register: result
+      when: "'Condition: Normal' not in hostvars[item]['cluster_init_status'].stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
+      delegate_to: "{{ item }}"
+      run_once: true
+      with_items: "{{ groups['swarm'] }}"
+
+    - name: Join Result
+      debug:
+        var: result
+
+- name: Initialize Storidge Cluster
+  hosts: manager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  gather_facts: False
+  vars:
+    clustertoken: "{{ hostvars[groups['manager'][0]]['clustertoken'] }}"
+    jointoken: "{{ hostvars[groups['manager'][0]]['jointoken'] }}"
+  tasks:
+    - name: cioctl init
+      #command: "cioctl init {{ clustertoken.stdout.split('-')[1] }} --drive ssd"
+      command: "cioctl init {{ clustertoken.stdout.split('-')[1] }}"
+      register: clusterinit
+      when: "'skipped' not in clustertoken"
+
+    - name: Show Cluster Init Output
+      debug: var=clusterinit
+
+    - name: Cluster Init Status
+      shell: >
+        cio info
+      register: cluster_init_status
+
+    - name: show cluster status
+      debug: var=cluster_init_status

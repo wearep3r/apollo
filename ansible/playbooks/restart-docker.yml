@@ -1,0 +1,9 @@
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  gather_facts: no
+  tasks:
+    - name: Restart Docker service after firewall restarted
+      service:
+        name: docker
+        state: restarted

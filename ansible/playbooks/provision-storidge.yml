@@ -1,34 +1,10 @@
 # Install Storidge
-- hosts: swarm
+- hosts: 
+    - manager
+    - worker
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
-    # - name: Recursively remove directory
-    #   file:
-    #     path: /opt/storidge
-    #     state: absent
-    - name: Download Storidge
-      get_url:
-        # /u18 is for Ubuntu 18.04
-        url: ftp://download.storidge.com/pub/ce/u18/cio-{{ storidge_version }}-u18-ce.amd64.txz
-        dest: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
-        mode: '0775'
-
-    - name: Extract Storidge
-      unarchive:
-        src: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
-        dest: /usr/src
-        remote_src: yes
-        creates: /usr/src/cio-{{ storidge_version }}-u18.amd64
-    
-    - name: Symlink Storidge to /opt/storidge
-      file:
-        src: /usr/src/cio-{{ storidge_version }}-u18.amd64
-        dest: /opt/storidge
-        owner: root
-        group: root
-        state: link
-
     - name: Check Storidge is installed
       shell: command -v cio >/dev/null 2>&1
       register: cio_installed
@@ -45,35 +21,82 @@
       debug:
         var: cio_version
 
+    - name: Set sysctl stuff
+      sysctl:
+        name: net.ipv4.tcp_window_scaling
+        value: '0'
+        state: present
+
+    # - name: Download Storidge
+    #   get_url:
+    #     # /u18 is for Ubuntu 18.04
+    #     url: ftp://download.storidge.com/pub/ce/u18/cio-{{ storidge_version }}-u18-ce.amd64.txz
+    #     dest: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
+    #     mode: '0775'
+    #   when: 'cio_installed.rc != 0'
+
+    # - name: Extract Storidge
+    #   unarchive:
+    #     src: /tmp/cio-{{ storidge_version }}-u18-ce.amd64.txz
+    #     dest: /usr/src
+    #     remote_src: yes
+    #     creates: /usr/src/cio-{{ storidge_version }}-u18.amd64
+    #   when: 'cio_installed.rc != 0'
+    
+    # - name: Symlink Storidge to /opt/storidge
+    #   file:
+    #     src: /usr/src/cio-{{ storidge_version }}-u18.amd64
+    #     dest: /opt/storidge
+    #     owner: root
+    #     group: root
+    #     state: link
+    #   when: 'cio_installed.rc != 0'
+
+    # - name: Install Storidge
+    #   command: chdir=/opt/storidge ./install
+    #   register: cio_installer
+    #   when: 'cio_installed.rc != 0'
+    #   #when: "cio_version.stdout.find('v=' ~ storidge_version) == -1"
+  
+    - name: Download Storidge Installer
+      get_url: 
+        url: ftp://download.storidge.com/pub/ce/cio-ce
+        dest: /tmp/cio-installer.sh
+        mode: 0700
+      when: 'cio_installed.rc != 0'
+      
+    # Install Logs can be found in /var/lib/storidge/installed_packages on the nodes
     - name: Install Storidge
-      command: chdir=/opt/storidge ./install
+      shell: /tmp/cio-installer.sh -r {{ storidge_version }}
+      register: cio_installer
       when: 'cio_installed.rc != 0'
       #when: "cio_version.stdout.find('v=' ~ storidge_version) == -1"
 
-- hosts: localhost
-  connection: local
-  gather_facts: False
-  user: root
-  tasks:
-    - name: Restart Managers
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ item.name }}"
-        state: restarted
-      with_items: "{{ nodes.manager }}"
+    - name: Remove Storidge Installer
+      file: 
+        path: /tmp/cio-installer.sh 
+        state: absent
       when: 'cio_installed.rc != 0'
-    - name: Restart Workers
-      hcloud_server:
-        api_token: "{{ hcloud_token }}"
-        name: "{{ item.name }}"
-        state: restarted
-      with_items: "{{ nodes.worker }}"
-      when: 'cio_installed.rc != 0'
-    - name: Wait for Hosts to be up
+
+    - name: Reboot Node
+      reboot:
+        reboot_timeout: 180
+      when: "'skipped' not in cio_installer"
+
+    - name: Wait for Nodes to be fully up
       pause:
-        prompt: "Waiting for servers to become fully available"
+        prompt: "Waiting for nodes to become fully available"
         seconds: 180
-      when: 'cio_installed.rc != 0'
+      when: "'skipped' not in cio_installer"
+
+    - name: Check Cluster Init Status
+      shell: >
+        cio info
+      register: cluster_init_status
+
+    - name: Report Cluster Init Status
+      debug:
+        var: cluster_init_status
 
 - name: Create Storidge Cluster
   hosts: manager[0]
@@ -83,7 +106,9 @@
   tasks:
     - name: Set private ip
       set_fact:
-        private_ip: "{{ ansible_default_ipv4.address }}"
+        #private_ip: "{{ ansible_default_ipv4.address }}"
+        private_ip: "{{ ansible_eth1['ipv4']['address'] }}"
+
     - name: get join token from active cluster
       shell: >
         cioctl join-token | awk '/cioctl node add/ {print $5}'
@@ -91,12 +116,20 @@
 
     - name: create cluster
       shell: >
-        cioctl create --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
+        cioctl create --noportainer --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
       register: clustertoken
-      when: "jointoken.stdout == ''"
+      when: "cluster_init_status and 'Condition: normal' not in cluster_init_status.stdout"
+
+    - name: Report Cluster Token
+      debug:
+        var: clustertoken
+    
+    - name: Report Join Token
+      debug:
+        var: jointoken
 
 - name: Join Storidge Nodes
-  hosts: swarm
+  hosts: manager[0]
   remote_user: "{{ deploy_user_name }}"
   become: true
   gather_facts: False
@@ -105,42 +138,20 @@
     jointoken: "{{ hostvars[groups['manager'][0]]['jointoken'] }}"
     master: "{{ hostvars[groups['manager'][0]]['private_ip'] }}"
   tasks:
-    - name: check if already a cluster member
-      stat:
-        path: /etc/storidge/nodeid
-      register: nodeid
-
     - name: join nodes to cio cluster
-      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout) }} --ip {{ ansible_default_ipv4.address }}"
-      args:
-        creates: "/etc/storidge/nodeid"
-      #changed_when: result.rc != 1
-      #failed_when: verification.rc not in [0,1]
-      async: 1000
-      poll: 0
+      #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_eth1']['ipv4']['address'] }}"
       register: result
-      #retries: 5
-      #delay: 180
-      when: not nodeid.stat.exists
+      when: "'Condition: normal' not in hostvars[item]['cluster_init_status'].stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
+      delegate_to: "{{ item }}"
+      run_once: true
+      with_items: 
+        - "{{ groups['worker'] }}"
+        - "{{ groups['manager'] }}"
 
-    - name: Install Result
+    - name: Join Result
       debug:
         var: result
-
-    - name: check join status
-      async_status:
-        jid: "{{ result.ansible_job_id }}"
-      until: check_result.finished
-      register: check_result
-      retries: 1000
-      #until: result.stdout.find("Starting API") != -1
-      #retries: 5
-      #delay: 180
-      when: "'skipped' not in result"
-
-    - name: Install Result
-      debug:
-        var: check_result
 
 - name: Initialize Storidge Cluster
   hosts: manager[0]
@@ -149,14 +160,46 @@
   gather_facts: False
   vars:
     clustertoken: "{{ hostvars[groups['manager'][0]]['clustertoken'] }}"
+    jointoken: "{{ hostvars[groups['manager'][0]]['jointoken'] }}"
   tasks:
+    # - name: Make sure Storidge can access nodes
+    #   copy:
+    #     src: /root/.ssh/id_rsa
+    #     dest: /root/id_rsa.pem
+    #     remote_src: yes
+    #     mode: 0600
     - name: cioctl init
+      #command: "cioctl init {{ clustertoken.stdout.split('-')[1] }} --drive ssd"
       command: "cioctl init {{ clustertoken.stdout.split('-')[1] }}"
       register: clusterinit
-      when: "clustertoken is not skipped"
+      when: "'skipped' not in clustertoken"
 
-    - name: show cluster init output
-      debug: var=clusterinit.stdout
+    - name: Show Cluster Init Output
+      debug: var=clusterinit
 
-    - name: show cluster init error
-      debug: var=clusterinit.stderr
+    - name: Cluster Init Status
+      shell: >
+        cio info
+      register: cluster_init_status
+
+    - name: show cluster status
+      debug: var=cluster_init_status
+
+    # - name: cioctl init (after failed first try)
+    #   command: "cioctl init {{ jointoken.stdout.split('-')[1] }}"
+    #   register: clusterinit2
+    #   when: "'System is not initialized' in cluster_init_status"
+
+    # - name: show cluster init output
+    #   debug: var=clusterinit2
+
+# - name: Cleanup Storidge Portainer
+#   hosts: manager[0]
+#   remote_user: "{{ deploy_user_name }}"
+#   become: true
+#   gather_facts: False
+#   tasks:
+#     - name: Remove stack
+#       docker_stack:
+#         name: portainer
+#         state: absent

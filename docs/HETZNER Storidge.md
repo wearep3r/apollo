@@ -1,0 +1,13 @@
+# Issue
+Storidge in its latest version didn't properly run on Ubuntu 18.04 on HETZNER Cloud Virtual Machines. Sometimes the cluster didn't build appropriately, sometimes it did but died afterwards without any information as to "why".
+
+# Steps to fix
+It took several days of deep debugging inside the inner workings of Storidge and how it interacts with Docker Swarm and its prerequisites (iscsi). During debugging, multiple Slack-Sessions with the Storidge Developers were necessary to spot the reasons for Storidge to not operate properly on our nodes.
+
+- HETZNERs VM Base Images all carry the same `iscsi-initiatorname` in `/etc/iscsi/initiatorname.iscsi`. This introduces issues with the `iscsi` daemon powering Storidge. Each node in the cluster needs to have a unique ID in this context otherwise node-discovery and inter-node communication times out all the time, leading to unstable cluster operation. To mitigate the issue, the Ansible Deployment now ensures that each node has a unique ID in `/etc/iscsi/initiatorname.iscsi`. Additionally, the Storidge itself will have a routine to check for this in its next release.
+- Storidge now supports a Prometheus exporter that apparently had issues with how HETZNER's VMs expose environmental information. Some metrics coulnd't be accessed correctly which caused the `cio-api` service to not start at all. The service is needed by Docker Swarm to provision Volumes. Storidge dedicated a few developers to this task. They spun up a demo-cluster on HETZNER to verify my findings and commited a patch to the next release of Storidge.
+- "Not so good latencies" at HETZNER contributed to the overall problems. Now that the other issues are resolved, the latency shouldn't be an issue for us with the workload the platform is intended to carry.
+- One additional finding was that Portainer had issues with networking and thus proxying the Storidge and Docker APIs. One step taken to mitigate the issue was to further separate and define networking. Initially, the nodes were deployed within a 10.0.0/16 subnet which unfortunately overlaps with the 10.0.0/24 `ingress` subnet Docker Swarm uses to route requests. This introduced collisions within the overlay networks as packets couldn't be correctly routed. This issue was resolved by changing the HETZNER internal subnet to `10.13.2.0/24`.
+
+# Takeaway
+Storidge now performs as it's supposed to. Having direct access to the Storidge Developers was a huge plus during debugging and the speed of fix-delivery supports the decision to use Storidge as Storage Backend.

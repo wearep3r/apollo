@@ -1,0 +1,27 @@
+- hosts: mbiosphere
+  become: true
+  remote_user: "{{ deploy_user_name }}"
+  tasks:
+    - name: Dist Upgrade
+      apt:
+        upgrade: dist
+        update_cache: yes
+      register: upgrade
+    
+    # - name: Reboot if kernel/libs was updated
+    #   shell: sleep 10 && /sbin/shutdown -r now 'Rebooting box to update system libs/kernel as needed' 
+    #   args:
+    #       removes: /var/run/reboot-required
+    #   async: 300
+    #   poll: 0
+    #   ignore_errors: true
+    - name: Reboot Node
+      reboot:
+        reboot_timeout: 180
+      when: upgrade.changed
+
+    - name: Wait for system to become reachable again
+      wait_for_connection:
+          delay: 60
+          timeout: 180
+      when: upgrade.changed
