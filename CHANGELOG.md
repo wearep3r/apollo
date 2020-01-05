@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.6.1
+2020-01-05
+
+### Fixes
+
+- changed CIO dashboard (699344dca3857e0785b032f38b2c56319a4c2a52)
+
 ## 0.6.0
 2020-01-05
 
