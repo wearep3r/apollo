@@ -1,0 +1,54 @@
+# GitLab Runner Settings
+gitlab_runner_package_name: 'gitlab-runner'
+#gitlab_runner_coordinator_url: "https://gitlab.com"
+gitlab_runner_registration_token: "Y3Ae_Vx-T7B2EC7WKqbT"
+gitlab_runner_concurrent: 4
+gitlab_runner_listen_address: ":9252"
+gitlab_runner_runners:
+  - name: '{{ ansible_hostname }}'
+    executor: docker
+    docker_image: 'docker:dind'
+    tags:
+      - docker
+      - staging
+      - infrastructure
+    environment:
+      - SSH_PRIVATE_KEY: "-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
+NhAAAAAwEAAQAAAQEAyNy1uepqusHRJF9BNGeO0YooBbrJEeIfiB/W/NkD4FYcy76FrKpB
+CX7mzBMfxPs2EJP2G2DOozyXVuw8fcUAn3u+Dut6E8fKxhHNJP5OC6jee00Kb3vxYWsr9l
+ao0N9e9/Dc6YEpplfkgQ8+P4aCP8XHdYIa6VIew18Vkf2BEpBtTaxUb6Qr2KzE5FkdRjKF
+Rc5PEGnGjZ5+BpUzaN+WZSNTNzCyiu3sBbh569gBKIVoQJUEImeV2tj2p1kqE7U8bFHvtC
+mgNDX4ZmxSVx3uQSLtepr4/Mz75qKyb2LxqySnCS827T7Z76enrzqsRjnyd/p0mkjYZQtX
+cqebAzQVqQAAA8h7m8The5vE4QAAAAdzc2gtcnNhAAABAQDI3LW56mq6wdEkX0E0Z47Rii
+gFuskR4h+IH9b82QPgVhzLvoWsqkEJfubMEx/E+zYQk/YbYM6jPJdW7Dx9xQCfe74O63oT
+x8rGEc0k/k4LqN57TQpve/Fhayv2VqjQ31738NzpgSmmV+SBDz4/hoI/xcd1ghrpUh7DXx
+WR/YESkG1NrFRvpCvYrMTkWR1GMoVFzk8QacaNnn4GlTNo35ZlI1M3MLKK7ewFuHnr2AEo
+hWhAlQQiZ5Xa2PanWSoTtTxsUe+0KaA0NfhmbFJXHe5BIu16mvj8zPvmorJvYvGrJKcJLz
+btPtnvp6evOqxGOfJ3+nSaSNhlC1dyp5sDNBWpAAAAAwEAAQAAAQBYtzMEpIbzabuIBxJz
+pPGtlwnKTg+U+HzY0MdR8kAGC8K4MrQz6RbErOofZKr5g8MDW3at7PoXmyF04O5u1l5KEo
+uFZ3gJ2Iq1JROorTGncLSjXQmo5+NbFczbBreVWbNGa3oHIGdW8ycX4bWqtSw+IorQWeCt
+APpZbFvImWEy4xMHKtuEMpo50LsLQ20TL2UfPuesCAtAWy+qrc7Xb4eWRIVvhCdkTFtN9c
+YL/Ctf709acUulrG/CzKr5A0FWXib4RWZRKWeIFYV3Do9LSDFg3VuA0a1yCqabDVygn/UT
+GwvwbaLPv4AhliTxYgvSaoEkpQZofMoczv6AoKZWUFRJAAAAgQCgqTLCJsCM2gud2fCF1J
+X0huJReRe1Zp5LzTi7ViKV8mvEYNXJFDWqRsKztfesSrDcmyQYjdEXdwAGQfQhDr48tcih
+q6HBhz6azhLswP06UUyLWxsLg+Jgco7nGAxSjwwY3qGe72rkGwOCLqVtZSMMPkaG4EpLGT
+G3NsiPfXmtRgAAAIEA7HADXmbsodzb18uu6Pg8WXxE2tvtKTvwCufD/8p/TCPDMtjpfZtg
+cczqjmh6z6gcGK5MUHrfBuDPmVPYFMSIzfaPcBAx3u/eF8jsS6flua9LoFFLAnCmekplQ6
+5DWcwLqys4/6xE6ULgqho9Cn34zoAonpgxq1Au0fRjWYcYYAsAAACBANl7LHLL8Ia+N7jK
+6+UcBh99BJcmALKuyavmgL4fjJJxPRI8MmE9jzbhZdxbR+cNKtM1YVuzWS1T0VAdserBSL
+h7IjiwQ3Q0U4MueLxKJ3v3nKT2rbUsuOMpsSs0IFa8BWBOBQuR028nKK1jZvjAJoGQOAvW
+X2Qu+hohN4wVsC2bAAAAEU1CSU9TUEhFUkUgRGV2T3BzAQ==
+-----END OPENSSH PRIVATE KEY-----"
+    docker_privileged: true
+    docker_volumes:
+      #- "/var/run/docker.sock:/var/run/docker.sock"
+      - "/cache"
+    extra_configs:
+      runners.docker:
+        memory: 2048mb
+        privileged: true
+        disable_cache: false
+    #    #allowed_images: ["ruby:*", "python:*", "php:*"]
+    #  runners.docker.sysctls:
+    #    net.ipv4.ip_forward: "1"
