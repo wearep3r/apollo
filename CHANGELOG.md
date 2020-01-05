@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.4.1
+2020-01-05
+
+### Fixes
+
+- renamed directories (a541983b863a0bbbbe7cd1af8dfd7f43c2a7a554)
+- node-exporter command DRY (5cdc35e76a5c50bc3c0113440ef3fd0d223a5f4f)
+- node-exporter (03b5551c831d5638678a5d091221dbdafc62e94a)
+
 ## 0.4.0
 2020-01-05
 
