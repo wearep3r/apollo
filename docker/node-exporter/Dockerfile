@@ -1,6 +1,11 @@
 FROM prom/node-exporter:v0.16.0
 
+LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
+
 ENV NODE_ID=none
+
+ARG BUILD_DATE
+LABEL org.label-schema.build-date=$BUILD_DATE
 
 USER root
 

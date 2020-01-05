@@ -40,3 +40,10 @@ scrape_configs:
       - 'tasks.node-exporter'
       type: 'A'
       port: 9100
+
+  - job_name: 'cio-exporter'
+    dns_sd_configs:
+    - names:
+      - 'tasks.cio-exporter'
+      type: 'A'
+      port: 16995

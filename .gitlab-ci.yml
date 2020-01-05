@@ -75,7 +75,7 @@ Build node-exporter:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
     - cd docker/node-exporter
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION .
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
   tags: 
     - docker
@@ -92,7 +92,7 @@ Build prometheus:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
     - cd docker/prometheus
-    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest -t $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION .
+    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
   tags: 
     - docker
@@ -109,7 +109,7 @@ Build grafana:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
     - cd docker/grafana
-    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest -t $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION .
+    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
   tags: 
     - docker

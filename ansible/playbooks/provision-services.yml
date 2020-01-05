@@ -183,6 +183,46 @@
         seconds: 30
       when: provision_cadvisor.changed
 
+    - name: Provision cio-exporter
+      docker_swarm_service:
+        name: cio-exporter
+        state: present
+        mode: replicated
+        replicas: 1
+        image: storidge/cio-prom:latest
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        restart_config:
+          condition: on-failure
+        labels:
+          prometheus.enable: "true"
+          prometheus.port: "16995"
+          prometheus.path: "/metrics"
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.role == manager
+      register: cio_exporter_provision
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure cio-exporter is up and running"
+        seconds: 30
+      when: cio_exporter_provision.changed
+
     - name: Provision dockerd-exporter
       docker_swarm_service:
         name: dockerd-exporter
@@ -380,9 +420,15 @@
         - garbage-collector
       when: garbage_collector_provision.changed
 
+    - name: Generate admin password hash for portainer
+      shell: "docker run --rm httpd:2.4-alpine htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
+      register: portainer_admin_password
+      tags:
+        - portainer
+
     - name: Provision Portainer
       docker_swarm_service:
-        command: /portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics
+        command: "/portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics --admin-password {{ portainer_admin_password.stdout }}"
         name: portainer
         state: present
         mode: replicated
@@ -605,6 +651,19 @@
       tags:
         - prometheus
 
+    - name: Create A record at Cloudflare
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "prometheus"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
+      tags:
+        - prometheus
+
     - debug:
         var: prometheus_provision
       tags:
@@ -625,23 +684,15 @@
 
     - name: Provision Grafana
       docker_swarm_service:
-        command: 
-          - "/bin/prometheus"
-          - "--config.file=/etc/prometheus/prometheus.yml"
-          #- "--web.console.libraries=/etc/prometheus/console_libraries"
-          #- "--web.console.templates=/etc/prometheus/consoles"
-          - "--storage.tsdb.path=/prometheus"
-          - "--storage.tsdb.retention.time=48h"
-          - "--web.enable-admin-api"
-        name: prometheus
+        name: grafana
         state: present
         mode: replicated
         replicas: 1
         image: registry.gitlab.com/mbio/mbiosphere/infrastructure/grafana:latest
-        environment:
-          - GF_SECURITY_ADMIN_USER: admin
-          - GF_SECURITY_ADMIN_PASSWORD: mbiosphere
-          - GF_USERS_ALLOW_SIGN_UP: false
+        env:
+          GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
+          GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"
+          GF_USERS_ALLOW_SIGN_UP: "false"
           #- GF_PATHS_PROVISIONING=/etc/grafana/provisioning/
           #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-localhost}
           #- GF_SMTP_ENABLED=${GF_SMTP_ENABLED:-false}
@@ -704,6 +755,19 @@
           timeout: 3s
           start_period: 120s
       register: grafana_provision
+      tags:
+        - grafana
+
+    - name: Create A record at Cloudflare
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "grafana"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
       tags:
         - grafana
 

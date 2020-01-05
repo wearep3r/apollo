@@ -1,5 +1,9 @@
 FROM prom/prometheus:v2.15.1
-# https://hub.docker.com/r/prom/prometheus/tags/
+
+LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
+
+ARG BUILD_DATE
+LABEL org.label-schema.build-date=$BUILD_DATE
 
 COPY config /etc/prometheus/
 USER root

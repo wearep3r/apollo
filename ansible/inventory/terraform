@@ -1,0 +1,12 @@
+#! /bin/bash
+# LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
+
+# We're in infrastructure/ansible/inventory
+# Terraform is in infrastructure/terraform
+# This script invokes `terraform-inventory` with the path to the .tfstate file 
+# injected to the environment
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+export TF_STATE=$DIR/../../terraform/ 
+/usr/local/bin/terraform-inventory "$@"
