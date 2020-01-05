@@ -5,7 +5,7 @@
 # If yes, the Playbook will be executed as user "devops"
 # This removes the need to manually run a "bootstrap" playbook the first time 
 # you bring the infrastructure up.
-- hosts: mbiosphere
+- hosts: all
   gather_facts: no
   tasks:
     - name: Check Provisioning Status
@@ -40,24 +40,11 @@
               {% else %}Starting Bootstrapping{% endif %}"
       when: connection.failed
 
-# Create the deployment user and authorize our SSH Keys
-- hosts: mbiosphere
+# Standards
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   tasks:
-    - name: Add User devops
-      user:
-        name: devops
-        groups: sudo
-        state: present
-        append: yes
-        shell: /bin/bash
-
-    - name: Set up authorized keys for user devops
-      authorized_key: user=devops key="{{ item }}"
-      with_file:
-        - ../../.ssh/id_rsa.pub
-
     - name: Set up authorized keys for user root
       authorized_key: user=root key="{{ item }}"
       with_file:
@@ -82,7 +69,7 @@
     - name: Create A record at Cloudflare
       cloudflare_dns:
         zone: "{{ base_domain }}"
-        record: "{{ inventory_hostname }}.swarm"
+        record: "{{ ansible_hostname }}.nodes"
         type: A
         solo: yes
         value: "{{ ansible_default_ipv4.address }}"
@@ -101,7 +88,7 @@
 
 # Basics
 # - apt / pip dependencies
-- hosts: mbiosphere
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
@@ -144,7 +131,7 @@
 
 # NTP & Localization
 # Config in group_vars/all
-- hosts: mbiosphere
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
@@ -152,6 +139,19 @@
     - geerlingguy.ntp
     - robertdebock.locale
     - geerlingguy.docker
+  tasks:
+    - name: Add User devops
+      user:
+        name: devops
+        groups: sudo,docker
+        state: present
+        append: yes
+        shell: /bin/bash
+
+    - name: Set up authorized keys for user devops
+      authorized_key: user=devops key="{{ item }}"
+      with_file:
+        - ../../.ssh/id_rsa.pub
 
 # Prepare Firewall for Swarm Communication
 # This is fed to geerlingguy.firewall in the next task
@@ -213,7 +213,7 @@
 #         state: restarted
 #       listen: restart firewall
 
-- hosts: mbiosphere
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: yes

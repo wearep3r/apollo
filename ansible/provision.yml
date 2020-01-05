@@ -8,11 +8,11 @@
   # See group_vars/all
   when: check_git
 # Create/Update Nodes on HETZNER Cloud
-- import_playbook: playbooks/provision-hetzner.yml
+#- import_playbook: playbooks/provision-hetzner.yml
 # Configure each Node: install software, set config
 - import_playbook: playbooks/provision-node.yml
 # Configure Logging
-- import_playbook: playbooks/provision-logging.yml
+#- import_playbook: playbooks/provision-logging.yml
 # Configure each Node: install software, set config
 - import_playbook: playbooks/upgrade-node.yml
 # Bootstrap/Update the Swarm

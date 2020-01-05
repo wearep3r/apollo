@@ -61,7 +61,21 @@ version:
   except:
     - tags
 
-build:
+Build node-exporter:
+  stage: build
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG -f ci/node-exporter/Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG
+  artifacts:
+    paths:
+    - build_info
+
+Build infrastructure:
   stage: build
   image: docker:19.03.1
   services:
@@ -78,14 +92,6 @@ build:
   artifacts:
     paths:
     - build_info
-
-test:stack:
-  stage: test
-  image: tiangolo/docker-with-compose
-  script:
-    - docker-compose -f ci/docker-stack.yml config --quiet
-    #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
-  allow_failure: true
 
 # Lint Ansible files
 test:ansible:
@@ -106,6 +112,9 @@ release-image:
     - docker pull $CONTAINER_TEST_IMAGE
     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     - docker push $CONTAINER_RELEASE_IMAGE
+    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_REF_SLUG -t $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
   only:
     - master
 

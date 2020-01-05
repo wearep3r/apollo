@@ -42,6 +42,7 @@ swarm_networks:
   - proxy
   - portainer
   - consul
+  - monitoring
 
 ############
 # STORIDGE #
@@ -72,6 +73,8 @@ do_auth_token: 9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc
 #################
 # Functionality #
 #################
+
+deploy_user_name: root
 
 # Check if local Git Repository is on branch MASTER and up-to-date
 # If not, stop playbook execution

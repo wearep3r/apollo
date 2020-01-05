@@ -6,7 +6,7 @@
 ssh_permit_root_login: without-password
 
 # Used for SSH connections from this Repository
-deploy_user_name: devops
+
 security_sudoers_passwordless: 
     - devops
 

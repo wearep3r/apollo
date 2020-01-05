@@ -109,6 +109,188 @@
         seconds: 30
       when: provision_portainer_agent.changed
 
+    - name: Provision cadvisor
+      docker_swarm_service:
+        name: cadvisor
+        state: present
+        mode: global
+        image: gcr.io/google-containers/cadvisor:v0.34.0
+        command: /usr/bin/cadvisor -logtostderr -docker_only
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: /
+            target: /rootfs
+            type: bind
+            readonly: yes
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: yes
+          - source: /var/run
+            target: /var/run
+            type: bind
+            readonly: yes
+          - source: /sys
+            target: /sys
+            type: bind
+            readonly: yes
+          - source: /var/lib/docker
+            target: /var/lib/docker
+            type: bind
+            readonly: yes
+          - source: /dev/disk
+            target: /dev/disk
+            type: bind
+            readonly: yes
+        restart_config:
+          condition: on-failure
+        labels:
+          prometheus.enable: "true"
+          prometheus.port: "8080"
+          prometheus.path: "/metrics"
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_cadvisor
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure cadvisor is up and running"
+        seconds: 30
+      when: provision_cadvisor.changed
+
+    - name: Provision node-exporter
+      docker_swarm_service:
+        name: node-exporter
+        state: present
+        mode: global
+        image: prom/node-exporter
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        env:
+          - NODE_ID={{ "{{.Node.ID}}" }}
+          - PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
+        mounts:
+          - source: /
+            target: /rootfs
+            type: bind
+            readonly: yes
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: yes
+          - source: /proc
+            target: /host/proc
+            type: bind
+            readonly: yes
+          - source: /sys
+            target: /host/sys
+            type: bind
+            readonly: yes
+          - source: /etc/hostname
+            target: /etc/nodename
+            type: bind
+            readonly: yes
+        restart_config:
+          condition: on-failure
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_node_exporter
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure node-exporter is up and running"
+        seconds: 30
+      when: provision_node_exporter.changed
+
+    - name: Provision Docker garbage-collector
+      docker_swarm_service:
+        name: garbage-collector
+        state: present
+        mode: global
+        image: clockworksoul/docker-gc-cron:latest
+        mounts:
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: no
+        restart_config:
+          condition: on-failure
+        env:
+          - CRON=25 11 * * *
+          # By default, docker will not remove an image if it is tagged in multiple repositories. If
+          # you have a server running docker where this is the case, for example in CI environments
+          # where dockers are being built, re-tagged, and pushed, you can set this flag to 1 to override.
+          - FORCE_IMAGE_REMOVAL=1
+          # By default, if an error is encountered when cleaning up a container, Docker will report the
+          # error back and leave it on disk. This can sometimes lead to containers accumulating. If
+          # you run into this issue, you can force the removal of the container by setting this flag.
+          - FORCE_CONTAINER_REMOVAL=1
+          # By default, docker-gc will not remove a container if it exited less than 1 hour ago.
+          # Set the GRACE_PERIOD_SECONDS variable to override this default.
+          - GRACE_PERIOD_SECONDS=3600
+          # By default, docker-gc will proceed with deletion of containers and images. To test your
+          # settings set the DRY_RUN variable to override this default
+          - DRY_RUN=0
+          # By default, this process will leave any dangling volumes untouched. To instruct the
+          # process to automatically clean up any dangling volumes, simply set this value to 1.
+          - CLEAN_UP_VOLUMES=0
+          # If you don't like all your log output and cron times being in UTC, you can set the
+          # TZ variable to override the default.
+          #- TZ=America/Chicago
+          - MINIMUM_IMAGES_TO_SAVE=2
+          - CLEAN_UP_VOLUMES=1
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_garbage_collector
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure gargabe-collector is up and running"
+        seconds: 30
+      when: provision_garbage_collector.changed
+
     - name: Provision Portainer
       docker_swarm_service:
         command: /portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics
@@ -170,13 +352,18 @@
         value: "{{ ansible_default_ipv4.address }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
+        solo: yes
       register: record
-    
-    - name: Pause until Service is up
-      pause: 
-        prompt: "Make sure portainer is up and running"
-        seconds: 30
-      when: provision_portainer.changed
+
+    - name: "Wait for swarm.{{ base_domain }} to become ready"
+      uri:
+        url: "https://swarm.{{ base_domain }}"
+        method: GET
+        status_code: 200
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
 
     - name: Provision Consul Leader
       docker_swarm_service:
@@ -202,6 +389,9 @@
               name: cio
         restart_config:
           condition: on-failure
+        placement:
+          constraints:
+            - node.role == manager
         labels:
           traefik.enable: "true"
           traefik.tags: "proxy"
@@ -215,64 +405,141 @@
           traefik.backend.loadbalancer.stickiness: "true"
       register: provision_consul_leader
 
-    - name: Pause until Service is up
-      pause: 
-        prompt: "Make sure consul-leader is up and running"
-        seconds: 30
-      when: provision_consul_leader.changed
+    - name: "Wait for consul.{{ base_domain }} to become ready"
+      uri:
+        url: "https://consul.{{ base_domain }}"
+        method: GET
+        http_agent: "if0"
+        status_code: 200
+        #user: if0
+        #password: if0
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call 
     
-    - name: Provision Consul Replicas
-      docker_swarm_service:
-        command: >
-         /usr/local/bin/docker-entrypoint.sh agent -server -client=0.0.0.0 -retry-join="consul-leader"
-        name: consul-replica
-        state: present
-        mode: replicated
-        replicas: 3
-        image: consul:1.6.2
-        env:
-          CONSUL_BIND_INTERFACE: "eth0"
-          CONSUL_LOCAL_CONFIG: '{"leave_on_terminate": true}'
-        networks:
-          - consul
-          - proxy
-        mounts:
-          - source: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
-            target: /consul/data
-            type: volume
-            readonly: no
-            driver_config: 
-              name: cio
-              # options:
-              #   volume: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
-        restart_config:
-          condition: on-failure
-        update_config:
-          parallelism: 1
-          delay: 120s
-          monitor: 120s
-          order: start-first
-          failure_action: rollback
-        placement:
-          constraints: 
-            - node.role == manager
-          preferences:
-            - spread: node.id
-        labels:
-          traefik.enable: "true"
-          traefik.tags: "proxy"
-          traefik.docker.network: "proxy"
-          traefik.port: "8500"
-          traefik.frontend.rule: "Host:consul.{{ base_domain }}"
-          traefik.backend: "consul"
-          traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
-          traefik.frontend.entryPoints: "http,https"
-          traefik.backend.loadbalancer.stickiness: "true"
-      register: provision_consul_replica
+    # - name: Provision Consul Replicas
+    #   docker_swarm_service:
+    #     command: >
+    #      /usr/local/bin/docker-entrypoint.sh agent -server -client=0.0.0.0 -retry-join="consul-leader"
+    #     name: consul-replica
+    #     state: present
+    #     mode: replicated
+    #     replicas: 3
+    #     image: consul:1.6.2
+    #     env:
+    #       CONSUL_BIND_INTERFACE: "eth0"
+    #       CONSUL_LOCAL_CONFIG: '{"leave_on_terminate": true}'
+    #     networks:
+    #       - consul
+    #       - proxy
+    #     mounts:
+    #       - source: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
+    #         target: /consul/data
+    #         type: volume
+    #         readonly: no
+    #         driver_config: 
+    #           name: cio
+    #           # options:
+    #           #   volume: '{{ "{{.Service.Name}}-{{.Task.Slot}}" }}'
+    #     restart_config:
+    #       condition: on-failure
+    #     update_config:
+    #       parallelism: 1
+    #       delay: 120s
+    #       monitor: 120s
+    #       order: start-first
+    #       failure_action: rollback
+    #     placement:
+    #       constraints: 
+    #         - node.role == manager
+    #       preferences:
+    #         - spread: node.id
+    #   register: provision_consul_replica
 
     # - name: Pause until Service is up
     #   pause: 
     #     prompt: "Make sure consul-replica is up and running"
     #     seconds: 30
     #   when: provision_consul_replica.changed
+
+    - name: Provision Prometheus
+      docker_swarm_service:
+        command: /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=48h --web.enable-admin-api
+        name: prometheus
+        state: present
+        mode: replicated
+        replicas: 1
+        image: prom/prometheus:latest
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: prometheus-data
+            target: /prometheus
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.hostname == satellite-1
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 1024M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9090"
+          traefik.frontend.rule: "Host:prometheus.{{ base_domain }}"
+          traefik.backend: "prometheus"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          prometheus.enable: "true"
+          prometheus.port: "9090"
+          prometheus.path: "/metrics"
+        healthcheck:
+          test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
+          interval: 25s
+          timeout: 3s
+          start_period: 60s
+      register: provision_prometheus
+
+    - name: Create A record at Cloudflare
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "prometheus"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
+
+    - name: "Wait for prometheus.{{ base_domain }} to become ready"
+      uri:
+        url: "https://prometheus.{{ base_domain }}"
+        method: GET
+        status_code: 200
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call

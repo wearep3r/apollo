@@ -1,5 +1,7 @@
 # Install Storidge
-- hosts: swarm
+- hosts: 
+    - manager
+    - worker
   remote_user: "{{ deploy_user_name }}"
   become: true
   tasks:
@@ -105,7 +107,7 @@
     - name: Set private ip
       set_fact:
         #private_ip: "{{ ansible_default_ipv4.address }}"
-        private_ip: "{{ ansible_ens10['ipv4']['address'] }}"
+        private_ip: "{{ ansible_eth1['ipv4']['address'] }}"
 
     - name: get join token from active cluster
       shell: >
@@ -116,7 +118,7 @@
       shell: >
         cioctl create --noportainer --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
       register: clustertoken
-      when: "'Condition: normal' not in cluster_init_status.stdout"
+      when: "cluster_init_status and 'Condition: normal' not in cluster_init_status.stdout"
 
     - name: Report Cluster Token
       debug:
@@ -138,12 +140,14 @@
   tasks:
     - name: join nodes to cio cluster
       #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_ens10']['ipv4']['address'] }}"
+      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_eth1']['ipv4']['address'] }}"
       register: result
       when: "'Condition: normal' not in hostvars[item]['cluster_init_status'].stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
       delegate_to: "{{ item }}"
       run_once: true
-      with_items: "{{ groups['swarm'] }}"
+      with_items: 
+        - "{{ groups['worker'] }}"
+        - "{{ groups['manager'] }}"
 
     - name: Join Result
       debug:
@@ -199,24 +203,3 @@
 #       docker_stack:
 #         name: portainer
 #         state: absent
-
-# Update users "devops" and "docker" (typically already existing)
-# We can't add any user to group "docker" before Docker is installed
-# Adding our deploy user to the docker group enables it to control
-# Docker without elevated privileges (sudo)
-- hosts: mbiosphere
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
-  tasks:
-    - name: Add User "devops"
-      user:
-        name: devops
-        groups: sudo,docker
-        state: present
-        append: yes
-        shell: /bin/bash
-    - name: Set up authorized keys for user devops
-      authorized_key: user=devops key="{{ item }}"
-      with_file:
-        - ../../.ssh/id_rsa.pub

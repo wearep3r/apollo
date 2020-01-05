@@ -31,6 +31,7 @@ The Playbooks used to build and maintain this infrastructure have some dependenc
 ### Local Dependencies
 - `sudo pip install hcloud dopy`
 - Install Requirements: `ansible-galaxy install -r requirements.yml`
+- Ansible Terraform Inventory: `brew install terraform-inventory`
 
 ## Overview
 To get an idea of what Ansible does and how it works, please (for now) refer to [this link](https://docs.ansible.com/ansible/latest/user_guide/index.html). Over time, most of the functionality used for this project will be highlighted and explained in this README and complementing docs in [this directory](docs/).
@@ -38,10 +39,14 @@ To get an idea of what Ansible does and how it works, please (for now) refer to 
 Ansible is an SSH-based orchestration software used in terms of **Immutable Infrastructure** and **Infrastructure as Code**. In short words, you define what your infrastructure (hosts, services, configs, etc) should look and behave like - and Ansible will force your will upon the infrastructure.
 
 ### Inventory
-Ansible works with static and dynamic inventories. For now, we're using static inventories in form of *files* (staging.yml, production.yml, development.yml) where all nodes our infrastructure is composed of will be listed alongside any meta-info we have about them.
+Ansible works with static and dynamic inventories. For now, we're using dynamic inventories in form of *terraform-inventory* which pulls information from `terraform/terraform.tfstate`.
 
-#### List Inventory HETZNER
-`ansible-inventory -i hcloud.yml --list`
+`TF_STATE=../terraform/ ansible-playbook --inventory-file=/usr/local/bin/terraform-inventory provision.yml`
+
+#### List Inventory
+`TF_STATE=terraform/ terraform-inventory -inventory`
+
+**DEPRECATED** (HETZNER): `ansible-inventory -i hcloud.yml --list`
 
 ### Playbooks
 Ansible can be told to apply a set of instructions (called **Playbook**) to these nodes. The procedure is always the same:
@@ -56,17 +61,10 @@ Ansible does this on multiple nodes at a time in parallel which makes it the exc
 
 The overall paradigm is "Idempotency", meaning Ansible helps to use a server as a replaceable ressource that can be deleted, respawned and reconfigured at any given time with **always** the exact same outcome. This enables ease migration, upgrades and changes on whole fleets of servers and services.
 
-## PLAYGROUND
-I've spun up a dev-machine at HETZNER that is listed as "mbio-test" in `staging.yml`. Ansible (as of this repository) is configured to use a specific SSH-Key (in `.ssh`) for any connection made to the inventory nodes, so you should be able to do the following out of the box to see it in action:
+## Provisioning
 
-- [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-- `git clone git@gitlab.com:mbio/mbiosphere/infrastructure.git`
-- `cd infrastructure`
-- `ansible-playbook -i staging configure-node.yml`
-
-This should provision the node with the tasks configured in `configure-node.yml`. As it is already provisioned, there won't be (m)any changes, but it's a quick way to see how Ansible works.
-
-Within this repository, Ansible has a dedicated `ansible.cfg` that, if Ansible is used from within this directory, will be favored over your local ansible.cfg. Adjust according to you needs.
+1. `cd terraform && terraform plan && terraform apply`
+2. `cd ansible && TF_STATE=../terraform/ ansible-playbook --inventory-file=/usr/local/bin/terraform-inventory provision.yml`
 
 ## Provision Docker Node
 From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
