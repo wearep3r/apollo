@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.6.0
+2020-01-05
+
+### Breaking changes
+
+#### BREAKING CHANGE (cab499c7551135227ba2631156ae8685c172a353)
+
+feat: added CIO Grafana Dashboard
+
+### Features
+
+- added cio-exporter (d5e74496a62f53fcf9efb4f849c88c76b2e08210)
+
 ## 0.5.0
 2020-01-05
 
