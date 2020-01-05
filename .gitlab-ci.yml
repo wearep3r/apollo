@@ -54,7 +54,7 @@ version:
     - release next-version --allow-current > .next-version
     - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
     - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
-    - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
+    - echo "RELEASE_SHA=$CI_COMMIT_SHORT_SHA" >> build_info
     - echo "RELEASE_VERSION=$(<.next-version)" >> build_info
     - echo $SSH_PRIVATE_KEY
   artifacts:
@@ -72,11 +72,12 @@ Build node-exporter:
   services:
     - docker:19.03.5-dind
   script:
+    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
     - cd ci/node-exporter
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest -t $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION .
+    - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
   tags: 
     - docker
     - infrastructure
@@ -114,12 +115,13 @@ Release node-exporter:
   services:
     - docker:19.03.5-dind
   script:
+    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     # - docker pull $CONTAINER_TEST_IMAGE
     # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     # - docker push $CONTAINER_RELEASE_IMAGE
-    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker pull $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION -t $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
   only:
     - master
