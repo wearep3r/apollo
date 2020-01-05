@@ -68,9 +68,9 @@ version:
 
 Build node-exporter:
   stage: build
-  image: docker:19.03.1
+  image: docker:19.03.5
   services:
-    - docker:19.03.1-dind
+    - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
@@ -83,9 +83,9 @@ Build node-exporter:
 
 # Build infrastructure:
 #   stage: build
-#   image: docker:19.03.1
+#   image: docker:19.03.5
 #   services:
-#     - docker:19.03.1-dind
+#     - docker:19.03.5-dind
 #   script:
 #     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 #     - docker pull $CONTAINER_TEST_IMAGE || true
@@ -110,7 +110,9 @@ Build node-exporter:
 
 Release node-exporter:
   stage: release
-  image: docker:19.03.1
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     # - docker pull $CONTAINER_TEST_IMAGE
