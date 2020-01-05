@@ -38,6 +38,40 @@ changed playbook order; added services provisioning via Ansible
 - ci tuning (46cf4ce889c198d0d3a92ac5fe5dc1c320f30d1c)
 - ci tuning (47ef0c9ec3f9d727478876770ee967af7404481f)
 - ci tuning (6b319c578f86332d1df871ee1dcbc9e0c7db46fa)
+- **ci:** included dind in release stage (14f827145214d771864b4232fec171943aeee830)
+
+## 0.2.0
+2020-01-05
+
+### Breaking changes
+
+#### BREAKING CHANGE: changed backplane networking and deployment method (d37c228e0e2043bb02549fd55a0ed1f8b6804891)
+
+changed backplane networking and deployment method
+
+#### BREAKING CHANGE: changed playbook order; added services provisioning via Ansible (8f0c00d5ed8c467ff14bbaeaffde54420258828b)
+
+changed playbook order; added services provisioning via Ansible
+
+### Features
+
+- added Terraform (e0d2b084b23fa642109f01fd94f40aed70d18a5f)
+- added Terraform (2b831cfd3aedd817fe8496502011238e31d2689a)
+
+### Fixes
+
+- **ci:** restructured stuff (2618f527e63a41e00b3afef5844d1c44d3554b0d)
+- **ci:** changed user in Dockerfile (54a1a12c26060d8100a15c7aec6524a26d788085)
+- **storidge:** extensive re-thinking of provisioning procedure; prepare infrastructure-image (78b51fa72e14e3916b931e82644c5abf23314c67)
+- **storidge:** lots of refactorings... (f6b60ed3595bcc0217a14d3c2fbbbd81df53eb81)
+- removed dind as basline requirement in gitlab-ci for speedup (a6a2a4d649b161e2678793ccdcb047c46db8308c)
+- changed node-exporter build paths (42d56f8983ed3c72c472f2eb2be6b27201e9aae3)
+- runner config tuning (4756bda54ba6e4caca4b473df858e94bd15ed095)
+- runner config tuning (6020c727b30847f915997a87b62079fc9a50ef59)
+- ci tuning (3683e8c61d4b39507d418c51a2c6e0e18c48fd7d)
+- ci tuning (46cf4ce889c198d0d3a92ac5fe5dc1c320f30d1c)
+- ci tuning (47ef0c9ec3f9d727478876770ee967af7404481f)
+- ci tuning (6b319c578f86332d1df871ee1dcbc9e0c7db46fa)
 
 ## 0.2.0
 2020-01-05
