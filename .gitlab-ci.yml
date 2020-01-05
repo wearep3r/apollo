@@ -140,6 +140,7 @@ release:
     - master
   tags: 
     - infrastructure
+    - docker
 
 
 # release:

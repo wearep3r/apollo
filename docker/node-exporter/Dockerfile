@@ -8,4 +8,4 @@ COPY conf /etc/node-exporter/
 RUN chmod +x /etc/node-exporter/docker-entrypoint.sh
 
 ENTRYPOINT  [ "/etc/node-exporter/docker-entrypoint.sh" ]
-CMD [ "-logtostderr", "--path.sysfs=/host/sys", "--path.procfs=/host/proc", "--collector.textfile.directory=/etc/node-exporter/", "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)", "--no-collector.ipvs"]
+CMD [ "--path.sysfs=/host/sys", "--path.procfs=/host/proc", "--collector.textfile.directory=/etc/node-exporter/", "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)", "--no-collector.ipvs"]
