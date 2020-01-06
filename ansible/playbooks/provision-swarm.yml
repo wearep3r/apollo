@@ -162,7 +162,7 @@
   remote_user: "{{ deploy_user_name }}"
   become: true
   vars:
-    token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_worker_token']['stdout'] }}"
+    token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
   tasks:
     - name: Join Satellite Nodes to Cluster # noqa 301
       shell: >
@@ -177,12 +177,12 @@
   tasks:
     - name: Set Worker Node Labels # noqa 301
       shell: >
-          docker node update --label-add role=worker --label-add storage=cio --label-add namespace=mbiosphere {{ hostvars[item]["ansible_hostname"] }}
+          docker node update --label-add role=worker --label-add storage=cio {{ hostvars[item]["ansible_hostname"] }}
       with_items: "{{ groups['worker'] }}"
       when: groups["worker"] is defined and (groups["worker"]|length>0)
     - name: Set Satellite Node Labels # noqa 301
       shell: >
-          docker node update --label-add role=satellite --label-add storage=local --label-add namespace=mbiosphere {{ hostvars[item]["ansible_hostname"] }}
+          docker node update --label-add role=satellite --label-add storage=local {{ hostvars[item]["ansible_hostname"] }}
       with_items: "{{ groups['satellite'] }}"
       when: groups["satellite"] is defined and (groups["satellite"]|length>0)
 

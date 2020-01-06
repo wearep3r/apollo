@@ -13,7 +13,7 @@
         }
       ]
     },
-    "description": "Docker Swarm stacks and services metrics",
+    "description": "Swarm stacks and services metrics",
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
@@ -1745,7 +1745,7 @@
     "schemaVersion": 16,
     "style": "dark",
     "tags": [
-      "swarmprom"
+      "swarm"
     ],
     "templating": {
       "list": [
@@ -1878,8 +1878,8 @@
         "30d"
       ]
     },
-    "timezone": "",
-    "title": "Docker Swarm Services",
+    "timezone": "browser",
+    "title": "Swarm Services",
     "uid": "zr_baSRmk",
     "version": 1
   }

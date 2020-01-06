@@ -1,9 +1,79 @@
 # Setup Gitlab Runners
+- hosts: all
+  remote_user: root
+  become: false
+  tasks:
+    # - name: Restart service gitlab-runner, in all cases
+    #   service:
+    #     name: gitlab-runner
+    #     state: restarted
+
+    # - name: Remove "gitlab-runner" package
+    #   apt:
+    #     name: gitlab-runner
+    #     state: absent
+    #     purge: yes
+    - name: Remove file (delete file)
+      file:
+        path: /etc/gitlab-runner/config.toml
+        state: absent
+
 - hosts: satellite
   remote_user: "{{ deploy_user_name }}"
   become: true
-  # Probably not needed (commented out on 28.10.2019)
-  # vars_files:
-  #   - group_vars/runner
+  vars:
+    gitlab_runner_package_name: 'gitlab-runner'
+    #gitlab_runner_coordinator_url: "https://gitlab.com"
+    gitlab_runner_registration_token: "{{ runner_token }}"
+    gitlab_runner_concurrent: 4
+    gitlab_runner_listen_address: ":9252"
+    gitlab_runner_runners:
+      - name: "{{ ansible_hostname }}-runner"
+        executor: docker
+        docker_image: "{{ ci_docker_image }}"
+        tags:
+          - docker
+          - infrastructure
+          - build
+        docker_privileged: true
+        docker_volumes:
+          - "/cache"
+        extra_configs:
+          runners.docker:
+            memory: 2048mb
+            privileged: true
+            disable_cache: false
+        #    #allowed_images: ["ruby:*", "python:*", "php:*"]
+        #  runners.docker.sysctls:
+        #    net.ipv4.ip_forward: "1"
+  roles:
+    - { role: riemers.gitlab-runner }
+
+
+- hosts: manager
+  remote_user: "{{ deploy_user_name }}"
+  become: true
+  vars:
+    gitlab_runner_package_name: 'gitlab-runner'
+    #gitlab_runner_coordinator_url: "https://gitlab.com"
+    gitlab_runner_registration_token: "{{ runner_token }}"
+    gitlab_runner_concurrent: 1
+    gitlab_runner_listen_address: ":9252"
+    gitlab_runner_runners:
+      - name: "{{ ansible_hostname }}-runner"
+        executor: docker
+        docker_image: "{{ ci_docker_image }}"
+        tags:
+          - deploy
+        docker_privileged: true
+        docker_volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+          - "/cache"
+        extra_configs:
+          runners.docker:
+            memory: 512mb
+            privileged: true
+            disable_cache: false
+            allowed_images: ["docker:*"]
   roles:
     - { role: riemers.gitlab-runner }
