@@ -124,4 +124,4 @@ gl_token: hxMptRX7KeHsqyxYR3Uf
 registry_url: registry.gitlab.com
 registry_user: "derfabianpeter"
 registry_password: "{{ gl_token }}"
-runner_token: Y3Ae_Vx-T7B2EC7WKqbT
+runner_token: "Y3Ae_Vx-T7B2EC7WKqbT"
