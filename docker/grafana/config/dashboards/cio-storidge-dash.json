@@ -535,7 +535,10 @@
   "refresh": "10s",
   "schemaVersion": 21,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "swarm",
+    "storidge"
+  ],
   "templating": {
     "list": []
   },

@@ -12,7 +12,7 @@
         }
       ]
     },
-    "description": "Docker Swarm nodes metrics",
+    "description": "Swarm nodes metrics",
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
@@ -1922,7 +1922,7 @@
     "schemaVersion": 16,
     "style": "dark",
     "tags": [
-      "swarmprom"
+      "swarm"
     ],
     "templating": {
       "list": [
@@ -2057,8 +2057,8 @@
         "30d"
       ]
     },
-    "timezone": "",
-    "title": "Docker Swarm Nodes",
+    "timezone": "browser",
+    "title": "Swarm Nodes",
     "uid": "BPlb-Sgik",
     "version": 3
   }
