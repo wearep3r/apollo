@@ -78,7 +78,7 @@ Build node-exporter:
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
   tags: 
-    - docker
+    - build
     - infrastructure
   when: manual
 
@@ -95,8 +95,7 @@ Build prometheus:
     - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
   tags: 
-    - docker
-    - infrastructure
+    - build
   when: manual
 
 Build grafana:
@@ -112,7 +111,7 @@ Build grafana:
     - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION .
     - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
   tags: 
-    - docker
+    - build
     - infrastructure
   when: manual
 
@@ -160,8 +159,8 @@ Release prometheus:
   only:
     - master
   tags: 
+    - build
     - infrastructure
-    - docker
   when: manual
 
 Release grafana:
@@ -181,8 +180,8 @@ Release grafana:
   only:
     - master
   tags: 
+    - build
     - infrastructure
-    - docker
   when: manual
 
 Release node-exporter:
@@ -202,8 +201,8 @@ Release node-exporter:
   only:
     - master
   tags: 
+    - build
     - infrastructure
-    - docker
   when: manual
 
 release:
@@ -246,6 +245,12 @@ release:
 #   only:
 #   - master
 
+deploy:
+  stage: deploy
+  script:
+    - docker info
+  tags:
+    - deploy
 
 # Deploy: Staging
 # deploy:
