@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.7.0
+2020-01-06
+
+### Features
+
+- adding runner capabilities to managers for easier deployment (18ddef9d22c07af2e045c9151941d416555f0cc1)
+
+### Fixes
+
+- removed need for ssh in ci (c920c599853442115cc375a325ebc11b81efe9a5)
+- ci with new runners (744a406a6759d824a7a5e2a4bf37ee4c94cc40b8)
+- ci with new runners (ff3938358501cd45121412eca515aa3b6f537eee)
+
 ## 0.6.1
 2020-01-05
 
