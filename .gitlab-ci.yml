@@ -124,7 +124,7 @@ Build infrastructure:
     - docker push $CONTAINER_TEST_IMAGE
   tags: 
     - infrastructure
-    - docker
+    - build
 
 # # Lint Ansible files
 # test:ansible:

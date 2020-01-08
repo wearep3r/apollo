@@ -4,8 +4,6 @@ LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE
 
-ARG DOCKER_VERSION=19.03.5
-ARG DOCKER_COMPOSE_VERSION=1.25.1
 ARG TERRAFORM_VERSION=0.12.18
 ARG TERRAFORM_INVENTORY_VERSION=0.9
 
@@ -28,13 +26,8 @@ RUN pip install --no-cache-dir \
     hcloud \
     jsondiff \
     docker \
-    ansible-lint
-
-# Docker Compose
-RUN curl -fsSL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose \
-    && chmod +x ~/docker-compose \
-    && mv ~/docker-compose /usr/local/bin/ \
-    && docker-compose --version
+    ansible-lint \
+    docker-compose
 
 # Terraform
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o ~/terraform.zip \
