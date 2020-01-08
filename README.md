@@ -13,12 +13,11 @@ This README will hold an overview of the contents of this repo. This is **WIP**.
 7. [Changelog](#fourth-examplehttpwwwfourthexamplecom)
 
 
-# Ansible
-## References
-- Docker Swarm: https://thisendout.com/2016/09/13/deploying-docker-swarm-with-ansible/
-- Swarm + CI: https://medium.com/@ju5t_/how-were-using-gitlab-to-test-and-deploy-our-application-s-to-docker-swarm-e3f556dbf8fe
+# Prerequisites
 
-## Installation
+## Ansible
+
+### Setup
 We use the Development Version of Ansible to use the latest HCLOUD modules:
 
 `pip install --user git+https://github.com/ansible/ansible.git@devel`
@@ -48,53 +47,84 @@ Ansible works with static and dynamic inventories. For now, we're using dynamic 
 
 **DEPRECATED** (HETZNER): `ansible-inventory -i hcloud.yml --list`
 
-### Playbooks
-Ansible can be told to apply a set of instructions (called **Playbook**) to these nodes. The procedure is always the same:
 
-- Ansible connects to the node via SSH
-- Ansible gathers all possible information about the system it's tasked to work on
-- Ansible parses your instructions (Playbook) task by task and checks if the state your task defines matches the state on the node
-- If yes, Ansible does nothing
-- If not, Ansible will apply your instructions to the node (e.g. change ownership of a file, etc)
-  
-Ansible does this on multiple nodes at a time in parallel which makes it the excellent candidate to automate this infrastructure.
-
-The overall paradigm is "Idempotency", meaning Ansible helps to use a server as a replaceable ressource that can be deleted, respawned and reconfigured at any given time with **always** the exact same outcome. This enables ease migration, upgrades and changes on whole fleets of servers and services.
-
-## Provisioning
+# Provisioning
 
 1. `cd terraform && terraform plan && terraform apply`
 2. `cd ansible && TF_STATE=../terraform/ ansible-playbook --inventory-file=/usr/local/bin/terraform-inventory provision.yml`
 
-## Provision Docker Node
-From within this repository, execute the following command to configure the basics of a Docker-Node (Manager/Worker):
+## First Run
+```
+cd terraform
+terraform plan
+terraform apply
+sleep 100
+cd ../ansible
+ansible-playbook provision.yml
+```
 
-### First Run
-For the first run, a different user is needed (root) as typically Hosts are provisioned with this user. We can connect with our `devops` user afterwards.
+## Any other Run
+Only run each tool when needed. If you don't change underlying infrastructure (VMs, Volumes, etc), there's no need to have Terraform do anything. Ansible can be run at any given time. It's designed to only change things if they need change. Be advised though that changes made manually on a server will be reverted/overwritten by Ansible if it is responsible for it. 
+
+You can limit which parts of the Infrastructure need to be changed by providing `--tags "dns,firewall"` or alike to `ansible-playbook provision.yml` or by simply executing specific playbooks directly (`ansible-playbook playbooks/provision-services.yml`). Both approaches can be combined.
+
+# Access Nodes
+From the base directory of this repository you can run `ssh -i .ssh/id_rsa -l root manager-1.nodes.mbiosphere.com` to SSH directly into any of the VMs. 
+
+DNS-Management is done in Ansible (tag `dns`).
+
+# Upgrades
+TBD
+
+
+# Deployment
+To make things as automated as possible, Deployment to the swarm should ideally be done through Pipelines. Starting with `mbiosphere/infrastructure:v0.7.0` there are dedicated GitLab Runners running on all Swarm Manager Nodes. They are configured to use the local Docker Socket and provide it to the Containers it runs its jobs in. This means that Jobs running on these Runners can access the Docker Socket of a Swarm Manager directly. These Runners only run when the Job provides a special `deploy` tag and the Runners only accept `docker:*` images. Their only job is to enable automated Deployment to the Swarm while eliminating the need to provide `private SSH keys` as a variable in GitLab. This should ease New Project Setups, Key-Rollovers and Deployment-Complexity a lot.
+
+A typical Deployment Job in GitLab CI could now look as simple as this:
 
 ```
-ansible-playbook -u root -i staging configure-node.yml
+deploy:
+  stage: deploy
+  variables:
+    - DEPLOYMENT: infrastructure
+  script:
+    - docker stack deploy --with-registry-auth --prune -c docker-stack.yml $DEPLOYMENT
+  tags:
+    - deploy
 ```
 
-### For Staging
-`ansible-playbook provision.yml`
-
-
-# Resources
-- https://medium.com/@ju5t_/how-were-using-gitlab-to-test-and-deploy-our-application-s-to-docker-swarm-e3f556dbf8fe
-- # Resources
-- https://github.com/mwiget/hetzner-ansible
-- https://github.com/thetechnick/hcloud-ansible/blob/master/docs/hcloud_server.md
-- https://beneke.cc/blog/hetzner-cloud-ansible-inventory-done-right
-- Cloud DNS: https://docs.ansible.com/ansible/latest/modules/cloudflare_dns_module.html
-- Traefik 2.0: https://github.com/trajano/trajano-swarm/blob/master/edge.yml
-- Audit: https://github.com/inspec/inspec
-
+No additional authentication needed. This can be spiced up for complex parts by providing a dedicated deployment image containing all necessary tools (like `mbio-cicibuilder`) and limiting the Runners allowed `image` to this new image in `ansible/playbooks/provision-runner.yml` in the section with tag `deploy`.
 
 # Versioning
 - https://juhani.gitlab.io/go-semrel-gitlab/get-started/
 - Semantic Versioning
 - GitLab Access Token: hxMptRX7KeHsqyxYR3Uf
+
+# Security
+The Swarm and Storidge communicate over an internal network. The network topology / subnets aren't statically defined as all the services as well as Ansible can handle dynamic infrastructure very well. 
+
+The nodes are currently firewalled. Only ports 443, 80 and 22 are open for ingress from the internet. Internal communication is fully whitelisted. The firewall rules can be changed in `ansible/playbooks/templates/iptables.conf.j2`. Running `ansible-playbook provision.yml --tags="firewall"` from `ansible` directory will update the firewall on all nodes. **USE WITH CAUTION**.
+
+Storidge makes it a requirement to control its cluster nodes through SSH as user `root`, thus it's managing special SSH Keys and the SSH services allows connections from root. This is not ideal and the Storidge Devs are aware and already working on a more secure solution that doesn't require root access via SSH.
+
+The dependencies of this infrastructure includes 2 roles for OS- and SSH-Hardening that can be applied with `ansible-playbook provision.yml --tags="hardening"`. I currently strongly advise against it. The roles themselves provide good security defaults but might cause issues with the Storidge cluster. Both (the playbooks and Storidge) heavliy change os-level and ssh-configs that can cause undesired behaviour. It might make sense to deeper define own security needs and apply them manually through Ansible playbooks in accordance with Storidge's requirements. 
+
+# Monitoring
+Monitoring is finally realized with Prometheus and Grafana. Implementing TIG would have meant more complexity and less automation. Prometheus is highly dynamic and takes most of its configuration from autodiscovery. 
+
+Prometheus and Grafana each have dedicated Web Interfaces:
+
+- [Grafana](https://grafana.mbiosphere.com)
+- [Prometheus](https://prometheus.mbiosphere.com)
+
+Both services have 2 points of configuration. They have custom-built Images the run from in `docker/{prometheus/grafana}`. Running both in Docker really helps scaling but requires custom images to deal with the fact that both services can't be fully configured through environment. Instead of messing with changing configuration in Docker Volumes, it's simpler to build static images of both with the respective Config, Rules and Dashboards baked it. The images are built in GitLab CI (Job-Config in `.gitlab-ci.yml`, Image Config in `docker/{prometheus/grafana}`) with the same versioning enabled that also applies to the `mbiosphere/infrastructure` repository. 
+
+The second point of configuration deals with the Deployment of the services. The `infrastructure` Backplane is handled completely by Ansible. Service- and DNS-Configuration is done in `ansible/playbooks/provision-services.yml` in the respective sections for the service (tags `prometheus` and `grafana`).
+
+Grafana Dashboards can be edited in Grafana directly but need to be exported afterwards and saved to (overwrite existing dashboards) `docker/grafana/config/dashboards/$BOARDNAME` or the changes will be lost after Container Restart. After changing anything to the Docker-related Config, `git commit && git push` to trigger a pipeline that builds the new images.
+
+## Node Exporter
+For Node Exporter to be able to tell us on what node it's running on, we also supply a custom image with special config in the ENTRYPOINT in `docker/node-exporter`.
 
 # Recommendations
 - Configure the services' logging-modules to output including timestamps. This eases debugging a lot
@@ -103,3 +133,6 @@ ansible-playbook -u root -i staging configure-node.yml
 - Improve Error-Logging (try...catch, better messages) and -Handling
 - Add a [healthcheck URL](https://codeblog.dotsandbrackets.com/docker-health-check/) to each http-based service; this helps the swarm to know the state of a task/service and enables advanced monitoring from external apps (datadog, prometheus, etc); for non-http services a local or tcp-based socket works fine, too. The actual healthcheck command the swarm needs to use will be defined in the services stack-file
 - Improve docs on service dependencies, needed networks, minimum viable config, etc; for the full-time DevOps to optimally operate the platform, good service-based docs are a must; a good start is to design services around the [12-factor App](https://12factor.net/de/) methodology.
+
+# Future Additions
+- Prometheus Config via CI: https://mrkaran.dev/posts/prometheus-ci/

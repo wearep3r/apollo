@@ -66,7 +66,7 @@
         line: '%sudo ALL=(ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
 
-    - name: Create A record at Cloudflare
+    - name: Create A record for Node
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "{{ ansible_hostname }}.nodes"
@@ -76,43 +76,44 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
       register: record
+      tags:
+        - dns
 
-    # - name: Ensure SSH Host Key is known
-    #   delegate_to: localhost
-    #   become: false
-    #   lineinfile:
-    #     dest: ~/.ssh/known_hosts
-    #     create: yes
-    #     state: present
-    #     line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port|string + ' ' + inventory_hostname+'.swarm.'+base_domain) }}"
+    # Here we're overloading the nodes.mbiosphere.com A-Record with the IP of each node.
+    # This way we don't need to specify each Swarm Node in the Prometheus Config
+    # but can use the same mechanic of discovery that is used by the other exporters.
+    # Prometheus simply queries nodes.mbiosphere.com and gets a list of IPs returned
+    # which it then scrapes.
+    #
+    # EXAMPLE
+    #
+    # $ dig nodes.mbiosphere.com
+    #
+    # ;; ANSWER SECTION:
+    # nodes.mbiosphere.com.	299	IN	A	157.230.122.88
+    # nodes.mbiosphere.com.	299	IN	A	157.230.101.99
+    # nodes.mbiosphere.com.	299	IN	A	68.183.219.80
+    # nodes.mbiosphere.com.	299	IN	A	157.230.101.24
+    # nodes.mbiosphere.com.	299	IN	A	157.230.123.216
+    # nodes.mbiosphere.com.	299	IN	A	157.230.99.2
+    # nodes.mbiosphere.com.	299	IN	A	157.230.109.225
+    - name: Create A record for Nodes (Prometheus)
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "nodes"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+      register: record
+      tags:
+        - dns
 
-# Basics
-# - apt / pip dependencies
 - hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   tasks:
-    - name: Check if iscsi-initiatorname backup exists
-      stat:
-        path: /etc/iscsi/initiatorname.iscsi.bak
-      register: initiatorname_bak
-    - name: Fix iscsi problem 1
-      copy:
-        src: /etc/iscsi/initiatorname.iscsi
-        dest: /etc/iscsi/initiatorname.iscsi.bak
-        remote_src: yes
-      when: initiatorname_bak.stat.exists == False 
-    - name: Fix iscsi problem 2
-      shell:
-        cmd: /sbin/iscsi-iname
-      register: iscsi_iname
-      when: initiatorname_bak.stat.exists == False 
-    - name: Copy iscsi-iname to file
-      copy:
-        content: "InitiatorName={{ iscsi_iname.stdout }}"
-        dest: /etc/iscsi/initiatorname.iscsi
-      when: initiatorname_bak.stat.exists == False 
     - name: Install apt dependencies
       apt:
         name:
@@ -122,12 +123,16 @@
           - git
         state: present
         update_cache: True
+      tags:
+        - packages
     - name: Install pip dependencies
       pip:
         name:
           - jsondiff
           - pyyaml
           - docker
+      tags:
+        - packages
 
 # NTP & Localization
 # Config in group_vars/all
@@ -162,66 +167,6 @@
         mode: '0644'
       notify: restart docker
 
-# Prepare Firewall for Swarm Communication
-# This is fed to geerlingguy.firewall in the next task
-# DEPRECATED: replaced by own firewall handling;
-# Docker and iptables don't work together seemlessly so we need to manually get it going
-# Otherwise iptables will flush Docker's firewall rules upon every restart/reboot
-# and thus render cluster communication impossible
-# - hosts: mbiosphere
-#   become: true
-#   remote_user: "{{ deploy_user_name }}"
-#   gather_facts: yes
-#   tasks:
-#     - name: Initialize List
-#       set_fact:
-#         firewall_additional_rules:
-#           - "iptables -N DOCKER"
-#           # Masquerade outbound connections from containers
-#           - "iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE"
-#           # Accept established connections to the docker containers
-#           - "iptables -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
-#           # Allow docker containers to communicate with themselves & outside world
-#           - "iptables -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
-#           - "iptables -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT"
-#           # Allow from docker_gwbridge (needed for Storidge API to respond to calls from Portainer container)
-#           - "iptables -A INPUT -s 172.18.0.0/16 -j ACCEPT"
-#     - name: Allow connections from Swarm hosts
-#       set_fact:
-#         firewall_additional_rules: "{{ firewall_additional_rules + [ 'iptables -A INPUT -s ' \
-#           + hostvars[item]['ansible_default_ipv4']['address'] + ' -j ACCEPT' ] }}"
-#       with_items:  "{{ groups['mbiosphere'] }}"
-
-# General Security
-# - hosts: mbiosphere
-#   become: true
-#   remote_user: "{{ deploy_user_name }}"
-#   gather_facts: no
-#   roles:
-#     #- geerlingguy.security # Messes with Storidge
-#     - geerlingguy.firewall
-#   vars:
-#     firewall_additional_rules: hostvars[inventory_hostname]['firewall_additional_rules'] # geerlingguy.firewall
-#   handlers:
-#     - name: Restart Docker service after firewall restarted
-#       service:
-#         name: docker
-#         state: restarted
-#       listen: restart firewall
-
-# - name: Restart Docker when Firewall changed
-#   become: true
-#   gather_facts: no
-#   service:
-#     name: docker
-#     state: restarted
-#   handlers:
-#     - name: Restart Docker service after firewall restarted
-#       service:
-#         name: docker
-#         state: restarted
-#       listen: restart firewall
-
 - hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
@@ -243,6 +188,8 @@
         group: root
         mode: '0644'
       notify: restart firewall
+      tags:
+        - firewall
     - name: Copy firewall service
       template:
         src: templates/iptables.service.j2
@@ -251,10 +198,11 @@
         group: root
         mode: '0644'
       notify: reload systemd
+      tags:
+        - firewall
     - name: Enable firewall service
       service:
         name: iptables
         enabled: yes
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
+      tags:
+        - firewall

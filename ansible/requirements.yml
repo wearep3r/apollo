@@ -4,7 +4,6 @@
 - src: robertdebock.locale
 - src: geerlingguy.pip
 - src: geerlingguy.docker
-- src: geerlingguy.security
+#- src: geerlingguy.security
 - src: geerlingguy.git
-#- src: atosatto.docker-swarm
 - src: riemers.gitlab-runner

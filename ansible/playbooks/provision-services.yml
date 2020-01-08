@@ -1,6 +1,6 @@
 - hosts: manager[0]
   become: true
-  gather_facts: false
+  gather_facts: true
   remote_user: "{{ deploy_user_name }}"
   tasks:
     - name: Create Swarm Overlay networks
@@ -17,6 +17,7 @@
         mode: replicated
         replicas: 1
         image: traefik:v1.7.19-alpine
+        resolve_image: yes
         command: 
           traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=DEBUG --accessLog --api --debug --docker.domain={{ base_domain }} --logLevel=DEBUG --ping --rest --retry
         env:
@@ -81,6 +82,7 @@
         state: present
         mode: global
         image: portainer/agent:1.5.1
+        resolve_image: yes
         env:
           AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
           CAP_HOST_MANAGEMENT: "1"
@@ -124,6 +126,7 @@
         state: present
         mode: global
         image: gcr.io/google-containers/cadvisor:v0.34.0
+        resolve_image: yes
         command: /usr/bin/cadvisor -logtostderr -docker_only
         networks:
           - name: "monitoring"
@@ -190,6 +193,7 @@
         mode: replicated
         replicas: 1
         image: storidge/cio-prom:latest
+        resolve_image: yes
         networks:
           - name: "monitoring"
             aliases:
@@ -229,6 +233,7 @@
         state: present
         mode: global
         image: stefanprodan/dockerd-exporter:latest
+        resolve_image: yes
         env:
           IN: "172.18.0.1:9323"
           OUT: "9323"
@@ -290,6 +295,7 @@
         state: present
         mode: global
         image: registry.gitlab.com/mbio/mbiosphere/infrastructure/node-exporter:latest
+        resolve_image: yes
         networks:
           - name: "monitoring"
             aliases:
@@ -358,6 +364,7 @@
         state: present
         mode: global
         image: clockworksoul/docker-gc-cron:latest
+        resolve_image: yes
         mounts:
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
@@ -434,6 +441,7 @@
         mode: replicated
         replicas: 1
         image: portainer/portainer:1.23.0
+        resolve_image: yes
         env:
           AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
           CAP_HOST_MANAGEMENT: "1"
@@ -481,7 +489,7 @@
       tags:
         - portainer
 
-    - name: Create A record at Cloudflare
+    - name: Create A record for Portainer
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "swarm"
@@ -519,6 +527,7 @@
         mode: replicated
         replicas: 1
         image: consul:1.6.2
+        resolve_image: yes
         env:
           CONSUL_BIND_INTERFACE: "eth0"
           CONSUL_LOCAL_CONFIG: '{"leave_on_terminate": true}'
@@ -581,6 +590,7 @@
         reauthorize: no
       tags:
         - prometheus
+        - monitoring
 
     - name: Provision Prometheus
       docker_swarm_service:
@@ -593,6 +603,7 @@
           - "--storage.tsdb.retention.time=48h"
           - "--web.enable-admin-api"
         name: prometheus
+        resolve_image: yes
         state: present
         mode: replicated
         replicas: 1
@@ -650,8 +661,9 @@
       register: prometheus_provision
       tags:
         - prometheus
+        - monitoring
 
-    - name: Create A record at Cloudflare
+    - name: Create A record for Prometheus
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "prometheus"
@@ -663,11 +675,13 @@
       register: record
       tags:
         - prometheus
+        - monitoring
 
     - debug:
         var: prometheus_provision
       tags:
         - prometheus
+        - monitoring
       when: prometheus_provision.changed
 
     - name: "Wait for prometheus.{{ base_domain }} to become ready"
@@ -681,29 +695,20 @@
       delay: 5 # pause for X sec b/w each call
       tags:
         - prometheus
+        - monitoring
 
     - name: Provision Grafana
       docker_swarm_service:
         name: grafana
         state: present
         mode: replicated
+        resolve_image: yes
         replicas: 1
         image: registry.gitlab.com/mbio/mbiosphere/infrastructure/grafana:latest
         env:
           GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
           GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"
           GF_USERS_ALLOW_SIGN_UP: "false"
-          #- GF_PATHS_PROVISIONING=/etc/grafana/provisioning/
-          #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-localhost}
-          #- GF_SMTP_ENABLED=${GF_SMTP_ENABLED:-false}
-          #- GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS:-grafana@test.com}
-          #- GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME:-Grafana}
-          #- GF_SMTP_HOST=${GF_SMTP_HOST:-smtp:25}
-          #- GF_SMTP_USER=${GF_SMTP_USER}
-          #- GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
-          #- http_proxy=http://proxy.example.com:80
-          #- https_proxy=https://proxy.example.com:443
-          #- no_proxy=10.0.0.0/8,.example.com
         networks:
           - name: "proxy"
             aliases:
@@ -741,7 +746,7 @@
           traefik.docker.network: "proxy"
           traefik.port: "3000"
           traefik.frontend.rule: "Host:grafana.{{ base_domain }}"
-          traefik.backend: "prometheus"
+          traefik.backend: "grafana"
           traefik.protocol: "http"
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
@@ -757,8 +762,9 @@
       register: grafana_provision
       tags:
         - grafana
+        - monitoring
 
-    - name: Create A record at Cloudflare
+    - name: Create A record for Grafana
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "grafana"
@@ -770,11 +776,13 @@
       register: record
       tags:
         - grafana
+        - monitoring
 
     - debug:
         var: grafana_provision
       tags:
         - grafana
+        - monitoring
       when: grafana_provision.changed
 
     - name: "Wait for grafana.{{ base_domain }} to become ready"
@@ -788,6 +796,7 @@
       delay: 5 # pause for X sec b/w each call
       tags:
         - grafana
+        - monitoring
     
     # - name: Provision Consul Replicas
     #   docker_swarm_service:

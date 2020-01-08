@@ -1,10 +1,5 @@
 ---
 # tasks file for locale
-- name: test veriables and environment
-  assert:
-    that:
-      - locale_lang is defined
-
 - name: install requirements
   package:
     name: "{{ locale_requirements }}"

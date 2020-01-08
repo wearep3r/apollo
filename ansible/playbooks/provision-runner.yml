@@ -13,10 +13,10 @@
     #     name: gitlab-runner
     #     state: absent
     #     purge: yes
-    - name: Remove file (delete file)
-      file:
-        path: /etc/gitlab-runner/config.toml
-        state: absent
+    # - name: Remove file (delete file)
+    #   file:
+    #     path: /etc/gitlab-runner/config.toml
+    #     state: absent
 
 - hosts: satellite
   remote_user: "{{ deploy_user_name }}"
@@ -43,12 +43,11 @@
             memory: 2048mb
             privileged: true
             disable_cache: false
-        #    #allowed_images: ["ruby:*", "python:*", "php:*"]
-        #  runners.docker.sysctls:
-        #    net.ipv4.ip_forward: "1"
   roles:
     - { role: riemers.gitlab-runner }
-
+  tags:
+    - runner
+    - build
 
 - hosts: manager
   remote_user: "{{ deploy_user_name }}"
@@ -77,3 +76,6 @@
             allowed_images: ["docker:*"]
   roles:
     - { role: riemers.gitlab-runner }
+  tags:
+    - runner
+    - deploy

@@ -1,5 +1,5 @@
 # OS Hardening
-- hosts: mbiosphere
+- hosts: all
   become: true
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
@@ -11,3 +11,5 @@
       # Enable IPv4 traffic forwarding
       # This is needed for Docker
       net.ipv4.ip_forward: 1
+  tags:
+    - hardening

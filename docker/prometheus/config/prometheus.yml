@@ -23,6 +23,7 @@ scrape_configs:
   - job_name: 'dockerd-exporter'
     dns_sd_configs:
     - names:
+      # This A-Record is managed by Docker Swarm
       - 'tasks.dockerd-exporter'
       type: 'A'
       port: 9323
@@ -30,6 +31,7 @@ scrape_configs:
   - job_name: 'cadvisor'
     dns_sd_configs:
     - names:
+      # This A-Record is managed by Docker Swarm
       - 'tasks.cadvisor'
       type: 'A'
       port: 8080
@@ -37,6 +39,7 @@ scrape_configs:
   - job_name: 'node-exporter'
     dns_sd_configs:
     - names:
+      # This A-Record is managed by Docker Swarm
       - 'tasks.node-exporter'
       type: 'A'
       port: 9100
@@ -44,6 +47,15 @@ scrape_configs:
   - job_name: 'cio-exporter'
     dns_sd_configs:
     - names:
+      # This A-Record is managed by Docker Swarm
       - 'tasks.cio-exporter'
       type: 'A'
       port: 16995
+
+  - job_name: 'giltlab-runner'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
+      - 'nodes.mbiosphere.com'
+      type: 'A'
+      port: 9252
