@@ -114,19 +114,19 @@ Build grafana:
     - infrastructure
   when: manual
 
-# Build infrastructure:
-#   stage: build
-#   image: docker:19.03.5
-#   services:
-#     - docker:19.03.5-dind
-#   script:
-#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-#     - docker pull $CONTAINER_TEST_IMAGE || true
-#     - docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
-#     - docker push $CONTAINER_TEST_IMAGE
-#   tags: 
-#     - infrastructure
-#     - docker
+Build infrastructure:
+  stage: build
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CONTAINER_TEST_IMAGE || true
+    - docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
+    - docker push $CONTAINER_TEST_IMAGE
+  tags: 
+    - infrastructure
+    - docker
 
 # # Lint Ansible files
 # test:ansible:
