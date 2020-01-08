@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.0.0-experimental
 FROM python:3.7.5-alpine3.10
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
@@ -34,7 +33,7 @@ RUN pip install --no-cache-dir \
 # Docker Compose
 RUN curl -fsSL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose \
     && chmod +x ~/docker-compose \
-    && sudo mv ~/docker-compose /usr/local/bin/ \
+    && mv ~/docker-compose /usr/local/bin/ \
     && docker-compose --version
 
 # Terraform
@@ -42,7 +41,7 @@ RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/te
     && unzip ~/terraform.zip \
     && rm ~/terraform.zip \
     && chmod +x ~/terraform \
-    && sudo mv ~/terraform /usr/local/bin/ \
+    && mv ~/terraform /usr/local/bin/ \
     && terraform version
 
 # terraform-invenvory
@@ -50,7 +49,7 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
     && unzip ~/terraform-inventory.zip \
     && rm ~/terraform-inventory.zip \
     && chmod +x ~/terraform-inventory \
-    && sudo mv ~/terraform-inventory /usr/local/bin/ \
+    && mv ~/terraform-inventory /usr/local/bin/ \
     && terraform-inventory -version
 
 COPY . .
