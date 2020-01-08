@@ -30,19 +30,19 @@ RUN pip install --no-cache-dir \
     docker-compose
 
 # Terraform
-RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o ~/terraform.zip \
-    && unzip ~/terraform.zip \
-    && rm ~/terraform.zip \
-    && chmod +x ~/terraform \
-    && mv ~/terraform /usr/local/bin/ \
+RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
+    && unzip terraform.zip \
+    && rm terraform.zip \
+    && chmod +x terraform \
+    && mv terraform /usr/local/bin/ \
     && terraform version
 
 # terraform-invenvory
-RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v0.9/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o ~/terraform-inventory.zip \
-    && unzip ~/terraform-inventory.zip \
-    && rm ~/terraform-inventory.zip \
-    && chmod +x ~/terraform-inventory \
-    && mv ~/terraform-inventory /usr/local/bin/ \
+RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v0.9/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
+    && unzip terraform-inventory.zip \
+    && rm terraform-inventory.zip \
+    && chmod +x terraform-inventory \
+    && mv terraform-inventory /usr/local/bin/ \
     && terraform-inventory -version
 
 COPY . .
