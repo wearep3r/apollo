@@ -17,9 +17,6 @@ cache:
 variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
-
 
 .deployment: &deployment |
   # Setup SSH deploy keys
@@ -74,7 +71,7 @@ Build node-exporter:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
     - cd docker/node-exporter
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION .
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
   tags: 
     - build
@@ -91,7 +88,7 @@ Build prometheus:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
     - cd docker/prometheus
-    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION .
+    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
   tags: 
     - build
@@ -107,7 +104,7 @@ Build grafana:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
     - cd docker/grafana
-    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION .
+    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
   tags: 
     - build
@@ -121,8 +118,9 @@ Build infrastructure:
     - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CONTAINER_TEST_IMAGE || true
-    - docker build --cache-from $CONTAINER_TEST_IMAGE -t $CONTAINER_TEST_IMAGE -f ci/Dockerfile .
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - cd docker/infrastructure
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker push $CONTAINER_TEST_IMAGE
   tags: 
     - infrastructure
@@ -149,12 +147,11 @@ Release prometheus:
   script:
     - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    # - docker pull $CONTAINER_TEST_IMAGE
-    # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    # - docker push $CONTAINER_RELEASE_IMAGE
-    - docker pull $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION || true
-    - docker tag $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION $CI_REGISTRY_IMAGE/prometheus:latest
+    - docker pull $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:latest
     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
+    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
   only:
     - master
   tags: 
@@ -170,12 +167,11 @@ Release grafana:
   script:
     - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    # - docker pull $CONTAINER_TEST_IMAGE
-    # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    # - docker push $CONTAINER_RELEASE_IMAGE
-    - docker pull $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION || true
-    - docker tag $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION $CI_REGISTRY_IMAGE/grafana:latest
+    - docker pull $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
     - docker push $CI_REGISTRY_IMAGE/grafana:latest
+    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
   only:
     - master
   tags: 
@@ -191,12 +187,31 @@ Release node-exporter:
   script:
     - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    # - docker pull $CONTAINER_TEST_IMAGE
-    # - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    # - docker push $CONTAINER_RELEASE_IMAGE
-    - docker pull $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION || true
-    - docker tag $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
+  only:
+    - master
+  tags: 
+    - build
+    - infrastructure
+  when: manual
+
+Release infrastructure:
+  stage: release
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE:v$RELEASE_VERSION
   only:
     - master
   tags: 
@@ -250,39 +265,3 @@ deploy:
     - docker info
   tags:
     - deploy
-
-# Deploy: Staging
-# deploy:
-#   stage: deploy
-#   variables:
-#     ENVIRONMENT_DOMAIN: $CI_ENVIRONMENT_NAME.$BASE_DOMAIN
-#     RELEASE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-#     DEPLOYMENT: ${CI_PROJECT_NAME}
-#   script:
-#     - *deployment 
-#   only:
-#     - master
-#   when: manual
-
-# # Deploy: Production
-# production:
-#   stage: deploy
-#   image: alpine
-#   #script:
-#   #  - apk add --update curl
-#   #  - curl -XPOST $WWW_WEBHOOK
-#   only:
-#     - master
-#   environment:
-#     name: production
-
-# Testing application:
-# test:
-#   stage: test
-#   script:
-#     - docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml config --quiet
-#     #- docker-compose run -e INSIDE_CI=1 web sh ./docker/ci.sh
-#   coverage: '/[\d\.]+\%\s*$/'
-#   artifacts:
-#     paths:
-#       - artifacts/

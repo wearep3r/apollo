@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM python:3.7.5-alpine3.10
-LABEL maintainer Fabian Peter <fabian@peter.saarland>
+LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
+
+ARG BUILD_DATE
+LABEL org.label-schema.build-date=$BUILD_DATE
 
 ARG DOCKER_VERSION=19.03.5
 ARG DOCKER_COMPOSE_VERSION=1.25.1
