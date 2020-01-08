@@ -29,9 +29,7 @@ RUN pip install --no-cache-dir \
     hcloud \
     jsondiff \
     docker \
-    ansible-lint \
-    docker-compose \
-    && ansible-galaxy install -r requirements.yml
+    ansible-lint
 
 # Docker Compose
 RUN curl -fsSL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose \
