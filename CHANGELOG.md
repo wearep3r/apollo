@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.7.1
+2020-01-08
+
+### Fixes
+
+- configs (d2475834aa53ed8e6332a5903b3bed71b72f8007)
+
 ## 0.7.0
 2020-01-06
 
