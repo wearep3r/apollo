@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.8.1
+2020-01-09
+
+### Fixes
+
+- ci images (948dbcaa55d0dd1a959fdc4d260f7c65459edfe5)
+
 ## 0.8.0
 2020-01-09
 
