@@ -216,7 +216,6 @@ Release infrastructure:
   tags: 
     - build
     - infrastructure
-  when: manual
 
 release:
   stage: release
