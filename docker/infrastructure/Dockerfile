@@ -8,6 +8,7 @@ ARG TERRAFORM_VERSION=0.12.18
 ARG TERRAFORM_INVENTORY_VERSION=0.9
 
 RUN mkdir /infrastructure
+WORKDIR /infrastructure
 
 USER root
 
