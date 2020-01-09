@@ -7,7 +7,8 @@ LABEL org.label-schema.build-date=$BUILD_DATE
 ARG TERRAFORM_VERSION=0.12.18
 ARG TERRAFORM_INVENTORY_VERSION=0.9
 
-RUN mkdir /infrastructure
+RUN mkdir /infrastructure \
+    && cd /infrastructure
 WORKDIR /infrastructure
 
 USER root
@@ -48,7 +49,7 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
 
 COPY . .
 
-WORKDIR /infrastructure/ansible
-RUN ansible-galaxy install -r requirements.yml
+RUN cd /infrastructure/ansible \
+    && ansible-galaxy install -r requirements.yml
 WORKDIR /infrastructure
 CMD ["ansible", "-v"]
