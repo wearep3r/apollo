@@ -607,7 +607,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/prometheus:v0.6.0
+        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/prometheus:latest
         networks:
           - name: "proxy"
             aliases:
