@@ -48,10 +48,9 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
     && terraform-inventory -version
 
 COPY . .
-RUN ls -la && pwd
 RUN cd /infrastructure/ansible \
     && echo 'Ansible refuses to read from a world-writeable folder, hence' \
     && chmod -v 700 $(pwd) \
-    && ansible-galaxy install -r requirements.yml
+    && ansible-galaxy install --ignore-errors -r requirements.yml
 WORKDIR /infrastructure
 CMD ["ansible", "-v"]
