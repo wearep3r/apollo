@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.8.0
+2020-01-09
+
+### Features
+
+- enabled pipeline for infrastructure image (eecdf4df8f066109b3548294da44e081d7333f35)
+- enabled infrastructure release (0c1ab5f87246c07ac9bc27323ab6c0ea69fc3e2a)
+- enabled infrastructure release (a013c58d0c1eef68b628a027b490efb3b51eb1a1)
+- enabled infrastructure release (575e9d6497a7c26ff14d162bb3c32d81590295aa)
+- enabled infrastructure release (9d517e0ea8faf37a96c970d5c81adf457e2b90a3)
+- enabled infrastructure release (147c0eaba254e4d7638dd09080d19d037676fff3)
+
+### Fixes
+
+- order of events (634aaa7eed3c6df01540fac35a9504915daeac7e)
+- order of events (c06d1cc69e8352f9fae3a89e2451b1784155351e)
+- order of events (7becf20b7ad283f9a961ef4c963fa396352c9b2d)
+- order of events (1ed4d1d4ab46f63ecd571b54a017ac14f8560305)
+- order of events (7e0be0c8f3567aad86089f99598c31db7709b025)
+- order of events (0fdf2619f3f031426417221651746a1eee7deb68)
+
 ## 0.7.1
 2020-01-08
 
