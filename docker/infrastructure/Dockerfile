@@ -48,7 +48,7 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
     && terraform-inventory -version
 
 COPY . .
-
+RUN ls -la && pwd
 RUN cd /infrastructure/ansible \
     && ansible-galaxy install -r requirements.yml
 WORKDIR /infrastructure
