@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.9.0
+2020-01-09
+
+### Features
+
+- added GitLab Runner Metrics and Dashboard (8f973a4352421b96bb2c82cdc403ded37e077b90)
+
+### Fixes
+
+- ci images (bdacebfcc00b19ef0eeb5306b3def5909bafc3f3)
+
 ## 0.8.0
 2020-01-09
 
