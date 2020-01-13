@@ -71,7 +71,7 @@ cf_api_key: "0c7c9779d56df9b2cbd051aa35b7ca3801869"
 letsencrypt_mail: cloud@micro-biolytics.com
 
 # DigitalOcean
-do_auth_token: 9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc
+do_auth_token: c1156e393b0d1932b056b8f17e31176f4721aec633b103a3ec33de00bbfa9c63
 
 
 

@@ -4,7 +4,7 @@
 
 variable "ssh_key_ids" { 
     type = list
-    default = ["26180720"]
+    default = ["26255948"]
 }
 
 # variable "do_token" {

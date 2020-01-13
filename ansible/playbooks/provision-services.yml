@@ -358,6 +358,58 @@
         - node-exporter
       when: node_exporter_provision.changed
 
+    - name: Provision promtail
+      docker_swarm_service:
+        name: promtail
+        state: present
+        mode: global
+        image: grafana/promtail:latest
+        resolve_image: yes
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: /var/log
+            target: /var/log
+            type: bind
+            readonly: yes
+        restart_config:
+          condition: on-failure
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_promtail
+      tags:
+        - promtail
+        - monitoring
+
+    - debug:
+        var: provision_promtail
+      tags:
+        - promtail
+      when: provision_promtail.changed
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure promtail is up and running"
+        seconds: 30
+      when: provision_promtail.changed
+      tags:
+        - promtail
+
     - name: Provision Docker garbage-collector
       docker_swarm_service:
         name: garbage-collector
@@ -696,6 +748,52 @@
       tags:
         - prometheus
         - monitoring
+
+    - name: Provision Loki
+      docker_swarm_service:
+        name: loki
+        resolve_image: yes
+        state: present
+        mode: replicated
+        replicas: 1
+        image: grafana/loki:latest
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: loki-data
+            target: /data
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.hostname == satellite-1
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 1024M
+      register: loki_provision
+      tags:
+        - loki
+        - monitoring
+
+    - debug:
+        var: loki_provision
+      tags:
+        - loki
+        - monitoring
+      when: loki_provision.changed
 
     - name: Provision Grafana
       docker_swarm_service:

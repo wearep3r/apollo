@@ -1,6 +1,6 @@
 // these must be modified or set at runtime
 variable "do_token" {
-    default = "9488ec8b8211e19c58f898b4314d89b69558e0082c721f0fec40c75beb6e40bc"
+    default = "c1156e393b0d1932b056b8f17e31176f4721aec633b103a3ec33de00bbfa9c63"
 }
 variable "hcloud_token" {
     default = "hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA"
@@ -13,7 +13,7 @@ variable "ssh_key_path" {
 }
 variable "vm_ssh_key_ids" { 
     type = list
-    default = ["26180720"]
+    default = ["26255948"]
 }
 
 // sane/cheap defaults from here-on out

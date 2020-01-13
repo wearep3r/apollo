@@ -56,6 +56,6 @@ scrape_configs:
     dns_sd_configs:
     - names:
       # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
-      - 'nodes.mbiosphere.com'
+      - 'runners.mbiosphere.com'
       type: 'A'
       port: 9252
