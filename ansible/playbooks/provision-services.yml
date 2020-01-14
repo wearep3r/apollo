@@ -10,6 +10,14 @@
         attachable: true
       with_items: "{{ swarm_networks }}"
 
+    - name: Generate admin password hash
+      shell: "docker run --rm httpd:2.4-alpine htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
+      register: admin_password_hash
+      tags:
+        - portainer
+        - traefik
+        - consul
+
     - name: Provision Traefik
       docker_swarm_service:
         name: traefik
@@ -42,7 +50,7 @@
           - source: traefik-config-cio
             target: /etc/traefik
             type: volume
-            readonly: yes
+            readonly: no
             driver_config: 
               name: "cio"
           - source: /var/run/docker.sock
@@ -480,15 +488,9 @@
         - garbage-collector
       when: garbage_collector_provision.changed
 
-    - name: Generate admin password hash for portainer
-      shell: "docker run --rm httpd:2.4-alpine htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
-      register: portainer_admin_password
-      tags:
-        - portainer
-
     - name: Provision Portainer
       docker_swarm_service:
-        command: "/portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics --admin-password {{ portainer_admin_password.stdout }}"
+        command: "/portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics --admin-password {{ admin_password_hash.stdout }}"
         name: portainer
         state: present
         mode: replicated
@@ -610,6 +612,7 @@
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
       register: consul_leader_provision
       tags:
         - consul-leader
@@ -626,8 +629,8 @@
         method: GET
         http_agent: "if0"
         status_code: 200
-        #user: if0
-        #password: if0
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -703,6 +706,7 @@
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
           prometheus.enable: "true"
           prometheus.port: "9090"
           prometheus.path: "/metrics"
@@ -742,6 +746,8 @@
         url: "https://prometheus.{{ base_domain }}"
         method: GET
         status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  

@@ -52,6 +52,14 @@ scrape_configs:
       type: 'A'
       port: 16995
 
+  - job_name: 'cio-exporter'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.traefik'
+      type: 'A'
+      port: 8080
+
   - job_name: 'giltlab-runner'
     dns_sd_configs:
     - names:
