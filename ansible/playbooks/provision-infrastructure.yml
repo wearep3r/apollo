@@ -1,0 +1,12 @@
+- hosts: localhost
+  tasks:
+    - name: Provision Terraform
+      terraform:
+        project_path: ../../terraform
+        state: present
+      register: terraform
+    - name: Debug Terraform
+      debug:
+        var: terraform 
+    - name: Refresh Inventory
+      meta: refresh_inventory

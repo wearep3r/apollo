@@ -79,6 +79,19 @@
       tags:
         - dns
 
+    - name: Delete A record for Nodes
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "nodes"
+        type: A
+        state: absent
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+      when: ansible_hostname == "manager-1"
+      register: record
+      tags:
+        - dns
+
     # Here we're overloading the nodes.mbiosphere.com A-Record with the IP of each node.
     # This way we don't need to specify each Swarm Node in the Prometheus Config
     # but can use the same mechanic of discovery that is used by the other exporters.

@@ -1,8 +1,0 @@
-- hosts: swarm_1_manager[0]
-  become: true
-  remote_user: "{{ deploy_user_name }}"
-  tasks:
-    - name: Teardown Traefik
-      docker_swarm_service:
-        name: syncthing
-        state: absent

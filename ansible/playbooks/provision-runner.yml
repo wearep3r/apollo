@@ -1,22 +1,18 @@
-# Setup Gitlab Runners
-- hosts: all
-  remote_user: root
-  become: false
+- hosts: manager[0]
+  remote_user: "{{ deploy_user_name }}"
+  become: true
   tasks:
-    # - name: Restart service gitlab-runner, in all cases
-    #   service:
-    #     name: gitlab-runner
-    #     state: restarted
-
-    # - name: Remove "gitlab-runner" package
-    #   apt:
-    #     name: gitlab-runner
-    #     state: absent
-    #     purge: yes
-    # - name: Remove file (delete file)
-    #   file:
-    #     path: /etc/gitlab-runner/config.toml
-    #     state: absent
+    - name: Delete A record for Runners
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "runners"
+        type: A
+        state: absent
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+      register: record
+      tags:
+        - dns
 
 - hosts: satellite
   remote_user: "{{ deploy_user_name }}"

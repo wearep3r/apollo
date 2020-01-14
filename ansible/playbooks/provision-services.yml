@@ -274,7 +274,7 @@
 
     - name: Pause until Service is up
       pause: 
-        prompt: "Make sure cadvisor is up and running"
+        prompt: "Make sure dockerd-exporter is up and running"
         seconds: 30
       when: provision_dockerd_exporter.changed
       tags:
@@ -365,6 +365,7 @@
         mode: global
         image: grafana/promtail:latest
         resolve_image: yes
+        command: /usr/bin/promtail -config.file=/etc/promtail/docker-config.yaml
         networks:
           - name: "monitoring"
             aliases:

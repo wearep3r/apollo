@@ -51,7 +51,7 @@ ci_dind_image: "docker:19.03.5-dind"
 # STORIDGE #
 ############
 
-storidge_version: "3085"
+storidge_version: "3107"
 
 ################
 # INTEGRATIONS #
