@@ -48,7 +48,7 @@ version:
     - release test-api
     - release next-version --allow-current
     - release next-version --allow-current > .next-version
-    - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
+    - echo "RELEASE_URL=$CI_PROJECT_URL/-/tags/v$(<.next-version)" > build_info
     - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
     - echo "RELEASE_SHA=$CI_COMMIT_SHORT_SHA" >> build_info
     - echo "RELEASE_VERSION=$(<.next-version)" >> build_info

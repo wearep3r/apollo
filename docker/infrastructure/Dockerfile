@@ -6,11 +6,8 @@ ARG BUILD_DATE
 ARG TERRAFORM_VERSION=0.12.18
 ARG TERRAFORM_INVENTORY_VERSION=0.9
 
-RUN mkdir /infrastructure \
-    && cd /infrastructure
-WORKDIR /infrastructure
-
 USER root
+RUN mkdir /infrastructure
 
 RUN apk add --no-cache \
     git \
@@ -46,6 +43,8 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
     && mv terraform-inventory /usr/local/bin/ \
     && terraform-inventory -version
 
+
+WORKDIR /infrastructure
 COPY . .
 RUN cd /infrastructure/ansible \
     && echo 'Ansible refuses to read from a world-writeable folder, hence' \
@@ -54,5 +53,4 @@ RUN cd /infrastructure/ansible \
 
 LABEL org.label-schema.build-date=$BUILD_DATE
 
-WORKDIR /infrastructure
 CMD ["ansible", "-v"]

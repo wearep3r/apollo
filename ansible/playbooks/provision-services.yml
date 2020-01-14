@@ -227,17 +227,6 @@
       tags:
         - portainer
 
-    - name: Create A record for Portainer
-      cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "swarm"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cf_api_email }}"
-        account_api_token: "{{ cf_api_key }}"
-        solo: yes
-      register: record
-
     - debug:
         var: portainer_provision
         verbosity: 1

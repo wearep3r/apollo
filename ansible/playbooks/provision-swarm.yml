@@ -185,4 +185,15 @@
           docker node update --label-add role=satellite --label-add storage=local {{ hostvars[item]["ansible_hostname"] }}
       with_items: "{{ groups['satellite'] }}"
       when: groups["satellite"] is defined and (groups["satellite"]|length>0)
+    
+    - name: Create A record for Swarm
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "swarm"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
 
