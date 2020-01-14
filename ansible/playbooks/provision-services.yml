@@ -902,6 +902,110 @@
       tags:
         - grafana
         - monitoring
+
+    - name: Provision minio S3
+      docker_swarm_service:
+        command: 
+          - "/usr/bin/docker-entrypoint.sh"
+          - "minio"
+          - "server"
+          - "/data"
+        name: minio
+        resolve_image: yes
+        state: present
+        mode: replicated
+        replicas: 1
+        image: minio/minio:latest
+        env:
+          MINIO_ACCESS_KEY: "{{admin_user}}"
+          MINIO_SECRET_KEY: "{{admin_password}}"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+          - name: "s3"
+            aliases:
+              - "s3"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: minio-data
+            target: /data
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.hostname == satellite-2
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9000"
+          traefik.frontend.rule: "Host:s3.{{ base_domain }}"
+          traefik.backend: "s3"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          #traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+          interval: 30s
+          timeout: 20s
+          retries: 3
+      register: minio_provision
+      tags:
+        - minio
+
+    - name: Create A record for Minio
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "s3"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
+      tags:
+        - minio
+
+    - debug:
+        var: minio_provision
+      tags:
+        - minio
+      when: minio_provision.changed
+
+    - name: "Wait for s3.{{ base_domain }} to become ready"
+      uri:
+        url: "https://s3.{{ base_domain }}"
+        method: GET
+        status_code: 200
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - minio
     
     # - name: Provision Consul Replicas
     #   docker_swarm_service:

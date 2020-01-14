@@ -43,6 +43,7 @@ swarm_networks:
   - portainer
   - consul
   - monitoring
+  - s3
 
 ci_docker_image: "docker:19.03.5"
 ci_dind_image: "docker:19.03.5-dind"
@@ -125,3 +126,5 @@ registry_url: registry.gitlab.com
 registry_user: "derfabianpeter"
 registry_password: "{{ gl_token }}"
 runner_token: "Y3Ae_Vx-T7B2EC7WKqbT"
+slack_webhook: https://hooks.slack.com/services/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
+slack_channel: autodevops
