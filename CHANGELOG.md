@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.10.0
+2020-01-14
+
+### Features
+
+- added Grafana Loki (d63a3527e83197bc8463a0f08095c986ca8b3227)
+- Storidge/Swarm Upgrade (7b8e2c8a7b396d6842487db94bc844624d992a8e)
+
 ## 0.9.0
 2020-01-09
 
