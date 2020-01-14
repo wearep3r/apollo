@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.3
+2020-01-14
+
+### Fixes
+
+- s3 config (9781523a1077f509db04d94f935bd76128ea7196)
+- traefik dashboard (e183a30bbca7e06e94a42a83b574044967793f29)
+- traefik dashboard (bc31cd2b72c87008ece6098b16063050a6c66ee4)
+- build time (b9582e595bd008e61c24acbdfb42773213688a0f)
+
 ## 0.11.4
 2020-01-14
 
