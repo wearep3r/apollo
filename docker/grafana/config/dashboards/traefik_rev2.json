@@ -1,46 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "Prometheus",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "5.1.3"
-    },
-    {
-      "type": "panel",
-      "id": "grafana-piechart-panel",
-      "name": "Pie Chart",
-      "version": "1.3.1"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": "5.0.0"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "singlestat",
-      "name": "Singlestat",
-      "version": "5.0.0"
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -70,7 +28,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "format": "s",
       "gauge": {
         "maxValue": 100,
@@ -150,7 +108,7 @@
         "rgba(26, 206, 22, 0.89)",
         "rgba(245, 54, 54, 0.9)"
       ],
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "decimals": 0,
       "format": "none",
       "gauge": {
@@ -233,7 +191,7 @@
         "label": "Others",
         "threshold": 0
       },
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "fontSize": "80%",
       "format": "short",
       "gridPos": {
@@ -279,7 +237,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "format": "ms",
       "gauge": {
         "maxValue": 100,
@@ -355,7 +313,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 6,
@@ -440,7 +398,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "decimals": 0,
       "fill": 1,
       "gridPos": {
@@ -530,7 +488,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 6,
@@ -619,7 +577,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 6,
@@ -705,7 +663,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "decimals": 0,
       "fill": 1,
       "gridPos": {
@@ -795,7 +753,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "fill": 7,
       "gridPos": {
         "h": 7,
@@ -883,7 +841,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "fill": 7,
       "gridPos": {
         "h": 7,
@@ -971,7 +929,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${Prometheus}",
+      "datasource": "Prometheus",
       "decimals": 0,
       "fill": 1,
       "gridPos": {
@@ -1075,7 +1033,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${Prometheus}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": false,
         "label": "Job:",
@@ -1095,7 +1053,7 @@
       {
         "allValue": "traefik",
         "current": {},
-        "datasource": "${Prometheus}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": false,
         "label": "Node:",
@@ -1115,7 +1073,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${Prometheus}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": "Service:",

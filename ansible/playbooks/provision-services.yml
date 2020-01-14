@@ -1021,7 +1021,7 @@
         zone: "{{ base_domain }}"
         record: "s3"
         type: CNAME
-        value: "swarm.{{ base_domain }}"
+        value: "swarm1.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: yes
@@ -1043,12 +1043,15 @@
         status_code: 200
         user: "{{admin_user}}"
         password: "{{admin_password}}"
+        headers:
+            Authorization: "{{admin_password}}"
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
       delay: 5 # pause for X sec b/w each call
       tags:
         - minio
+      when: minio_provision.changed
     
     # - name: Provision Consul Replicas
     #   docker_swarm_service:
