@@ -70,7 +70,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "format": "s",
       "gauge": {
         "maxValue": 100,
@@ -150,7 +150,7 @@
         "rgba(26, 206, 22, 0.89)",
         "rgba(245, 54, 54, 0.9)"
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "decimals": 0,
       "format": "none",
       "gauge": {
@@ -233,7 +233,7 @@
         "label": "Others",
         "threshold": 0
       },
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "fontSize": "80%",
       "format": "short",
       "gridPos": {
@@ -279,7 +279,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "format": "ms",
       "gauge": {
         "maxValue": 100,
@@ -355,7 +355,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "fill": 1,
       "gridPos": {
         "h": 6,
@@ -440,7 +440,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "decimals": 0,
       "fill": 1,
       "gridPos": {
@@ -530,7 +530,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "fill": 1,
       "gridPos": {
         "h": 6,
@@ -619,7 +619,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "fill": 1,
       "gridPos": {
         "h": 6,
@@ -705,7 +705,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "decimals": 0,
       "fill": 1,
       "gridPos": {
@@ -795,7 +795,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "fill": 7,
       "gridPos": {
         "h": 7,
@@ -883,7 +883,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "fill": 7,
       "gridPos": {
         "h": 7,
@@ -971,7 +971,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "${Prometheus}",
       "decimals": 0,
       "fill": 1,
       "gridPos": {
@@ -1075,7 +1075,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "${Prometheus}",
         "hide": 0,
         "includeAll": false,
         "label": "Job:",
@@ -1095,7 +1095,7 @@
       {
         "allValue": "traefik",
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "${Prometheus}",
         "hide": 0,
         "includeAll": false,
         "label": "Node:",
@@ -1115,7 +1115,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "${Prometheus}",
         "hide": 0,
         "includeAll": true,
         "label": "Service:",
