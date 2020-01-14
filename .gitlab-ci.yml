@@ -114,6 +114,8 @@ Build grafana:
 Build infrastructure:
   stage: build
   image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
   services:
     - docker:19.03.5-dind
   script:
