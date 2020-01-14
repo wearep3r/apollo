@@ -52,7 +52,7 @@ scrape_configs:
       type: 'A'
       port: 16995
 
-  - job_name: 'cio-exporter'
+  - job_name: 'traefik'
     dns_sd_configs:
     - names:
       # This A-Record is managed by Docker Swarm

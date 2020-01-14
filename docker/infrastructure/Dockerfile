@@ -2,7 +2,6 @@ FROM python:3.7.5-alpine3.10
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
 ARG BUILD_DATE
-LABEL org.label-schema.build-date=$BUILD_DATE
 
 ARG TERRAFORM_VERSION=0.12.18
 ARG TERRAFORM_INVENTORY_VERSION=0.9
@@ -52,5 +51,8 @@ RUN cd /infrastructure/ansible \
     && echo 'Ansible refuses to read from a world-writeable folder, hence' \
     && chmod -v 700 $(pwd) \
     && ansible-galaxy install --ignore-errors -r requirements.yml
+
+LABEL org.label-schema.build-date=$BUILD_DATE
+
 WORKDIR /infrastructure
 CMD ["ansible", "-v"]
