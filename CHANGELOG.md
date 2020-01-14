@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.4
+2020-01-14
+
+### Fixes
+
+- traefik dashboard (bc31cd2b72c87008ece6098b16063050a6c66ee4)
+
 ## 0.11.3
 2020-01-14
 
