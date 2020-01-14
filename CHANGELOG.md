@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.2
+2020-01-14
+
+### Fixes
+
+- prometheus duplicate exporter (bbe767f14c1b88ef9e301eec75f23d5f8578a6e3)
+
 ## 0.11.1
 2020-01-14
 
