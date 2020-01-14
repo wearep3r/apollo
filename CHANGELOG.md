@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.1
+2020-01-14
+
+### Fixes
+
+- removed manual trigger for Docker images (d121ef37a712416663bd48fe6b4088dc5b3285ea)
+
 ## 0.11.0
 2020-01-14
 
