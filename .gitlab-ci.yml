@@ -76,7 +76,7 @@ Build node-exporter:
   tags: 
     - build
     - infrastructure
-  when: manual
+  #when: manual
 
 Build prometheus:
   stage: build
@@ -92,7 +92,7 @@ Build prometheus:
     - docker push $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA
   tags: 
     - build
-  when: manual
+  #when: manual
 
 Build grafana:
   stage: build
@@ -109,7 +109,7 @@ Build grafana:
   tags: 
     - build
     - infrastructure
-  when: manual
+  #when: manual
 
 Build infrastructure:
   stage: build
@@ -156,7 +156,7 @@ Release prometheus:
   tags: 
     - build
     - infrastructure
-  when: manual
+  #when: manual
 
 Release grafana:
   stage: release
@@ -176,7 +176,7 @@ Release grafana:
   tags: 
     - build
     - infrastructure
-  when: manual
+  #when: manual
 
 Release node-exporter:
   stage: release
@@ -196,7 +196,7 @@ Release node-exporter:
   tags: 
     - build
     - infrastructure
-  when: manual
+  #when: manual
 
 Release infrastructure:
   stage: release
