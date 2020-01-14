@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.5
+2020-01-14
+
+### Fixes
+
+- build time (b9582e595bd008e61c24acbdfb42773213688a0f)
+- image errors (3a6eeaa6314f106bcc09068cfd8ac75d78051dd9)
+
 ## 0.11.3
 2020-01-14
 
