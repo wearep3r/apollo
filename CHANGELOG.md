@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.0
+2020-01-14
+
+### Features
+
+- Traefik Grafana Dashboard (5b7ff9c029df11527fa2ecb0a433ca539a835e63)
+
 ## 0.10.0
 2020-01-14
 
