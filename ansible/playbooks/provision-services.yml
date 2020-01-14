@@ -17,6 +17,28 @@
         - portainer
         - traefik
         - consul
+        - prometheus
+      changed_when: false
+
+    - debug:
+        var: admin_password_hash
+        verbosity: 1
+      tags:
+        - traefik
+        - portainer
+        - consul
+        - prometheus
+
+    - name: Create CNAME for Traefik
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "proxy"
+        type: CNAME
+        value: "swarm.{{base_domain}}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
 
     - name: Provision Traefik
       docker_swarm_service:
@@ -68,21 +90,42 @@
         placement:
           constraints: 
             - node.role == manager
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
+          traefik.backend: "traefik"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
       register: traefik_provision
       tags:
         - traefik
 
     - debug:
         var: traefik_provision
+        verbosity: 1
       tags:
         - traefik
       when: traefik_provision.changed
 
-    - name: Pause until Service is up
-      pause: 
-        prompt: "Make sure traefik is up and running"
-        seconds: 30
-      when: traefik_provision.changed
+    - name: "Wait for proxy.{{ base_domain }} to become ready"
+      uri:
+        url: "https://proxy.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call 
+      tags:
+        - traefik
     
     - name: Provision Portainer Agent
       docker_swarm_service:
@@ -127,6 +170,92 @@
         prompt: "Make sure portainer-agent is up and running"
         seconds: 30
       when: portainer_agent_provision.changed
+
+    - name: Provision Portainer
+      docker_swarm_service:
+        command: "/portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics --admin-password {{ admin_password_hash.stdout }}"
+        name: portainer
+        state: present
+        mode: replicated
+        replicas: 1
+        image: portainer/portainer:1.23.0
+        resolve_image: yes
+        env:
+          AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
+          CAP_HOST_MANAGEMENT: "1"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "portainer"
+            aliases:
+              - "portainer"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: portainer-data-cio
+            target: /data
+            type: volume
+            readonly: no
+            driver_config: 
+              name: cio
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.role == manager
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9000"
+          traefik.frontend.rule: "Host:swarm.{{ base_domain }}"
+          traefik.backend: "portainer-swarm"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+      register: portainer_provision
+      tags:
+        - portainer
+
+    - name: Create A record for Portainer
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "swarm"
+        type: A
+        value: "{{ ansible_default_ipv4.address }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: yes
+      register: record
+
+    - debug:
+        var: portainer_provision
+        verbosity: 1
+      tags:
+        - portainer
+      when: portainer_provision.changed
+
+    - name: "Wait for swarm.{{ base_domain }} to become ready"
+      uri:
+        url: "https://swarm.{{ base_domain }}"
+        method: GET
+        status_code: 200
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - portainer
 
     - name: Provision cadvisor
       docker_swarm_service:
@@ -276,6 +405,7 @@
 
     - debug:
         var: provision_dockerd_exporter
+        verbosity: 1
       tags:
         - dockerd-exporter
       when: provision_dockerd_exporter.changed
@@ -354,6 +484,7 @@
 
     - debug:
         var: node_exporter_provision
+        verbosity: 1
       tags:
         - node-exporter
       when: node_exporter_provision.changed
@@ -407,6 +538,7 @@
 
     - debug:
         var: provision_promtail
+        verbosity: 1
       tags:
         - promtail
       when: provision_promtail.changed
@@ -476,6 +608,7 @@
 
     - debug:
         var: garbage_collector_provision
+        verbosity: 1
       tags:
         - garbage-collector
       when: garbage_collector_provision.changed
@@ -487,91 +620,6 @@
       tags:
         - garbage-collector
       when: garbage_collector_provision.changed
-
-    - name: Provision Portainer
-      docker_swarm_service:
-        command: "/portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo https://www.micro-biolytics.com/wp-content/uploads/2019/03/cropped-mBio_logo.png --no-analytics --admin-password {{ admin_password_hash.stdout }}"
-        name: portainer
-        state: present
-        mode: replicated
-        replicas: 1
-        image: portainer/portainer:1.23.0
-        resolve_image: yes
-        env:
-          AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
-          CAP_HOST_MANAGEMENT: "1"
-        networks:
-          - name: "proxy"
-            aliases:
-              - "traefik"
-            options:
-              driver: "overlay"
-          - name: "portainer"
-            aliases:
-              - "portainer"
-            options:
-              driver: "overlay"
-        mounts:
-          - source: portainer-data-cio
-            target: /data
-            type: volume
-            readonly: no
-            driver_config: 
-              name: cio
-        restart_config:
-          condition: on-failure
-        update_config:
-          parallelism: 2
-          delay: 60s
-          monitor: 30s
-          order: start-first
-          failure_action: rollback
-        placement:
-          constraints: 
-            - node.role == manager
-        labels:
-          traefik.enable: "true"
-          traefik.tags: "proxy"
-          traefik.docker.network: "proxy"
-          traefik.port: "9000"
-          traefik.frontend.rule: "Host:swarm.{{ base_domain }}"
-          traefik.backend: "portainer-swarm"
-          traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
-          traefik.frontend.entryPoints: "http,https"
-          traefik.backend.loadbalancer.stickiness: "true"
-      register: portainer_provision
-      tags:
-        - portainer
-
-    - name: Create A record for Portainer
-      cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "swarm"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cf_api_email }}"
-        account_api_token: "{{ cf_api_key }}"
-        solo: yes
-      register: record
-
-    - debug:
-        var: portainer_provision
-      tags:
-        - portainer
-      when: portainer_provision.changed
-
-    - name: "Wait for swarm.{{ base_domain }} to become ready"
-      uri:
-        url: "https://swarm.{{ base_domain }}"
-        method: GET
-        status_code: 200
-      register: _result
-      until: _result.status == 200
-      retries: 30 # retry X times  
-      delay: 5 # pause for X sec b/w each call
-      tags:
-        - portainer
 
     - name: Provision Consul Leader
       docker_swarm_service:
@@ -619,6 +667,7 @@
 
     - debug:
         var: consul_leader_provision
+        verbosity: 1
       tags:
         - consul-leader
       when: consul_leader_provision.changed
@@ -627,7 +676,6 @@
       uri:
         url: "https://consul.{{ base_domain }}"
         method: GET
-        http_agent: "if0"
         status_code: 200
         user: "{{admin_user}}"
         password: "{{admin_password}}"
@@ -720,12 +768,12 @@
         - prometheus
         - monitoring
 
-    - name: Create A record for Prometheus
+    - name: Create CNAME for Prometheus
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "prometheus"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
+        type: CNAME
+        value: "swarm.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: yes
@@ -736,6 +784,7 @@
 
     - debug:
         var: prometheus_provision
+        verbosity: 1
       tags:
         - prometheus
         - monitoring
@@ -797,6 +846,7 @@
 
     - debug:
         var: loki_provision
+        verbosity: 1
       tags:
         - loki
         - monitoring
@@ -869,12 +919,12 @@
         - grafana
         - monitoring
 
-    - name: Create A record for Grafana
+    - name: Create CNAME for Grafana
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "grafana"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
+        type: CNAME
+        value: "swarm.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: yes
@@ -885,6 +935,7 @@
 
     - debug:
         var: grafana_provision
+        verbosity: 1
       tags:
         - grafana
         - monitoring
@@ -976,12 +1027,12 @@
       tags:
         - minio
 
-    - name: Create A record for Minio
+    - name: Create CNAME for Minio
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "s3"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
+        type: CNAME
+        value: "swarm.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: yes
@@ -991,6 +1042,7 @@
 
     - debug:
         var: minio_provision
+        verbosity: 1
       tags:
         - minio
       when: minio_provision.changed
@@ -1000,6 +1052,8 @@
         url: "https://s3.{{ base_domain }}"
         method: GET
         status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
