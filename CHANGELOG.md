@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.11.7
+2020-01-14
+
+### Fixes
+
+- Traefik Grafan datasource (397564055142ddfb5b51d6a1c1f64854e94899df)
+
 ## 0.11.6
 2020-01-14
 
