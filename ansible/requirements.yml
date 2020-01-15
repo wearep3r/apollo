@@ -1,5 +1,5 @@
-- src: dev-sec.os-hardening
-- src: dev-sec.ssh-hardening
+#- src: dev-sec.os-hardening
+#- src: dev-sec.ssh-hardening
 - src: geerlingguy.ntp
 - src: robertdebock.locale
 - src: geerlingguy.pip

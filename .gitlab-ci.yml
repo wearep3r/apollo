@@ -64,6 +64,8 @@ version:
 Build node-exporter:
   stage: build
   image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
   services:
     - docker:19.03.5-dind
   script:
@@ -81,6 +83,8 @@ Build node-exporter:
 Build prometheus:
   stage: build
   image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
   services:
     - docker:19.03.5-dind
   script:
@@ -97,6 +101,8 @@ Build prometheus:
 Build grafana:
   stage: build
   image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
   services:
     - docker:19.03.5-dind
   script:
