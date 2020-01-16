@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!--- next entry here -->
 
 ## 0.11.8
+2020-01-16
+
+### Fixes
+
+- improved Docs (518d140617648a9071e12bd7598af7d59e813151)
+- Ansible boolean syntax (d3421d9e966304fda4d622604cdd0a2f967ae417)
+
+## 0.11.8
 2020-01-15
 
 ### Fixes
