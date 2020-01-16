@@ -1,12 +1,12 @@
 - hosts: swarm
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
+  gather_facts: False
   tasks:
     - name: Disable Storidge service
       service:
         name: cio
-        enabled: false
+        enabled: False
 
     - name: Remove Cluster Config
       file:

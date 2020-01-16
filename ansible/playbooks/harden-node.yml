@@ -1,8 +1,8 @@
 # OS Hardening
 - hosts: all
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
+  gather_facts: False
   roles:
     - dev-sec.os-hardening # https://github.com/dev-sec/ansible-os-hardening
     - dev-sec.ssh-hardening # https://github.com/dev-sec/ansible-ssh-hardening
