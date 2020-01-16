@@ -271,3 +271,4 @@ The dependencies of this infrastructure includes 2 roles for OS- and SSH-Hardeni
 
 # Future Additions
 - Prometheus Config via CI: https://mrkaran.dev/posts/prometheus-ci/
+- Grafana Dashboards visualizing the deployed MBIO Cloud (version, usage, etc)

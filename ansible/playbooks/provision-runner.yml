@@ -23,7 +23,7 @@
       register: registered_runners
     - name: Unregister Runners
       command: "gitlab-runner unregister --name {{ ansible_hostname }}-runner"
-      when: '"{{ ansible_hostname }}-runner" in registered_runners.stdout'
+      when: 'ansible_hostname in registered_runners.stderr'
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
     gitlab_runner_registration_token: "{{ runner_token }}"
@@ -97,7 +97,7 @@
       register: registered_runners
     - name: Unregister Runners
       command: "gitlab-runner unregister --name {{ ansible_hostname }}-runner"
-      when: '"{{ ansible_hostname }}-runner" in registered_runners.stdout'
+      when: 'ansible_hostname in registered_runners.stderr'
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
     gitlab_runner_registration_token: "{{ runner_token }}"
