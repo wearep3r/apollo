@@ -13,7 +13,7 @@
         connect_timeout: 1
         timeout: 3
       register: connection
-      ignore_errors: yes
+      ignore_errors: True
       vars:
         ansible_ssh_user: "{{ deploy_user_name }}"
     - name: Bootstrap
@@ -29,7 +29,7 @@
         connect_timeout: 1
         timeout: 3
       register: connection2
-      ignore_errors: yes
+      ignore_errors: True
       vars:
         ansible_ssh_user: root
       when: connection.failed
@@ -42,7 +42,7 @@
 
 # Standards
 - hosts: all
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
   tasks:
     - name: Set up authorized keys for user root
@@ -71,7 +71,7 @@
         zone: "{{ base_domain }}"
         record: "{{ ansible_hostname }}.nodes"
         type: A
-        solo: yes
+        solo: True
         value: "{{ ansible_default_ipv4.address }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
@@ -123,7 +123,7 @@
         - dns
 
 - hosts: all
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
   gather_facts: no
   tasks:
@@ -150,9 +150,9 @@
 # NTP & Localization
 # Config in group_vars/all
 - hosts: all
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
-  gather_facts: no
+  gather_facts: False
   roles:
     - geerlingguy.ntp
     - robertdebock.locale
@@ -163,7 +163,7 @@
         name: devops
         groups: sudo,docker
         state: present
-        append: yes
+        append: True
         shell: /bin/bash
 
     - name: Set up authorized keys for user devops
@@ -181,9 +181,9 @@
       notify: restart docker
 
 - hosts: all
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
-  gather_facts: yes
+  gather_facts: True
   handlers:
     - name: restart firewall
       service:
@@ -191,7 +191,7 @@
         state: restarted
     - name: reload systemd
       systemd:
-        daemon_reload: yes
+        daemon_reload: True
   tasks:
     - name: Copy firewall config
       template:
@@ -216,6 +216,6 @@
     - name: Enable firewall service
       service:
         name: iptables
-        enabled: yes
+        enabled: True
       tags:
         - firewall

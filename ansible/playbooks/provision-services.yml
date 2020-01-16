@@ -1,13 +1,13 @@
 - hosts: manager[0]
-  become: true
-  gather_facts: true
+  become: True
+  gather_facts: True
   remote_user: "{{ deploy_user_name }}"
   tasks:
     - name: Create Swarm Overlay networks
       docker_network:
         name: "{{ item }}"
         driver: overlay
-        attachable: true
+        attachable: True
       with_items: "{{ swarm_networks }}"
 
     - name: Generate admin password hash
@@ -37,7 +37,7 @@
         value: "swarm.{{base_domain}}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
-        solo: yes
+        solo: True
       register: record
 
     - name: Provision Traefik
@@ -47,7 +47,7 @@
         mode: replicated
         replicas: 1
         image: traefik:v1.7.19-alpine
-        resolve_image: yes
+        resolve_image: True
         command: 
           traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=DEBUG --accessLog --api --debug --docker.domain={{ base_domain }} --logLevel=DEBUG --ping --rest --retry
         env:
@@ -78,7 +78,7 @@
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
             type: bind
-            readonly: yes
+            readonly: True
         update_config:
           parallelism: 2
           delay: 60s
@@ -133,7 +133,7 @@
         state: present
         mode: global
         image: portainer/agent:1.5.1
-        resolve_image: yes
+        resolve_image: True
         env:
           AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
           CAP_HOST_MANAGEMENT: "1"
@@ -179,7 +179,7 @@
         mode: replicated
         replicas: 1
         image: portainer/portainer:1.23.0
-        resolve_image: yes
+        resolve_image: True
         env:
           AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
           CAP_HOST_MANAGEMENT: "1"
@@ -252,7 +252,7 @@
         state: present
         mode: global
         image: gcr.io/google-containers/cadvisor:v0.34.0
-        resolve_image: yes
+        resolve_image: True
         command: /usr/bin/cadvisor -logtostderr -docker_only
         networks:
           - name: "monitoring"
@@ -264,27 +264,27 @@
           - source: /
             target: /rootfs
             type: bind
-            readonly: yes
+            readonly: True
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
             type: bind
-            readonly: yes
+            readonly: True
           - source: /var/run
             target: /var/run
             type: bind
-            readonly: yes
+            readonly: True
           - source: /sys
             target: /sys
             type: bind
-            readonly: yes
+            readonly: True
           - source: /var/lib/docker
             target: /var/lib/docker
             type: bind
-            readonly: yes
+            readonly: True
           - source: /dev/disk
             target: /dev/disk
             type: bind
-            readonly: yes
+            readonly: True
         restart_config:
           condition: on-failure
         labels:
@@ -319,7 +319,7 @@
         mode: replicated
         replicas: 1
         image: storidge/cio-prom:latest
-        resolve_image: yes
+        resolve_image: True
         networks:
           - name: "monitoring"
             aliases:
@@ -359,7 +359,7 @@
         state: present
         mode: global
         image: stefanprodan/dockerd-exporter:latest
-        resolve_image: yes
+        resolve_image: True
         env:
           IN: "172.18.0.1:9323"
           OUT: "9323"
@@ -422,7 +422,7 @@
         state: present
         mode: global
         image: registry.gitlab.com/mbio/mbiosphere/infrastructure/node-exporter:latest
-        resolve_image: yes
+        resolve_image: True
         networks:
           - name: "monitoring"
             aliases:
@@ -435,23 +435,23 @@
           - source: /
             target: /rootfs
             type: bind
-            readonly: yes
+            readonly: True
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
             type: bind
-            readonly: yes
+            readonly: True
           - source: /proc
             target: /host/proc
             type: bind
-            readonly: yes
+            readonly: True
           - source: /sys
             target: /host/sys
             type: bind
-            readonly: yes
+            readonly: True
           - source: /etc/hostname
             target: /etc/nodename
             type: bind
-            readonly: yes
+            readonly: True
         restart_config:
           condition: on-failure
         limits:
@@ -492,7 +492,7 @@
         state: present
         mode: global
         image: grafana/promtail:latest
-        resolve_image: yes
+        resolve_image: True
         command: /usr/bin/promtail -config.file=/etc/promtail/docker-config.yaml
         networks:
           - name: "monitoring"
@@ -504,7 +504,7 @@
           - source: /var/log
             target: /var/log
             type: bind
-            readonly: yes
+            readonly: True
         restart_config:
           condition: on-failure
         limits:
@@ -546,7 +546,7 @@
         state: present
         mode: global
         image: clockworksoul/docker-gc-cron:latest
-        resolve_image: yes
+        resolve_image: True
         mounts:
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
@@ -619,7 +619,7 @@
         mode: replicated
         replicas: 1
         image: consul:1.6.2
-        resolve_image: yes
+        resolve_image: True
         env:
           CONSUL_BIND_INTERFACE: "eth0"
           CONSUL_LOCAL_CONFIG: '{"leave_on_terminate": true}'
@@ -696,7 +696,7 @@
           - "--storage.tsdb.retention.time=48h"
           - "--web.enable-admin-api"
         name: prometheus
-        resolve_image: yes
+        resolve_image: True
         state: present
         mode: replicated
         replicas: 1
@@ -765,7 +765,7 @@
         value: "swarm.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
-        solo: yes
+        solo: True
       register: record
       tags:
         - prometheus
@@ -797,7 +797,7 @@
     - name: Provision Loki
       docker_swarm_service:
         name: loki
-        resolve_image: yes
+        resolve_image: True
         state: present
         mode: replicated
         replicas: 1
@@ -846,7 +846,7 @@
         name: grafana
         state: present
         mode: replicated
-        resolve_image: yes
+        resolve_image: True
         replicas: 1
         image: registry.gitlab.com/mbio/mbiosphere/infrastructure/grafana:latest
         env:
@@ -916,7 +916,7 @@
         value: "swarm.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
-        solo: yes
+        solo: True
       register: record
       tags:
         - grafana
@@ -951,7 +951,7 @@
           - "server"
           - "/data"
         name: minio
-        resolve_image: yes
+        resolve_image: True
         state: present
         mode: replicated
         replicas: 1
@@ -1024,7 +1024,7 @@
         value: "swarm1.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
-        solo: yes
+        solo: True
       register: record
       tags:
         - minio

@@ -10,8 +10,8 @@
 # 
 - hosts: manager
   remote_user: "{{ deploy_user_name }}"
-  become: true
-  gather_facts: yes
+  become: True
+  gather_facts: True
   tasks:
     - name: Determine Manager Swarm Status
       shell: |
@@ -33,7 +33,7 @@
 
 - hosts: worker
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   tasks:
     - name: Determine Worker Swarm Status
       shell: |
@@ -55,7 +55,7 @@
 
 - hosts: satellite
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   tasks:
     - name: Determine Satellite Swarm Status
       shell: |
@@ -79,7 +79,7 @@
 # check if the Swarm needs to be bootstrapped (initialized)
 - hosts: swarm_manager_inactive[0]
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   tasks:
     - name: Initialize Swarm Cluster
       shell: >
@@ -103,7 +103,7 @@
 # Gather Swarm related information (Join tokens)
 - hosts: swarm_manager_active[0]
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   vars:
     # hostvars[ansible_hostname]['ansible_default_ipv4']['interface']
     iface: "{{ hostvars[ansible_hostname]['ansible_eth1']['device'] }}"
@@ -129,7 +129,7 @@
 # Have all inactive Swarm Managers join the existing Swarm as Manager
 - hosts: swarm_manager_inactive:!swarm_manager_active
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   vars:
     token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
   tasks:
@@ -147,7 +147,7 @@
 # Have all inactive Swarm Workers join the existing Swarm as Worker
 - hosts: swarm_worker_inactive
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   vars:
     token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_worker_token']['stdout'] }}"
   tasks:
@@ -160,7 +160,7 @@
 
 - hosts: swarm_satellite_inactive
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   vars:
     token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
   tasks:
@@ -173,7 +173,7 @@
 
 - hosts: swarm_manager_active[0]
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   tasks:
     - name: Set Worker Node Labels # noqa 301
       shell: >
@@ -194,6 +194,6 @@
         value: "{{ ansible_default_ipv4.address }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
-        solo: yes
+        solo: True
       register: record
 

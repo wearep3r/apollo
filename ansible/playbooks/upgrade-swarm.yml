@@ -1,5 +1,5 @@
 - hosts: all:!manager[0]
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
   serial: 1
   tasks:
@@ -11,7 +11,7 @@
     - name: Check for upgradeable
       become: True
       apt:
-        upgrade: Yes
+        upgrade: True
       check_mode: True
       register: upgradeable
 
@@ -22,7 +22,7 @@
     - name: Check Storidge Installation Status
       shell: command -v cio >/dev/null 2>&1
       register: cio_installed
-      ignore_errors: yes
+      ignore_errors: True
       when: upgradeable.changed
 
     - name: Drain CIO Node
@@ -39,9 +39,9 @@
 
     - name: Upgrade Swarm Node
       apt:
-        update_cache: yes
+        update_cache: True
         upgrade: dist
-        autoremove: yes
+        autoremove: True
       #when: "'drain_status' in hostvars[inventory_hostname] and hostvars[inventory_hostname]['drain_status'].rc == 0"
       when: drain_status is succeeded
       register: upgrade
@@ -63,12 +63,12 @@
       shell: sleep 2 && shutdown -r now "Ansible updates triggered"
       async: 1
       poll: 0
-      ignore_errors: true
+      ignore_errors: True
       when: reboot_required.stat.exists
 
     - name: Waiting for Swarm Node to come back
       local_action: wait_for host={{ ansible_host }} state=started port=22 delay=30
-      become: no
+      become: False
       when: reboot_required.stat.exists
 
     # - name: Reboot Swarm Node
@@ -110,10 +110,10 @@
     #       removes: /var/run/reboot-required
     #   async: 300
     #   poll: 0
-    #   ignore_errors: true
+    #   ignore_errors: True
 
 - hosts: manager[0]
-  become: true
+  become: True
   remote_user: "{{ deploy_user_name }}"
   serial: 1
   tasks:
@@ -125,7 +125,7 @@
     - name: Check for upgradeable
       become: True
       apt:
-        upgrade: Yes
+        upgrade: True
       check_mode: True
       register: upgradeable
 
@@ -136,7 +136,7 @@
     - name: Check Storidge Installation Status
       shell: command -v cio >/dev/null 2>&1
       register: cio_installed
-      ignore_errors: yes
+      ignore_errors: True
       when: upgradeable.changed
 
     - name: Drain CIO Node
@@ -153,9 +153,9 @@
 
     - name: Upgrade Swarm Node
       apt:
-        update_cache: yes
+        update_cache: True
         upgrade: dist
-        autoremove: yes
+        autoremove: True
       #when: "'drain_status' in hostvars[inventory_hostname] and hostvars[inventory_hostname]['drain_status'].rc == 0"
       when: drain_status is succeeded
       register: upgrade
@@ -177,12 +177,12 @@
       shell: sleep 2 && shutdown -r now "Ansible updates triggered"
       async: 1
       poll: 0
-      ignore_errors: true
+      ignore_errors: True
       when: reboot_required.stat.exists
 
     - name: Waiting for Swarm Node to come back
       local_action: wait_for host={{ ansible_host }} state=started port=22 delay=30
-      become: no
+      become: False
       when: reboot_required.stat.exists
 
     # - name: Reboot Swarm Node
@@ -224,4 +224,4 @@
     #       removes: /var/run/reboot-required
     #   async: 300
     #   poll: 0
-    #   ignore_errors: true
+    #   ignore_errors: True

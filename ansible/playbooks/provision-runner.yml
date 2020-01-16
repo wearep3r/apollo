@@ -1,6 +1,6 @@
 - hosts: manager[0]
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   tasks:
     - name: Delete A record for Runners
       cloudflare_dns:
@@ -16,7 +16,7 @@
 
 - hosts: satellite
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
     #gitlab_runner_coordinator_url: "https://gitlab.com"
@@ -31,14 +31,14 @@
           - docker
           - infrastructure
           - build
-        docker_privileged: true
+        docker_privileged: True
         docker_volumes:
           - "/cache"
         extra_configs:
           runners.docker:
             memory: 2048mb
-            privileged: true
-            disable_cache: false
+            privileged: True
+            disable_cache: False
   roles:
     - { role: riemers.gitlab-runner }
   tags:
@@ -77,7 +77,7 @@
 
 - hosts: manager
   remote_user: "{{ deploy_user_name }}"
-  become: true
+  become: True
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
     #gitlab_runner_coordinator_url: "https://gitlab.com"
@@ -90,15 +90,15 @@
         docker_image: "{{ ci_docker_image }}"
         tags:
           - deploy
-        docker_privileged: true
+        docker_privileged: True
         docker_volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
           - "/cache"
         extra_configs:
           runners.docker:
             memory: 512mb
-            privileged: true
-            disable_cache: false
+            privileged: True
+            disable_cache: False
             allowed_images: ["docker:*"]
   roles:
     - { role: riemers.gitlab-runner }
