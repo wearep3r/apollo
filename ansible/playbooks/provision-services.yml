@@ -201,6 +201,10 @@
             readonly: no
             driver_config: 
               name: cio
+              options:
+                snapshot: yes
+                interval: 60
+                snapshotMax: 12
         restart_config:
           condition: on-failure
         update_config:

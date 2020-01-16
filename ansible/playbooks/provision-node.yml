@@ -8,6 +8,8 @@
 - hosts: all
   gather_facts: no
   tasks:
+    - name: Include Config
+      include_vars: config.yml
     - name: Check Provisioning Status
       wait_for_connection:
         connect_timeout: 1

@@ -1,0 +1,30 @@
+# If using HETZNER Inventory, these will be the nodes deployed to HETZNER Cloud
+# Don't change intendation! this is valid YAML
+nodes:
+    # 3 Managers
+    manager:
+        -
+            name: manager-1
+            location: fsn1
+        -
+            name: manager-2
+            location: fsn1
+        -
+            name: manager-3
+            location: fsn1
+    # 3 Workers
+    worker:
+        -
+            name: worker-1
+            location: fsn1
+        -
+            name: worker-2
+            location: fsn1
+    # 2 Runners
+    runner:
+        -
+            name: runner-1
+            location: fsn1
+        -
+            name: runner-2
+            location: fsn1

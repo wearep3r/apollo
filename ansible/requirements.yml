@@ -4,6 +4,5 @@
 - src: robertdebock.locale
 - src: geerlingguy.pip
 - src: geerlingguy.docker
-#- src: geerlingguy.security
 - src: geerlingguy.git
 - src: riemers.gitlab-runner

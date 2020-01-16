@@ -2,37 +2,6 @@
 # INFRASTRUCTURE #
 ##################
 
-# If using HETZNER Inventory, these will be the nodes deployed to HETZNER Cloud
-# Don't change intendation! this is valid YAML
-nodes:
-    # 3 Managers
-    manager:
-        -
-            name: manager-1
-            location: fsn1
-        -
-            name: manager-2
-            location: fsn1
-        -
-            name: manager-3
-            location: fsn1
-    # 3 Workers
-    worker:
-        -
-            name: worker-1
-            location: fsn1
-        -
-            name: worker-2
-            location: fsn1
-    # 2 Runners
-    runner:
-        -
-            name: runner-1
-            location: fsn1
-        -
-            name: runner-2
-            location: fsn1
-
 ##########
 # DOCKER #
 ##########
@@ -98,20 +67,9 @@ ansible_ssh_private_key_file: ../.ssh/id_rsa
 # Python interpreter used on managed nodes
 ansible_python_interpreter: /usr/bin/python3
 
-# NTP Settings
-# This can be changed to Europe/Berlin for german time 
-# TIP: when working with international clients, Etc/UTC makes the most sense
-# Everything logged by the managed nodes will then be timestamped with World Time (+0) 
-# and can then be translated to other timezones by those systems (e.g. Sentry) that need to 
+
 ntp_timezone: Etc/UTC
-
-# Locale Settings
-# Can be changed to de_DE.UTF-8 if needed 
-# Actually only relevant for direct Console access
-# SSH connections usually forwarded local settings 
 locale_lang: en_US.UTF-8
-
-# Python Settings
 pip_package: python3-pip
 
 # MBIO
@@ -123,7 +81,7 @@ admin_password: hXltRR7ke4sfBcyOYf3E3
 # GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
 gl_token: hxMptRX7KeHsqyxYR3Uf
 registry_url: registry.gitlab.com
-registry_user: "derfabianpeter"
+registry_user: "mbio-admin"
 registry_password: "{{ gl_token }}"
 runner_token: "Y3Ae_Vx-T7B2EC7WKqbT"
 slack_webhook: https://hooks.slack.com/services/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

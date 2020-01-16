@@ -1,6 +1,0 @@
----
-# REQUEST ADDITIONAL CONFIRMATION
-# TWICE at best
-- import_playbook: playbooks/teardown-hetzner.yml
-# Bootstrap/Update Storidge
-#- import_playbook: provision-storidge.yml
