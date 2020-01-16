@@ -1,5 +1,7 @@
 - hosts: localhost
   tasks:
+    - name: Include Config
+      include_vars: config.yml
     - name: Provision Terraform
       terraform:
         project_path: ../../terraform
