@@ -25,6 +25,8 @@
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-runner"
+        env_vars:
+          GL_TOKEN="{{ gl_token }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -86,6 +88,8 @@
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-runner"
+        env_vars:
+          GL_TOKEN="{{ gl_token }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:

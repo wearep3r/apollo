@@ -53,4 +53,4 @@ RUN cd /infrastructure/ansible \
 
 LABEL org.label-schema.build-date=$BUILD_DATE
 
-CMD ["ansible", "-v"]
+CMD ["ansible", "--version"]
