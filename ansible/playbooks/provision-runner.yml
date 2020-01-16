@@ -25,8 +25,7 @@
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-runner"
-        env_vars:
-          GL_TOKEN="{{ gl_token }}"
+        env_vars: ["GL_TOKEN={{ gl_token }}"]
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -36,8 +35,15 @@
         docker_privileged: True
         docker_volumes:
           - "/cache"
+        cache_type: 's3'
+        cache_s3_server_address: "https://s3.{{ base_domain }}"
+        cache_s3_access_key: "{{ admin_user }}"
+        cache_s3_secret_key: "{{ admin_password }}"
+        cache_s3_bucket_name: "gitlab-runner-cache"
+        cache_shared: true
         extra_configs:
           runners.docker:
+            extra_hosts: ["GL_TOKEN={{ gl_token }}"]
             memory: 2048mb
             privileged: True
             disable_cache: False
@@ -88,8 +94,7 @@
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-runner"
-        env_vars:
-          GL_TOKEN="{{ gl_token }}"
+        env_vars: ["GL_TOKEN={{ gl_token }}"]
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -100,6 +105,7 @@
           - "/cache"
         extra_configs:
           runners.docker:
+            extra_hosts: ["GL_TOKEN={{ gl_token }}"]
             memory: 512mb
             privileged: True
             disable_cache: False
@@ -110,7 +116,7 @@
     - runner
     - deploy
   tasks:
-    - name: Create A record for Runners (Prometheus)
+    - name: Create A record for Runners
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "runners"

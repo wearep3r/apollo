@@ -1025,7 +1025,7 @@
         zone: "{{ base_domain }}"
         record: "s3"
         type: CNAME
-        value: "swarm1.{{ base_domain }}"
+        value: "swarm.{{ base_domain }}"
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
