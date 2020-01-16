@@ -86,3 +86,4 @@ registry_password: "{{ gl_token }}"
 runner_token: "Y3Ae_Vx-T7B2EC7WKqbT"
 slack_webhook: https://hooks.slack.com/services/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
 slack_channel: autodevops
+runner_env: ["GL_TOKEN={{ gl_token }}"]
