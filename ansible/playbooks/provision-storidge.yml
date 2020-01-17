@@ -123,6 +123,17 @@
       tags:
         - storidge
 
+    - name: Copy Storidge "Snapshot" Profile
+      template:
+        src: templates/storidge-profile-snapshot.j2
+        dest: /etc/storidge/profiles/SNAPSHOT
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Load Storidge "Snapshot" Profile
+      command: cio profile add /etc/storidge/profiles/SNAPSHOT
+      register: cio_profile
+
 - name: Create Storidge Cluster
   hosts: manager[0]
   remote_user: "{{ deploy_user_name }}"

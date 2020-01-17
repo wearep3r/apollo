@@ -1,0 +1,30 @@
+---
+capacity: 20
+directory: /cio/volumes
+iops:
+  min: 1000
+  max: 2000
+level: 2
+local: no
+provision: thin
+type: ssd
+service:
+  autoexpand:
+    enabled: no
+    threshold: 80
+    increment: 25
+    limit: 3
+  compression:
+    enabled: no
+    algorithm: lzo
+  encryption:
+    enabled: no
+  replication:
+    enabled: no
+    destination: none
+    interval: 120
+    type: synchronous
+  snapshot:
+    enabled: yes
+    interval: 60
+    max: 10

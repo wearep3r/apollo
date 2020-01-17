@@ -17,14 +17,21 @@
 - hosts: satellite
   remote_user: "{{ deploy_user_name }}"
   become: True
+  pre_tasks:
+    - name: List Runners
+      command: "gitlab-runner list"
+      register: registered_runners
+    - name: Unregister Runners
+      command: "gitlab-runner unregister --name {{ ansible_hostname }}-runner"
+      when: 'ansible_hostname in registered_runners.stderr'
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
-    #gitlab_runner_coordinator_url: "https://gitlab.com"
     gitlab_runner_registration_token: "{{ runner_token }}"
     gitlab_runner_concurrent: 4
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-runner"
+        env_vars: "{{ runner_env }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -34,6 +41,12 @@
         docker_privileged: True
         docker_volumes:
           - "/cache"
+        cache_type: 's3'
+        cache_s3_server_address: "https://s3.{{ base_domain }}"
+        cache_s3_access_key: "{{ admin_user }}"
+        cache_s3_secret_key: "{{ admin_password }}"
+        cache_s3_bucket_name: "gitlab-runner-cache"
+        cache_shared: true
         extra_configs:
           runners.docker:
             memory: 2048mb
@@ -78,14 +91,21 @@
 - hosts: manager
   remote_user: "{{ deploy_user_name }}"
   become: True
+  pre_tasks:
+    - name: List Runners
+      command: "gitlab-runner list"
+      register: registered_runners
+    - name: Unregister Runners
+      command: "gitlab-runner unregister --name {{ ansible_hostname }}-runner"
+      when: 'ansible_hostname in registered_runners.stderr'
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
-    #gitlab_runner_coordinator_url: "https://gitlab.com"
     gitlab_runner_registration_token: "{{ runner_token }}"
     gitlab_runner_concurrent: 1
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-runner"
+        env_vars: "{{ runner_env }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -106,7 +126,7 @@
     - runner
     - deploy
   tasks:
-    - name: Create A record for Runners (Prometheus)
+    - name: Create A record for Runners
       cloudflare_dns:
         zone: "{{ base_domain }}"
         record: "runners"

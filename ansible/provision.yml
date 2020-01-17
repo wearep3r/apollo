@@ -7,22 +7,10 @@
 - import_playbook: playbooks/git-status.yml
   # See group_vars/all
   when: check_git
-# Create/Update Nodes on HETZNER Cloud
 - import_playbook: playbooks/provision-infrastructure.yml
-# Configure each Node: install software, set config
 - import_playbook: playbooks/provision-node.yml
-# Configure Logging
-#- import_playbook: playbooks/provision-logging.yml
-# Configure each Node: install software, set config
-# Bootstrap/Update the Swarm
 - import_playbook: playbooks/provision-swarm.yml
 - import_playbook: playbooks/upgrade-swarm.yml
 - import_playbook: playbooks/provision-storidge.yml
-# Bootstrap/Update GitLab Runners
 - import_playbook: playbooks/provision-runner.yml
-# Provision Services
 - import_playbook: playbooks/provision-services.yml
-
-
-# Security hardening
-#- import_playbook: playbooks/harden-node.yml

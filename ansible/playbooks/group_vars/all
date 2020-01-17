@@ -1,12 +1,4 @@
-##################
-# INFRASTRUCTURE #
-##################
-
-##########
-# DOCKER #
-##########
-
-# Networks
+# Swarm
 swarm_networks:
   - proxy
   - portainer
@@ -14,21 +6,12 @@ swarm_networks:
   - monitoring
   - s3
 
+# GitLab Runners
 ci_docker_image: "docker:19.03.5"
 ci_dind_image: "docker:19.03.5-dind"
 
-############
-# STORIDGE #
-############
-
+# Storidge
 storidge_version: "3107"
-
-################
-# INTEGRATIONS #
-################
-
-# HETZNER
-hcloud_token: hyflBkw1IVH1JVdrSHx8h0PeVmii5IRJcXSFIk0iu72KJXrHhi1fokNhM0d66TnA
 
 # Sentry
 sentry_token: 9791fba31e0c4da9b66261a9ec8cc682a9096ebbcfca4798bef0bfe4b675970b
@@ -86,3 +69,7 @@ registry_password: "{{ gl_token }}"
 runner_token: "Y3Ae_Vx-T7B2EC7WKqbT"
 slack_webhook: https://hooks.slack.com/services/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
 slack_channel: autodevops
+runner_env: 
+    - "GL_TOKEN={{ gl_token }}"
+    - "DOCKER_DRIVER=overlay2"
+    - "DOCKER_BUILDKIT=1"
