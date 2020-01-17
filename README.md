@@ -102,6 +102,10 @@ labels:
 
 If a service needs to be exposed to the outside, it needs to be part of the `proxy` overlay network for Traefik to be able to reach the containers.
 
+Additionally, Traefik can limit connections to endpoints through IP whitelisting:
+
+`"traefik.frontend.whiteList.sourceRange=172.16.0.0/12"`
+
 ## Management
 Provisioning, Maintenance and Changes to this infrastructure should typically be done through Ansible/Terraform. At times you might want to have a visual peek into the Infrastructure or quickly want to delete/redeploy a service or use the command line of a container.
 
@@ -150,6 +154,24 @@ These are configured in `ansible/playbooks/group_vars/all`:
 
 `FOLLOW-UP`: it might make sense to put the `GL_TOKEN` Environment Variable into the GitLab Runner Config instead of saving this per repository. This eliminates the need for projects to update Repository-Config to make use of the versioning stages.
 
+### Deploy Tokens
+The Pipelines are configured to work with GitLab Deploy Tokens (`$CI_DEPLOY_USER` and `$CI_DEPLOY_TOKEN`) to authorize Docker Nodes against the GitLab Registry. It's important to verify that the Deploy Token has `read_repository` **AND** `read_registry` as a scope. 
+
+The Deploy Token must be set in each Service Repository (e.g. https://gitlab.com/mbio/mbiosphere/mirameasurements/-/settings/repository) in `Settings` > `Repository` > `Deploy Tokens`. If there's an existing Token without `read_registry` scope, simply delete it and create a new one. Typically these tokens are only used in Pipelines by accessing the variables mentioned above so deleting and recreating shouldn't impose problems.
+
+**ATTENTION**: If the Deploy Token does **NOT** have `read_registry` scope, Deployments will fail with the following error:
+
+`No such image: registry.gitlab.com/mbio/mbiosphere/mirameasurements/mirameasurements-celery-worker:2f904b8e`
+
+**ATTENTION**: `Deploy Tokens` are for **DEPLOYMENTS**. They are used to give the Swarm a way to authenticate against the GitLab Registry. For Builds/Pushes to the Registry, this doesn't work, as the `Deploy Token` has only `read_registry` scope and can't write images to the Registry.
+
+For Pushes to the Registry (in `build` and `release` stages) you need the `$CI_JOB_TOKEN`:
+
+```
+docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+```
+
+This Job token is only valid as long as the pipeline runs and thus can't be used for deployments as it's invalidated once the Pipeline finished (which means that during the deploy, when the Docker nodes ask the Registry for the updated image, the Job Token loses validity and Docker can't successfully authenticate against the registry).
 ## Ansible
 ```
 cd ansible
@@ -269,6 +291,8 @@ The dependencies of this infrastructure includes 2 roles for OS- and SSH-Hardeni
 - Add a [healthcheck URL](https://codeblog.dotsandbrackets.com/docker-health-check/) to each http-based service; this helps the swarm to know the state of a task/service and enables advanced monitoring from external apps (datadog, prometheus, etc); for non-http services a local or tcp-based socket works fine, too. The actual healthcheck command the swarm needs to use will be defined in the services stack-file
 - Improve docs on service dependencies, needed networks, minimum viable config, etc; for the full-time DevOps to optimally operate the platform, good service-based docs are a must; a good start is to design services around the [12-factor App](https://12factor.net/de/) methodology.
 
-# Future Additions
+# Future / Missing Additions
 - Prometheus Config via CI: https://mrkaran.dev/posts/prometheus-ci/
 - Grafana Dashboards visualizing the deployed MBIO Cloud (version, usage, etc)
+- Alertmanager
+- Finish Backups

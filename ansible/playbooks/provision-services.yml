@@ -201,10 +201,6 @@
             readonly: no
             driver_config: 
               name: cio
-              options:
-                snapshot: yes
-                interval: 60
-                snapshotMax: 12
         restart_config:
           condition: on-failure
         update_config:
@@ -559,7 +555,7 @@
         restart_config:
           condition: on-failure
         env:
-          - CRON=* 15 * * *
+          - CRON=*/15 * * * *
           # By default, docker will not remove an image if it is tagged in multiple repositories. If
           # you have a server running docker where this is the case, for example in CI environments
           # where dockers are being built, re-tagged, and pushed, you can set this flag to 1 to override.
@@ -1040,22 +1036,22 @@
         - minio
       when: minio_provision.changed
 
-    - name: "Wait for s3.{{ base_domain }} to become ready"
-      uri:
-        url: "https://s3.{{ base_domain }}"
-        method: GET
-        status_code: 200
-        user: "{{admin_user}}"
-        password: "{{admin_password}}"
-        headers:
-            Authorization: "{{admin_password}}"
-      register: _result
-      until: _result.status == 200
-      retries: 30 # retry X times  
-      delay: 5 # pause for X sec b/w each call
-      tags:
-        - minio
-      when: minio_provision.changed
+    # - name: "Wait for s3.{{ base_domain }} to become ready"
+    #   uri:
+    #     url: "https://s3.{{ base_domain }}"
+    #     method: GET
+    #     status_code: 200
+    #     user: "{{admin_user}}"
+    #     password: "{{admin_password}}"
+    #     headers:
+    #         Authorization: "{{admin_password}}"
+    #   register: _result
+    #   until: _result.status == 200
+    #   retries: 30 # retry X times  
+    #   delay: 5 # pause for X sec b/w each call
+    #   tags:
+    #     - minio
+    #   when: minio_provision.changed
     
     # - name: Provision Consul Replicas
     #   docker_swarm_service:
