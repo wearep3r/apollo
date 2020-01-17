@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.12.0
+2020-01-17
+
+### Features
+
+- added GL_TOKEN to Runner environment (704b6c2418db1785179df29840bf42f5bedc460b)
+- provision GL_TOKEN through runner (a33aece020f1121ae897ce88b4aae8bdf962013d)
+- Storidge Snapshots (ed50fceb48d5b6a6ceaa69a3e78ae3f677ba86c6)
+
+### Fixes
+
+- Runners GL_TOKEN (d275a394da0bc53a93e10b3bcfd705f398060a3f)
+- .env (8699890ec233559364e516a4e130e4012c15ec39)
+
 ## 0.11.9
 2020-01-16
 
