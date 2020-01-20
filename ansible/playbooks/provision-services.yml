@@ -18,6 +18,8 @@
         - traefik
         - consul
         - prometheus
+        - monitoring
+        - unsee
       changed_when: false
 
     - debug:
@@ -859,7 +861,7 @@
         replicas: 1
         image: cloudflare/unsee:latest
         env:
-          ALERTMANAGER_URIS: default:http://alertmanager:9093
+          ALERTMANAGER_URI: http://alertmanager:9093
         networks:
           - name: "proxy"
             aliases:
