@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.13.1
+2020-01-20
+
+### Fixes
+
+- alertmanager entrypoint permissions (8f5cae7f804d4b9f453ac9ba57c75a965caeb175)
+
 ## 0.13.0
 2020-01-20
 
