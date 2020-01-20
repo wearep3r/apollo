@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.13.0
+2020-01-20
+
+### Features
+
+- alertmanager (60c1166a505273da68f61848f83fc124c75371a9)
+
+### Fixes
+
+- alertmanager ci (df47d79bab351863f7ed572aed5a4fbfd1bf7e6d)
+- alertmanager ci (daf998e9c34267c7e02a33a88178211fe5316716)
+
 ## 0.12.0
 2020-01-17
 
