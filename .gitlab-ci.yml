@@ -99,6 +99,23 @@ Build prometheus:
     - build
   #when: manual
 
+Build alertmanager:
+  stage: build
+  image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/alertmanager:latest || true
+    - cd docker/alertmanager
+    - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA
+  tags: 
+    - build
+
 Build grafana:
   stage: build
   image: docker:19.03.5
@@ -160,6 +177,26 @@ Release prometheus:
     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
     - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
+  only:
+    - master
+  tags: 
+    - build
+    - infrastructure
+  #when: manual
+
+Release alertmanager:
+  stage: release
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
+    - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
+    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
   only:
     - master
   tags: 

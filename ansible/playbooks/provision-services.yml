@@ -794,6 +794,152 @@
         - prometheus
         - monitoring
 
+    - name: Provision Alertmanager
+      docker_swarm_service:
+        name: alertmanager
+        resolve_image: True
+        state: present
+        mode: replicated
+        replicas: 1
+        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/alertmanager:latest
+        env:
+          SLACK_URL: "{{ slack_webhook }}"
+          SLACK_CHANNEL: "{{ slack_channel }}"
+          SLACK_USER: "MBIO DevOps"
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: alertmanager-data
+            target: /alertmanager
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.hostname == satellite-1
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        healthcheck:
+          test: "/bin/wget -q -Y off http://localhost:9093/metrics -O /dev/null > /dev/null 2>&1"
+          interval: 25s
+          timeout: 3s
+          start_period: 30s
+      register: alertmanager_provision
+      tags:
+        - alertmanager
+        - monitoring
+
+    - debug:
+        var: alertmanager_provision
+        verbosity: 1
+      tags:
+        - alertmanager
+        - monitoring
+      when: alertmanager_provision.changed
+
+    - name: Provision Unsee
+      docker_swarm_service:
+        name: unsee
+        resolve_image: True
+        state: present
+        mode: replicated
+        replicas: 1
+        image: cloudflare/unsee:latest
+        env:
+          ALERTMANAGER_URIS: default:http://alertmanager:9093
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.hostname == satellite-1
+        limits:
+          memory: 2658M
+        reservations:
+          memory: 128M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:alerts.{{ base_domain }}"
+          traefik.backend: "unsee"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+      register: unsee_provision
+      tags:
+        - unsee
+        - monitoring
+
+    - name: Create CNAME for Unsee
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "alerts"
+        type: CNAME
+        value: "swarm.{{ base_domain }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: True
+      register: record
+      tags:
+        - unsee
+        - monitoring
+
+    - debug:
+        var: unsee_provision
+        verbosity: 1
+      tags:
+        - unsee
+        - monitoring
+      when: unsee_provision.changed
+
+    - name: "Wait for alerts.{{ base_domain }} to become ready"
+      uri:
+        url: "https://alerts.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - unsee
+        - monitoring
+
     - name: Provision Loki
       docker_swarm_service:
         name: loki
