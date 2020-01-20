@@ -139,6 +139,42 @@ The infrastructure Code also handles any DNS-related configuration regarding the
 
 **IMPORTANT**: if the services deployed to the Platform need additional DNS config, this needs to be done manually at Cloudflare or (which is to be preferred) map the layout of the Microservices deployed to the Platform to Ansible and have the infrastructure also handle service DNS.
 
+## Swagger (WIP)
+atm, it works to hook a Swagger Endpoint up to the proxy by adding a label like this:
+
+```
+- traefik.swagger.frontend.rule=Host:swagger.${ENVIRONMENT_DOMAIN};PathPrefix:/api/Measurements/apidocs
+- traefik.swagger.backend=${DEPLOYMENT}_swagger
+```
+
+This example allows access to Swagger for Mirameasurements on https://swagger.staging.mbiosphere.com/api/Measurements/apidocs
+
+The service's swagger-config must reflect the PathPrefix, otherwise you'll get 404s in the Frontend. `tenantservice` is another service with valid Swagger-UI that can be used as a resource.
+
+Currently the Swagger Endpoints are public. You can't execute commands without authenticating against Auth0, but it might be desirable to limit access to BasicAuth or IP Whitelist.
+
+Additionally, for authentication with Auth0, the redirect-url (`audience` in Auth0 lingo) needs to be dynamically obtained from the environment ($ENVIRONMENT_DOMAIN in `.gitlab-ci.yml` for the service) or the OAuth Flow will not work.
+
+## Logging
+You can use `Loki` (which comes as a Backplane service) to forward your Container-/Service-Logs to. Simply hook your service up the `monitoring` Overlay Network and add the following `logging` directive to your Stack-Files:
+
+```
+logging:
+  driver: loki
+  options:
+    loki-url: "http://loki:3100/loki/api/v1/push"
+```
+
+## Pipelines / Docker in Docker
+If you need access to an isolated Docker Environment during your Pipelines, you'll need to add the following service config to your `Job`:
+
+```
+services:
+    - docker:19.03.5-dind
+```
+
+`Docker in Docker` is not loaded automatically on each runner and **should not** be loaded on the top of `.gitlab-ci.yml` files as general Pipeline Service. Not every job makes use of `dind` thus it doesn't make sense to spin up the `dind` container for each job. Enabling the service only for jobs that actually need it saves 30-60s execution time on any job that doesn't load `dind`. This adds up in complex Pipelines or when Pipelines are triggered very often.
+
 # Prerequisites
 
 ## GitLab

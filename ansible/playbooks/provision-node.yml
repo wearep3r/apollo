@@ -8,8 +8,6 @@
 - hosts: all
   gather_facts: no
   tasks:
-    - name: Include Config
-      include_vars: config.yml
     - name: Check Provisioning Status
       wait_for_connection:
         connect_timeout: 1
@@ -148,6 +146,7 @@
           - docker
       tags:
         - packages
+        - docker
 
 # NTP & Localization
 # Config in group_vars/all
@@ -155,6 +154,8 @@
   become: True
   remote_user: "{{ deploy_user_name }}"
   gather_facts: False
+  tags:
+    - docker
   roles:
     - geerlingguy.ntp
     - robertdebock.locale
@@ -181,6 +182,13 @@
         group: root
         mode: '0644'
       notify: restart docker
+      tags:
+        - docker
+
+    - name: Install Loki Docker Plugin
+      command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+      tags:
+        - docker
 
 - hosts: all
   become: True
