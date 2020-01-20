@@ -5,7 +5,7 @@ LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 ARG BUILD_DATE
 
 
-COPY conf /etc/alertmanager/
+COPY config /etc/alertmanager/
 
 LABEL org.label-schema.build-date=$BUILD_DATE
 
