@@ -110,6 +110,7 @@
         docker_image: "{{ ci_docker_image }}"
         tags:
           - deploy
+        run_untagged: false
         docker_privileged: True
         docker_volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
