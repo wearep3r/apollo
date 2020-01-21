@@ -119,7 +119,7 @@ Build traefik:
     - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/traefik:latest || true
-    - cd docker/grafana
+    - cd docker/traefik
     - docker build --cache-from $CI_REGISTRY_IMAGE/traefik:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA
   tags: 
