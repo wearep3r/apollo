@@ -1,4 +1,3 @@
-# Stages
 stages:
   - version
   - build
@@ -6,11 +5,6 @@ stages:
   - release
   - deploy
 
-# Do not use "latest" here as it makes rollbacks and
-# error tracking harder
-#image: docker:19.03.2
-
-# enable per-job and per-branch caching
 cache:
   key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
   
@@ -18,26 +12,9 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
 
-.deployment: &deployment |
-  # Setup SSH deploy keys
-  which ssh-agent || ( apk add --no-cache openssh-client )
-  eval $(ssh-agent -s)
-  ##
-  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-  ## We're using tr to fix line endings which makes ed25519 keys work
-  ## without extra base64 encoding.
-  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
-  ##
-  echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-  mkdir -p ~/.ssh
-  chmod 700 ~/.ssh
-  [[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-  docker -H ssh://${SWARM_USER}@${SWARM_HOST} login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  docker -H ssh://${SWARM_USER}@${SWARM_HOST} stack deploy --with-registry-auth --prune -c ci/docker-stack.yml $DEPLOYMENT
-
-
 before_script:
   # Source Environment Variables from .env
+  # TODO: Remove the need for .env globally
   - export $(grep -v '^#' .env | xargs)
 
 version:
@@ -60,7 +37,7 @@ version:
   except:
     - tags
   tags: 
-    - infrastructure
+    - build
 
 Build node-exporter:
   stage: build
@@ -78,8 +55,6 @@ Build node-exporter:
     - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
   tags: 
     - build
-    - infrastructure
-  #when: manual
 
 Build prometheus:
   stage: build
@@ -97,7 +72,6 @@ Build prometheus:
     - docker push $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA
   tags: 
     - build
-  #when: manual
 
 Build alertmanager:
   stage: build
@@ -133,7 +107,23 @@ Build grafana:
   tags: 
     - build
     - infrastructure
-  #when: manual
+
+Build traefik:
+  stage: build
+  image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/traefik:latest || true
+    - cd docker/traefik
+    - docker build --cache-from $CI_REGISTRY_IMAGE/traefik:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA
+  tags: 
+    - build
 
 Build infrastructure:
   stage: build
@@ -148,7 +138,6 @@ Build infrastructure:
     - docker build --cache-from $CI_REGISTRY_IMAGE:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -f docker/infrastructure/Dockerfile .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   tags: 
-    - infrastructure
     - build
 
 # # Lint Ansible files
@@ -182,7 +171,6 @@ Release prometheus:
   tags: 
     - build
     - infrastructure
-  #when: manual
 
 Release alertmanager:
   stage: release
@@ -202,7 +190,6 @@ Release alertmanager:
   tags: 
     - build
     - infrastructure
-  #when: manual
 
 Release grafana:
   stage: release
@@ -222,7 +209,6 @@ Release grafana:
   tags: 
     - build
     - infrastructure
-  #when: manual
 
 Release node-exporter:
   stage: release
@@ -242,7 +228,24 @@ Release node-exporter:
   tags: 
     - build
     - infrastructure
-  #when: manual
+
+Release traefik:
+  stage: release
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/traefik:latest
+    - docker push $CI_REGISTRY_IMAGE/traefik:latest
+    - docker tag $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/traefik:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE/traefik:v$RELEASE_VERSION
+  only:
+    - master
+  tags: 
+    - build
 
 Release infrastructure:
   stage: release
@@ -263,7 +266,7 @@ Release infrastructure:
     - build
     - infrastructure
 
-release:
+release version:
   stage: release
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
   script:
@@ -275,37 +278,11 @@ release:
   only:
     - master
   tags: 
-    - infrastructure
-    - docker
+    - build
 
-
-# release:
-#   stage: release
-#   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
+# deploy:
+#   stage: deploy
 #   script:
-#   - rm -f release_info
-#   - mv build_info release_info
-#   - . release_info
-  
-#   - cp release docker
-#   - cp /etc/ssl/certs/ca-certificates.crt docker
-#   - cd docker
-#   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-#   - docker build -t $CI_REGISTRY_IMAGE:v$RELEASE_VERSION .
-#   - docker push $CI_REGISTRY_IMAGE:v$RELEASE_VERSION
-#   - cd ..
-
-#   - ./release -v
-#   - ./release changelog
-#   - ./release commit-and-tag CHANGELOG.md release_info
-#   - ./release --ci-commit-tag v$RELEASE_VERSION add-download-link -n release -u $RELEASE_URL -d "$RELEASE_DESC"
-#   when: manual
-#   only:
-#   - master
-
-deploy:
-  stage: deploy
-  script:
-    - docker info
-  tags:
-    - deploy
+#     - docker info
+#   tags:
+#     - deploy
