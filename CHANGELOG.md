@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.14.0
+2020-01-21
+
+### Features
+
+- traefik custom image (13d64a7597329240772237762c18c8159557f9a9)
+
+### Fixes
+
+- oh boy... (f526c6cbe3beff0492cafb65572ec92a91e623a1)
+- missing dir (fcd03d8f917a94261cc48af1433108d8711b4497)
+
 ## 0.13.2
 2020-01-21
 
