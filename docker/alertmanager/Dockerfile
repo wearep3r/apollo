@@ -13,4 +13,5 @@ LABEL org.label-schema.build-date=$BUILD_DATE
 
 ENTRYPOINT  [ "/etc/alertmanager/docker-entrypoint.sh" ]
 CMD        [ "--config.file=/etc/alertmanager/alertmanager.yml", \
-             "--storage.path=/alertmanager" ]
+             "--storage.path=/alertmanager", \
+             "--web.external-url=https://prometheus.mbiosphere.com" ]
