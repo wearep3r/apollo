@@ -48,10 +48,11 @@
         state: present
         mode: replicated
         replicas: 1
-        image: traefik:v1.7.19-alpine
+        #image: traefik:v1.7.19-alpine
+        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/traefik:latest
         resolve_image: True
         command: 
-          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=DEBUG --accessLog --api --debug --docker.domain={{ base_domain }} --logLevel=DEBUG --ping --rest --retry
+          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=INFO --accessLog --api --docker.domain={{ base_domain }} --ping --rest --retry --configFile=/config/traefik.toml
         env:
           CF_API_EMAIL: "{{ cf_api_email }}"
           CF_API_KEY: "{{ cf_api_key }}"
