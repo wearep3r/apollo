@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.13.2
+2020-01-21
+
+### Fixes
+
+- altermanager external web url (07ba0d8a24636c025b2744d3a07bb73e9c34f49b)
+
 ## 0.13.1
 2020-01-20
 
