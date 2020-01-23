@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.16.2
+2020-01-23
+
+### Fixes
+
+- loki url path (8a935725d1fab3d26f7ae8a0efcb84045ed68459)
+
 ## 0.16.1
 2020-01-23
 
