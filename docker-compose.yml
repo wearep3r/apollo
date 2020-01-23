@@ -4,7 +4,7 @@ services:
   database:
     image: mongo:4.1-bionic
     networks:
-      - proxy
+      - monitoring
     volumes:
       - "mongodb-data:/data/db"
     deploy:
@@ -21,6 +21,12 @@ services:
         monitor: 30s
         order: start-first
         failure_action: rollback
+    logging:
+      driver: loki
+      options:
+          loki-url: "http://loki:3100"
+          loki-external-labels: "service=${DEPLOYMENT}"
+
 
 volumes:
   mongodb-data:
@@ -30,4 +36,5 @@ volumes:
 
 
 networks:
+  monitoring:
     external: true
