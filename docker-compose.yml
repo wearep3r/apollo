@@ -24,7 +24,7 @@ services:
     logging:
       driver: loki:latest
       options:
-          loki-url: "https://logs.mbiosphere.com"
+          loki-url: "https://logs.mbiosphere.com/loki/api/v1/push"
           loki-external-labels: "service=${DEPLOYMENT}"
 
 
