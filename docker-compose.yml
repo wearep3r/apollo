@@ -22,9 +22,9 @@ services:
         order: start-first
         failure_action: rollback
     logging:
-      driver: loki
+      driver: loki:latest
       options:
-          loki-url: "http://loki:3100"
+          loki-url: "https://logs.mbiosphere.com"
           loki-external-labels: "service=${DEPLOYMENT}"
 
 

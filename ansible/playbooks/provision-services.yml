@@ -977,7 +977,32 @@
           memory: 2048M
         reservations:
           memory: 1024M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "3100"
+          traefik.frontend.rule: "Host:logs.{{ base_domain }}"
+          traefik.backend: "logs"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
       register: loki_provision
+      tags:
+        - loki
+        - monitoring
+
+    - name: Create CNAME for Logs
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "logs"
+        type: CNAME
+        value: "swarm.{{ base_domain }}"
+        account_email: "{{ cf_api_email }}"
+        account_api_token: "{{ cf_api_key }}"
+        solo: True
+      register: record
       tags:
         - loki
         - monitoring
@@ -989,6 +1014,21 @@
         - loki
         - monitoring
       when: loki_provision.changed
+
+    - name: "Wait for logs.{{ base_domain }} to become ready"
+      uri:
+        url: "https://logs.{{ base_domain }}/ready"
+        method: GET
+        status_code: 200
+        #user: "{{admin_user}}"
+        #password: "{{admin_password}}"
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - loki
+        - monitoring
 
     - name: Provision Grafana
       docker_swarm_service:
