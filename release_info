@@ -1,4 +1,4 @@
-RELEASE_URL=https://gitlab.com/mbio/mbiosphere/infrastructure/-/tags/v0.15.0
+RELEASE_URL=https://gitlab.com/mbio/mbiosphere/infrastructure/-/tags/v0.16.0
 RELEASE_DESC="x86_64 GNU/Linux binary"
-RELEASE_SHA=dbaa80f3
-RELEASE_VERSION=0.15.0
+RELEASE_SHA=396827f1
+RELEASE_VERSION=0.16.0
