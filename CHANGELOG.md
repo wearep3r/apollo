@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.16.0
+2020-01-23
+
+### Features
+
+- added doco (c0d6e5c8cc8dd5a9e2cf089bee89a09d03ad6866)
+
+### Fixes
+
+- doco fixes (396827f1debeb840ef6c2fe08934828d4d0301ab)
+
 ## 0.15.0
 2020-01-23
 
