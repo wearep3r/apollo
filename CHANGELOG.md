@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.15.0
+2020-01-23
+
+### Features
+
+- added cio test deployment (dbaa80f36f8769bed4c61b523a24e42dd1059649)
+
+### Fixes
+
+- improved Docs (Docker-in-Docker, Vault, Swagger) (5ef51d602fa94370fe48605e985b25d17da52830)
+
 ## 0.14.0
 2020-01-21
 
