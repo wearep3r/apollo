@@ -19,7 +19,7 @@ services:
       update_config:
         delay: 60s
         monitor: 30s
-        order: start-first
+        order: stop-first
         failure_action: rollback
     logging:
       driver: loki:latest
