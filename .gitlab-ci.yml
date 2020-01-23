@@ -286,3 +286,17 @@ release version:
 #     - docker info
 #   tags:
 #     - deploy
+
+# Deploy
+deploy:cio-test:
+  stage: deploy
+  variables:
+    DEPLOYMENT: ${CI_PROJECT_NAME}_test
+    APP_ENVIRONMENT: staging
+  script:
+    - echo "$CI_DEPLOY_PASSWORD" | docker login $CI_REGISTRY --username=$CI_DEPLOY_USER --password-stdin
+    - docker stack deploy --with-registry-auth --prune -c docker-compose.yml $DEPLOYMENT
+  only:
+    - branches
+  tags:
+    - deploy
