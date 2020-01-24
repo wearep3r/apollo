@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 - loki s3 lookup issues (379f4273f94fd6c9b57db851418aa438097523d9)
+- loki dynamodb lookup issues (ef57648eae531f1e058b09877e02807a8e5f2a47)
+
+## 0.18.2
+2020-01-24
+
+### Fixes
+
+- loki s3 lookup issues (379f4273f94fd6c9b57db851418aa438097523d9)
 
 ## 0.18.1
 2020-01-24
