@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.17.0
+2020-01-24
+
+### Features
+
+- enabled loki for Docker Daemon (d5421ca07c09daf8ac3a6b4aaf5b807d42262577)
+
 ## 0.16.3
 2020-01-23
 
