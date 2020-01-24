@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.18.0
+2020-01-24
+
+### Features
+
+- loki custom image (c508414aa4505adc89f37b714ba6b171ec18451c)
+
+### Fixes
+
+- cache in ci (c14f8a11ba48f091912930520cd9b41c2444e414)
+- cache in ci (326e408ec0fc8b3fe9e4d736867ea415b0cabe2d)
+- grafana messed up their latest tag... (19333409d3c838de6f454d26fc5d3f9d4353e42d)
+
 ## 0.17.0
 2020-01-24
 
