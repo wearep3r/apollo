@@ -187,6 +187,8 @@
           - name: "s3"
             aliases:
               - "s3"
+              - "minio"
+              - "s3.zero"
             options:
               driver: "overlay"
         mounts:
