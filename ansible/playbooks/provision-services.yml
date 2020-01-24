@@ -123,7 +123,6 @@
         - prometheus
         - minio
         - unsee
-        - loki
 
     - debug:
         var: traefik_provision
@@ -134,7 +133,6 @@
         - prometheus
         - minio
         - unsee
-        - loki
       when: traefik_provision.changed
 
     - name: "Wait for proxy.{{ base_domain }} to become ready"
@@ -154,7 +152,6 @@
         - prometheus
         - minio
         - unsee
-        - loki
 
     - name: Provision minio S3
       docker_swarm_service:
@@ -175,13 +172,9 @@
           MINIO_HTTP_TRACE: "/dev/stdout"
         networks:
           - name: "proxy"
-            aliases:
-              - "traefik"
             options:
               driver: "overlay"
           - name: "monitoring"
-            aliases:
-              - "monitoring"
             options:
               driver: "overlay"
           - name: "s3"
@@ -291,12 +284,10 @@
         networks:
           - name: "monitoring"
             aliases:
-              - "monitoring"
+              - "dynamodb.zero"
             options:
               driver: "overlay"
           - name: "s3"
-            aliases:
-              - "s3"
             options:
               driver: "overlay"
         mounts:
@@ -352,6 +343,9 @@
           - name: "proxy"
             aliases:
               - "traefik"
+            options:
+              driver: "overlay"
+          - name: "s3"
             options:
               driver: "overlay"
         mounts:
