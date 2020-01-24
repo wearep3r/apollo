@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.19.0
+2020-01-24
+
+### Features
+
+- dynamodb credentials (48fb4b7a9135a82373ac140d5f4a75399ce533f9)
+
+### Fixes
+
+- loki dynamodb lookup issues (ef57648eae531f1e058b09877e02807a8e5f2a47)
+
 ## 0.18.2
 2020-01-24
 
