@@ -125,6 +125,23 @@ Build traefik:
   tags: 
     - build
 
+Build loki:
+  stage: build
+  image: docker:19.03.5
+  variables:
+    DOCKER_BUILDKIT: 1 
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/loki:latest || true
+    - cd docker/loki
+    - docker build --cache-from $CI_REGISTRY_IMAGE/loki:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA
+  tags: 
+    - build
+
 Build infrastructure:
   stage: build
   image: docker:19.03.5
@@ -242,6 +259,24 @@ Release traefik:
     - docker push $CI_REGISTRY_IMAGE/traefik:latest
     - docker tag $CI_REGISTRY_IMAGE/traefik:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/traefik:v$RELEASE_VERSION
     - docker push $CI_REGISTRY_IMAGE/traefik:v$RELEASE_VERSION
+  only:
+    - master
+  tags: 
+    - build
+
+Release loki:
+  stage: release
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  script:
+    - . build_info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/loki:latest
+    - docker push $CI_REGISTRY_IMAGE/loki:latest
+    - docker tag $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/loki:v$RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE/loki:v$RELEASE_VERSION
   only:
     - master
   tags: 
