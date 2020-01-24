@@ -160,10 +160,12 @@ You can use `Loki` (which comes as a Backplane service) to forward your Containe
 
 ```
 logging:
-  driver: loki
+  driver: loki:latest
   options:
-    loki-url: "http://loki:3100/loki/api/v1/push"
+    loki-url: "http://logs.mbiosphere.com/loki/api/v1/push"
 ```
+
+This way your Container Logs will be forwarded to Loki and additionally saved as json-file so `docker logs` continues to work. The Logs can be consumed in [Grafana's Explore](https://grafana.mbiosphere.com/explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bservice%3D%5C%22infrastructure_test%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D) UI.
 
 ## Pipelines / Docker in Docker
 If you need access to an isolated Docker Environment during your Pipelines, you'll need to add the following service config to your `Job`:

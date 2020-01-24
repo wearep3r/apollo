@@ -10,7 +10,6 @@
 - import_playbook: playbooks/provision-infrastructure.yml
 - import_playbook: playbooks/provision-node.yml
 - import_playbook: playbooks/provision-swarm.yml
-- import_playbook: playbooks/upgrade-swarm.yml
 - import_playbook: playbooks/provision-storidge.yml
 - import_playbook: playbooks/provision-runner.yml
 - import_playbook: playbooks/provision-services.yml

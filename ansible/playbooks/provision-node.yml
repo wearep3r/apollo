@@ -181,9 +181,45 @@
         owner: root
         group: root
         mode: '0644'
-      notify: restart docker
+      #notify: restart docker
       tags:
         - docker
+        - config
+
+    - name: Copy udev config
+      template:
+        src: templates/01-net-setup-link.rules.j2
+        dest: /etc/udev/rules.d/01-net-setup-link.rules
+        owner: root
+        group: root
+        mode: '0644'
+      #notify: restart docker
+      tags:
+        - docker
+        - config
+
+    - name: Copy systemd config
+      template:
+        src: templates/99-default.link.j2
+        dest: /etc/systemd/network/99-default.link
+        owner: root
+        group: root
+        mode: '0644'
+      #notify: restart docker
+      tags:
+        - docker
+        - config
+
+    - name: Reload udev rules
+      command: udevadm trigger
+      tags:
+        - config
+
+    - name: reload systemd
+      systemd:
+        daemon_reload: True
+      tags:
+        - config
 
     - name: Install Loki Docker Plugin
       command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
