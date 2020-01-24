@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.18.2
+2020-01-24
+
+### Fixes
+
+- loki s3 lookup issues (379f4273f94fd6c9b57db851418aa438097523d9)
+
 ## 0.18.1
 2020-01-24
 
