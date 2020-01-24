@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.18.1
+2020-01-24
+
+### Fixes
+
+- loki config (3fb297dec379ed42063c98b21693e7c9318b1b40)
+- mc platform (c5290c432715d30e16a37e5dd88b31414d5a6d69)
+- mc platform (7561ecd0d4460dcd22a1b2004734f54f2271bcc7)
+
 ## 0.18.0
 2020-01-24
 
