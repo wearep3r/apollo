@@ -1,4 +1,4 @@
-FROM python:3.7.5-alpine3.10
+FROM python:3.8.1-alpine3.11
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
 ARG BUILD_DATE
@@ -44,7 +44,7 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
     && terraform-inventory -version
 
 # minio client
-RUN curl -O https://dl.min.io/client/mc/release/darwin-amd64/mc -o /usr/local/bin/mc \
+RUN curl -O https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
     && chmod +x /usr/local/bin/mc \
     && mc --help
 
