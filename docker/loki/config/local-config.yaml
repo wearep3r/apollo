@@ -43,7 +43,7 @@ storage_config:
     s3: s3://admin:hXltRR7ke4sfBcyOYf3E3@s3.zero:9000/loki-chunks
     s3forcepathstyle: true
     dynamodbconfig:
-      dynamodb: dynamodb://dynamodb.zero:8000
+      dynamodb: dynamodb://user:pass@dynamodb.zero:8000
 
 # storage_config:
 #   boltdb:
