@@ -43,6 +43,10 @@ RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download
     && mv terraform-inventory /usr/local/bin/ \
     && terraform-inventory -version
 
+# minio client
+RUN curl -O https://dl.min.io/client/mc/release/darwin-amd64/mc -o /usr/local/bin/mc \
+    && chmod +x /usr/local/bin/mc \
+    && mc --help
 
 WORKDIR /infrastructure
 COPY . .

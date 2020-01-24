@@ -20,6 +20,7 @@
         - prometheus
         - monitoring
         - unsee
+        - loki
       changed_when: false
 
     - debug:
@@ -30,6 +31,9 @@
         - portainer
         - consul
         - prometheus
+        - monitoring
+        - unsee
+        - loki
 
     - name: Create CNAME for Traefik
       cloudflare_dns:
@@ -41,6 +45,13 @@
         account_api_token: "{{ cf_api_key }}"
         solo: True
       register: record
+      tags:
+        - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+        - loki
 
     - name: Provision Traefik
       docker_swarm_service:
@@ -108,12 +119,22 @@
       register: traefik_provision
       tags:
         - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+        - loki
 
     - debug:
         var: traefik_provision
         verbosity: 1
       tags:
         - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+        - loki
       when: traefik_provision.changed
 
     - name: "Wait for proxy.{{ base_domain }} to become ready"
@@ -129,6 +150,11 @@
       delay: 5 # pause for X sec b/w each call 
       tags:
         - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+        - loki
 
     - name: Provision minio S3
       docker_swarm_service:
@@ -146,6 +172,7 @@
         env:
           MINIO_ACCESS_KEY: "{{admin_user}}"
           MINIO_SECRET_KEY: "{{admin_password}}"
+          MINIO_HTTP_TRACE: "/dev/stdout"
         networks:
           - name: "proxy"
             aliases:
@@ -202,6 +229,8 @@
       register: minio_provision
       tags:
         - minio
+        - loki
+        - monitoring
 
     - name: Create CNAME for Minio
       cloudflare_dns:
@@ -215,12 +244,16 @@
       register: record
       tags:
         - minio
+        - loki
+        - monitoring
 
     - debug:
         var: minio_provision
         verbosity: 1
       tags:
         - minio
+        - loki
+        - monitoring
       when: minio_provision.changed
 
     - name: "Wait for s3.{{ base_domain }} to become ready"
@@ -234,6 +267,8 @@
       delay: 5 # pause for X sec b/w each call
       tags:
         - minio
+        - loki
+        - monitoring
       when: minio_provision.changed
 
     - name: Provision DynamoDB
@@ -242,7 +277,6 @@
           - "java"
           -  "-jar" 
           - "DynamoDBLocal.jar"
-          - "-inMemory"
           - "-sharedDb"
           - "-dbPath"
           - "/data/"
@@ -286,12 +320,16 @@
       register: dynamodb_provision
       tags:
         - dynamodb
+        - loki
+        - monitoring
 
     - debug:
         var: dynamodb_provision
         verbosity: 1
       tags:
-        - minio
+        - dynamodb
+        - loki
+        - monitoring
       when: dynamodb_provision.changed
 
     - name: Provision Loki
