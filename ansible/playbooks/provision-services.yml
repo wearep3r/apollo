@@ -142,6 +142,7 @@
         status_code: 200
         user: "{{admin_user}}"
         password: "{{admin_password}}"
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -256,6 +257,7 @@
         url: "https://s3.{{ base_domain }}/minio/health/live"
         method: GET
         status_code: 200
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -268,31 +270,30 @@
 
     - name: Provision DynamoDB
       docker_swarm_service:
-        command: 
-          - "java"
-          -  "-jar" 
-          - "DynamoDBLocal.jar"
-          - "-sharedDb"
-          - "-dbPath"
-          - "/data/"
+        #command: 
+          # - "java"
+          # - "-Djava.library.path=."
+          # -  "-jar" 
+          # - "DynamoDBLocal.jar"
+          # - "-sharedDb"
+          # - "-dbPath"
+          # - "./data"
         name: dynamodb
         resolve_image: True
         state: present
         mode: replicated
         replicas: 1
-        image: amazon/dynamodb-local
+        #image: amazon/dynamodb-local
+        image: cnadiminti/dynamodb-local
         networks:
           - name: "monitoring"
             aliases:
               - "dynamodb.zero"
             options:
               driver: "overlay"
-          - name: "s3"
-            options:
-              driver: "overlay"
         mounts:
           - source: dynamodb-data
-            target: /data
+            target: /dynamodb_local_db
             type: volume
             readonly: no
         restart_config:
@@ -306,10 +307,6 @@
         placement:
           constraints: 
             - node.hostname == satellite-2
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 512M
       register: dynamodb_provision
       tags:
         - dynamodb
@@ -413,6 +410,7 @@
         status_code: 200
         #user: "{{admin_user}}"
         #password: "{{admin_password}}"
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -533,6 +531,7 @@
         url: "https://swarm.{{ base_domain }}"
         method: GET
         status_code: 200
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -962,6 +961,7 @@
         status_code: 200
         user: "{{admin_user}}"
         password: "{{admin_password}}"
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -1080,6 +1080,7 @@
         status_code: 200
         user: "{{admin_user}}"
         password: "{{admin_password}}"
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -1226,6 +1227,7 @@
         status_code: 200
         user: "{{admin_user}}"
         password: "{{admin_password}}"
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  
@@ -1328,6 +1330,7 @@
         url: "https://grafana.{{ base_domain }}"
         method: GET
         status_code: 200
+        validate_certs: no
       register: _result
       until: _result.status == 200
       retries: 30 # retry X times  

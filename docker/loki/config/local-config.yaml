@@ -34,9 +34,6 @@ schema_config:
     index:
       prefix: index_
       period: 24h
-      tags:
-        app: loki
-        env: development
 
 storage_config:
   aws:
