@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.19.1
+2020-01-27
+
+### Fixes
+
+- removed loki tags; issues with dynamodb (c2254e709acdde5572a376ebe6848213f842e47e)
+
 ## 0.19.0
 2020-01-24
 
