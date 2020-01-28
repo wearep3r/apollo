@@ -44,6 +44,7 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
       tags:
         - traefik
@@ -83,12 +84,14 @@
             published_port: 80
             target_port: 80
         mounts:
-          - source: traefik-config-cio
+          - source: traefik-config
             target: /etc/traefik
             type: volume
             readonly: no
             driver_config: 
               name: "cio"
+              options:
+                profile: "SNAPSHOT"
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
             type: bind
@@ -237,6 +240,7 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
       tags:
         - minio
@@ -252,75 +256,75 @@
         - monitoring
       when: minio_provision.changed
 
-    - name: "Wait for s3.{{ base_domain }} to become ready"
-      uri:
-        url: "https://s3.{{ base_domain }}/minio/health/live"
-        method: GET
-        status_code: 200
-        validate_certs: no
-      register: _result
-      until: _result.status == 200
-      retries: 30 # retry X times  
-      delay: 5 # pause for X sec b/w each call
-      tags:
-        - minio
-        - loki
-        - monitoring
-      when: minio_provision.changed
+    # - name: "Wait for s3.{{ base_domain }} to become ready"
+    #   uri:
+    #     url: "https://s3.{{ base_domain }}/minio/health/live"
+    #     method: GET
+    #     status_code: 200
+    #     validate_certs: no
+    #   register: _result
+    #   until: _result.status == 200
+    #   retries: 30 # retry X times  
+    #   delay: 5 # pause for X sec b/w each call
+    #   tags:
+    #     - minio
+    #     - loki
+    #     - monitoring
+    #   when: minio_provision.changed
 
-    - name: Provision DynamoDB
-      docker_swarm_service:
-        #command: 
-          # - "java"
-          # - "-Djava.library.path=."
-          # -  "-jar" 
-          # - "DynamoDBLocal.jar"
-          # - "-sharedDb"
-          # - "-dbPath"
-          # - "./data"
-        name: dynamodb
-        resolve_image: True
-        state: present
-        mode: replicated
-        replicas: 1
-        #image: amazon/dynamodb-local
-        image: cnadiminti/dynamodb-local
-        networks:
-          - name: "monitoring"
-            aliases:
-              - "dynamodb.zero"
-            options:
-              driver: "overlay"
-        mounts:
-          - source: dynamodb-data
-            target: /dynamodb_local_db
-            type: volume
-            readonly: no
-        restart_config:
-          condition: on-failure
-        update_config:
-          parallelism: 1
-          delay: 60s
-          monitor: 30s
-          order: stop-first
-          failure_action: rollback
-        placement:
-          constraints: 
-            - node.hostname == satellite-2
-      register: dynamodb_provision
-      tags:
-        - dynamodb
-        - loki
-        - monitoring
+    # - name: Provision DynamoDB
+    #   docker_swarm_service:
+    #     #command: 
+    #       # - "java"
+    #       # - "-Djava.library.path=."
+    #       # -  "-jar" 
+    #       # - "DynamoDBLocal.jar"
+    #       # - "-sharedDb"
+    #       # - "-dbPath"
+    #       # - "./data"
+    #     name: dynamodb
+    #     resolve_image: True
+    #     state: present
+    #     mode: replicated
+    #     replicas: 1
+    #     #image: amazon/dynamodb-local
+    #     image: cnadiminti/dynamodb-local
+    #     networks:
+    #       - name: "monitoring"
+    #         aliases:
+    #           - "dynamodb.zero"
+    #         options:
+    #           driver: "overlay"
+    #     mounts:
+    #       - source: dynamodb-data
+    #         target: /dynamodb_local_db
+    #         type: volume
+    #         readonly: no
+    #     restart_config:
+    #       condition: on-failure
+    #     update_config:
+    #       parallelism: 1
+    #       delay: 60s
+    #       monitor: 30s
+    #       order: stop-first
+    #       failure_action: rollback
+    #     placement:
+    #       constraints: 
+    #         - node.hostname == satellite-2
+    #   register: dynamodb_provision
+    #   tags:
+    #     - dynamodb
+    #     - loki
+    #     - monitoring
 
-    - debug:
-        var: dynamodb_provision
-        verbosity: 1
-      tags:
-        - dynamodb
-        - loki
-        - monitoring
-      when: dynamodb_provision.changed
+    # - debug:
+    #     var: dynamodb_provision
+    #     verbosity: 1
+    #   tags:
+    #     - dynamodb
+    #     - loki
+    #     - monitoring
+    #   when: dynamodb_provision.changed
 
     - name: Provision Loki
       docker_swarm_service:
@@ -329,8 +333,8 @@
         state: present
         mode: replicated
         replicas: 1
-        #image: grafana/loki:latest
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/loki:latest
+        image: grafana/loki:latest
+        #image: registry.gitlab.com/mbio/mbiosphere/infrastructure/loki:latest
         networks:
           - name: "monitoring"
             aliases:
@@ -347,7 +351,7 @@
               driver: "overlay"
         mounts:
           - source: loki-data
-            target: /data
+            target: /tmp/loki
             type: volume
             readonly: no
         restart_config:
@@ -373,7 +377,6 @@
           traefik.frontend.rule: "Host:logs.{{ base_domain }}"
           traefik.backend: "logs"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
       register: loki_provision
@@ -390,6 +393,7 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
       tags:
         - loki
@@ -870,7 +874,6 @@
           # TZ variable to override the default.
           #- TZ=America/Chicago
           - MINIMUM_IMAGES_TO_SAVE=2
-          - CLEAN_UP_VOLUMES=1
         limits:
           memory: 128M
         reservations:
@@ -1060,6 +1063,7 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
       tags:
         - prometheus
@@ -1207,6 +1211,7 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
       tags:
         - unsee
@@ -1312,6 +1317,7 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
       tags:
         - grafana

@@ -195,5 +195,6 @@
         account_email: "{{ cf_api_email }}"
         account_api_token: "{{ cf_api_key }}"
         solo: True
+        proxied: True
       register: record
 
