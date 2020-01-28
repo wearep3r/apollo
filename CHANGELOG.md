@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.19.2
+2020-01-28
+
+### Fixes
+
+- traefik debug; LE staging (1bd43f2d5fa5fc36073d567a9b31a2fd5a1a0d7b)
+
 ## 0.19.1
 2020-01-27
 
