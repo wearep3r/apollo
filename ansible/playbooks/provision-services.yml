@@ -64,7 +64,7 @@
         image: registry.gitlab.com/mbio/mbiosphere/infrastructure/traefik:latest
         resolve_image: True
         command: 
-          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=INFO --accessLog --api --docker.domain={{ base_domain }} --ping --rest --retry --configFile=/config/traefik.toml
+          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=DEBUG --accessLog --api --docker.domain={{ base_domain }} --ping --rest --retry --configFile=/config/traefik.toml
         env:
           CF_API_EMAIL: "{{ cf_api_email }}"
           CF_API_KEY: "{{ cf_api_key }}"
@@ -115,7 +115,7 @@
           traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
           traefik.backend: "traefik"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          #traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
           traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
@@ -216,7 +216,7 @@
           traefik.frontend.rule: "Host:s3.{{ base_domain }}"
           traefik.backend: "s3"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.SSLRedirect: "false"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
           #traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
@@ -516,7 +516,7 @@
           traefik.frontend.rule: "Host:swarm.{{ base_domain }}"
           traefik.backend: "portainer-swarm"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.SSLRedirect: "false"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
       register: portainer_provision
@@ -942,7 +942,7 @@
           traefik.frontend.rule: "Host:consul.{{ base_domain }}"
           traefik.backend: "consul"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.SSLRedirect: "false"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
           traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
@@ -1037,7 +1037,7 @@
           traefik.frontend.rule: "Host:prometheus.{{ base_domain }}"
           traefik.backend: "prometheus"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.SSLRedirect: "false"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
           traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
@@ -1193,7 +1193,7 @@
           traefik.frontend.rule: "Host:alerts.{{ base_domain }}"
           traefik.backend: "unsee"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.SSLRedirect: "false"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
           traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
@@ -1292,7 +1292,7 @@
           traefik.frontend.rule: "Host:grafana.{{ base_domain }}"
           traefik.backend: "grafana"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.SSLRedirect: "false"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
           prometheus.enable: "true"
