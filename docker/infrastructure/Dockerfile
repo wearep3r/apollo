@@ -1,4 +1,4 @@
-FROM python:3.8.1-slim
+FROM python:3.8.1-slim@sha256:42369277283fdfb046d044af38cca5fc62781912f64ee120cf3864581afac2b3
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
 ARG BUILD_DATE
@@ -7,7 +7,6 @@ ARG TERRAFORM_VERSION=0.12.20
 ARG TERRAFORM_INVENTORY_VERSION=0.9
 
 USER root
-RUN mkdir /infrastructure
 
 RUN apt update && apt install -y \
     git \
@@ -50,6 +49,7 @@ RUN curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/
     && chmod +x /usr/local/bin/mc \
     && mc --help
 
+RUN mkdir /infrastructure
 WORKDIR /infrastructure
 COPY . .
 RUN cd /infrastructure/ansible \
