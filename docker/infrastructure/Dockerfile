@@ -8,7 +8,7 @@ ARG TERRAFORM_INVENTORY_VERSION=0.9
 
 USER root
 
-RUN apt update && apt install -y \
+RUN apt update && apt install -y --no-install-recommends \
     git \
     curl \
     httpie \
@@ -18,36 +18,29 @@ RUN apt update && apt install -y \
     #libffi-dev \
     #libssl1.0-dev \
     #python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-    
-RUN pip install --no-cache-dir \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir \
     ansible \
     hcloud \
     jsondiff \
     docker \
     ansible-lint \
-    docker-compose
-
-# Terraform
-RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
+    docker-compose \
+    # Terraform
+    && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
     && rm terraform.zip \
     && chmod +x terraform \
     && mv terraform /usr/local/bin/ \
-    && terraform version
-
-# terraform-invenvory
-RUN curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v0.9/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
+    # terraform-invenvory
+    && curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v0.9/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
     && unzip terraform-inventory.zip \
     && rm terraform-inventory.zip \
     && chmod +x terraform-inventory \
     && mv terraform-inventory /usr/local/bin/ \
-    && terraform-inventory -version
-
-# minio client
-RUN curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
-    && chmod +x /usr/local/bin/mc \
-    && mc --help
+    # minio client
+    && curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
+    && chmod +x /usr/local/bin/mc
 
 RUN mkdir /infrastructure
 WORKDIR /infrastructure
@@ -57,5 +50,5 @@ RUN cd /infrastructure/ansible \
     && chmod -v 700 $(pwd) \
     && ansible-galaxy install --ignore-errors -r requirements.yml
 
-CMD ["bash"]
+CMD ["/bin/bash"]
 LABEL org.label-schema.build-date=$BUILD_DATE
