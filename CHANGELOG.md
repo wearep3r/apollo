@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.21.1
+2020-01-29
+
+### Fixes
+
+- ci speed (670c1a33a72da5681dc1c9aa79cbda97c520dfa1)
+
 ## 0.21.0
 2020-01-29
 
