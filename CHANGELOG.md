@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.23.0
+2020-01-29
+
+### Features
+
+- reduced image size (6b9515f02dad369909a2ea3adba38561d1ee7a20)
+
 ## 0.22.0
 2020-01-29
 
