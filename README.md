@@ -293,6 +293,9 @@ DNS-Management is done in Ansible (tag `dns`).
 
 There's a playbook for OS Upgrades in `ansible/playbooks/upgrade-swarm.yml` that sequentially removes nodes from the cluster, applies upgrades and additional maintenance and then adds nodes to the cluster again. This happens **one node at a time** and includes reboots during playbook execution.
 
+# Caching
+- `docker pull $(grep -oE 'FROM .+$' Dockerfile | head -n 1 | cut -d ' ' -f 2)` (https://github.com/moby/moby/issues/31613)
+
 # Deployment
 To make things as automated as possible, Deployment to the swarm should ideally be done through Pipelines. Starting with `mbiosphere/infrastructure:v0.7.0` there are dedicated GitLab Runners running on all Swarm Manager Nodes. They are configured to use the local Docker Socket and provide it to the Containers it runs its jobs in. This means that Jobs running on these Runners can access the Docker Socket of a Swarm Manager directly. These Runners only run when the Job provides a special `deploy` tag and the Runners only accept `docker:*` images. Their only job is to enable automated Deployment to the Swarm while eliminating the need to provide `private SSH keys` as a variable in GitLab. This should ease New Project Setups, Key-Rollovers and Deployment-Complexity a lot.
 
