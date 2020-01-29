@@ -145,15 +145,16 @@ Build infrastructure:
     - docker:19.03.5-dind
   script:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
+    - export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/infrastructure/Dockerfile | head -n 1 | cut -d ' ' -f 2)
     #- docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:latest || true
-    - docker pull $(grep -oE 'FROM .+$' docker/infrastructure/Dockerfile | head -n 1 | cut -d ' ' -f 2)
-    - docker build --cache-from $CI_REGISTRY_IMAGE:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -f docker/infrastructure/Dockerfile .
+    - docker pull $BASE_IMAGE
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -f docker/infrastructure/Dockerfile .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   tags: 
     - build
 
-    
+
 # # Lint Ansible files
 # test:ansible:
 #   stage: test
