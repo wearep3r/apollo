@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.20.3
+2020-01-29
+
+### Fixes
+
+- ci (ba33ebca05b8aa43efbb4b8a354db6747c202a0d)
+- improve caching (68dad5f58f42ce9246de898618cddc1a88852f40)
+- improve caching (4b39d3868a63fa83bb7ec59eacda2bd59fe48f41)
+- improve caching (6101b9b04de8f06d3d01b2236e6c92858f5e392d)
+
 ## 0.20.2
 2020-01-29
 
