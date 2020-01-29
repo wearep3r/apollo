@@ -1,4 +1,4 @@
-FROM python:3.8.1-alpine3.11
+FROM python:3.8.1-slim
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
 ARG BUILD_DATE
@@ -9,15 +9,17 @@ ARG TERRAFORM_INVENTORY_VERSION=0.9
 USER root
 RUN mkdir /infrastructure
 
-RUN apk add --no-cache \
+RUN apt update && apt install -y \
     git \
     curl \
     httpie \
     tar \
-    build-base \
-    libffi-dev \
-    openssl-dev \
-    python3-dev
+    unzip \
+    #build-essential \
+    #libffi-dev \
+    #libssl1.0-dev \
+    #python3-dev \
+    && rm -rf /var/lib/apt/lists/*
     
 RUN pip install --no-cache-dir \
     ansible \
