@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.19.3
+2020-01-28
+
+### Fixes
+
+- proxy dns record (82f035bd21c56b5c1571f9fc66fbe44fd22566f2)
+
 ## 0.19.2
 2020-01-28
 
