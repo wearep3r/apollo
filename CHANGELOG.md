@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.20.0
+2020-01-29
+
+### Features
+
+- change base image for docker build from alpine to python-slim (6ccc8431054ad9c166c0ce7a9ad10b38216fe2ec)
+
 ## 0.19.3
 2020-01-28
 
