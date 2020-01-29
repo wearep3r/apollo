@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.22.0
+2020-01-29
+
+### Features
+
+- reduced image layers (f2197190b5de2e2a994618e255689b0f97477426)
+
 ## 0.21.1
 2020-01-29
 
