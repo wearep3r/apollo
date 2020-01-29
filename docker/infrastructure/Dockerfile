@@ -57,5 +57,5 @@ RUN cd /infrastructure/ansible \
     && chmod -v 700 $(pwd) \
     && ansible-galaxy install --ignore-errors -r requirements.yml
 
-CMD ["ash"]
+CMD ["bash"]
 LABEL org.label-schema.build-date=$BUILD_DATE
