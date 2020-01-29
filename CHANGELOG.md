@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - insecure ci-method, cache-optimization (552275031985c5589be3862e04c2b85504ab1b9f)
 - typo (1a452428829caa691fc64206aaa2e021e086c953)
+- ci (ba33ebca05b8aa43efbb4b8a354db6747c202a0d)
+
+## 0.20.2
+2020-01-29
+
+### Fixes
+
+- insecure ci-method, cache-optimization (552275031985c5589be3862e04c2b85504ab1b9f)
+- typo (1a452428829caa691fc64206aaa2e021e086c953)
 
 ## 0.20.1
 2020-01-29
