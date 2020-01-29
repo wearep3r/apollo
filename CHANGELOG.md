@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.21.0
+2020-01-29
+
+### Features
+
+- improve caching (2a37a91844aeb10eaf12c13122113b72c818c047)
+
 ## 0.20.3
 2020-01-29
 
