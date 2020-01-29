@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.20.1
+2020-01-29
+
+### Fixes
+
+- replace ash with bash (8924e95a165374d22c225208024d17a319370738)
+
 ## 0.20.0
 2020-01-29
 
