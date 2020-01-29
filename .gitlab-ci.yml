@@ -153,6 +153,7 @@ Build infrastructure:
   tags: 
     - build
 
+    
 # # Lint Ansible files
 # test:ansible:
 #   stage: test
