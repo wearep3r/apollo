@@ -139,6 +139,19 @@ The infrastructure Code also handles any DNS-related configuration regarding the
 
 **IMPORTANT**: if the services deployed to the Platform need additional DNS config, this needs to be done manually at Cloudflare or (which is to be preferred) map the layout of the Microservices deployed to the Platform to Ansible and have the infrastructure also handle service DNS.
 
+### DNS/SSL Proxy via Cloudflare
+Due to issues with Traefik generating too many certificates ([Issue #7](https://gitlab.com/mbio/mbiosphere/infrastructure/issues/7)) we decided to mask access to the mbiosphere cloud through Cloudflare's SSL Proxy. This simply means that DNS Records controlled by the infrastructure now have a flag `proxied: true`. With this enabled for a record, Cloudflare, when answering to DNS requests for a proxied hostname, will report its own Loadbalancer IPs instead of the IPs of our Swarm. Traffic is then routed through the Cloudflare Proxy to the Swarm resulting in the following behaviour:
+
+- Cloudflare manages mbiosphere.com and *.mbiosphere.com LetsEncrypt Certificates (SAN)
+- Cloudflare provides out-of-the-box DDOS protection for all of our services
+- Cloudflare terminates SSL and talks to our backends in either http or https (since issue #7 is now resolved, it'll be https)
+- The user sees Cloudflare's IP address and a Cloudflare Error in case our backends are not reachable or throw errors
+- We don't have to handle edge-SSL anymore; Traefik still ssl-protects everything (if defined in the labels) but Cloudflare provides the stability as en Edge-Proxy
+
+Hostnames can be manually switched into Proxy Mode from within the **Cloudflare DNS Dashboard**. This always makes sense when otherwise SSL issues would arise or a http-based service cannot acquire SSL certificates on its own or in case of an attack.
+
+**2020-01-31**: swarm.mbiosphere.com is currently **NOT** proxied through Cloudflare as it's the record all other records (CNAMs) derive their IP address from. Proxying the CNAME origin resulted in weird behaviour for all proxied hostnames, thus it is inactive for now as we cannot say for sure if this is typical behaviour or a side-issue of the SSL-Errors with LetsEncrypt. Since the proxying method works almost instantly on a global scale, it should be safe to simply test prxying this record at some point in time to have a consistent layout.
+
 ## Swagger (WIP)
 atm, it works to hook a Swagger Endpoint up to the proxy by adding a label like this:
 
