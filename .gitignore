@@ -4,6 +4,7 @@ tmp
 _deprecated/
 playbooks/_deprecated
 playbooks/_services.yml
+playbooks/services
 README.md
 docker/traefik
 .env
