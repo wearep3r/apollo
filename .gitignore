@@ -8,3 +8,4 @@ playbooks/services
 README.md
 docker/traefik
 .env
+terraform
