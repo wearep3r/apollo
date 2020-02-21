@@ -9,3 +9,4 @@ README.md
 docker/traefik
 .env
 terraform
+docker-compose.yml
