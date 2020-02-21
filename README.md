@@ -1,4 +1,4 @@
-DevOps for MBIO Cloud - Infrastructure
+zero - Infrastructure in a Box
 ===
 
 This README will hold an overview of the contents of this repo. This is **WIP**.
@@ -7,7 +7,7 @@ This README will hold an overview of the contents of this repo. This is **WIP**.
 [[_TOC_]]
 
 # Overview
-This repository contains the code for MBIOs Cloud Platform. The code composes of a variety of mechanisms and tools that, together, build a Docker Swarm Based Platform and Backplane for modern Microservice deployments. The platform additionally features a distributed Storage Layer implemented with `Storidge`, spanning across Workers and Managers.
+This repository contains the code for the zero Cloud Platform. The code composes of a variety of mechanisms and tools that, together, build a Docker Swarm Based Platform and Backplane for modern Microservice deployments. The platform additionally features a distributed Storage Layer implemented with `Storidge`, spanning across Workers and Managers.
 
 As of now (2020-01-15) the platform consists of 7 nodes (3 Swarm Managers, 2 Swarm Workers and 2 Satellite Nodes fulfilling operational duties) and is deployed to Digital Ocean.
 
@@ -28,8 +28,8 @@ Satellites are part of the Swarm but not part of the Storage layer. They only ha
 ## Monitoring
 The Platform features a Prometheus/Grafana based Monitoring Layer. The initial decision to use a TIG Stack was discarded during implementation as Prometheus has more batteries included. This enables us to provide insights to almost any part of the Platform out of the box while additionally providing a unified interface for Metrics and Logs.
 
-* Prometheus: https://prometheus.mbiosphere.com
-* Grafana: https://grafana.mbiosphere.com
+* Prometheus: https://prometheus.if0.co
+* Grafana: https://grafana.if0.co
 
 Available Datasources:
 * Prometheus
@@ -120,7 +120,7 @@ To connect to consul, hook your service up to network `consul` (type `overlay`) 
 
 Consul also comes with a webinterface to do basic tasks and gain insights:
 
-* Consul: https://consul.mbiosphere.com
+* Consul: https://consul.if0.co
 
 ## Versioning
 This repository follows `SemVer` and `Conventional Commits` methodologies. This means, each new Push/Merge to `master` will increase the version of this Platform according to SemVer's rules. 
@@ -142,7 +142,7 @@ The infrastructure Code also handles any DNS-related configuration regarding the
 ### DNS/SSL Proxy via Cloudflare
 Due to issues with Traefik generating too many certificates ([Issue #7](https://gitlab.com/mbio/mbiosphere/infrastructure/issues/7)) we decided to mask access to the mbiosphere cloud through Cloudflare's SSL Proxy. This simply means that DNS Records controlled by the infrastructure now have a flag `proxied: true`. With this enabled for a record, Cloudflare, when answering to DNS requests for a proxied hostname, will report its own Loadbalancer IPs instead of the IPs of our Swarm. Traffic is then routed through the Cloudflare Proxy to the Swarm resulting in the following behaviour:
 
-- Cloudflare manages mbiosphere.com and *.mbiosphere.com LetsEncrypt Certificates (SAN)
+- Cloudflare manages if0.co and *.if0.co LetsEncrypt Certificates (SAN)
 - Cloudflare provides out-of-the-box DDOS protection for all of our services
 - Cloudflare terminates SSL and talks to our backends in either http or https (since issue #7 is now resolved, it'll be https)
 - The user sees Cloudflare's IP address and a Cloudflare Error in case our backends are not reachable or throw errors
@@ -150,7 +150,7 @@ Due to issues with Traefik generating too many certificates ([Issue #7](https://
 
 Hostnames can be manually switched into Proxy Mode from within the **Cloudflare DNS Dashboard**. This always makes sense when otherwise SSL issues would arise or a http-based service cannot acquire SSL certificates on its own or in case of an attack.
 
-**2020-01-31**: swarm.mbiosphere.com is currently **NOT** proxied through Cloudflare as it's the record all other records (CNAMs) derive their IP address from. Proxying the CNAME origin resulted in weird behaviour for all proxied hostnames, thus it is inactive for now as we cannot say for sure if this is typical behaviour or a side-issue of the SSL-Errors with LetsEncrypt. Since the proxying method works almost instantly on a global scale, it should be safe to simply test prxying this record at some point in time to have a consistent layout.
+**2020-01-31**: swarm.if0.co is currently **NOT** proxied through Cloudflare as it's the record all other records (CNAMs) derive their IP address from. Proxying the CNAME origin resulted in weird behaviour for all proxied hostnames, thus it is inactive for now as we cannot say for sure if this is typical behaviour or a side-issue of the SSL-Errors with LetsEncrypt. Since the proxying method works almost instantly on a global scale, it should be safe to simply test prxying this record at some point in time to have a consistent layout.
 
 ## Swagger (WIP)
 atm, it works to hook a Swagger Endpoint up to the proxy by adding a label like this:
@@ -160,7 +160,7 @@ atm, it works to hook a Swagger Endpoint up to the proxy by adding a label like 
 - traefik.swagger.backend=${DEPLOYMENT}_swagger
 ```
 
-This example allows access to Swagger for Mirameasurements on https://swagger.staging.mbiosphere.com/api/Measurements/apidocs
+This example allows access to Swagger for Mirameasurements on https://swagger.staging.if0.co/api/Measurements/apidocs
 
 The service's swagger-config must reflect the PathPrefix, otherwise you'll get 404s in the Frontend. `tenantservice` is another service with valid Swagger-UI that can be used as a resource.
 
@@ -175,10 +175,10 @@ You can use `Loki` (which comes as a Backplane service) to forward your Containe
 logging:
   driver: loki:latest
   options:
-    loki-url: "http://logs.mbiosphere.com/loki/api/v1/push"
+    loki-url: "http://logs.if0.co/loki/api/v1/push"
 ```
 
-This way your Container Logs will be forwarded to Loki and additionally saved as json-file so `docker logs` continues to work. The Logs can be consumed in [Grafana's Explore](https://grafana.mbiosphere.com/explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bservice%3D%5C%22infrastructure_test%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D) UI.
+This way your Container Logs will be forwarded to Loki and additionally saved as json-file so `docker logs` continues to work. The Logs can be consumed in [Grafana's Explore](https://grafana.if0.co/explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bservice%3D%5C%22infrastructure_test%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D) UI.
 
 ## Pipelines / Docker in Docker
 If you need access to an isolated Docker Environment during your Pipelines, you'll need to add the following service config to your `Job`:
@@ -252,6 +252,9 @@ curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v0.
     && terraform-inventory -version
 ```
 
+# Installation
+- `export $(grep -v '^#' .env | xargs -d '\n')`
+
 # Misc
 ##  Ansible Inventory
 Ansible works with static and dynamic inventories. For now, we're using dynamic inventories in form of *terraform-inventory* which pulls information from `terraform/terraform.tfstate`.
@@ -297,7 +300,7 @@ Most tasks are already `tagged` so this is also possible:
 `ansible-playbook provision.yml --tags "firewall"
 
 # Access Nodes
-From the base directory of this repository you can run `ssh -i .ssh/id_rsa -l root manager-1.nodes.mbiosphere.com` to SSH directly into any of the VMs.
+From the base directory of this repository you can run `ssh -i .ssh/id_rsa -l root manager-1.nodes.if0.co` to SSH directly into any of the VMs.
 
 DNS-Management is done in Ansible (tag `dns`).
 

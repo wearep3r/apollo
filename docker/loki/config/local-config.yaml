@@ -36,18 +36,11 @@ schema_config:
       period: 24h
 
 storage_config:
-  aws:
-    s3: s3://admin:hXltRR7ke4sfBcyOYf3E3@s3.zero:9000/loki-chunks
-    s3forcepathstyle: true
-    dynamodbconfig:
-      dynamodb: dynamodb://user:pass@dynamodb.zero:8000
+  boltdb:
+    directory: /tmp/loki/index
 
-# storage_config:
-#   boltdb:
-#     directory: /tmp/loki/index
-
-#   filesystem:
-#     directory: /tmp/loki/chunks
+  filesystem:
+    directory: /tmp/loki/chunks
 
 limits_config:
   enforce_metric_name: false

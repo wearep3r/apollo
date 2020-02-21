@@ -1,1 +1,9 @@
-ansible/roles/*
+roles/*
+.ssh
+tmp
+_deprecated/
+playbooks/_deprecated
+playbooks/_services.yml
+README.md
+docker/traefik
+.env

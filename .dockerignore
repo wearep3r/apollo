@@ -1,3 +1,8 @@
-ansible/roles/*
+roles/*
 Dockerfile
 .git
+.ssh
+tmp
+_depcrecated
+playbooks/_deprecated
+playbooks/_services.yml

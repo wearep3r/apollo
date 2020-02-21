@@ -1,8 +1,6 @@
 FROM python:3.8.1-slim@sha256:42369277283fdfb046d044af38cca5fc62781912f64ee120cf3864581afac2b3
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
-ARG BUILD_DATE
-
 ARG TERRAFORM_VERSION=0.12.20
 ARG TERRAFORM_INVENTORY_VERSION=0.9
 
@@ -52,4 +50,5 @@ WORKDIR /infrastructure
 COPY . .
 
 CMD ["/bin/bash"]
+ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE

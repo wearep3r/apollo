@@ -1,0 +1,25 @@
+# @meta author: Fabian Peter
+# @meta description: zero
+# @meta email: fabian@peter.saarland
+# @action provision # this action describes the installation  
+---
+# Check git Status
+- name: Check Git Status
+  import_playbook: playbooks/git-status.yml
+  # See group_vars/all
+  when: check_git
+- import_playbook: playbooks/provision-infrastructure.yml
+  tags:
+      - infrastructure
+- import_playbook: playbooks/provision-node.yml
+  tags:
+      - node
+- import_playbook: playbooks/provision-swarm.yml
+  tags:
+      - swarm
+- import_playbook: playbooks/provision-storidge.yml
+  tags:
+      - storidge
+  when: storidge_enabled|bool
+- import_playbook: playbooks/provision-runner.yml
+- import_playbook: playbooks/provision-services.yml

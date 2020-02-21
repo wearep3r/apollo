@@ -1,0 +1,332 @@
+# Standards
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Build /etc/hosts file
+      lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
+      when: hostvars[item].ansible_default_ipv4.address is defined
+      with_items: "{{ groups['all'] }}"
+
+    - name: Build /etc/hosts file
+      lineinfile: dest=/etc/hosts regexp=".*logs.{{ base_domain }}$" line="{{ hostvars[item].ansible_default_ipv4.address }} logss.{{ base_domain }}" state=present
+      when: hostvars[item].ansible_default_ipv4.address is defined
+      with_items: "{{ groups['all'] }}"
+
+    - name: Set up authorized keys for user root
+      authorized_key: user=root key="{{ item }}"
+      with_file:
+        - ../.ssh/id_rsa.pub
+
+    - name: Set root SSH keys
+      copy:
+        src=../.ssh/id_rsa
+        dest=/root/id_rsa.pem
+        owner=root
+        group=root
+        mode=0600
+
+    - name: Enable passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Setup DNS
+      block:
+        - name: Create A record for Node
+          cloudflare_dns:
+            zone: "{{ base_domain }}"
+            record: "{{ ansible_hostname }}.nodes"
+            type: A
+            solo: True
+            value: "{{ ansible_host }}"
+            account_email: "{{ cloudflare_api_email }}"
+            account_api_token: "{{ cloudflare_api_key }}"
+          register: record
+          tags:
+            - dns
+          
+        - name: Delete A record for Nodes
+          cloudflare_dns:
+            zone: "{{ base_domain }}"
+            record: "nodes"
+            type: A
+            state: absent
+            account_email: "{{ cloudflare_api_email }}"
+            account_api_token: "{{ cloudflare_api_key }}"
+          when: ansible_hostname == "zero-1"
+          register: record
+          tags:
+            - dns
+
+        # Here we're overloading the nodes.mbiosphere.com A-Record with the IP of each node.
+        # This way we don't need to specify each Swarm Node in the Prometheus Config
+        # but can use the same mechanic of discovery that is used by the other exporters.
+        # Prometheus simply queries nodes.mbiosphere.com and gets a list of IPs returned
+        # which it then scrapes.
+        #
+        # EXAMPLE
+        #
+        # $ dig nodes.mbiosphere.com
+        #
+        # ;; ANSWER SECTION:
+        # nodes.mbiosphere.com.	299	IN	A	157.230.122.88
+        # nodes.mbiosphere.com.	299	IN	A	157.230.101.99
+        # nodes.mbiosphere.com.	299	IN	A	68.183.219.80
+        # nodes.mbiosphere.com.	299	IN	A	157.230.101.24
+        # nodes.mbiosphere.com.	299	IN	A	157.230.123.216
+        # nodes.mbiosphere.com.	299	IN	A	157.230.99.2
+        # nodes.mbiosphere.com.	299	IN	A	157.230.109.225
+        - name: Create A record for Nodes (Prometheus)
+          cloudflare_dns:
+            zone: "{{ base_domain }}"
+            record: "nodes"
+            type: A
+            value: "{{ ansible_default_ipv4.address }}"
+            account_email: "{{ cloudflare_api_email }}"
+            account_api_token: "{{ cloudflare_api_key }}"
+          register: record
+          tags:
+            - dns
+      when: cloudflare_enabled|bool
+      tags:
+        - dns
+
+# https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
+- hosts: all
+  gather_facts: no
+  vars:
+    #kernel_update_grub_requested_kernel_version: 4.15.0-74-generic
+    kernel_update_config_prefix_grub_default: 99
+    kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
+
+  tasks:
+    - name: Install apt dependencies
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-setuptools
+          - git
+          - linux-image-4.15.0-74-generic
+          - linux-headers-4.15.0-74-generic
+        state: present
+        update_cache: True
+      tags:
+        - packages
+
+    - name: Pin packages
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      with_items:
+        - linux-image-4.15.0-74-generic
+        - linux-image-virtual
+        - linux-headers-4.15.0-74-generic
+
+    - name: Install pip dependencies
+      pip:
+        name:
+          - jsondiff
+          - pyyaml
+          - docker
+      tags:
+        - packages
+        - docker
+    
+    - name: get kernel releases in sorted order
+      shell: 'cat /boot/grub/grub.cfg | grep menuentry | grep -oP \\d+\\.\\d+\\.\\d+-\\d+-\\w+ | sort -V -r | uniq'
+      register: ku_kernel_releases
+      check_mode: no
+      changed_when: False
+
+    - debug: msg="{{ ku_kernel_releases }}"
+
+    - name: set kernel_update_grub_latest_kernel_version to the latest kernel
+      set_fact:
+        kernel_update_grub_kernel_versions: "{{ ku_kernel_releases.stdout.splitlines() }}"
+        kernel_update_grub_latest_kernel_version: "{{ ku_kernel_releases.stdout.splitlines()[0] }}"
+
+    - name: check that kernel_update_grub_requested_kernel_version is in the list of available kernels if defined
+      fail: msg="kernel_update_grub_requested_kernel_version is not a valid kernel"
+      when: kernel_update_grub_requested_kernel_version is defined
+        and kernel_update_grub_requested_kernel_version not in kernel_update_grub_kernel_versions
+
+    - name: get menuentry_id_option from /boot/grub/grub.cfg for {{ kernel_update_grub_requested_kernel_version }}
+      shell: "awk '/\\$menuentry_id_option/ {print $(NF-1) }' /boot/grub/grub.cfg | sed s/\\'//g | grep -v recovery | grep -F {{ kernel_update_grub_requested_kernel_version }}"
+      when: kernel_update_grub_requested_kernel_version is defined
+      register: ku_set_grub_vars_kernel_id
+      check_mode: no
+      changed_when: False
+
+    - name: escape the kernel_update_grub_requested_kernel_version to assist with generating parent id
+      set_fact:
+        kernel_update_grub_requested_kernel_version_escaped: "{{ kernel_update_grub_requested_kernel_version|regex_replace('\\.', '\\.') }}"
+
+    - name: get the parent menu id for the kernel
+      set_fact:
+        ku_set_grub_vars_kernel_parent_id: "{{ ku_set_grub_vars_kernel_id.stdout|regex_replace(kernel_update_grub_requested_kernel_version_escaped+'-', '') }}"
+
+    - name: set a value for kernel_update_grub_default
+      set_fact:
+        kernel_update_grub_default: "{{ ku_set_grub_vars_kernel_parent_id }}>{{ ku_set_grub_vars_kernel_id.stdout }}"
+
+    - name: Create /etc/default/grub.d
+      file:
+        dest: /etc/default/grub.d
+        group: root
+        owner: root
+        mode: 0755
+        state: directory
+
+    - name: Render grub default configuration
+      template:
+        src: grub_default.j2
+        dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
+        group: root
+        owner: root
+        mode: 0644
+      register: ku_render_grub_default_result
+      when: kernel_update_grub_default is defined
+
+    - name: Remove grub default configuration if kernel_update_grub_default isn't set
+      file:
+        dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
+        state: absent
+      register: ku_remove_grub_default_result
+      when: kernel_update_grub_default is not defined
+
+    - set_fact:
+        ku_grub_configuration_changed: "{{ ku_render_grub_default_result.changed or ku_remove_grub_default_result.changed }}"
+
+    - name: Update grub
+      command: update-grub
+      register: ku_update_grub_result
+      when: ku_grub_configuration_changed
+
+    - set_fact:
+        ku_update_grub_changed: "{{ ku_update_grub_result.changed }}"
+
+
+# NTP & Localization
+# Config in group_vars/all
+- hosts: all
+  gather_facts: False
+  tags:
+    - docker
+  roles:
+    - geerlingguy.ntp
+    - robertdebock.locale
+    - geerlingguy.docker
+  tasks:
+    - name: Copy Docker config
+      template:
+        src: templates/daemon.json.j2
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      #notify: restart docker
+      tags:
+        - docker
+        - config
+
+    - name: Copy udev config
+      template:
+        src: templates/01-net-setup-link.rules.j2
+        dest: /etc/udev/rules.d/01-net-setup-link.rules
+        owner: root
+        group: root
+        mode: '0644'
+      #notify: restart docker
+      register: udev
+      tags:
+        - docker
+        - config
+
+    - name: Copy systemd config
+      template:
+        src: templates/99-default.link.j2
+        dest: /etc/systemd/network/99-default.link
+        owner: root
+        group: root
+        mode: '0644'
+      #notify: restart docker
+      register: systemd
+      tags:
+        - docker
+        - config
+
+    - name: Reload udev rules
+      command: udevadm trigger
+      when: udev.changed
+      tags:
+        - config
+
+    - name: reload systemd
+      systemd:
+        daemon_reload: True
+      when: systemd.changed
+      tags:
+        - config
+
+    - name: Check if Loki Docker Plugin is installed
+      shell: docker plugin ls
+      register: loki_installed
+      ignore_errors: True
+      tags:
+        - docker
+
+    - name: Docker Plugins
+      debug: 
+        msg: "{{ loki_installed }}"
+        verbosity: 1
+
+    - name: Install Loki Docker Plugin
+      command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+      tags:
+        - docker
+      when: "'loki:latest' not in loki_installed.stdout"
+
+
+- hosts: all
+  become: True
+  gather_facts: True
+  handlers:
+    - name: restart firewall
+      service:
+        name: iptables
+        state: restarted
+    - name: reload systemd
+      systemd:
+        daemon_reload: True
+  tasks:
+    - name: Copy firewall config
+      template:
+        src: templates/iptables.conf.j2
+        dest: /etc/iptables.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart firewall
+      tags:
+        - firewall
+    - name: Copy firewall service
+      template:
+        src: templates/iptables.service.j2
+        dest: /etc/systemd/system/iptables.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: reload systemd
+      tags:
+        - firewall
+    - name: Enable firewall service
+      service:
+        name: iptables
+        enabled: True
+      tags:
+        - firewall
