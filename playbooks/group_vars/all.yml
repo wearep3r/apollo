@@ -1,48 +1,32 @@
+# Zero
+force_reboot: 0
+zero_id: "{{ lookup('env','ZERO_ID') | default('zero', true) }}"
+check_git: "{{ lookup('env','CHECK_GIT') | default(0, true) }}"
 ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('.ssh/id_rsa', true) }}"
 ansible_python_interpreter: "{{ lookup('env','PYTHON_INTERPRETER') | default('/usr/bin/python3', true) }}"
 ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
-# Custom
-ingress_ip: "{{ lookup('env','INGRESS_IP') | default('127.0.0.1', true) }}"
-base_domain: "{{ lookup('env','BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
-admin_user: "{{ lookup('env','ADMIN_USER') | default('admin', true) }}"
-admin_password: "{{ lookup('env','ADMIN_PASSWORD') | default('admin', true) }}"
-# Cloudflare
-cloudflare_enabled: "{{ lookup('env','CLOUDFLARE_ENABLED') | default(0, true) }}"
-cloudflare_api_email: "{{ lookup('env','CLOUDFLARE_API_EMAIL') }}"
-cloudflare_api_key: "{{ lookup('env','CLOUDFLARE_API_KEY') }}"
+
 # Lets Encrypt
+letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(0, true) }}"
 letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
-# GitLab
-# GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
-gl_token: "{{ lookup('env','GITLAB_GL_TOKEN') }}"
-registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
-registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
-registry_password: "{{ lookup('env','GITLAB_REGISTRY_PASSWORD') | default(gl_token, true) }}"
-runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default('SUCHSECRETMUCHWOW', true) }}"
-# Slack
-slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
-slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
+
+# Terraform
+terraform_enabled: "{{ lookup('env','TERRAFORM_ENABLED') | default(0, true) }}"
 
 # Kernel
+# # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
 kernel_update_grub_requested_kernel_version: 4.15.0-74-generic
+kernel_update_config_prefix_grub_default: 99
+kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
 
-# Storidge
-storidge_enabled: "{{ lookup('env','STORIDGE_ENABLED') | default(0, true) }}"
-storidge_version: "{{ lookup('env','STORIDGE_VERSION') | default('3107', true) }}"
+# Docker Swarm
+swarm_enabled: "{{ lookup('env','SWARM_ENABLED') | default(1, true) }}"
+docker_edition: 'ce'
+docker_package: "docker-{{ docker_edition }}=5:19.03.6~3-0~ubuntu-bionic"
 
-ci_docker_image: "docker:19.03.5"
-ci_dind_image: "docker:19.03.5-dind"
-runner_env: 
-    - "GL_TOKEN={{ gl_token }}"
-    - "DOCKER_DRIVER=overlay2"
-    - "DOCKER_BUILDKIT=1"
-
-# Clouds
-## IBM
-ibm_cloud_enabled: "{{ lookup('env','IBM_CLOUD_ENABLED') | default(0, true) }}"
-
+docker_compose_version: "1.25.4"
 swarm_networks:
     - proxy
     - portainer
@@ -50,3 +34,50 @@ swarm_networks:
     - monitoring
     - s3
 
+# Backplane
+backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
+
+# Custom
+ingress_ip: "{{ lookup('env','INGRESS_IP') | default('127.0.0.1', true) }}"
+base_domain: "{{ lookup('env','BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
+admin_user: "{{ lookup('env','ADMIN_USER') | default('admin', true) }}"
+admin_password: "{{ lookup('env','ADMIN_PASSWORD') | default('admin', true) }}"
+
+# Cloudflare
+cloudflare_enabled: "{{ lookup('env','CLOUDFLARE_ENABLED') | default(0, true) }}"
+cloudflare_api_email: "{{ lookup('env','CLOUDFLARE_API_EMAIL') }}"
+cloudflare_api_key: "{{ lookup('env','CLOUDFLARE_API_KEY') }}"
+
+# GitLab
+# GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
+runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(0, true) }}"
+gl_token: "{{ lookup('env','GITLAB_GL_TOKEN') }}"
+registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
+registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
+registry_password: "{{ lookup('env','GITLAB_REGISTRY_PASSWORD') | default(gl_token, true) }}"
+runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default('SUCHSECRETMUCHWOW', true) }}"
+ci_docker_image: "docker:19.03.5"
+ci_dind_image: "docker:19.03.5-dind"
+runner_env: 
+    - "GL_TOKEN={{ gl_token }}"
+    - "DOCKER_DRIVER=overlay2"
+    - "DOCKER_BUILDKIT=1"
+
+# Slack
+slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
+slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
+
+
+# Storidge
+storidge_min_nodes: 4
+storidge_enabled: "{{ lookup('env','STORIDGE_ENABLED') | default(0, true) }}"
+storidge_install_version: "{{ lookup('env','STORIDGE_INSTALL_VERSION') | default('3107', true) }}" #3138
+storidge_fix_iscsi: "{{ lookup('env','STORIDGE_FIX_ISCSI') | default(0, true) }}"
+
+# Cloud Integrations
+## IBM
+ibm_cloud_enabled: "{{ lookup('env','IBM_CLOUD_ENABLED') | default(0, true) }}"
+
+## IBM
+digitalocean_enabled: "{{ lookup('env','DIGITALOCEAN_ENABLED') | default(0, true) }}"
+digitalocean_auth_token: "{{ lookup('env','DIGITALOCEAN_AUTH_TOKEN') | default(0, true) }}"

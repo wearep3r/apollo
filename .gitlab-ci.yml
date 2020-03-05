@@ -100,7 +100,6 @@ Build grafana:
     - docker push $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA
   tags: 
     - build
-    - infrastructure
 
 # Build loki:
 #   stage: build
@@ -119,7 +118,7 @@ Build grafana:
 #   tags: 
 #     - build
 
-Build infrastructure:
+Build zero:
   stage: build
   image: docker:19.03.5
   variables:
@@ -128,10 +127,10 @@ Build infrastructure:
     - docker:19.03.5-dind
   script:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
-    - export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/infrastructure/Dockerfile | head -n 1 | cut -d ' ' -f 2)
+    - export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/zero/Dockerfile | head -n 1 | cut -d ' ' -f 2)
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker pull $BASE_IMAGE
-    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -f docker/infrastructure/Dockerfile .
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -f docker/zero/Dockerfile .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   tags: 
     - build
@@ -224,7 +223,6 @@ Release node-exporter:
     - master
   tags: 
     - build
-    - infrastructure
 
 # Release loki:
 #   stage: release
@@ -244,7 +242,7 @@ Release node-exporter:
 #   tags: 
 #     - build
 
-Release infrastructure:
+Release zero:
   stage: release
   image: docker:19.03.5
   services:

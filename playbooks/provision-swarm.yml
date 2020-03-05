@@ -8,6 +8,86 @@
 # More information on this composition can be found in "hcloud.yml"
 #
 # 
+- hosts: all
+  gather_facts: False
+  serial: 1
+  tags:
+    - docker
+  roles:
+    - geerlingguy.docker
+  handlers:
+    - include_tasks: handlers.yml
+  tasks:
+    - name: Copy Docker config
+      template:
+        src: templates/daemon.json.j2
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart docker
+      tags:
+        - docker
+        - config
+
+    - name: Copy udev config
+      template:
+        src: templates/01-net-setup-link.rules.j2
+        dest: /etc/udev/rules.d/01-net-setup-link.rules
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart docker
+      register: udev
+      tags:
+        - docker
+        - config
+
+    - name: Copy systemd config
+      template:
+        src: templates/99-default.link.j2
+        dest: /etc/systemd/network/99-default.link
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart docker
+      register: systemd
+      tags:
+        - docker
+        - config
+
+    - name: Reload udev rules
+      command: udevadm trigger
+      when: udev.changed
+      tags:
+        - config
+
+    - name: reload systemd
+      systemd:
+        daemon_reload: True
+      when: systemd.changed
+      tags:
+        - config
+
+    - name: Check if Loki Docker Plugin is installed
+      shell: docker plugin ls
+      register: loki_installed
+      ignore_errors: True
+      changed_when: False
+      tags:
+        - docker
+
+    - name: Docker Plugins
+      debug: 
+        msg: "{{ loki_installed }}"
+        verbosity: 1
+
+    - name: Install Loki Docker Plugin
+      command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+      tags:
+        - docker
+      when: "'loki:latest' not in loki_installed.stdout"
+
 - hosts: manager
   become: True
   gather_facts: True
@@ -80,7 +160,7 @@
     - name: Initialize Swarm Cluster
       shell: >
         docker swarm init
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_ens3']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
       when: "'swarm_manager_active' not in groups"
       register: bootstrap_first_node
 
@@ -101,7 +181,7 @@
   become: True
   vars:
     # hostvars[ansible_hostname]['ansible_default_ipv4']['interface']
-    iface: "{{ hostvars[ansible_hostname]['ansible_ens3']['device'] }}"
+    iface: "{{ hostvars[ansible_hostname]['ansible_eth1']['device'] }}"
   tasks:
     - name: Retrieve Swarm Manager Token
       shell: docker swarm join-token -q manager # noqa 305
@@ -131,7 +211,7 @@
       # hostvars[ansible_hostname]['ansible_default_ipv4']['address']
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_ens3']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['manager'][0] }}:2377
     - name: Set Node Labels # noqa 301
@@ -147,7 +227,7 @@
     - name: Join Worker Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_ens3']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['manager'][0] }}:2377
 
@@ -159,7 +239,7 @@
     - name: Join Satellite Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_ens3']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
         {{ groups['manager'][0] }}:2377
 

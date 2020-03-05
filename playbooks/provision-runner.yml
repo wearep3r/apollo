@@ -1,5 +1,4 @@
 - hosts: manager[0]
-  remote_user: "{{ deploy_user_name }}"
   become: True
   tasks:
     - name: Delete A record for Runners
@@ -8,29 +7,30 @@
         record: "runners"
         type: A
         state: absent
-        account_email: "{{ cf_api_email }}"
-        account_api_token: "{{ cf_api_key }}"
+        account_email: "{{ cloudflare_api_email }}"
+        account_api_token: "{{ cloudflare_api_key }}"
       register: record
       tags:
         - dns
 
-- hosts: satellite
-  remote_user: "{{ deploy_user_name }}"
+- hosts: manager
   become: True
   pre_tasks:
     - name: List Runners
       command: "gitlab-runner list"
       register: registered_runners
+      ignore_errors: True
     - name: Unregister Runners
-      command: "gitlab-runner unregister --name {{ ansible_hostname }}-runner"
-      when: 'ansible_hostname in registered_runners.stderr'
+      command: "gitlab-runner unregister --name {{ ansible_hostname }}-build"
+      when: '"{{ ansible_hostname }}-build" in registered_runners.stderr'
+      ignore_errors: True
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
     gitlab_runner_registration_token: "{{ runner_token }}"
     gitlab_runner_concurrent: 4
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
-      - name: "{{ ansible_hostname }}-runner"
+      - name: "{{ ansible_hostname }}-build"
         env_vars: "{{ runner_env }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
@@ -89,22 +89,21 @@
         - dns
 
 - hosts: manager
-  remote_user: "{{ deploy_user_name }}"
   become: True
   pre_tasks:
     - name: List Runners
       command: "gitlab-runner list"
       register: registered_runners
     - name: Unregister Runners
-      command: "gitlab-runner unregister --name {{ ansible_hostname }}-runner"
-      when: 'ansible_hostname in registered_runners.stderr'
+      command: "gitlab-runner unregister --name {{ ansible_hostname }}-deploy"
+      when: '"{{ ansible_hostname }}-deploy" in registered_runners.stderr'
   vars:
     gitlab_runner_package_name: 'gitlab-runner'
     gitlab_runner_registration_token: "{{ runner_token }}"
     gitlab_runner_concurrent: 1
     gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
-      - name: "{{ ansible_hostname }}-runner"
+      - name: "{{ ansible_hostname }}-deploy"
         env_vars: "{{ runner_env }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"

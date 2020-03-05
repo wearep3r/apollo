@@ -1,0 +1,9 @@
+# for service in enabled_services:
+
+# Call role 'zero-service-{{ service_name }}'
+# - deploy
+
+# for service in disabled_services:
+
+# Call role 'zero-service-{{ service_name }}'
+# - remove

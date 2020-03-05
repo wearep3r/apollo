@@ -8,5 +8,6 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-export TF_STATE=$DIR/../../terraform/ 
+export TF_STATE=$DIR/../terraform/ 
+export TF_HOSTNAME_KEY_NAME=name
 /usr/local/bin/terraform-inventory "$@"

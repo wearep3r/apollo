@@ -26,7 +26,7 @@
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
 -A FILTERS -s 10.0.0.0/8 -j ACCEPT
 -A FILTERS -s 172.0.0.0/8 -j ACCEPT
-{% for host in groups['all'] %}
+{% for host in groups['all']|sort %}
 -A FILTERS -s {{ hostvars[host]['ansible_default_ipv4']['address'] }} -j ACCEPT
 {% endfor %}
 -A FILTERS -m limit --limit 15/min -j LOG --log-prefix "Dropped by firewall: " --log-level 7

@@ -3,8 +3,10 @@
   "experimental" : true,
   "debug": true,
   "log-driver": "loki:latest",
-    "log-opts": {
-        "loki-url": "http://logs/loki/api/v1/push",
-        "loki-batch-size": "400"
-    }
+  "log-opts": {
+      "loki-url": "http://logs.{{ base_domain }}/loki/api/v1/push",
+      "loki-batch-size": "400",
+      "max-size": "10m",    
+      "max-file": "3"    
+  }
 }

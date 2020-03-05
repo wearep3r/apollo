@@ -1,3 +1,13 @@
+- hosts: all
+  become: True
+  tasks:
+    - name: Rebooting Node
+      shell: sleep 2 && shutdown -r now "Forced Reboot"
+      async: 1
+      poll: 0
+      ignore_errors: True
+      when: force_reboot|bool
+
 - hosts: all:!manager[0]
   become: True
   serial: 1
@@ -8,21 +18,6 @@
       tags:
         - upgrade
         - drain
-
-    - name: Fix IBM Issue 1
-      lineinfile:
-        path: /boot/grub/menu.lst
-        regexp: '# groot=LABEL=cloudimg-rootfs'
-        line: '# groot=(hd0)'
-        owner: root
-        group: root
-        mode: '0644'
-      when: ibm_cloud_enabled|bool
-      register: ibm_fix
-
-    - name: Fix IBM Issue 2
-      command: update-grub-legacy-ec2
-      when: ibm_cloud_enabled|bool and ibm_fix.changed
 
     - name: Docker Info
       command: docker info
@@ -190,21 +185,6 @@
       tags:
         - upgrade
         - drain
-
-    - name: Fix IBM Issue 1
-      lineinfile:
-        path: /boot/grub/menu.lst
-        regexp: '# groot=LABEL=cloudimg-rootfs'
-        line: '# groot=(hd0)'
-        owner: root
-        group: root
-        mode: '0644'
-      when: ibm_cloud_enabled|bool
-      register: ibm_fix
-
-    - name: Fix IBM Issue 2
-      command: update-grub-legacy-ec2
-      when: ibm_cloud_enabled|bool and ibm_fix.changed
 
     - name: Docker Info
       command: docker info

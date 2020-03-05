@@ -1,0 +1,109 @@
+version: '3.7'
+
+services:
+    traefik:
+        name: traefik
+        state: present
+        mode: replicated
+        replicas: 1
+        image: traefik:v2.1.4
+        #image: registry.gitlab.com/mbio/mbiosphere/infrastructure/traefik:latest
+        resolve_image: True
+        command: 
+            - "traefik"
+            - "--api.insecure=true"
+            - "--api.dashboard=true"
+            - "--api.debug=true"
+            - "--log.level=DEBUG"
+            - "--providers.docker=true"
+            - "--providers.docker.swarmMode=true"
+            - "--providers.docker.exposedbydefault=false"
+            - "--providers.docker.network=proxy"
+            - "--providers.docker.watch=true"
+            #- "--providers.docker.constraints='Label(`tag`,`proxy`)'"
+            - "--entrypoints.web.address=:80"
+            - "--entrypoints.web-secured.address=:443"
+            #- "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+            #- "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+            - "--certificatesresolvers.myresolver.acme.email={{ letsencrypt_mail }}"
+            - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+            #- "--certificatesresolvers.myresolver.acme.dnschallenge.delaybeforecheck=10"
+            #- "--certificatesresolvers.myresolver.acme.dnschallenge.resolvers=1.1.1.1:53"
+            - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+            - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+            - "--metrics.prometheus"
+            - "--metrics.prometheus.addentrypointslabels=true"
+            - "--metrics.prometheus.addserviceslabels=true"
+            - "--ping"
+            - "--global.checknewversion=false"
+            - "--global.sendanonymoususage=false"
+        env:
+            CF_API_EMAIL: "{{ cloudflare_api_email }}"
+            CF_API_KEY: "{{ cloudflare_api_key }}"
+            DOCKER_TLS_VERIFY: "0"
+        networks:
+            - name: "proxy"
+            aliases:
+                - "traefik"
+            options:
+                driver: "overlay"
+        publish:
+            - mode: ingress
+            protocol: tcp
+            published_port: 443
+            target_port: 443
+            - mode: ingress
+            protocol: tcp
+            published_port: 80
+            target_port: 80
+        mounts:
+            - source: traefik-letsencrypt
+            target: /letsencrypt
+            type: volume
+            readonly: no
+            driver_config: 
+                name: "cio"
+                options:
+                profile: "SNAPSHOT"
+            - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: True
+        update_config:
+            parallelism: 2
+            delay: 60s
+            monitor: 30s
+            order: start-first
+            failure_action: rollback
+        restart_config:
+            condition: on-failure
+        placement:
+            constraints: 
+            - node.role == manager
+        labels:
+            traefik.enable: "true"
+
+            # Catch-All HTTPS Redirect
+            # traefik.http.routers.http_catchall.service: "http_catchall"
+            # traefik.http.routers.http_catchall.rule: HostRegexp(`{any:.+}`)
+            # traefik.http.routers.http_catchall.entrypoints: "web"
+            # traefik.http.routers.http_catchall.middlewares: "https_redirect"
+            traefik.http.middlewares.https_redirect.redirectscheme.scheme: "https"
+            traefik.http.middlewares.https_redirect.redirectscheme.permanent: "true"
+
+            # Dashboard
+            traefik.http.routers.proxy.service: "api@internal"
+            traefik.http.routers.proxy.rule: "Host(`proxy.{{ base_domain }}`)"
+            traefik.http.routers.proxy.entrypoints: "web"
+            traefik.http.routers.proxy.middlewares: "https_redirect"
+            traefik.http.services.proxy.loadbalancer.server.port: "8080"
+
+            # Dashboard (HTTPS)
+            traefik.http.routers.proxy-secured.service: "api@internal"
+            traefik.http.routers.proxy-secured.rule: "Host(`proxy.{{ base_domain }}`)"
+            traefik.http.routers.proxy-secured.entrypoints: "web-secured"
+            traefik.http.routers.proxy-secured.tls: "true"
+            traefik.http.routers.proxy-secured.tls.certresolver: "myresolver"
+            #traefik.http.routers.proxy-secured.tls.domains[0].main: "{{ base_domain }}"
+            #traefik.http.routers.proxy-secured.tls.domains[0].sans: "*.{{ base_domain }}"
+            traefik.http.services.proxy-secured.loadbalancer.server.port: "8080"

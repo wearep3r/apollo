@@ -1,4 +1,3 @@
-roles/*
 .ssh
 tmp
 _deprecated/
@@ -10,3 +9,5 @@ docker/traefik
 .env
 terraform
 docker-compose.yml
+.DS_Store
+cio

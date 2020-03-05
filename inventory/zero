@@ -1,11 +1,11 @@
 all:
     hosts:
         zero-1:
-            ansible_host: 52.117.120.30
-        zero-2:
-            ansible_host: 52.117.126.19
-        zero-3:
             ansible_host: 52.117.122.29
+        zero-2:
+            ansible_host: 52.117.120.30
+        zero-3:
+            ansible_host: 52.117.126.19
         zero-4:
             ansible_host: 52.117.124.27
     children:
