@@ -6,6 +6,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.1.0
+2020-03-20
+
+### Features
+
+- dynamodb credentials (48fb4b7a9135a82373ac140d5f4a75399ce533f9)
+- change base image for docker build from alpine to python-slim (6ccc8431054ad9c166c0ce7a9ad10b38216fe2ec)
+- improve caching (2a37a91844aeb10eaf12c13122113b72c818c047)
+- reduced image layers (f2197190b5de2e2a994618e255689b0f97477426)
+- reduced image size (6b9515f02dad369909a2ea3adba38561d1ee7a20)
+- refactor code (a62fdafbb278a4532ee4b8b6e7facd29156490ab)
+- pre-alpha release (48f6993b42053c1f1c65efbbee3831f65efca316)
+
+### Fixes
+
+- loki config (3fb297dec379ed42063c98b21693e7c9318b1b40)
+- mc platform (c5290c432715d30e16a37e5dd88b31414d5a6d69)
+- mc platform (7561ecd0d4460dcd22a1b2004734f54f2271bcc7)
+- loki s3 lookup issues (379f4273f94fd6c9b57db851418aa438097523d9)
+- loki dynamodb lookup issues (ef57648eae531f1e058b09877e02807a8e5f2a47)
+- removed loki tags; issues with dynamodb (c2254e709acdde5572a376ebe6848213f842e47e)
+- traefik debug; LE staging (1bd43f2d5fa5fc36073d567a9b31a2fd5a1a0d7b)
+- proxy dns record (82f035bd21c56b5c1571f9fc66fbe44fd22566f2)
+- replace ash with bash (8924e95a165374d22c225208024d17a319370738)
+- insecure ci-method, cache-optimization (552275031985c5589be3862e04c2b85504ab1b9f)
+- typo (1a452428829caa691fc64206aaa2e021e086c953)
+- ci (ba33ebca05b8aa43efbb4b8a354db6747c202a0d)
+- improve caching (68dad5f58f42ce9246de898618cddc1a88852f40)
+- improve caching (4b39d3868a63fa83bb7ec59eacda2bd59fe48f41)
+- improve caching (6101b9b04de8f06d3d01b2236e6c92858f5e392d)
+- ci speed (670c1a33a72da5681dc1c9aa79cbda97c520dfa1)
+- runners cache (0570e93c339c5353311dcc556bd787b2ed160f31)
+- Cloudflare DNS Proxy (61912f85f4aef887a16606ab689ec47567f76968)
+- remove README for now (7b1a82ca545ca6eeea126051cfbda161e240a6fe)
+- removed legacy code (fd3face8b5253252363f89ae204897e7df522b81)
+- removed legacy code (3acf537d6c9b582b277bd3c7bf9fea8f10cafaaa)
+- removed legacy code (9c2bb392b0e666ae404dbe0f82a841fc21429f4e)
+- removed legacy code (663560555bdefb6e9f0c1529689da820690bf3a5)
+- millions of changes, too late to make a purposeful commit (24b8fa8a08c260e141a8acd27c82403b311db956)
+- millions of changes, too late to make a purposeful commit (5ef900a69f500b49a95d5e13b8aadcc7c642084a)
+- runner labels (627310a7fb1fe243581b6932267d7108fe0fdf27)
+- added dependencies for Windows deployments (24f1399317f03125a868680108eaa2d7e9e1ae39)
+
 ## 0.1.1
 2020-03-20
 
