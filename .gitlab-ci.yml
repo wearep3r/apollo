@@ -259,7 +259,6 @@ Release zero:
     - master
   tags: 
     - build
-    - infrastructure
 
 release version:
   stage: release
