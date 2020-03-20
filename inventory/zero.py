@@ -26,7 +26,7 @@ class ZeroInventory(object):
         else:
             self.inventory = self.empty_inventory()
 
-        print json.dumps(self.inventory);
+        print(json.dumps(self.inventory))
 
     # Example inventory for testing.
     def zero_inventory(self):

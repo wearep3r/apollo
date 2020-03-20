@@ -12,6 +12,8 @@ RUN apt update && apt install -y --no-install-recommends \
     httpie \
     tar \
     unzip \
+    nano \
+    openssh-client \
     #build-essential \
     #libffi-dev \
     #libssl1.0-dev \
