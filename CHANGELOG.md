@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.1.1
+2020-03-20
+
+### Fixes
+
+- runner labels (627310a7fb1fe243581b6932267d7108fe0fdf27)
+
 ## 0.1.0
 2020-03-20
 
