@@ -41,13 +41,11 @@ RUN apt update && apt install -y --no-install-recommends \
     && chmod +x /usr/local/bin/mc
 
 RUN mkdir /infrastructure
-COPY ansible /infrastructure/ansible
-RUN cd /infrastructure/ansible \
-    && echo 'Ansible refuses to read from a world-writeable folder, hence' \
-    && chmod -v 700 $(pwd) \
-    && ansible-galaxy install --ignore-errors -r requirements.yml
 WORKDIR /infrastructure
 COPY . .
+RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \
+    && chmod -v 700 $(pwd) \
+    && ansible-galaxy install --ignore-errors -r requirements.yml
 
 CMD ["/bin/bash"]
 ARG BUILD_DATE

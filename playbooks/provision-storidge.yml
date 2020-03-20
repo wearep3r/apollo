@@ -392,8 +392,8 @@
           when: storidge_status != "normal"
 
         - name: Starting Update
-          command: "cioctl node update"
-          register: storidge_update
+          command: "cioctl node update" #  --no-reboot
+          register: storidge_update 
           async: 1000
           poll: 0
           when: storidge_upgradable is defined and storidge_upgradable and storidge_status == "normal"
@@ -407,6 +407,13 @@
           when: storidge_upgradable is defined and storidge_upgradable and storidge_status == "normal"
           retries: 300
 
+        - name: Rebooting Nodes
+          reboot:
+            reboot_timeout: 180
+          when: storidge_upgradable is defined and storidge_upgradable and update_result.finished
+          tags:
+            - storidge
+
         - name: Clearing Node Failure Status
           meta: clear_host_errors
 
@@ -417,11 +424,11 @@
           when: storidge_upgradable is defined and storidge_upgradable
 
         - name: Waiting for node to become uncordoned
-          command: "cio node list | grep {{ ansible_hostname }} | grep normal"
+          shell: "cio node list | grep {{ ansible_hostname }}"
           register: storidge_current_status
           retries: 12
           delay: 10
-          until: storidge_current_status.stdout != ""
+          until: storidge_current_status.stdout.split()[4] == "normal"
           when: storidge_upgradable is defined and storidge_upgradable
           tags:
             - storidge

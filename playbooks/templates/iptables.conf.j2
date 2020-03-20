@@ -16,7 +16,7 @@
 -A INPUT -j FILTERS
 
 # Docker
--A DOCKER-USER -i {{ ansible_default_ipv4.interface }} -j FILTERS
+-A DOCKER-USER -i {{ ansible_eth0.device }} -j FILTERS
 
 # Filters
 -A FILTERS -m state --state ESTABLISHED,RELATED -j ACCEPT
@@ -27,7 +27,7 @@
 -A FILTERS -s 10.0.0.0/8 -j ACCEPT
 -A FILTERS -s 172.0.0.0/8 -j ACCEPT
 {% for host in groups['all']|sort %}
--A FILTERS -s {{ hostvars[host]['ansible_default_ipv4']['address'] }} -j ACCEPT
+-A FILTERS -s {{ hostvars[host]['ansible_eth0']['ipv4']['address'] }} -j ACCEPT
 {% endfor %}
 -A FILTERS -m limit --limit 15/min -j LOG --log-prefix "Dropped by firewall: " --log-level 7
 -A FILTERS -j REJECT --reject-with icmp-host-prohibited

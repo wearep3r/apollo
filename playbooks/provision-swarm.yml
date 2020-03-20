@@ -11,13 +11,100 @@
 - hosts: all
   gather_facts: False
   serial: 1
+  order: reverse_sorted
   tags:
     - docker
-  roles:
-    - geerlingguy.docker
   handlers:
-    - include_tasks: handlers.yml
+    - name: drain swarm node
+      shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
+      #listen: "restart docker"
+      notify: "restart docker"
+    - name: restart docker
+      service: name=docker state=restarted
+      listen: "restart docker"
   tasks:
+    - name: Ensure old versions of Docker are not installed.
+      package:
+        name:
+          - docker
+          - docker-engine
+        state: absent
+    
+    - name: Ensure dependencies are installed.
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+        state: present
+    
+    - name: Add Docker apt key.
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+        state: present
+      register: add_repository_key
+      ignore_errors: "{{ docker_apt_ignore_key_error }}"
+    
+    - name: Ensure curl is present (on older systems without SNI).
+      package: name=curl state=present
+      when: add_repository_key is failed
+    
+    - name: Add Docker apt key (alternative for older systems without SNI).
+      shell: |
+        set -o pipefail
+        curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      args:
+        warn: false
+      when: add_repository_key is failed
+    
+    - name: Add Docker repository.
+      apt_repository:
+        repo: "{{ docker_apt_repository }}"
+        state: present
+        update_cache: true
+
+    - name: Install Docker.
+      package:
+        name: "{{ docker_package }}"
+        state: "{{ docker_package_state }}"
+      notify: restart docker
+    
+    - name: Ensure Docker is started and enabled at boot.
+      service:
+        name: docker
+        state: "{{ docker_service_state }}"
+        enabled: "{{ docker_service_enabled }}"
+    
+    - name: Ensure handlers are notified now to avoid firewall conflicts.
+      meta: flush_handlers
+    
+    - name: Check current docker-compose version.
+      command: docker-compose --version
+      register: docker_compose_current_version
+      changed_when: false
+      failed_when: false
+    
+    - name: Delete existing docker-compose version if it's different.
+      file:
+        path: "{{ docker_compose_path }}"
+        state: absent
+      when: >
+        docker_compose_current_version.stdout is defined
+        and docker_compose_version not in docker_compose_current_version.stdout
+    
+    - name: Install Docker Compose (if configured).
+      get_url:
+        url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
+        dest: "{{ docker_compose_path }}"
+        mode: 0755
+        
+    - name: Ensure docker users are added to the docker group.
+      user:
+        name: "{{ item }}"
+        groups: docker
+        append: true
+      with_items: "{{ docker_users }}"     
+      
     - name: Copy Docker config
       template:
         src: templates/daemon.json.j2

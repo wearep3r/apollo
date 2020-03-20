@@ -8,6 +8,8 @@ ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
 
+# Access
+
 # Lets Encrypt
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(0, true) }}"
 letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
@@ -17,7 +19,7 @@ terraform_enabled: "{{ lookup('env','TERRAFORM_ENABLED') | default(0, true) }}"
 
 # Kernel
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
-kernel_update_grub_requested_kernel_version: 4.15.0-74-generic
+kernel_update_grub_requested_kernel_version: 4.15.0-91-generic
 kernel_update_config_prefix_grub_default: 99
 kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
 
@@ -25,8 +27,18 @@ kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kerne
 swarm_enabled: "{{ lookup('env','SWARM_ENABLED') | default(1, true) }}"
 docker_edition: 'ce'
 docker_package: "docker-{{ docker_edition }}=5:19.03.6~3-0~ubuntu-bionic"
-
+docker_package_state: present
+docker_service_state: started
+docker_service_enabled: true
+docker_restart_handler_state: restarted
+docker_install_compose: true
 docker_compose_version: "1.25.4"
+docker_compose_path: /usr/local/bin/docker-compose
+docker_apt_release_channel: stable
+docker_apt_arch: amd64
+docker_apt_repository: "deb [arch={{ docker_apt_arch }}] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ docker_apt_release_channel }}"
+docker_apt_ignore_key_error: true
+docker_users: []
 swarm_networks:
     - proxy
     - portainer

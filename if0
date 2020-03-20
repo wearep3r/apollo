@@ -1,0 +1,22 @@
+#! /bin/bash
+case $1 in
+     build)
+          echo "if0 Build"
+          ;;
+     provision)
+          echo "if0 Provision"
+          source .env
+          ansible-playbook -i inventory/terraform provision.yml --flush-cache
+          #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+          ;;
+    destroy)
+          echo "if0 Destroy"
+          source .env
+          #ansible-playbook -i inventory/terraform provision.yml
+          cd terraform
+          terraform destroy -no-color -auto-approve
+          ;;
+     *)
+          echo "Sorry, invalid input"
+          ;;
+esac

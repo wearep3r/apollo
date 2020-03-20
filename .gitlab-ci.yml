@@ -33,73 +33,73 @@ version:
   tags: 
     - build
 
-Build node-exporter:
-  stage: build
-  image: docker:19.03.5
-  variables:
-    DOCKER_BUILDKIT: 1 
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
-    - cd docker/node-exporter
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
-  tags: 
-    - build
+# Build node-exporter:
+#   stage: build
+#   image: docker:19.03.5
+#   variables:
+#     DOCKER_BUILDKIT: 1 
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
+#     - cd docker/node-exporter
+#     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
+#     - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
+#   tags: 
+#     - build
 
-Build prometheus:
-  stage: build
-  image: docker:19.03.5
-  variables:
-    DOCKER_BUILDKIT: 1 
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
-    - cd docker/prometheus
-    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA
-  tags: 
-    - build
+# Build prometheus:
+#   stage: build
+#   image: docker:19.03.5
+#   variables:
+#     DOCKER_BUILDKIT: 1 
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
+#     - cd docker/prometheus
+#     - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA .
+#     - docker push $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA
+#   tags: 
+#     - build
 
-Build alertmanager:
-  stage: build
-  image: docker:19.03.5
-  variables:
-    DOCKER_BUILDKIT: 1 
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/alertmanager:latest || true
-    - cd docker/alertmanager
-    - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA
-  tags: 
-    - build
+# Build alertmanager:
+#   stage: build
+#   image: docker:19.03.5
+#   variables:
+#     DOCKER_BUILDKIT: 1 
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/alertmanager:latest || true
+#     - cd docker/alertmanager
+#     - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA .
+#     - docker push $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA
+#   tags: 
+#     - build
 
-Build grafana:
-  stage: build
-  image: docker:19.03.5
-  variables:
-    DOCKER_BUILDKIT: 1 
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
-    - cd docker/grafana
-    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA
-  tags: 
-    - build
+# Build grafana:
+#   stage: build
+#   image: docker:19.03.5
+#   variables:
+#     DOCKER_BUILDKIT: 1 
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
+#     - cd docker/grafana
+#     - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA .
+#     - docker push $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA
+#   tags: 
+#     - build
 
 # Build loki:
 #   stage: build
@@ -149,80 +149,80 @@ Build zero:
 #   tags: 
 #     - infrastructure
 
-Release prometheus:
-  stage: release
-  image: docker:19.03.5
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:latest
-    - docker push $CI_REGISTRY_IMAGE/prometheus:latest
-    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
-  only:
-    - master
-  tags: 
-    - build
-    - infrastructure
+# Release prometheus:
+#   stage: release
+#   image: docker:19.03.5
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA || true
+#     - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:latest
+#     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
+#     - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
+#     - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
+#   only:
+#     - master
+#   tags: 
+#     - build
+#     - infrastructure
 
-Release alertmanager:
-  stage: release
-  image: docker:19.03.5
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
-    - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
-    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
-  only:
-    - master
-  tags: 
-    - build
-    - infrastructure
+# Release alertmanager:
+#   stage: release
+#   image: docker:19.03.5
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA || true
+#     - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
+#     - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
+#     - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
+#     - docker push $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
+#   only:
+#     - master
+#   tags: 
+#     - build
+#     - infrastructure
 
-Release grafana:
-  stage: release
-  image: docker:19.03.5
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
-    - docker push $CI_REGISTRY_IMAGE/grafana:latest
-    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
-  only:
-    - master
-  tags: 
-    - build
-    - infrastructure
+# Release grafana:
+#   stage: release
+#   image: docker:19.03.5
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA || true
+#     - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
+#     - docker push $CI_REGISTRY_IMAGE/grafana:latest
+#     - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
+#     - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
+#   only:
+#     - master
+#   tags: 
+#     - build
+#     - infrastructure
 
-Release node-exporter:
-  stage: release
-  image: docker:19.03.5
-  services:
-    - docker:19.03.5-dind
-  script:
-    - . build_info
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
-    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
-  only:
-    - master
-  tags: 
-    - build
+# Release node-exporter:
+#   stage: release
+#   image: docker:19.03.5
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - . build_info
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
+#     - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
+#     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
+#     - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
+#     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
+#   only:
+#     - master
+#   tags: 
+#     - build
 
 # Release loki:
 #   stage: release
@@ -283,15 +283,15 @@ release version:
 #     - deploy
 
 # Deploy
-deploy:cio-test:
-  stage: deploy
-  variables:
-    DEPLOYMENT: ${CI_PROJECT_NAME}_test
-    APP_ENVIRONMENT: staging
-  script:
-    - echo "$CI_DEPLOY_PASSWORD" | docker login $CI_REGISTRY --username=$CI_DEPLOY_USER --password-stdin
-    - docker stack deploy --with-registry-auth --prune -c docker-compose.yml $DEPLOYMENT
-  only:
-    - branches
-  tags:
-    - deploy
+# deploy:cio-test:
+#   stage: deploy
+#   variables:
+#     DEPLOYMENT: ${CI_PROJECT_NAME}_test
+#     APP_ENVIRONMENT: staging
+#   script:
+#     - echo "$CI_DEPLOY_PASSWORD" | docker login $CI_REGISTRY --username=$CI_DEPLOY_USER --password-stdin
+#     - docker stack deploy --with-registry-auth --prune -c docker-compose.yml $DEPLOYMENT
+#   only:
+#     - branches
+#   tags:
+#     - deploy

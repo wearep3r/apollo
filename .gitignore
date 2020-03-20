@@ -4,7 +4,7 @@ _deprecated/
 playbooks/_deprecated
 playbooks/_services.yml
 playbooks/services
-README.md
+_README.md
 docker/traefik
 .env
 terraform

@@ -1,8 +1,6 @@
-handlers:
-  - name: drain swarm node
-    shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
-    #service: name=memcached state=restarted
-    listen: "zero restart docker"
-  - name: restart docker service
-    service: name=docker state=restarted
-    listen: "zero restart docker"
+- name: drain swarm node
+  shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
+  listen: "restart docker"
+- name: restart docker service
+  service: name=docker state=restarted
+  listen: "restart docker"
