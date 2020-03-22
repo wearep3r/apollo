@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.2.0
+2020-03-22
+
+### Features
+
+- enabled Debian (c67a01da5ce673b30ce386f668fc8dc9a0ee34f1)
+
+### Fixes
+
+- added dependencies for Windows deployments (24f1399317f03125a868680108eaa2d7e9e1ae39)
+
 ## 0.1.0
 2020-03-20
 
