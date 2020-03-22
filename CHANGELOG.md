@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.2.1
+2020-03-22
+
+### Fixes
+
+- removed CI tags for runners (91a8d5a10340e4168067e424d098dc6474a84190)
+
 ## 0.2.0
 2020-03-22
 
