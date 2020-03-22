@@ -676,7 +676,7 @@
         name: node-exporter
         state: present
         mode: global
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/node-exporter:latest
+        image: registry.gitlab.com/derfabianpeter/zero/node-exporter
         resolve_image: True
         networks:
           - name: "monitoring"
@@ -889,7 +889,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/prometheus:latest
+        image: registry.gitlab.com/derfabianpeter/zero/prometheus
         networks:
           - name: "proxy"
             aliases:
@@ -977,7 +977,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/alertmanager:latest
+        image: registry.gitlab.com/derfabianpeter/zero/alertmanager
         env:
           SLACK_URL: "{{ slack_webhook }}"
           SLACK_CHANNEL: "{{ slack_channel }}"
@@ -1110,7 +1110,7 @@
         mode: replicated
         resolve_image: True
         replicas: 1
-        image: registry.gitlab.com/mbio/mbiosphere/infrastructure/grafana:latest
+        image: registry.gitlab.com/derfabianpeter/zero/grafana
         env:
           GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
           GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"

@@ -147,7 +147,7 @@ Build zero:
 #     - ansible-lint *.yml
 #   allow_failure: true
 #   tags: 
-#     - infrastructure
+#     
 
 Release prometheus:
   stage: release
@@ -166,7 +166,7 @@ Release prometheus:
     - master
   tags: 
     - build
-    - infrastructure
+    
 
 Release alertmanager:
   stage: release
@@ -185,7 +185,7 @@ Release alertmanager:
     - master
   tags: 
     - build
-    - infrastructure
+    
 
 Release grafana:
   stage: release
@@ -204,7 +204,7 @@ Release grafana:
     - master
   tags: 
     - build
-    - infrastructure
+    
 
 Release node-exporter:
   stage: release
