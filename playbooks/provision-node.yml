@@ -10,7 +10,7 @@
         name: "{{ansible_hostname}}"
 
     - name: Building /etc/hosts file
-      lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].ansible_hostname}}" state=present
+      lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_eth1.ipv4.address }} {{ hostvars[item].ansible_hostname}}" state=present
       when: hostvars[item].ansible_default_ipv4.address is defined
       with_items: "{{ groups['all'] }}"
 
@@ -40,6 +40,32 @@
 
     - name: Setting up DNS
       block:
+        - name: Create A record base domain
+          cloudflare_dns:
+            zone: "{{ base_domain }}"
+            record: "@"
+            type: A
+            solo: True
+            value: "{{ ingress_ip }}"
+            account_email: "{{ cloudflare_api_email }}"
+            account_api_token: "{{ cloudflare_api_key }}"
+          register: record
+          tags:
+            - dns
+
+        - name: Create A record Wildcard
+          cloudflare_dns:
+            zone: "{{ base_domain }}"
+            record: "*"
+            type: A
+            solo: True
+            value: "{{ ingress_ip }}"
+            account_email: "{{ cloudflare_api_email }}"
+            account_api_token: "{{ cloudflare_api_key }}"
+          register: record
+          tags:
+            - dns
+
         - name: Create A record for Node
           cloudflare_dns:
             zone: "{{ base_domain }}"
@@ -133,103 +159,17 @@
       apt:
         name:
           - python3
+          - python3-apt
           - python3-pip
           - python3-setuptools
           - git
-          - "linux-image-{{ kernel_update_grub_requested_kernel_version }}"
-          - "linux-headers-{{ kernel_update_grub_requested_kernel_version }}"
+          - curl
+          - apache2-utils
         state: present
         update_cache: False
       tags:
         - packages
-
-    - name: Pinning packages
-      dpkg_selections:
-        name: "{{ item }}"
-        selection: hold
-      with_items:
-        - "linux-image-{{ kernel_update_grub_requested_kernel_version }}"
-        - linux-image-virtual
-        - "linux-headers-{{ kernel_update_grub_requested_kernel_version }}"
     
-    - name: Getting Kernel Releases in sorted order
-      shell: 'cat /boot/grub/grub.cfg | grep menuentry | grep -oP \\d+\\.\\d+\\.\\d+-\\d+-\\w+ | sort -V -r | uniq'
-      register: ku_kernel_releases
-      check_mode: no
-      changed_when: False
-
-    - name: DEBUG | Kernel Releases
-      debug: 
-        msg: "{{ ku_kernel_releases }}"
-        verbosity: 1
-
-    - name: Setting kernel_update_grub_latest_kernel_version to the latest kernel
-      set_fact:
-        kernel_update_grub_kernel_versions: "{{ ku_kernel_releases.stdout.splitlines() }}"
-        kernel_update_grub_latest_kernel_version: "{{ ku_kernel_releases.stdout.splitlines()[0] }}"
-
-    - name: Checking that kernel_update_grub_requested_kernel_version is in the list of available kernels if defined
-      fail: msg="kernel_update_grub_requested_kernel_version is not a valid kernel"
-      when: kernel_update_grub_requested_kernel_version is defined
-        and kernel_update_grub_requested_kernel_version not in kernel_update_grub_kernel_versions
-
-    - name: Getting menuentry_id_option from /boot/grub/grub.cfg for {{ kernel_update_grub_requested_kernel_version }}
-      shell: "awk '/\\$menuentry_id_option/ {print $(NF-1) }' /boot/grub/grub.cfg | sed s/\\'//g | grep -v recovery | grep -F {{ kernel_update_grub_requested_kernel_version }}"
-      when: kernel_update_grub_requested_kernel_version is defined
-      register: ku_set_grub_vars_kernel_id
-      check_mode: no
-      changed_when: False
-
-    - name: Escaping the kernel_update_grub_requested_kernel_version to assist with generating parent id
-      set_fact:
-        kernel_update_grub_requested_kernel_version_escaped: "{{ kernel_update_grub_requested_kernel_version|regex_replace('\\.', '\\.') }}"
-
-    - name: Getting the parent menu id for the kernel
-      set_fact:
-        ku_set_grub_vars_kernel_parent_id: "{{ ku_set_grub_vars_kernel_id.stdout|regex_replace(kernel_update_grub_requested_kernel_version_escaped+'-', '') }}"
-
-    - name: Setting a value for kernel_update_grub_default
-      set_fact:
-        kernel_update_grub_default: "{{ ku_set_grub_vars_kernel_parent_id }}>{{ ku_set_grub_vars_kernel_id.stdout }}"
-
-    - name: Creating /etc/default/grub.d
-      file:
-        dest: /etc/default/grub.d
-        group: root
-        owner: root
-        mode: 0755
-        state: directory
-
-    - name: Rendering grub default configuration
-      template:
-        src: grub_default.j2
-        dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
-        group: root
-        owner: root
-        mode: 0644
-      register: ku_render_grub_default_result
-      when: kernel_update_grub_default is defined
-
-    - name: Removing grub default configuration if kernel_update_grub_default isn't set
-      file:
-        dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
-        state: absent
-      register: ku_remove_grub_default_result
-      when: kernel_update_grub_default is not defined
-
-    - name: Getting Configuration Status
-      set_fact:
-        ku_grub_configuration_changed: "{{ ku_render_grub_default_result.changed or ku_remove_grub_default_result.changed }}"
-
-    - name: Updating grub
-      command: update-grub
-      register: ku_update_grub_result
-      when: ku_grub_configuration_changed
-
-    - name: Getting Grub Update Status
-      set_fact:
-        ku_update_grub_changed: "{{ ku_update_grub_result.changed }}"
-
     - name: Installing pip dependencies
       pip:
         name:
@@ -240,18 +180,121 @@
         - packages
         - docker
 
+    - name: Setting up Kernel (Ubuntu)
+      block:
+        - name: Installing Kernel
+          apt:
+            name:
+              - "linux-image-{{ kernel_update_grub_requested_kernel_version }}"
+              - "linux-headers-{{ kernel_update_grub_requested_kernel_version }}"
+            state: present
+            update_cache: False
+          tags:
+            - packages
+
+        - name: Pinning packages
+          dpkg_selections:
+            name: "{{ item }}"
+            selection: hold
+          with_items:
+            - "linux-image-{{ kernel_update_grub_requested_kernel_version }}"
+            - linux-image-virtual
+            - "linux-headers-{{ kernel_update_grub_requested_kernel_version }}"
+        
+        - name: Getting Kernel Releases in sorted order
+          shell: 'cat /boot/grub/grub.cfg | grep menuentry | grep -oP \\d+\\.\\d+\\.\\d+-\\d+-\\w+ | sort -V -r | uniq'
+          register: ku_kernel_releases
+          check_mode: no
+          changed_when: False
+
+        - name: DEBUG | Kernel Releases
+          debug: 
+            msg: "{{ ku_kernel_releases }}"
+            verbosity: 1
+
+        - name: Setting kernel_update_grub_latest_kernel_version to the latest kernel
+          set_fact:
+            kernel_update_grub_kernel_versions: "{{ ku_kernel_releases.stdout.splitlines() }}"
+            kernel_update_grub_latest_kernel_version: "{{ ku_kernel_releases.stdout.splitlines()[0] }}"
+
+        - name: Checking that kernel_update_grub_requested_kernel_version is in the list of available kernels if defined
+          fail: msg="kernel_update_grub_requested_kernel_version is not a valid kernel"
+          when: kernel_update_grub_requested_kernel_version is defined
+            and kernel_update_grub_requested_kernel_version not in kernel_update_grub_kernel_versions
+
+        - name: Getting menuentry_id_option from /boot/grub/grub.cfg for {{ kernel_update_grub_requested_kernel_version }}
+          shell: "awk '/\\$menuentry_id_option/ {print $(NF-1) }' /boot/grub/grub.cfg | sed s/\\'//g | grep -v recovery | grep -F {{ kernel_update_grub_requested_kernel_version }}"
+          when: kernel_update_grub_requested_kernel_version is defined
+          register: ku_set_grub_vars_kernel_id
+          check_mode: no
+          changed_when: False
+
+        - name: Escaping the kernel_update_grub_requested_kernel_version to assist with generating parent id
+          set_fact:
+            kernel_update_grub_requested_kernel_version_escaped: "{{ kernel_update_grub_requested_kernel_version|regex_replace('\\.', '\\.') }}"
+
+        - name: Getting the parent menu id for the kernel
+          set_fact:
+            ku_set_grub_vars_kernel_parent_id: "{{ ku_set_grub_vars_kernel_id.stdout|regex_replace(kernel_update_grub_requested_kernel_version_escaped+'-', '') }}"
+
+        - name: Setting a value for kernel_update_grub_default
+          set_fact:
+            kernel_update_grub_default: "{{ ku_set_grub_vars_kernel_parent_id }}>{{ ku_set_grub_vars_kernel_id.stdout }}"
+
+        - name: Creating /etc/default/grub.d
+          file:
+            dest: /etc/default/grub.d
+            group: root
+            owner: root
+            mode: 0755
+            state: directory
+
+        - name: Rendering grub default configuration
+          template:
+            src: grub_default.j2
+            dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
+            group: root
+            owner: root
+            mode: 0644
+          register: ku_render_grub_default_result
+          when: kernel_update_grub_default is defined
+
+        - name: Removing grub default configuration if kernel_update_grub_default isn't set
+          file:
+            dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
+            state: absent
+          register: ku_remove_grub_default_result
+          when: kernel_update_grub_default is not defined
+
+        - name: Getting Configuration Status
+          set_fact:
+            ku_grub_configuration_changed: "{{ ku_render_grub_default_result.changed or ku_remove_grub_default_result.changed }}"
+
+        - name: Updating grub
+          command: update-grub
+          register: ku_update_grub_result
+          when: ku_grub_configuration_changed
+
+        - name: Getting Grub Update Status
+          set_fact:
+            ku_update_grub_changed: "{{ ku_update_grub_result.changed }}"
+      when: ansible_distribution == 'Ubuntu'
+      
+
 - hosts: all
   gather_facts: False
   serial: 1
+  order: reverse_sorted
   tasks:
     - name: Rebooting Nodes
       reboot:
         reboot_timeout: 180
-      when: ku_update_grub_changed
+      when: ku_update_grub_changed is defined and ku_update_grub_changed
 
 # NTP & Localization
 # Config in group_vars/all
 - hosts: all
+  order: reverse_sorted
   gather_facts: False
   handlers:
     - include_tasks: handlers.yml

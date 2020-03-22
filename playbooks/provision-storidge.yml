@@ -42,8 +42,6 @@
       tags:
         - storidge
 
-        README.md
-
     - name: Copying Storidge "Snapshot" Profile
       template:
         src: templates/storidge-profile-snapshot.j2

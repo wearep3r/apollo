@@ -23,7 +23,7 @@
 - import_playbook: playbooks/provision-storidge.yml
   tags:
       - storidge
-  when: storidge_enabled|bool
+  when: storidge_enabled|bool and ansible_distribution == 'Ubuntu'
 - import_playbook: playbooks/provision-runner.yml
   tags:
       - runner

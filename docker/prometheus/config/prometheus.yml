@@ -60,10 +60,10 @@ scrape_configs:
       type: 'A'
       port: 8080
 
-  - job_name: 'giltlab-runner'
-    dns_sd_configs:
-    - names:
-      # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
-      - 'runners.mbiosphere.com'
-      type: 'A'
-      port: 9252
+  # - job_name: 'giltlab-runner'
+  #   dns_sd_configs:
+  #   - names:
+  #     # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
+  #     - 'runners.zero.local'
+  #     type: 'A'
+  #     port: 9252

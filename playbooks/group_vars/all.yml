@@ -26,7 +26,7 @@ kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kerne
 # Docker Swarm
 swarm_enabled: "{{ lookup('env','SWARM_ENABLED') | default(1, true) }}"
 docker_edition: 'ce'
-docker_package: "docker-{{ docker_edition }}=5:19.03.6~3-0~ubuntu-bionic"
+docker_package: "docker-{{ docker_edition }}=5:19.03.6~3-0~{{ ansible_distribution | lower }}-{{ ansible_distribution_release }}"
 docker_package_state: present
 docker_service_state: started
 docker_service_enabled: true

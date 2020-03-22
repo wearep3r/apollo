@@ -4,12 +4,27 @@ case $1 in
           echo "if0 Build"
           ;;
      provision)
-          echo "if0 Provision"
-          source .env
-          ansible-playbook -i inventory/terraform provision.yml --flush-cache
-          #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+          case $2 in
+               backplane)
+                    echo "if0 Provision Backplane"
+                    source .env
+                    ansible-playbook -i inventory/terraform playbooks/provision-backplane.yml
+                    ;;
+               swarm)
+                    echo "if0 Provision Swarm"
+                    source .env
+                    ansible-playbook -i inventory/terraform playbooks/provision-swarm.yml
+                    #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+                    ;;
+               *)
+                    echo "if0 Provision"
+                    source .env
+                    ansible-playbook -i inventory/terraform provision.yml
+                    #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+                    ;;
+          esac
           ;;
-    destroy)
+     destroy)
           echo "if0 Destroy"
           source .env
           #ansible-playbook -i inventory/terraform provision.yml

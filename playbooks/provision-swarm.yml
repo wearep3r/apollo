@@ -45,10 +45,6 @@
       register: add_repository_key
       ignore_errors: "{{ docker_apt_ignore_key_error }}"
     
-    - name: Ensure curl is present (on older systems without SNI).
-      package: name=curl state=present
-      when: add_repository_key is failed
-    
     - name: Add Docker apt key (alternative for older systems without SNI).
       shell: |
         set -o pipefail
@@ -300,7 +296,7 @@
         docker swarm join
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ groups['manager'][0] }}:2377
+        {{ hostvars[groups['manager'][0]]['ansible_eth1']['ipv4']['address'] }}:2377
     - name: Set Node Labels # noqa 301
       shell: >
         docker node update --label-add role=manager --label-add storage=cio --label-add namespace=zero {{ ansible_hostname }}
@@ -316,7 +312,7 @@
         docker swarm join
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ groups['manager'][0] }}:2377
+        {{ hostvars[groups['manager'][0]]['ansible_eth1']['ipv4']['address'] }}:2377
 
 - hosts: swarm_satellite_inactive
   become: True
@@ -328,7 +324,7 @@
         docker swarm join
         --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ groups['manager'][0] }}:2377
+        {{ groups['manager'][0]['ansible_eth1']['ipv4']['address'] }}:2377
 
 - hosts: swarm_manager_active[0]
   become: True
@@ -353,7 +349,7 @@
         account_email: "{{ cloudflare_api_email }}"
         account_api_token: "{{ cloudflare_api_key }}"
         solo: True
-        proxied: True
+        proxied: False
       register: record
       when: cloudflare_enabled|bool
 

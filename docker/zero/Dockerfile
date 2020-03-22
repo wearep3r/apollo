@@ -42,7 +42,8 @@ RUN apt update && apt install -y --no-install-recommends \
     && curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
     && chmod +x /usr/local/bin/mc
 
-RUN mkdir /infrastructure
+RUN mkdir /infrastructure \
+    && mkdir /root/.ssh
 WORKDIR /infrastructure
 COPY . .
 RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \
