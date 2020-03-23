@@ -1,0 +1,155 @@
+- hosts: manager[0]
+  become: True
+  gather_facts: True
+  tasks:
+    - name: Provision Nextcloud
+      block:
+        - name: Copy Stack-File
+          template:
+            src: templates/stacks/nextcloud/docker-compose.yml
+            dest: /tmp/zero-stacks-nextcloud.yml
+            owner: root
+            group: root
+            mode: '0644'
+        - name: Provision Nextcloud
+          docker_stack:
+            state: present
+            name: nextcloud
+            prune: yes
+            with_registry_auth: yes
+            compose:
+              - /tmp/zero-stacks-nextcloud.yml
+          register: nextcloud_provision
+          tags:
+              - nextcloud
+
+        - name: Debug Nextcloud
+          debug:
+            var: nextcloud_provision
+            verbosity: 1
+          tags:
+              - nextcloud
+          when: nextcloud_provision.changed
+
+        - name: "Wait for nextcloud.{{ base_domain }} to become ready"
+          uri:
+            url: "https://nextcloud.{{ base_domain }}"
+            method: GET
+            status_code: 200
+            validate_certs: no
+          register: _result
+          until: _result.status == 200
+          retries: 30 # retry X times  
+          delay: 5 # pause for X sec b/w each call 
+          tags:
+              - nextcloud
+
+        - name: Get Container ID
+          shell: docker ps -f name=nextcloud_app --format "{{ '{{' }}.ID{{ '}}'}}"
+          register: nextcloud_app
+
+        - name: Debug
+          debug:
+            var: nextcloud_app
+
+        - name: add container to inventory
+          add_host:
+            name: "{{ nextcloud_app.stdout }}"
+            ansible_connection: docker
+          changed_when: false
+          failed_when: nextcloud_app.stdout == ""
+
+        - name: Configure Nextcloud
+          shell: "docker exec -i {{ nextcloud_app.stdout }} {{ item }}"
+          #delegate_to: "{{ nextcloud_app.stdout }}"
+          register: result
+          with_items:
+            - occ app:install calendar
+            - occ app:install contacts
+            - occ app:install mail
+            - occ app:install onlyoffice
+            - occ app:install apporder
+            - occ app:install external
+            - occ app:install files_markdown
+            - occ app:install announcementcenter
+            - occ app:install groupfolders
+            - occ app:install files_frommail
+            - occ app:install files_pdfviewer
+            - occ app:install quota_warning
+            - occ app:install theming
+            - occ app:install event_update_notification
+            - occ app:install bruteforcesettings
+            - occ app:install files_antivirus
+            - occ app:install files_downloadactivity
+            - occ app:install impersonate
+            - occ app:install suspicious_login
+            - occ app:install support
+            - occ app:install encryption
+            - occ app:enable encryption
+            - occ app:enable externalstorages
+            - occ config:system:set redis host --value redis
+            - occ config:system:set redis port --value 6379
+            - occ config:system:set memcache.distributed --value '\OC\Memcache\Redis'
+            - occ config:system:set memcache.locking --value '\OC\Memcache\Redis'
+            - occ config:system:set memcache.local --value '\OC\Memcache\APCu'
+            - occ config:system:set trusted_proxies 0 --value "172.0.0.0/8"
+            - occ config:app:set federation autoAddServers --value 1
+            - occ config:app:set files_sharing incoming_server2server_group_share_enabled --value "yes"
+            - occ config:app:set files_sharing outgoing_server2server_group_share_enabled --value "yes"
+            - occ config:app:set password_policy enforceHaveIBeenPwned --value "1"
+            - occ config:app:set files_antivirus av_host --value "clamav"
+            - occ config:app:set files_antivirus av_mode --value "daemon"
+            - occ config:app:set files_antivirus av_port --value "3310"
+            - occ config:app:set onlyoffice DocumentServerUrl --value "https:\/\/docs.{{ base_domain }}\/"
+            - occ config:app:set onlyoffice sameTab --value "true"
+            - occ config:app:set spreed stun_servers  --value "[\"turn.{{ base_domain }}:3478\"]"
+            - occ config:app:set spreed stun_servers --value "[{\"server\":\"turn.{{ base_domain }}:3478\",\"secret\":\"STUNSECRET\",\"protocols\":\"udp,tcp\"}]"
+            - occ config:system:set htaccess RewriteBase --value "/"
+            - occ maintenance:update:htaccess
+            - occ config:app:set core default_encryption_module --value "OC_DEFAULT_MODULE"
+            - occ config:app:set core encryption_enabled --value "yes"
+            - occ config:app:set encryption enabled --value "yes"
+            - occ config:app:set encryption encryptHomeStorage --value "1"
+            - occ config:system:set --type=bool --value=false simpleSignUpLink.shown
+
+
+        - name: Debug
+          debug:
+            var: result
+          
+
+        - name: Add Nextcloud Container to inventory
+          add_host:
+            name: nextcloud-app
+            ansible_connection: docker
+          changed_when: false
+        
+        - name: run command in container
+          delegate_to: nextcloud-app
+          command: occ app:install calendar
+
+        # Run Additional Commands
+        
+
+        - name: Remove Stack File
+          file:
+            path: /tmp/zero-stacks-nextcloud.yml
+            state: absent
+      rescue:
+        # - name: Teardown Nextcloud
+        #   docker_stack:
+        #       absent_retries: 5
+        #       absent_retries_interval: 10
+        #       state: absent
+        #       name: nextcloud
+        #   register: nextcloud_teardown
+        #   tags:
+        #       - nextcloud
+        
+        - name: Remove Stack File
+          file:
+            path: /tmp/zero-stacks-nextcloud.yml
+            state: absent
+
+# service_domain / stack_domain
+# base_domain
