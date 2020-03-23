@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.3.1
+2020-03-23
+
+### Fixes
+
+- private ifaces (5901d4ab0ef8bb6f6560af18c877522c0b5fa7e1)
+
 ## 0.3.0
 2020-03-23
 
