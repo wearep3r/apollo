@@ -7,10 +7,9 @@ ansible_python_interpreter: "{{ lookup('env','PYTHON_INTERPRETER') | default('/u
 ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
-private_iface: "{{ lookup('env','PRIVATE_INTERFACE') | default('eth1', true) }}"  #switch eth0,eth1 depending on your provider.
+private_iface: "{{ lookup('env','PRIVATE_INTERFACE') | default('eth1', true) }}"
 public_iface: "{{ lookup('env','PUBLIC_INTERFACE') | default('eth0', true) }}"
 remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
-
 
 # Access
 

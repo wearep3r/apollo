@@ -59,11 +59,21 @@
         state: present
         update_cache: true
 
-    - name: Install Docker.
+    - name: Installing Docker.
       package:
         name: "{{ docker_package }}"
         state: "{{ docker_package_state }}"
+      async: 1000
+      poll: 0
+      register: docker_install
       notify: restart docker
+
+    - name: Checking on Docker Installation
+      async_status:
+        jid: "{{ docker_install.ansible_job_id }}"
+      until: check_result.finished
+      register: check_result
+      retries: 300
     
     - name: Ensure Docker is started and enabled at boot.
       service:
