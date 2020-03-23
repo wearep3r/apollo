@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.3.3
+2020-03-23
+
+### Fixes
+
+- hostname error in backplane (ada4863867a46f61c39672ca6506facc218275df)
+
 ## 0.3.2
 2020-03-23
 
