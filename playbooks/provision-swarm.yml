@@ -243,7 +243,8 @@
     - name: Initialize Swarm Cluster
       shell: >
         docker swarm init
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+        #--advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
       when: "'swarm_manager_active' not in groups"
       register: bootstrap_first_node
 
@@ -264,7 +265,7 @@
   become: True
   vars:
     # hostvars[ansible_hostname]['ansible_default_ipv4']['interface']
-    iface: "{{ hostvars[ansible_hostname]['ansible_eth1']['device'] }}"
+    iface: "{{ hostvars[ansible_hostname]['ansible_'+private_iface]['device'] }}"
   tasks:
     - name: Retrieve Swarm Manager Token
       shell: docker swarm join-token -q manager # noqa 305
@@ -294,9 +295,9 @@
       # hostvars[ansible_hostname]['ansible_default_ipv4']['address']
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ hostvars[groups['manager'][0]]['ansible_eth1']['ipv4']['address'] }}:2377
+        {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
     - name: Set Node Labels # noqa 301
       shell: >
         docker node update --label-add role=manager --label-add storage=cio --label-add namespace=zero {{ ansible_hostname }}
@@ -310,9 +311,9 @@
     - name: Join Worker Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ hostvars[groups['manager'][0]]['ansible_eth1']['ipv4']['address'] }}:2377
+        {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
 
 - hosts: swarm_satellite_inactive
   become: True
@@ -322,9 +323,9 @@
     - name: Join Satellite Nodes to Cluster # noqa 301
       shell: >
         docker swarm join
-        --advertise-addr={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}:2377
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
         --token={{ token }}
-        {{ groups['manager'][0]['ansible_eth1']['ipv4']['address'] }}:2377
+        {{ groups['manager'][0]['ansible_'+private_iface]['ipv4']['address'] }}:2377
 
 - hosts: swarm_manager_active[0]
   become: True

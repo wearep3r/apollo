@@ -48,8 +48,10 @@ WORKDIR /infrastructure
 COPY . .
 RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \
     && chmod -v 700 $(pwd) \
-    && ansible-galaxy install --ignore-errors -r requirements.yml
+    && ansible-galaxy install --ignore-errors -r requirements.yml \
+    && chmod +x docker-entrypoint.sh
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["/bin/bash"]
 ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE

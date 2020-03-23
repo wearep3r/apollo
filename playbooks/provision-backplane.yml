@@ -166,11 +166,11 @@
         state: present
         mode: replicated
         replicas: 1
-        image: traefik:v1.7.19-alpine
+        image: traefik:v1.7.22-alpine
         #image: registry.gitlab.com/mbio/mbiosphere/infrastructure/traefik:latest
         resolve_image: True
         command: 
-          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --constraints=tag==proxy --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=INFO --api --docker.domain={{ base_domain }} --ping --rest --retry --configFile=/config/traefik.toml
+          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=INFO --api --docker.domain={{ base_domain }} --ping --rest --retry --configFile=/config/traefik.toml
         env:
           cloudflare_api_email: "{{ cloudflare_api_email }}"
           cloudflare_api_key: "{{ cloudflare_api_key }}"
@@ -863,16 +863,6 @@
       tags:
         - garbage-collector
       when: garbage_collector_provision.changed
-
-    - name: Log into docker registry
-      docker_login:
-        registry: "{{ registry_url }}"
-        username: "{{ registry_user }}"
-        password: "{{ registry_password }}"
-        reauthorize: no
-      tags:
-        - prometheus
-        - monitoring
 
     - name: Provision Prometheus
       docker_swarm_service:

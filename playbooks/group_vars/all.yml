@@ -2,11 +2,15 @@
 force_reboot: 0
 zero_id: "{{ lookup('env','ZERO_ID') | default('zero', true) }}"
 check_git: "{{ lookup('env','CHECK_GIT') | default(0, true) }}"
-ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('.ssh/id_rsa', true) }}"
+ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('~/.ssh/id_rsa', true) }}"
 ansible_python_interpreter: "{{ lookup('env','PYTHON_INTERPRETER') | default('/usr/bin/python3', true) }}"
 ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
+private_iface: "{{ lookup('env','PRIVATE_INTERFACE') | default('eth1', true) }}"  #switch eth0,eth1 depending on your provider.
+public_iface: "{{ lookup('env','PUBLIC_INTERFACE') | default('eth0', true) }}"
+remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
+
 
 # Access
 

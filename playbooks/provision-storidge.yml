@@ -63,7 +63,7 @@
   tasks:
     - name: Setting private IP
       set_fact:
-        private_ip: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
+        private_ip: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
 
     - name: Getting Cluster Status
       shell: >
@@ -117,11 +117,11 @@
   vars:
     clustertoken: "{{ hostvars[groups['manager'][0]]['clustertoken'] }}"
     jointoken: "{{ hostvars[groups['manager'][0]]['jointoken'] }}"
-    master: "{{ hostvars[groups['manager'][0]]['ansible_eth1']['ipv4']['address'] }}"
+    master: "{{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}"
   tasks:
     - name: Joining Nodes to Storidge Cluster
       #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_eth1']['ipv4']['address'] }}"
+      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }}"
       #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
       register: result
       when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
