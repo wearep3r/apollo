@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.3.0
+2020-03-23
+
+### Features
+
+- docker-entrypoint (51c6b9bcf19996c649afb5e4acdcc488983adb3a)
+
+### Fixes
+
+- missed files (fb941ca4a2bbe8228c4e516009964e875d64340a)
+
 ## 0.2.1
 2020-03-22
 
