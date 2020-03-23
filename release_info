@@ -1,4 +1,4 @@
-RELEASE_URL=https://gitlab.com/derfabianpeter/zero/-/tags/v0.3.0
+RELEASE_URL=https://gitlab.com/derfabianpeter/zero/-/tags/v0.3.1
 RELEASE_DESC="x86_64 GNU/Linux binary"
-RELEASE_SHA=fb941ca4
-RELEASE_VERSION=0.3.0
+RELEASE_SHA=5901d4ab
+RELEASE_VERSION=0.3.1
