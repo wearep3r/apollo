@@ -86,7 +86,7 @@ slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
 # Storidge
 storidge_min_nodes: 4
 storidge_enabled: "{{ lookup('env','STORIDGE_ENABLED') | default(0, true) }}"
-storidge_install_version: "{{ lookup('env','STORIDGE_INSTALL_VERSION') | default('3107', true) }}" #3138
+storidge_install_version: "{{ lookup('env','STORIDGE_INSTALL_VERSION') | default('3186', true) }}" #3138
 storidge_fix_iscsi: "{{ lookup('env','STORIDGE_FIX_ISCSI') | default(0, true) }}"
 
 # Cloud Integrations

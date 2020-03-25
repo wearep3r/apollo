@@ -16,6 +16,12 @@ case $1 in
                     ansible-playbook -i inventory/terraform playbooks/provision-swarm.yml
                     #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
                     ;;
+               runner)
+                    echo "if0 Provision Runner"
+                    source .env
+                    ansible-playbook -i inventory/terraform playbooks/provision-runner.yml
+                    #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+                    ;;
                *)
                     echo "if0 Provision"
                     source .env

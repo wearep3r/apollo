@@ -67,6 +67,7 @@
       poll: 0
       register: docker_install
       notify: restart docker
+      changed_when: False
 
     - name: Checking on Docker Installation
       async_status:

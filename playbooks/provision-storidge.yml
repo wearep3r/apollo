@@ -50,11 +50,12 @@
         group: root
         mode: '0644'
       register: storidge_profile
+      when: storidge_enabled|bool
 
     - name: Loading Storidge "Snapshot" Profile
       command: cio profile add /etc/storidge/profiles/SNAPSHOT
       register: cio_profile
-      when: storidge_profile.changed
+      when: storidge_profile is defined and storidge_profile.changed
 
 - name: Preparing Storidge Cluster
   hosts: manager[0]

@@ -12,6 +12,7 @@
       register: record
       tags:
         - dns
+      when: cloudflare_enabled|bool
 
 - hosts: manager
   become: True
@@ -41,12 +42,6 @@
         docker_privileged: True
         docker_volumes:
           - "/cache"
-        # cache_type: 's3'
-        # cache_s3_server_address: "https://s3.{{ base_domain }}"
-        # cache_s3_access_key: "{{ admin_user }}"
-        # cache_s3_secret_key: "{{ admin_password }}"
-        # cache_s3_bucket_name: "gitlab-runner-cache"
-        # cache_shared: true
         extra_configs:
           runners.docker:
             memory: 2048mb
@@ -82,8 +77,8 @@
         record: "runners"
         type: A
         value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cf_api_email }}"
-        account_api_token: "{{ cf_api_key }}"
+        account_email: "{{ cloudflare_api_email }}"
+        account_api_token: "{{ cloudflare_api_key }}"
       register: record
       tags:
         - dns
@@ -132,8 +127,8 @@
         record: "runners"
         type: A
         value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cf_api_email }}"
-        account_api_token: "{{ cf_api_key }}"
+        account_email: "{{ cloudflare_api_email }}"
+        account_api_token: "{{ cloudflare_api_key }}"
       register: record
       tags:
         - dns
