@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.3.4
+2020-03-25
+
+### Fixes
+
+- fixed runners (dbb7324572ff225ade9fa0783ce2ba9cc3796fde)
+
 ## 0.3.3
 2020-03-23
 
