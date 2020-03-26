@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.3.5
+2020-03-26
+
+### Fixes
+
+- enabled Slack environment config (dbf4d3397cace275a1e8e35b665e708aea0494cf)
+
 ## 0.3.4
 2020-03-25
 
