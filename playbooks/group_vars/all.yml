@@ -81,6 +81,7 @@ runner_env:
 # Slack
 slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
 slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
+slack_user: "{{ lookup('env','SLACK_USER') | default('zero', true) }}"
 
 
 # Storidge

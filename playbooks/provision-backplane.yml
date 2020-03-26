@@ -971,7 +971,7 @@
         env:
           SLACK_URL: "{{ slack_webhook }}"
           SLACK_CHANNEL: "{{ slack_channel }}"
-          SLACK_USER: "MBIO DevOps"
+          SLACK_USER: "zero"
         networks:
           - name: "monitoring"
             aliases:

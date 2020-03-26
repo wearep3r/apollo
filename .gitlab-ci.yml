@@ -4,7 +4,7 @@ stages:
   - test
   - release
   - deploy
-
+    
 cache:
   key: "$CI_JOB_NAME"
   
@@ -135,6 +135,9 @@ Build zero:
   tags: 
     - build
 
+include:
+  - template: Container-Scanning.gitlab-ci.yml
+    
 
 # # Lint Ansible files
 # test:ansible:
