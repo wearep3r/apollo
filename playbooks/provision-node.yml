@@ -165,6 +165,8 @@
           - git
           - curl
           - apache2-utils
+          - apt-transport-https
+          - ca-certificates
         state: present
         update_cache: False
       tags:

@@ -16,14 +16,21 @@
 - import_playbook: playbooks/provision-node.yml
   tags:
       - node
+- import_playbook: playbooks/provision-docker.yml
+  tags:
+      - docker
 - import_playbook: playbooks/provision-swarm.yml
   tags:
       - swarm
   when: swarm_enabled|bool
+- import_playbook: playbooks/provision-kubernetes.yml
+  tags:
+      - kubernetes
+  when: kubernetes_enabled|bool
 - import_playbook: playbooks/provision-storidge.yml
   tags:
       - storidge
-  when: storidge_enabled|bool and ansible_distribution == 'Ubuntu'
+  when: storidge_enabled|bool
 - import_playbook: playbooks/provision-runner.yml
   tags:
       - runner

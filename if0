@@ -25,7 +25,7 @@ case $1 in
                *)
                     echo "if0 Provision"
                     source .env
-                    ansible-playbook -i inventory/terraform provision.yml
+                    ansible-playbook -i inventory/terraform provision.yml --flush-cache
                     #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
                     ;;
           esac
