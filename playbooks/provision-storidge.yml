@@ -221,7 +221,7 @@
   tasks:
     - name: Joining Nodes to Storidge Cluster
       #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-      shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }}"
+      shell: "cioctl join {{ master }} {{ clustertoken.stdout.split('-')[1]|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }}"
       #shell: "cioctl join {{ master }} {{ clustertoken.stdout|default(jointoken.stdout.split('-')[1]) }} --ip {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
       register: result
       when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != hostvars[item]['inventory_hostname']"
@@ -253,7 +253,7 @@
     jointoken: "{{ hostvars[groups['manager'][0]]['jointoken'] }}"
   tasks:
     - name: Running cioctl init
-      command: "cioctl init {{ clustertoken.stdout.split('-')[1] }}"
+      shell: "cioctl init {{ clustertoken.stdout.split('-')[1] }}"
       register: clusterinit
       when: "'skipped' not in clustertoken"
       retries: 3
