@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.4.0
+2020-03-31
+
+### Features
+
+- added Kubernetes integration (c6beffd7a7920980a5b7c3863627574908fd6d71)
+
+### Fixes
+
+- Storidge installation (0b448faef8edd1467eeb57a1a2e0bc7010b484c8)
+
 ## 0.3.5
 2020-03-26
 
