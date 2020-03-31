@@ -123,6 +123,8 @@ Build zero:
   image: docker:19.03.5
   variables:
     DOCKER_BUILDKIT: 1 
+    # For Container Scanning
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   services:
     - docker:19.03.5-dind
   script:
@@ -130,8 +132,9 @@ Build zero:
     - export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/zero/Dockerfile | head -n 1 | cut -d ' ' -f 2)
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker pull $BASE_IMAGE
-    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -f docker/zero/Dockerfile .
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -t $IMAGE_TAG -f docker/zero/Dockerfile .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $IMAGE_TAG
   tags: 
     - build
 
