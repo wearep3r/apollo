@@ -75,6 +75,7 @@ networks:
   proxy:
     driver: overlay
     attachable: true
+    name: proxy
 
 volumes:
   traefik-config:

@@ -232,8 +232,7 @@
         #       name: nextcloud
         #   register: nextcloud_teardown
         #   tags:
-        #       - nextcloud
-        
+        #       - nextcloud 
         - name: Remove Stack File
           file:
             path: /tmp/zero-stacks-traefik.yml
