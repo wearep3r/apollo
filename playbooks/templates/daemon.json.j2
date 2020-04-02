@@ -1,6 +1,9 @@
 {
   "metrics-addr" : "0.0.0.0:9323",
   "experimental" : true,
+  {% if kubernetes_enabled|bool %}
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  {% endif %}
   "debug": false,
   "log-driver": "loki:latest",
   "log-opts": {
