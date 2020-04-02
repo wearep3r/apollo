@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.4.1
+2020-04-01
+
+### Fixes
+
+- missing image for Container Scanning (0b26b3b3b8686fb9ed3a19d917e8fe8d6d806373)
+
 ## 0.4.0
 2020-03-31
 
