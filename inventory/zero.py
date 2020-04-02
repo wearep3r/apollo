@@ -76,7 +76,8 @@ class ZeroInventory(object):
                 inventory["storidge"] = {
                     "children": ["manager"]
                 }
-
+        #else:
+        # execute terraform here
         return inventory
 
     # Empty inventory for testing.
