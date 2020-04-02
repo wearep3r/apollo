@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.4.2
+2020-04-02
+
+### Fixes
+
+- systemd for cgroups management in K8s (62630c5b9b7e54e28c5dd94d76aea2c7e76a29e8)
+
 ## 0.4.1
 2020-04-01
 
