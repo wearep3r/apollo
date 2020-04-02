@@ -1,0 +1,8 @@
+- name: Detect networking environment
+  hosts: all
+  tasks:
+    - name: Gathering Network Interfaces
+      debug: 
+        msg: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
+      #with_items: "{{ ansible_interfaces }}"
+      #when: ansible_interface != 'lo'
