@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.5.1
+2020-04-03
+
+### Fixes
+
+- prepare switch to zero.py inventory (39228466df8f424e1a0f386285ee9d1958dce648)
+- re-introduced TF (3e82403ff5911fde6089426304c9418ddb7b0dff)
+
 ## 0.5.0
 2020-04-02
 
