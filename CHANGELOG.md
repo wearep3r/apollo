@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.6.1
+2020-04-03
+
+### Fixes
+
+- Typo and URL in README and diagram (fa1db59bb10e5fb22c1c9fbea7fa60af0b09f176)
+- fixed docker repository URL in backplane provision script, added .vscode settings file to not mess up diffs on save (405a2daaea69616d168270d46ca1f6ab2341d64b)
+
 ## 0.6.0
 2020-04-03
 
