@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.5.0
+2020-04-02
+
+### Features
+
+- prototype network detection (e9a27d1402cc19d28e42f1ddfb128c87e08be9f8)
+- implemented stacks (03ea5064bbc0e2dd9825788a3c2be21cf1c8188c)
+- migrated Traefik to a separate Stack (0d477ef34b134fe6bdda81a74f53e3a1c654ed81)
+
+### Fixes
+
+- only enable certain Docker features when they are enabled globally (c3cfaae548fdc96db5580c88fb04f4e8fa8af2c0)
+- tuned Traefik Stack (5c56934cfdf63482c9317e0b97f54d0925eb2746)
+
+## 0.4.2
+2020-04-02
+
+### Fixes
+
+- systemd for cgroups management in K8s (62630c5b9b7e54e28c5dd94d76aea2c7e76a29e8)
+
 ## 0.4.1
 2020-04-01
 

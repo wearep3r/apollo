@@ -8,7 +8,7 @@ _README.md
 docker/traefik
 .env
 terraform
-docker-compose.yml
+./docker-compose.yml
 .DS_Store
 cio
 roles/

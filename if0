@@ -1,38 +1,42 @@
 #! /bin/bash
+#set -a; . $ENVFILE; set +a
+ENVFILE=~/.if0/.environments/zero-gayathri-dev.env
+#set -o allexport; source $ENVFILE; set +o allexport
+set -a; . $ENVFILE; set +a
+export $(grep -v '^#' $ENVFILE | xargs -0)
 case $1 in
      build)
           echo "if0 Build"
+          ;;
+     env)
+          echo "if0 Config"
+          env
           ;;
      provision)
           case $2 in
                backplane)
                     echo "if0 Provision Backplane"
-                    source .env
                     ansible-playbook -i inventory/terraform playbooks/provision-backplane.yml
                     ;;
                swarm)
                     echo "if0 Provision Swarm"
-                    source .env
                     ansible-playbook -i inventory/terraform playbooks/provision-swarm.yml
                     #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
                     ;;
                runner)
                     echo "if0 Provision Runner"
-                    source .env
                     ansible-playbook -i inventory/terraform playbooks/provision-runner.yml
                     #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
                     ;;
                *)
                     echo "if0 Provision"
-                    source .env
-                    ansible-playbook -i inventory/terraform provision.yml --flush-cache
-                    #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+                    #ansible-playbook -i inventory/terraform provision.yml --flush-cache
+                    ansible-playbook -i inventory/zero.py provision.yml --flush-cache
                     ;;
           esac
           ;;
      destroy)
           echo "if0 Destroy"
-          source .env
           #ansible-playbook -i inventory/terraform provision.yml
           cd terraform
           terraform destroy -no-color -auto-approve

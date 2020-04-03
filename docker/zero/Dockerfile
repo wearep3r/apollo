@@ -3,6 +3,7 @@ LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
 ARG TERRAFORM_VERSION=0.12.20
 ARG TERRAFORM_INVENTORY_VERSION=0.9
+ARG KOMPOSE_VERSION=v1.21.0
 
 USER root
 
@@ -33,14 +34,17 @@ RUN apt update && apt install -y --no-install-recommends \
     && chmod +x terraform \
     && mv terraform /usr/local/bin/ \
     # terraform-invenvory
-    && curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v0.9/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
+    && curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v${TERRAFORM_INVENTORY_VERSION}/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
     && unzip terraform-inventory.zip \
     && rm terraform-inventory.zip \
     && chmod +x terraform-inventory \
     && mv terraform-inventory /usr/local/bin/ \
     # minio client
-    && curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
-    && chmod +x /usr/local/bin/mc
+    && curl -fsSL "https://dl.min.io/client/mc/release/linux-amd64/mc" -o /usr/local/bin/mc \
+    && chmod +x /usr/local/bin/mc \
+    # Kompose
+    && curl -L "https://github.com/kubernetes/kompose/releases/download/${KOMPOSE_VERSION}/kompose-linux-amd64" -o /usr/local/bin/kompose \
+    && chmod +x /usr/local/bin/kompose
 
 RUN mkdir /infrastructure \
     && mkdir /root/.ssh

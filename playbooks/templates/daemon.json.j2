@@ -1,8 +1,14 @@
+# {{ ansible_managed }}
 {
+  # TODO: bind to 127.0.0.1 or $PRIVATE_INTERFACE
   "metrics-addr" : "0.0.0.0:9323",
   "experimental" : true,
+  {% if kubernetes_enabled|bool %}
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  {% endif %}
   "debug": false,
   "log-driver": "loki:latest",
+  {% if backplane_enabled|bool %}
   "log-opts": {
       "loki-url": "http://logs.{{ base_domain }}/loki/api/v1/push",
       "loki-batch-size": "400",
@@ -13,4 +19,5 @@
       "loki-timeout": "5s",
       "loki-batch-wait": "5s"
   }
+  {% endif %}
 }
