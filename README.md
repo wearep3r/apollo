@@ -17,13 +17,11 @@ This is an example of what the deployment of and work with **zero** looks like:
 
 ## Backplane Services
 
-**Portainer** is intended to become the single management UI for applications and services operated on **zero**. In the future more app templates will be provided here.
+**Portainer** is intended to become the single management UI for applications and services operated on **zero**. In the future more [app templates](https://www.portainer.io/overview/) will be provided here.
 
-![portainer templates](./docs/portainer-app-templates.jpg)
+**Traefik** acts as the single proxy to manage connections between all services on **zero**, backplane AND custom. Furthermore it provides [load balancing capabilities](https://docs.traefik.io/routing/overview/) to the platform. From the Traefik dashboard (endpoint `proxy.<hostname>`) you can see all frontend and backend services with their addresses within the cluster/swarm.
 
-**Traefek** acts as the single proxy to manage connections between all services on **zero**, backplane AND custom. From the traefek dashboard (endpoint `proxy.<hostname>`) you can see all frontend and backend services with their addresses within the cluster/swarm.
-
-**Grafana** is single entry point for troubleshooting, logs access and alerts. The logs of all nodes are stored on the node where they stem from and consolidated on manager nodes for access through grafana. **Loki** is used for this. **Prometheus** provides alerts and metrics on node level and consolidates them as well. **Grafana** accesses data from all these sources to provide a consoldated view on the health of the cluster/swarm and the services and applications running on it. Predefined dashboards, e.g. on data provided by **Loki** are available after installation. **Unsee** is used for a dedicated view on alerts. <br/>**zero** comes with a set of predefined alerts around the area of hardware thresholds and such, as part of the **Prometheus** [configuration](https://gitlab.com/peter.saarland/zero/-/tree/master/docker/prometheus/config).
+**Grafana** is single entry point for [troubleshooting, logs access and alerts](https://grafana.com/grafana/). The logs of all nodes are stored on the node where they stem from and consolidated on manager nodes for access through Grafana. **Loki** is [used for this](https://github.com/grafana/loki). Prometheus provides alerts and metrics on node level and consolidates them as well. Grafana accesses data from all these sources to provide a consolidated view on the health of the cluster/swarm and the services and applications running on it. Predefined dashboards, e.g. on data provided by Loki are available after installation. **Unsee** is used for a [dedicated view on alerts](https://github.com/cloudflare/unsee) and integrates with the [Prometheus Alertmanager](https://prometheus.io/docs/alerting/alertmanager/). <br/>**zero** comes with a set of predefined alerts around the area of hardware thresholds and such, as part of the **Prometheus** [configuration](https://gitlab.com/peter.saarland/zero/-/tree/master/docker/prometheus/config).
 
 More services used behind the curtains are:
 - [node_exporter](https://github.com/prometheus/node_exporter) to access hardware metrics on each node
@@ -31,9 +29,19 @@ More services used behind the curtains are:
 
 ## Additional Services
 
-- **Let's Encrypt** is used to issue certificates for zero services via DNS validation through **Traefek**
+- **Let's Encrypt** is used to issue certificates for zero services via DNS validation through Traefik
 - **GitLab Runner** 
 - **Nextcloud**
+
+## Network configuration
+
+To allow connections to services from outside the **zero** environment, the docker firewall is configured to allow traffic on standard ports [during node provisioning](https://gitlab.com/peter.saarland/zero/-/blob/master/playbooks/templates/iptables.conf.j2).
+
+## Storidge
+
+[Storidge](https://storidge.com/product/) uses the concept of [volumes](https://guide.storidge.com/getting_started/volumes.html) to abstract persistent storage (block-, file- or objectstorage) from applications. Volumes are mounted on OS level and can then be used by Docker containers and services as [Docker volumes](https://guide.storidge.com/getting_started/docker_volumes.html).
+
+Storidge allows high-availability setups, live-changes to the cluster (e.g. add/remove node), etc. So basically, Storidge provides the same flexibility to storage like Docker Swarm/Kubernetes do to computing for applications on top of **zero**.
 
 # Roadmap
 
@@ -114,7 +122,7 @@ This is intended to be the minimal step required to run zero on a single Ubuntu 
 
 - Portainer: `portainer.<ipv4address>.xip.io`
 - Grafana: `grafana.<ipv4address>.xip.io`
-- Traefek: `proxy.<ipv4address>.xip.io`
+- Traefik: `proxy.<ipv4address>.xip.io`
 - Unsee: `alerts.<ipv4address>.xip.io`
 
 ### Troubleshooting
