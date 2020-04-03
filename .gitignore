@@ -7,7 +7,10 @@ playbooks/services
 _README.md
 docker/traefik
 .env
-terraform
+terraform/.terraform
+terraform/.dev
+terraform/terraform.tfstate
+terraform/variables.tf
 ./docker-compose.yml
 .DS_Store
 cio
