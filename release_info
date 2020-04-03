@@ -1,4 +1,4 @@
-RELEASE_URL=https://gitlab.com/peter.saarland/zero/-/tags/v0.5.0
+RELEASE_URL=https://gitlab.com/peter.saarland/zero/-/tags/v0.6.0
 RELEASE_DESC="x86_64 GNU/Linux binary"
-RELEASE_SHA=bc0f82c7
-RELEASE_VERSION=0.5.0
+RELEASE_SHA=5a525a8b
+RELEASE_VERSION=0.6.0

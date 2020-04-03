@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
-## 0.5.1
+## 0.6.0
 2020-04-03
+
+### Features
+
+- added conform integreation (5a525a8b7b98674c3d0be7f1924f5a40bd726d83)
 
 ### Fixes
 
