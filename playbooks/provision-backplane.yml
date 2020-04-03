@@ -676,7 +676,7 @@
         name: node-exporter
         state: present
         mode: global
-        image: registry.gitlab.com/derfabianpeter/zero/node-exporter
+        image: registry.gitlab.com/peter.saarland/zero/node-exporter
         resolve_image: True
         networks:
           - name: "monitoring"
@@ -879,7 +879,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: registry.gitlab.com/derfabianpeter/zero/prometheus
+        image: registry.gitlab.com/peter.saarland/zero/prometheus
         networks:
           - name: "proxy"
             aliases:
@@ -967,7 +967,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: registry.gitlab.com/derfabianpeter/zero/alertmanager
+        image: registry.gitlab.com/peter.saarland/zero/alertmanager
         env:
           SLACK_URL: "{{ slack_webhook }}"
           SLACK_CHANNEL: "{{ slack_channel }}"
@@ -1100,7 +1100,7 @@
         mode: replicated
         resolve_image: True
         replicas: 1
-        image: registry.gitlab.com/derfabianpeter/zero/grafana
+        image: registry.gitlab.com/peter.saarland/zero/grafana
         env:
           GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
           GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"

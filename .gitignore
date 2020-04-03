@@ -15,3 +15,6 @@ terraform/variables.tf
 .DS_Store
 cio
 roles/
+.terraform/
+*.tfstate
+*.tfstate.backup
