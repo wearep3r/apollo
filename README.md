@@ -87,7 +87,7 @@ Here's what you have to do to spin up **zero**:
 1. Create the `.env` file with your settings (Hint: copy from `.env.example `)
 2. Make sure **Docker** is installed
 3. Have 1+ Servers ready with your SSH public key
-4. Run **zero**: `docker run -v "${PWD}/.env:/infrastructure/.env" -v "${HOME}/.ssh:/.ssh" registry.gitlab.com/derfabianpeter/zero:latest ./if0 provision`
+4. Run **zero**: `docker run -v "${PWD}/.env:/infrastructure/.env" -v "${HOME}/.ssh:/.ssh" registry.gitlab.com/peter.saarland/zero:latest ./if0 provision`
 
 ## On DigitalOcean
 
