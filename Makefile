@@ -17,10 +17,15 @@ ssh-gen:
 	ssh-keygen -t rsa -b 4096 -f ${SSH_PRIVATE_KEY_FILE}
 ssh:
 	ssh ${REMOTE_USER}@${INGRESS_IP} -i ${SSH_PRIVATE_KEY_FILE}
+provision:
+	@ansible-playbook provision.yml --flush-cache
+destroy:
+	@cd terraform \
+    	&& terraform destroy -no-color -auto-approve
 deploy:
 	docker run \
 		-v "${PWD}/.env:/infrastructure/.env" \
 		-v "${HOME}/.ssh:/.ssh" \
 		--env-file=.env \
-		registry.gitlab.com/derfabianpeter/zero:latest \
+		registry.gitlab.com/peter.saarland/zero:latest \
 		ansible-playbook -i inventory/zero.py provision.yml 
