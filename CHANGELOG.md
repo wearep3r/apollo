@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.6.2
+2020-04-04
+
+### Fixes
+
+- removed comments from daemon.json (89aec4822630f8479d64fe11c33b1ff92dafb5bb)
+
 ## 0.6.1
 2020-04-03
 
