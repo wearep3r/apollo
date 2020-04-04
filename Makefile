@@ -29,3 +29,4 @@ deploy:
 		--env-file=.env \
 		registry.gitlab.com/peter.saarland/zero:latest \
 		ansible-playbook -i inventory/zero.py provision.yml 
+		
