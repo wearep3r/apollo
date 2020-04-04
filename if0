@@ -1,6 +1,7 @@
 #! /bin/bash
 #set -a; . $ENVFILE; set +a
-ENVFILE=~/.if0/.environments/zero-gayathri-dev.env
+#ENVFILE=~/.if0/.environments/zero-gayathri-dev.env
+ENVFILE=.env
 #set -o allexport; source $ENVFILE; set +o allexport
 set -a; . $ENVFILE; set +a
 export $(grep -v '^#' $ENVFILE | xargs -0)
@@ -30,8 +31,8 @@ case $1 in
                     ;;
                *)
                     echo "if0 Provision"
-                    #ansible-playbook -i inventory/terraform provision.yml --flush-cache
-                    ansible-playbook -i inventory/zero.py provision.yml --flush-cache
+                    ansible-playbook -i inventory/terraform provision.yml --flush-cache
+                    #ansible-playbook -i inventory/zero.py provision.yml --flush-cache
                     ;;
           esac
           ;;

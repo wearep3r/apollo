@@ -2,6 +2,7 @@
 import os
 import sys
 import argparse
+import subprocess
 
 try:
     import json
@@ -21,12 +22,12 @@ class ZeroInventory(object):
         # Called with `--host [hostname]`.
         elif self.args.host:
             # Not implemented, since we return _meta info `--list`.
-            self.inventory = self.empty_inventory()
+            self.inventory = self.zero_inventory()
         # If no groups or vars are present, return an empty inventory.
         else:
             self.inventory = self.empty_inventory()
 
-        print(json.dumps(self.inventory))
+        print(self.inventory)
 
     # Example inventory for testing.
     def zero_inventory(self):
@@ -76,8 +77,15 @@ class ZeroInventory(object):
                 inventory["storidge"] = {
                     "children": ["manager"]
                 }
-        #else:
-        # execute terraform here
+        else:
+            inventory_path = os.path.dirname(os.path.abspath(__file__))
+            tf_path = "{}/{}".format(inventory_path,"../terraform/")
+            os.environ["TF_STATE"] = tf_path
+            os.environ["TF_HOSTNAME_KEY_NAME"] = "name"
+            args = sys.argv[1:]
+            command = "{} {} {}".format("/usr/local/bin/terraform-inventory"," ".join(args), tf_path)
+            inventory = subprocess.check_output(command,shell=True)
+    
         return inventory
 
     # Empty inventory for testing.
