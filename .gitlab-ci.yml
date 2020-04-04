@@ -140,8 +140,17 @@ Build zero:
 
 include:
   - template: Container-Scanning.gitlab-ci.yml
-    
 
+include:
+  - template: License-Scanning.gitlab-ci.yml
+  
+include:
+  - template: Dependency-Scanning.gitlab-ci.yml
+
+include:
+  - template: SAST.gitlab-ci.yml
+  
+    
 # # Lint Ansible files
 # test:ansible:
 #   stage: test
