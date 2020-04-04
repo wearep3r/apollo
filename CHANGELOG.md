@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- next entry here -->
 
+## 0.7.0
+2020-04-04
+
+### Features
+
+- added CI features License,Dependency and SAST scanning (53a01c4ae7e7221a187dff2f66fc7875bf3f1053)
+- removed CI features License,Dependency and SAST scanning (653864da6b84c15eb35372c82fbcaf76ff3ac932)
+
 ## 0.6.2
 2020-04-04
 
