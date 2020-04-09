@@ -29,4 +29,30 @@ deploy:
 		--env-file=.env \
 		registry.gitlab.com/peter.saarland/zero:latest \
 		ansible-playbook -i inventory/zero.py provision.yml 
-		
+
+
+ibm-login:
+	ibmcloud login
+	
+ibm-rg-create:
+	ibmcloud resource group-create ${IBM_RESOURCE_GROUP_ID}
+
+ibm-rg-delete:
+	ibmcloud resource group-delete ${IBM_RESOURCE_GROUP_ID}
+
+ibm-init:
+	@cd terraform/ibm && terraform init
+
+ibm-deploy:
+	@cd terraform/ibm \
+		&& export TF_VAR_ibmcloud_api_key=${IBM_ACCESS_KEY} \
+		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
+		&& export TF_VAR_resource_group_name=${IBM_RESOURCE_GROUP_ID} \
+		&& terraform apply
+
+ibm-teardown:
+	@cd terraform/ibm \
+		&& export TF_VAR_ibmcloud_api_key=${IBM_ACCESS_KEY} \
+		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
+		&& export TF_VAR_resource_group_name=${IBM_RESOURCE_GROUP_ID} \
+		&& terraform destroy
