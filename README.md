@@ -1,7 +1,7 @@
 zero - Infrastructure in a Box
 ===
 
-Maintained by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland)
+Maintained by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - Helping companies to develop software with starup speed and enterprise quality.
 
 This README will hold an overview of the contents of this repo. This is **WIP**.
 
@@ -12,6 +12,24 @@ This README will hold an overview of the contents of this repo. This is **WIP**.
 This repository contains the code for the **zero** DevOps Platform. The code composes of a variety of mechanisms and tools that, together, build a Docker Swarm or Kubernetes Based Platform and Backplane for modern App Deployments. The platform additionally features a distributed Storage Layer implemented with **Storidge**`**, spanning across Workers and Managers.
 
 **The goal for zero is to get teams up and running fast, with a set of services to help them and infrastructure they do not need to worry about.**
+
+Zero is a **Platform for Apps**. It runs on **Docker Swarm** or **Kubernetes**. It's controlled by **if0 -** the CLI to tool them all.
+
+Zero is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about that. Your applications' data is available within your entire cluster and regularly backed up - automagically.
+
+Zero comes with a pre-configured set of Apps that integrate beautifully with each other - such as **GitLab, Sentry, Prometheus, Grafana, Loki, a User Backend** and more. You simply enable them and start working!
+
+Zero aims to accelerate your Digital Transformation and Development Process. It helps you to prototype rapidly, but also to deploy to production safely. Zero gets you going quickly, yet provides operational stability even in highly regulated and heterogeneous environments.
+
+Zero is tailored to Development teams. Made by seasoned Operators, it contains everything a DevOps-enabled team needs to start changing the world, without worrying about Ops too much.
+
+Zero runs on every major and minor Cloud Provider, as well as directly on bare-metal, Embedded Devices or Platforms like Proxmox and VMWare. 
+
+Zero is follows an **Infrastructure as Code** design-pattern. The Cluster, its state and the Apps running on the platform are merely a function applied to the data stored in Zero's storage layer. Zero strictly separates Data from Application, which means that migrating between Clusters is as easy as restoring a Backup to a new Cluster. Moving a Cluster is as easy as providing new Compute-Resources at a different Provider.
+
+Zero is based on the latest technologies and design patterns. It strives to be fully automated. Zero greatly reduces the operational Overhead in organizations. It's a DevOps Platform, doing lots of the Ops work automagically for you. It also manages your Kubernetes Cluster!
+
+Zero's best friend is **if0**, a CLI tool that controls all of Zero's features. The idea behind Zero and if0 is to blend the differences between local, production, staging and CI environments and give Developers a transparent way to interact with the Applications they develop or use to assist their development (like Sentry).
 
 This is an example of what the deployment of and work with **zero** looks like:
 
