@@ -27,6 +27,7 @@ RUN apt update && apt install -y --no-install-recommends \
     docker \
     ansible-lint \
     docker-compose \
+    molecule[lint] \
     # Terraform
     && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
