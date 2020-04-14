@@ -137,3 +137,8 @@ Ubuntu can choose different names for its network interfaces and **zero** curren
 **I've created my infrastructure with `docker-machine` and now the `Checking on Docker Installation` step fails**
 
 `docker-machine` already installs a newer version of Docker on the VM compared to the one **zero** uses. Unfortunately ansible is not capable allowing downgrades during installation (see [this issue](https://github.com/ansible/ansible/issues/29451)).
+
+## On IBM
+
+instance sizes https://www.ibm.com/cloud/vpc/pricing
+based on https://github.com/IBM-Cloud/vpc-tutorials/tree/master/vpc-public-app-private-backend

@@ -2,7 +2,7 @@ provider "ibm" {
   region           = var.region
   ibmcloud_api_key = var.ibmcloud_api_key
   ibmcloud_timeout = var.ibmcloud_timeout
-  generation       = var.generation
+  generation       = "1"
 }
 
 data "ibm_resource_group" "group" {
@@ -46,16 +46,16 @@ resource "ibm_is_ssh_key" "ssh_key" {
 }
 
 data "ibm_is_image" "ubuntu" {
-  name = var.generation == "1" ? "ubuntu-18.04-amd64" : "ibm-ubuntu-18-04-1-minimal-amd64-1"
+  name = var.image
 }
 
-resource "ibm_is_instance" "vsi1" {
-  name           = "${var.basename}-vsi1"
+resource "ibm_is_instance" "manager1" {
+  name           = "${var.basename}-manager1"
   vpc            = ibm_is_vpc.vpc.id
   zone           = var.zone
   keys           = [ibm_is_ssh_key.ssh_key.id]
   image          = data.ibm_is_image.ubuntu.id
-  profile        = var.generation == "1" ? "cc1-2x4": "cx2-2x4"
+  profile        = var.profile
   resource_group = data.ibm_resource_group.group.id
 
   primary_network_interface {
@@ -64,10 +64,37 @@ resource "ibm_is_instance" "vsi1" {
   }
 }
 
-resource "ibm_is_floating_ip" "fip1" {
-  name           = "${var.basename}-fip1"
-  target         = ibm_is_instance.vsi1.primary_network_interface[0].id
+resource "ibm_is_instance" "worker1" {
+  name           = "${var.basename}-worker1"
+  vpc            = ibm_is_vpc.vpc.id
+  zone           = var.zone
+  keys           = [ibm_is_ssh_key.ssh_key.id]
+  image          = data.ibm_is_image.ubuntu.id
+  profile        = var.profile
+  resource_group = data.ibm_resource_group.group.id
+
+  primary_network_interface {
+    subnet          = ibm_is_subnet.subnet1.id
+    security_groups = [ibm_is_security_group.sg1.id]
+  }
+}
+
+resource "ibm_is_floating_ip" "manager1-ip" {
+  name           = "${var.basename}-manager1-fip"
+  target         = ibm_is_instance.manager1.primary_network_interface[0].id
   resource_group = data.ibm_resource_group.group.id
 }
 
+resource "ibm_is_floating_ip" "worker1-ip" {
+  name           = "${var.basename}-worker1-fip"
+  target         = ibm_is_instance.worker1.primary_network_interface[0].id
+  resource_group = data.ibm_resource_group.group.id
+}
 
+output "manager1-ip" {
+    value = ibm_is_floating_ip.manager1-ip.address
+}
+
+output "worker1-ip" {
+    value = ibm_is_floating_ip.worker1-ip.address
+}
