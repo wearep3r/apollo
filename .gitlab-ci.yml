@@ -70,7 +70,6 @@ Build prometheus:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
     - cd docker/prometheus
@@ -87,7 +86,6 @@ Build alertmanager:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/alertmanager:latest || true
     - cd docker/alertmanager
@@ -104,7 +102,6 @@ Build grafana:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
     - cd docker/grafana
@@ -121,7 +118,6 @@ Build grafana:
 #   services:
 #     - docker:19.03.5-dind
 #   script:
-#     - . build_info
 #     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 #     - docker pull $CI_REGISTRY_IMAGE/loki:latest || true
 #     - cd docker/loki
@@ -200,7 +196,6 @@ Release alertmanager:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
@@ -219,7 +214,6 @@ Release grafana:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
@@ -238,7 +232,6 @@ Release node-exporter:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
@@ -256,7 +249,6 @@ Release node-exporter:
 #   services:
 #     - docker:19.03.5-dind
 #   script:
-#     - . build_info
 #     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 #     - docker pull $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA || true
 #     - docker tag $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/loki:latest
@@ -274,7 +266,6 @@ Release zero:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
