@@ -8,7 +8,7 @@ policies:
           invalidLastCharacters: .
         dco: false
         gpg: false
-        maximumOfOneCommit: true
+        maximumOfOneCommit: false
         requireCommitBody: false
         conventional:
           types:
