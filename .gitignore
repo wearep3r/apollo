@@ -1,5 +1,6 @@
 .ssh
 tmp
+inventory/enventory.py
 _deprecated/
 playbooks/_deprecated
 playbooks/_services.yml

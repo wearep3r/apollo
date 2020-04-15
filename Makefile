@@ -3,18 +3,29 @@ include .env
 
 setup:
 	cd terraform \
-		&& export TF_VAR_access_token=${DIGITALOCEAN_AUTH_TOKEN} \
+		&& export TF_VAR_digitalocean_auth_token=${DIGITALOCEAN_AUTH_TOKEN} \
 		&& export TF_VAR_manager_count=${MANAGER_COUNT} \
 		&& export TF_VAR_worker_count=${WORKER_COUNT} \
 		&& export TF_VAR_satellite_count=${SATELLITE_COUNT} \
 		&& export TF_VAR_volume_count=${VOLUME_COUNT} \
 		&& export TF_VAR_private_key_file=${SSH_PRIVATE_KEY_FILE} \
-		&& export TF_VAR_ssh_key_id=${DIGITALOCEAN_SSH_KEY_ID} \
+		&& export TF_VAR_digitalocean_ssh_key_id=${DIGITALOCEAN_SSH_KEY_ID} \
 		&& export TF_VAR_remote_user=${REMOTE_USER} \
 		&& terraform apply
 teardown:
 	cd terraform \
-		&& export TF_VAR_access_token=${DIGITALOCEAN_AUTH_TOKEN} \
+		&& export TF_VAR_digitalocean_auth_token=${DIGITALOCEAN_AUTH_TOKEN} \
+		&& export TF_VAR_manager_count=${MANAGER_COUNT} \
+		&& export TF_VAR_worker_count=${WORKER_COUNT} \
+		&& export TF_VAR_satellite_count=${SATELLITE_COUNT} \
+		&& export TF_VAR_volume_count=${VOLUME_COUNT} \
+		&& export TF_VAR_private_key_file=${SSH_PRIVATE_KEY_FILE} \
+		&& export TF_VAR_digitalocean_ssh_key_id=${DIGITALOCEAN_SSH_KEY_ID} \
+		&& export TF_VAR_remote_user=${REMOTE_USER} \
+		&& terraform destroy
+show:
+	cd terraform \
+		&& export TF_VAR_digitalocean_auth_token=${DIGITALOCEAN_AUTH_TOKEN} \
 		&& export TF_VAR_manager_count=${MANAGER_COUNT} \
 		&& export TF_VAR_worker_count=${WORKER_COUNT} \
 		&& export TF_VAR_satellite_count=${SATELLITE_COUNT} \
@@ -22,9 +33,7 @@ teardown:
 		&& export TF_VAR_private_key_file=${SSH_PRIVATE_KEY_FILE} \
 		&& export TF_VAR_ssh_key_id=${DIGITALOCEAN_SSH_KEY_ID} \
 		&& export TF_VAR_remote_user=${REMOTE_USER} \
-		&& terraform destroy
-show:
-	terraform show
+		&& terraform show
 ssh-gen:
 	ssh-keygen -t rsa -b 4096 -f ${SSH_PRIVATE_KEY_FILE}
 ssh:
