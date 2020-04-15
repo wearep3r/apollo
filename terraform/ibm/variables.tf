@@ -30,5 +30,5 @@ variable "image" {
 }
 
 variable "profile" {
-    default = "cc1-4x8"
+    default = "cc1-32x64"
 }

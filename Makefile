@@ -1,6 +1,9 @@
 #!make
 include .env
 
+build:
+	docker build -t peter.saarland/zero:latest -f ./docker/zero/Dockerfile .
+
 ssh-gen:
 	ssh-keygen -t rsa -b 4096 -f ${SSH_PRIVATE_KEY_FILE}
 ssh:
@@ -34,6 +37,14 @@ deploy:
 		-v "${HOME}/.ssh:/.ssh" \
 		--env-file=.env \
 		registry.gitlab.com/peter.saarland/zero:latest \
+		ansible-playbook -i inventory/zero.py provision.yml 
+
+deploy-local:
+	docker run \
+		-v "${PWD}/.env:/infrastructure/.env" \
+		-v "${HOME}/.ssh:/.ssh" \
+		--env-file=.env \
+		peter.saarland/zero:latest \
 		ansible-playbook -i inventory/zero.py provision.yml 
 
 ibm-login:
