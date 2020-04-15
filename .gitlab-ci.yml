@@ -1,5 +1,5 @@
 stages:
-  - version
+  - fetch-version
   - build
   - test
   - release
@@ -11,25 +11,38 @@ cache:
 variables:
   DOCKER_TLS_CERTDIR: ""
 
-version:
-  stage: version
-  image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
+fetch-semantic-version:
+  # Requires Node >= 10.13 version
+  image: node:13
+  stage: fetch-version
+  only:
+    refs:
+    - master
+    - alpha
+    - /^(([0-9]+)\.)?([0-9]+)\.x/ # This matches maintenance branches
+    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ # This matches pre-releases
   script:
-    #- printenv
-    - release test-git || true
-    - release test-api
-    - release next-version --allow-current
-    - release next-version --allow-current > .next-version
-    - echo "RELEASE_URL=$CI_PROJECT_URL/-/tags/v$(<.next-version)" > build_info
-    - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
-    - echo "RELEASE_SHA=$CI_COMMIT_SHORT_SHA" >> build_info
-    - echo "RELEASE_VERSION=$(<.next-version)" >> build_info
+    - npm install @semantic-release/gitlab @semantic-release/exec
+    - npx semantic-release --generate-notes false --dry-run
   artifacts:
     paths:
-    - .next-version
-    - build_info
+    - VERSION.txt
+  tags: 
+    - build
+
+generate-non-semantic-version:
+  stage: fetch-version
   except:
-    - tags
+    refs:
+    - master
+    - alpha
+    - /^(([0-9]+)\.)?([0-9]+)\.x/ # This matches maintenance branches
+    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ # This matches pre-releases
+  script:
+    - echo build-$CI_PIPELINE_ID > VERSION.txt
+  artifacts:
+    paths:
+    - VERSION.txt
   tags: 
     - build
 
@@ -41,7 +54,6 @@ Build node-exporter:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
     - cd docker/node-exporter
@@ -170,13 +182,12 @@ Release prometheus:
   services:
     - docker:19.03.5-dind
   script:
-    - . build_info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:latest
     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
-    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/prometheus:v$RELEASE_VERSION
+    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
+    - docker push $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
   only:
     - master
   tags: 
@@ -194,8 +205,8 @@ Release alertmanager:
     - docker pull $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
     - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
-    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/alertmanager:v$RELEASE_VERSION
+    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
+    - docker push $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
   only:
     - master
   tags: 
@@ -213,8 +224,8 @@ Release grafana:
     - docker pull $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
     - docker push $CI_REGISTRY_IMAGE/grafana:latest
-    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/grafana:v$RELEASE_VERSION
+    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
+    - docker push $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
   only:
     - master
   tags: 
@@ -232,8 +243,8 @@ Release node-exporter:
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
-    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:v$RELEASE_VERSION
+    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
+    - docker push $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
   only:
     - master
   tags: 
@@ -268,44 +279,26 @@ Release zero:
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v$RELEASE_VERSION
-    - docker push $CI_REGISTRY_IMAGE:v$RELEASE_VERSION
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
+    - docker push $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
   only:
     - master
   tags: 
     - build
 
-release version:
+release:
+  image: node:13
   stage: release
-  image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
-  script:
-    - rm -f release_info
-    - mv build_info release_info
-    - . release_info
-    - release changelog 
-    - release commit-and-tag CHANGELOG.md release_info
   only:
+    refs:
     - master
+    - alpha
+    # This matches maintenance branches
+    - /^(([0-9]+)\.)?([0-9]+)\.x/
+    # This matches pre-releases
+    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+  script:
+    - npm install @semantic-release/gitlab @semantic-release/exec
+    - npx semantic-release
   tags: 
     - build
-
-# deploy:
-#   stage: deploy
-#   script:
-#     - docker info
-#   tags:
-#     - deploy
-
-# Deploy
-# deploy:cio-test:
-#   stage: deploy
-#   variables:
-#     DEPLOYMENT: ${CI_PROJECT_NAME}_test
-#     APP_ENVIRONMENT: staging
-#   script:
-#     - echo "$CI_DEPLOY_PASSWORD" | docker login $CI_REGISTRY --username=$CI_DEPLOY_USER --password-stdin
-#     - docker stack deploy --with-registry-auth --prune -c docker-compose.yml $DEPLOYMENT
-#   only:
-#     - branches
-#   tags:
-#     - deploy
