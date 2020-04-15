@@ -121,7 +121,9 @@ storidge_fix_iscsi: "{{ lookup('env','STORIDGE_FIX_ISCSI') | default(0, true) }}
 
 # Cloud Integrations
 ## IBM
-ibm_cloud_enabled: "{{ lookup('env','IBM_CLOUD_ENABLED') | default(0, true) }}"
+ibm_enabled: "{{ lookup('env','IBM_ENABLED') | default(0, true) }}"
+ibm_access_key: "{{ lookup('env','IBM_ACCESS_KEY') | default(0, true) }}"
+ibm_resource_group_id: "{{ lookup('env','IBM_RESOURCE_GROUP_ID') | default(0, true) }}"
 
 ## Digital Ocean
 digitalocean_enabled: "{{ lookup('env','DIGITALOCEAN_ENABLED') | default(0, true) }}"

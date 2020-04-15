@@ -144,12 +144,12 @@
         owner: root
         group: root
         mode: '0644'
-      when: ibm_cloud_enabled|bool
+      when: ibm_enabled|bool
       register: ibm_fix
 
     - name: Fixing IBM Issue 2
       command: update-grub-legacy-ec2
-      when: ibm_cloud_enabled|bool and ibm_fix.changed
+      when: ibm_enabled|bool and ibm_fix.changed
 
     - name: Unlocking apt
       command: apt update

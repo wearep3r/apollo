@@ -157,3 +157,16 @@ Ubuntu can choose different names for its network interfaces and **zero** curren
 **I've created my infrastructure with `docker-machine` and now the `Checking on Docker Installation` step fails**
 
 `docker-machine` already installs a newer version of Docker on the VM compared to the one **zero** uses. Unfortunately ansible is not capable allowing downgrades during installation (see [this issue](https://github.com/ansible/ansible/issues/29451)).
+
+## On IBM
+
+To run **zero** on IBM, follow these steps:
+- refer to the `terraform` template in `./terraform/ibm`. This requires the [IBM terraform provider](https://github.com/IBM-Cloud/terraform-provider-ibm)
+- Set `IBM_ENABLED=1`, `IBM_ACCESS_KEY=<your key>` and `IBM_RESOURCE_GROUP_ID=<your resource group id>` in the `.env` file
+- Ensure that you have a SSH key created (see [DigitalOcean](#on-digitalocean) section) 
+- Run `make ibm-rg-create` to create the target resource group (if not existing)
+- Run `make ibm-setup` to setup the VM and dependencies
+- Run `make deploy` (similar to digitalocean)
+
+Configuration:
+- Update the instance size to your needs, available options [can be found here](https://www.ibm.com/cloud/vpc/pricing)
