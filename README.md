@@ -160,5 +160,13 @@ Ubuntu can choose different names for its network interfaces and **zero** curren
 
 ## On IBM
 
-instance sizes https://www.ibm.com/cloud/vpc/pricing
-based on https://github.com/IBM-Cloud/vpc-tutorials/tree/master/vpc-public-app-private-backend
+To run **zero** on IBM, follow these steps:
+- refer to the `terraform` template in `./terraform/ibm`. This requires the [IBM terraform provider](https://github.com/IBM-Cloud/terraform-provider-ibm)
+- Set `IBM_CLOUD_ENABLED=1`, `IBM_ACCESS_KEY=<your key>` and `IBM_RESOURCE_GROUP_ID=<your resource group id>` in the `.env` file
+- Ensure that you have a SSH key created (see [DigitalOcean](#on-digitalocean) section) 
+- Run `make ibm-rg-create` to create the target resource group (if not existing)
+- Run `make ibm-setup` to setup the VM and dependencies
+- Run `make deploy` (similar to digitalocean)
+
+Configuration:
+- Update the instance size to your needs, available options [can be found here](https://www.ibm.com/cloud/vpc/pricing)
