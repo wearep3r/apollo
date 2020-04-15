@@ -2,13 +2,20 @@
 //    -H "Authorization: Bearer $API_TOKEN" \
 //    "https://api.digitalocean.com/v2/account/keys"
 
-variable "ssh_key_ids" { 
-    type = list
-    default = ["23797886"]
-}
+variable digitalocean_ssh_key_id {}
+variable digitalocean_auth_token {}
+variable manager_count {}
+variable worker_count {}
+variable satellite_count {}
+variable volume_count {}
+
+# variable "ssh_key_ids" { 
+#     type = list
+#     default = ["23797886"]
+# }
 
 provider "digitalocean" {
-  token = var.do_token
+  token = var.digitalocean_auth_token
 }
 
 resource "digitalocean_volume" "manager" {
@@ -18,7 +25,6 @@ resource "digitalocean_volume" "manager" {
   size                    = 50
   description             = "zero-${count.index}"
 }
-
 
 resource "digitalocean_volume" "worker" {
   region                  = "fra1"
@@ -30,7 +36,7 @@ resource "digitalocean_volume" "worker" {
 
 resource "digitalocean_droplet" "manager" {
   count = var.manager_count
-  ssh_keys           = var.ssh_key_ids
+  ssh_keys           = [var.digitalocean_ssh_key_id]
   image              = "ubuntu-18-04-x64"
   #image               = "debian-10-x64"
   region             = "fra1"
@@ -42,7 +48,7 @@ resource "digitalocean_droplet" "manager" {
   monitoring         = true
   ipv6               = true
   name               = "zero-${count.index+1}"
-  tags               = ["manager", "swarm", "docker", "cio", "storidge"]
+  tags               = ["manager", "docker"]
 }
 
 resource "digitalocean_volume_attachment" "manager" {
@@ -53,7 +59,7 @@ resource "digitalocean_volume_attachment" "manager" {
 
 resource "digitalocean_droplet" "worker" {
   count = var.worker_count
-  ssh_keys           = var.ssh_key_ids
+  ssh_keys           = [var.digitalocean_ssh_key_id]
   image              = "ubuntu-18-04-x64"
   region             = "fra1"
   size               = "s-6vcpu-16gb"
@@ -62,7 +68,7 @@ resource "digitalocean_droplet" "worker" {
   monitoring         = true
   ipv6               = true
   name               = "worker-${count.index+1}"
-  tags               = ["worker", "swarm", "docker", "cio"]
+  tags               = ["worker", "docker"]
 }
 
 resource "digitalocean_volume_attachment" "worker" {
@@ -73,7 +79,7 @@ resource "digitalocean_volume_attachment" "worker" {
 
 resource "digitalocean_droplet" "satellite" {
   count = var.satellite_count
-  ssh_keys           = var.ssh_key_ids
+  ssh_keys           = [var.digitalocean_ssh_key_id]
   image              = "ubuntu-18-04-x64"
   region             = "fra1"
   size               = "s-6vcpu-16gb"
@@ -82,5 +88,5 @@ resource "digitalocean_droplet" "satellite" {
   monitoring         = true
   ipv6               = true
   name               = "satellite-${count.index+1}"
-  tags               = ["docker", "runner", "backplane", "local", "swarm"]
+  tags               = ["satellite", "docker"]
 }

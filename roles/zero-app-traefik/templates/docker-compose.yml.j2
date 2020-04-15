@@ -16,7 +16,7 @@ services:
       --entrypoints="Name:https Address::443 TLS" 
       --metrics
       --metrics.prometheus
-      {% if letsenctrypt_enabled|bool %}
+      {% if letsencrypt_enabled|bool %}
       --acme 
       --acme.email={{ letsencrypt_mail }} 
       --acme.storage="/etc/traefik/acme.json" 
@@ -34,10 +34,11 @@ services:
       --retry 
       --configFile=/config/traefik.toml
     environment:
-      {% if cloudflare_enabled|bool and traefik_dnschallenge_provider == "cloudflare" %}
-      CF_API_EMAIL: "{{ cloudflare_api_email }}"
-      CF_API_KEY: "{{ cloudflare_api_key }}"
-      {% endif %}
+      - ZERO_VERSION=1
+{% if cloudflare_enabled|bool and traefik_dnschallenge_provider == "cloudflare" %}
+      - CF_API_EMAIL: "{{ cloudflare_api_email }}"
+      - CF_API_KEY: "{{ cloudflare_api_key }}"
+{% endif %}
     networks:
       - proxy
     ports:
@@ -53,7 +54,7 @@ services:
           monitor: 30s
           order: stop-first
           failure_action: rollback
-      restart_config:
+      restart_policy:
           condition: on-failure
       placement:
           constraints: 

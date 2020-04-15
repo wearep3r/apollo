@@ -19,6 +19,10 @@ letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
 
 # Terraform
 terraform_enabled: "{{ lookup('env','TERRAFORM_ENABLED') | default(0, true) }}"
+manager_count: "{{ lookup('env','MANAGER_COUNT') | default(0, true) }}"
+worker_count: "{{ lookup('env','WORKER_COUNT') | default(0, true) }}"
+satellite_count: "{{ lookup('env','SATELLITE_COUNT') | default(0, true) }}"
+volume_count: "{{ lookup('env','VOLUME_COUNT') | default(0, true) }}"
 
 # Kernel
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
@@ -70,6 +74,12 @@ kubernetes_allow_pods_on_master: True
 
 # Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
+backplane_services:
+    - zero-app-traefik
+    - zero-app-portainer
+    - zero-app-prometheus
+    - zero-app-loki
+    - zero-app-grafana
 
 # Custom
 ingress_ip: "{{ lookup('env','INGRESS_IP') | default('127.0.0.1', true) }}"
@@ -113,6 +123,7 @@ storidge_fix_iscsi: "{{ lookup('env','STORIDGE_FIX_ISCSI') | default(0, true) }}
 ## IBM
 ibm_cloud_enabled: "{{ lookup('env','IBM_CLOUD_ENABLED') | default(0, true) }}"
 
-## IBM
+## Digital Ocean
 digitalocean_enabled: "{{ lookup('env','DIGITALOCEAN_ENABLED') | default(0, true) }}"
-digitalocean_auth_token: "{{ lookup('env','DIGITALOCEAN_AUTH_TOKEN') | default(0, true) }}"
+digitalocean_auth_token: "{{ lookup('env','DIGITALOCEAN_AUTH_TOKEN') | default('', true) }}"
+digitalocean_ssh_key_id: "{{ lookup('env','DIGITALOCEAN_SSH_KEY_ID') | default('', true) }}"

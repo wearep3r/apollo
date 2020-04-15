@@ -5,7 +5,12 @@
         project_path: ../terraform
         state: present
         variables:
-          do_token: "{{digitalocean_auth_token}}"
+          digitalocean_auth_token: "{{digitalocean_auth_token}}"
+          digitalocean_ssh_key_id: "{{digitalocean_ssh_key_id}}"
+          manager_count: "{{manager_count}}"
+          worker_count: "{{worker_count}}"
+          satellite_count: "{{satellite_count}}"
+          volume_count: "{{volume_count}}"
       register: terraform
       async: 1000
       poll: 0

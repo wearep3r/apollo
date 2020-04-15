@@ -1,6 +1,7 @@
 variable access_token {}
 variable private_key_file {}
 variable remote_user {}
+variable ssh_key_id {}
 
 provider "digitalocean" {
   token = var.access_token

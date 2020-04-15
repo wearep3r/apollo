@@ -4,7 +4,6 @@
   {% if kubernetes_enabled|bool %}
   "exec-opts": ["native.cgroupdriver=systemd"],
   {% endif %}
-  "debug": false,
   {% if backplane_enabled|bool %}
   "log-driver": "loki:latest",
   "log-opts": {
@@ -16,6 +15,7 @@
       "loki-retries": "5",
       "loki-timeout": "5s",
       "loki-batch-wait": "5s"
-  }
+  },
   {% endif %}
+  "debug": false
 }

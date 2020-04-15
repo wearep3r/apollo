@@ -77,14 +77,16 @@ class ZeroInventory(object):
                 inventory["storidge"] = {
                     "children": ["manager"]
                 }
+            inventory = json.dumps(inventory)
         else:
             inventory_path = os.path.dirname(os.path.abspath(__file__))
             tf_path = "{}/{}".format(inventory_path,"../terraform/")
             os.environ["TF_STATE"] = tf_path
             os.environ["TF_HOSTNAME_KEY_NAME"] = "name"
             args = sys.argv[1:]
-            command = "{} {} {}".format("/usr/local/bin/terraform-inventory"," ".join(args), tf_path)
-            inventory = subprocess.check_output(command,shell=True)
+            command = ["/usr/local/bin/terraform-inventory"] + args + [tf_path]
+            process = subprocess.run(command, check=True, stdout=subprocess.PIPE, universal_newlines=True)
+            inventory = process.stdout
     
         return inventory
 
