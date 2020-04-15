@@ -59,10 +59,12 @@ Build node-exporter:
     - cd docker/node-exporter
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
+  rules:
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/node-exporter/**
+      when: manual
   tags: 
     - build
-  only:
-    - master
 
 Build prometheus:
   stage: build
@@ -77,10 +79,12 @@ Build prometheus:
     - cd docker/prometheus
     - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA
+  rules:
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/prometheus/**
+      when: manual
   tags: 
     - build
-  only:
-    - master
 
 Build alertmanager:
   stage: build
@@ -95,10 +99,12 @@ Build alertmanager:
     - cd docker/alertmanager
     - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA
+  rules:
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/alertmanager/**
+      when: manual
   tags: 
     - build
-  only:
-    - master
 
 Build grafana:
   stage: build
@@ -113,10 +119,12 @@ Build grafana:
     - cd docker/grafana
     - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA
+  rules:
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/grafana/**
+      when: manual
   tags: 
     - build
-  only:
-    - master
 
 # Build loki:
 #   stage: build
@@ -192,10 +200,14 @@ Release prometheus:
     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
     - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
-  only:
-    - master
   tags: 
     - build
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/prometheus/**
+      when: manual
     
 
 Release alertmanager:
@@ -210,8 +222,12 @@ Release alertmanager:
     - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
     - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
-  only:
-    - master
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/alertmanager/**
+      when: manual
   tags: 
     - build
     
@@ -228,8 +244,12 @@ Release grafana:
     - docker push $CI_REGISTRY_IMAGE/grafana:latest
     - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
-  only:
-    - master
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/grafana/**
+      when: manual
   tags: 
     - build
     
@@ -246,8 +266,12 @@ Release node-exporter:
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
-  only:
-    - master
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
+    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+      - docker/node-exporter/**
+      when: manual
   tags: 
     - build
 
@@ -280,8 +304,9 @@ Release zero:
     - docker push $CI_REGISTRY_IMAGE:latest
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
-  only:
-    - master
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
   tags: 
     - build
 
