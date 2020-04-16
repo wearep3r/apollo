@@ -45,10 +45,19 @@ RUN apt update && apt install -y --no-install-recommends \
     && chmod +x /usr/local/bin/mc \
     # Kompose
     && curl -L "https://github.com/kubernetes/kompose/releases/download/${KOMPOSE_VERSION}/kompose-linux-amd64" -o /usr/local/bin/kompose \
-    && chmod +x /usr/local/bin/kompose
+    && chmod +x /usr/local/bin/komposec \
+    # IBM Cloud TF Provider
+    && mkdir -p $HOME/.terraform.d/plugins \
+    && cd $HOME/.terraform.d/plugins \
+    && curl -fsSL <https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v1.3.0/linux_amd64.zip> -o ./terraform-provider-ibm.zip \
+    && unzip terraform-provider-ibm.zip \
+    && rm terraform-provider-ibm.zip
 
 RUN mkdir /infrastructure \
     && mkdir /root/.ssh
+
+WORKDIR /infrastructure/terraform
+RUN terraform init
 WORKDIR /infrastructure
 COPY . .
 RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \

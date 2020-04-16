@@ -27,8 +27,6 @@ fetch-semantic-version:
   artifacts:
     paths:
     - VERSION.txt
-  tags: 
-    - build
 
 generate-non-semantic-version:
   stage: fetch-version
@@ -43,8 +41,6 @@ generate-non-semantic-version:
   artifacts:
     paths:
     - VERSION.txt
-  tags: 
-    - build
 
 Build node-exporter:
   stage: build
@@ -57,14 +53,12 @@ Build node-exporter:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
     - cd docker/node-exporter
-    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA
+    - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA
   rules:
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/node-exporter/**
       when: manual
-  tags: 
-    - build
 
 Build prometheus:
   stage: build
@@ -77,14 +71,12 @@ Build prometheus:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/prometheus:latest || true
     - cd docker/prometheus
-    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA
+    - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA
   rules:
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/prometheus/**
       when: manual
-  tags: 
-    - build
 
 Build alertmanager:
   stage: build
@@ -97,14 +89,12 @@ Build alertmanager:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/alertmanager:latest || true
     - cd docker/alertmanager
-    - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA
+    - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA
   rules:
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/alertmanager/**
       when: manual
-  tags: 
-    - build
 
 Build grafana:
   stage: build
@@ -117,14 +107,12 @@ Build grafana:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
     - cd docker/grafana
-    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA
+    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA
   rules:
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/grafana/**
       when: manual
-  tags: 
-    - build
 
 # Build loki:
 #   stage: build
@@ -156,11 +144,9 @@ Build zero:
     - export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/zero/Dockerfile | head -n 1 | cut -d ' ' -f 2)
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker pull $BASE_IMAGE
-    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -t $IMAGE_TAG -f docker/zero/Dockerfile .
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $IMAGE_TAG
-  tags: 
-    - build
 
 # include:
 #   - template: Container-Scanning.gitlab-ci.yml
@@ -195,16 +181,12 @@ Release prometheus:
     - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:latest
+    - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:latest
     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
-    - docker tag $CI_REGISTRY_IMAGE/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
-  tags: 
-    - build
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: always
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/prometheus/**
       when: manual
@@ -217,20 +199,15 @@ Release alertmanager:
     - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
+    - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:latest
     - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
-    - docker tag $CI_REGISTRY_IMAGE/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: always
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/alertmanager/**
-      when: manual
-  tags: 
-    - build
-    
+      when: manual    
 
 Release grafana:
   stage: release
@@ -239,20 +216,15 @@ Release grafana:
     - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
+    - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:latest
     - docker push $CI_REGISTRY_IMAGE/grafana:latest
-    - docker tag $CI_REGISTRY_IMAGE/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: always
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/grafana/**
       when: manual
-  tags: 
-    - build
-    
 
 Release node-exporter:
   stage: release
@@ -261,19 +233,15 @@ Release node-exporter:
     - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
+    - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
-    - docker tag $CI_REGISTRY_IMAGE/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: always
     - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
       - docker/node-exporter/**
       when: manual
-  tags: 
-    - build
 
 # Release loki:
 #   stage: release
@@ -299,16 +267,14 @@ Release zero:
     - docker:19.03.5-dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA || true
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
+    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: always
-  tags: 
-    - build
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: on_success
 
 release:
   image: node:13
@@ -324,5 +290,3 @@ release:
   script:
     - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
     - npx semantic-release
-  tags: 
-    - build
