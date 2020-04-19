@@ -280,7 +280,7 @@
         - name: Getting Grub Update Status
           set_fact:
             ku_update_grub_changed: "{{ ku_update_grub_result.changed }}"
-      when: ansible_distribution == 'Ubuntu'
+      when: ansible_distribution == 'Ubuntu' and storidge_enabled|bool
       
 
 - hosts: all

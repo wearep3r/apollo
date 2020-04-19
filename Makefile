@@ -49,6 +49,9 @@ deploy-local:
 		peter.saarland/zero:latest \
 		ansible-playbook -i inventory/zero.py provision.yml 
 
+deploy-vagrant:
+
+
 ibm-login:
 	ibmcloud login
 	

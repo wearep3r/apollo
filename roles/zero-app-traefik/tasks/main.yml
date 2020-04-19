@@ -30,7 +30,7 @@
           - traefik
       when: traefik_provision.changed
 
-    - name: "Wait for proxy.{{ base_domain }} to become ready"
+    - name: "Wait for http://proxy.{{ base_domain }} to become ready"
       uri:
         url: "https://proxy.{{ base_domain }}"
         method: GET
