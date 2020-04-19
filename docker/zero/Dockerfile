@@ -45,7 +45,7 @@ RUN apt update && apt install -y --no-install-recommends \
     && chmod +x /usr/local/bin/mc \
     # Kompose
     && curl -L "https://github.com/kubernetes/kompose/releases/download/${KOMPOSE_VERSION}/kompose-linux-amd64" -o /usr/local/bin/kompose \
-    && chmod +x /usr/local/bin/komposec \
+    && chmod +x /usr/local/bin/kompose \
     # IBM Cloud TF Provider
     && mkdir -p $HOME/.terraform.d/plugins \
     && cd $HOME/.terraform.d/plugins \
