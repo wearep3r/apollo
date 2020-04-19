@@ -49,7 +49,7 @@ RUN apt update && apt install -y --no-install-recommends \
     # IBM Cloud TF Provider
     && mkdir -p $HOME/.terraform.d/plugins \
     && cd $HOME/.terraform.d/plugins \
-    && curl -fsSL <https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v1.3.0/linux_amd64.zip> -o ./terraform-provider-ibm.zip \
+    && curl -fsSL "https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v1.3.0/linux_amd64.zip" -o ./terraform-provider-ibm.zip \
     && unzip terraform-provider-ibm.zip \
     && rm terraform-provider-ibm.zip
 
