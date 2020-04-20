@@ -145,7 +145,6 @@ Build zero:
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker pull $BASE_IMAGE
     - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $IMAGE_TAG
 
 # include:
