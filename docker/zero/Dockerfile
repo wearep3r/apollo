@@ -17,7 +17,7 @@ RUN apt update && apt install -y --no-install-recommends \
     openssh-client \
     build-essential \
     libffi-dev \
-    libssl1.0-dev \
+    libssl1.0 \
     python3-dev \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir \
