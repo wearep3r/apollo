@@ -15,10 +15,10 @@ RUN apt update && apt install -y --no-install-recommends \
     unzip \
     nano \
     openssh-client \
-    #build-essential \
-    #libffi-dev \
-    #libssl1.0-dev \
-    #python3-dev \
+    build-essential \
+    libffi-dev \
+    libssl1.0-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir \
     ansible \
