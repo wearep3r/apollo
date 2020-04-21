@@ -8,6 +8,7 @@ playbooks/services
 _README.md
 docker/traefik
 .env
+.env.bak
 terraform/.terraform
 terraform/.dev
 terraform/terraform.tfstate
@@ -18,3 +19,6 @@ cio
 .terraform/
 *.tfstate
 *.tfstate.backup
+roles/
+!roles/zero-*
+.vagrant
