@@ -149,10 +149,11 @@ Build zero:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   script:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
-    - export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/zero/Dockerfile | head -n 1 | cut -d ' ' -f 2)
-    - docker pull $CI_REGISTRY_IMAGE:latest || true
-    - docker pull $BASE_IMAGE
-    - docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
+    #- export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/zero/Dockerfile | head -n 1 | cut -d ' ' -f 2)
+    #- docker pull $CI_REGISTRY_IMAGE:latest || true
+    #- docker pull $BASE_IMAGE
+    #- docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
+    - docker build --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
     - docker push $IMAGE_TAG
 
 # include:
