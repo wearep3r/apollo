@@ -302,9 +302,9 @@
           constraints: 
             - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
         limits:
-          memory: 2048M
+          memory: 512M
         reservations:
-          memory: 1024M
+          memory: 256M
         labels:
           traefik.enable: "true"
           traefik.tags: "proxy"
