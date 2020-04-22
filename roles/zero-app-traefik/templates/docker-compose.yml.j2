@@ -6,17 +6,17 @@ services:
     command: > 
       traefik 
       --docker 
-      {% if swarm_enabled %}
+{% if swarm_enabled %}
       --docker.swarmmode 
-      {% endif %}
+{% endif %}
       --docker.watch 
       --docker.exposedbydefault=false 
       --insecureSkipVerify 
       --entrypoints="Name:http Address::80" 
-      --entrypoints="Name:https Address::443 TLS" 
       --metrics
       --metrics.prometheus
-      {% if letsencrypt_enabled|bool %}
+{% if letsencrypt_enabled|bool %}
+      --entrypoints="Name:https Address::443 TLS" 
       --acme 
       --acme.email={{ letsencrypt_mail }} 
       --acme.storage="/etc/traefik/acme.json" 
@@ -25,7 +25,7 @@ services:
       --acme.dnsChallenge.resolvers="{{ traefik_dnschallenge_resolvers }}" 
       --acme.onhostrule=true 
       --acme.acmelogging=true 
-      {% endif %}
+{% endif %}
       --logLevel=INFO 
       --api 
       --docker.domain={{ base_domain }} 
@@ -67,14 +67,14 @@ services:
           traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
           traefik.backend: "traefik"
           traefik.protocol: "http"
-          traefik.frontend.headers.SSLRedirect: "true"
-          {% if letsencrypt_enabled|bool %}
+{% if letsencrypt_enabled|bool %}
           traefik.frontend.entryPoints: "http,https"
-          {% else %}
+          traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
           traefik.frontend.entryPoints: "http"
-          {%endif%}
+{%endif%}
           traefik.backend.loadbalancer.stickiness: "true"
-          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout | replace('$', '$$') }}"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
 
 networks:
   proxy:

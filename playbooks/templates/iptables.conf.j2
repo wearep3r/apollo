@@ -17,6 +17,7 @@
 
 # Docker
 -A DOCKER-USER -i {{ hostvars[inventory_hostname]['ansible_'+public_iface]['device'] }} -j FILTERS
+-A DOCKER-USER -i {{ hostvars[inventory_hostname]['ansible_'+private_iface]['device'] }} -j FILTERS
 
 # Filters
 -A FILTERS -m state --state ESTABLISHED,RELATED -j ACCEPT
