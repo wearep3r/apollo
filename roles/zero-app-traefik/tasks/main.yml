@@ -32,7 +32,7 @@
 
     - name: "Wait for http://proxy.{{ base_domain }} to become ready"
       uri:
-        url: "https://proxy.{{ base_domain }}"
+        url: "http://proxy.{{ base_domain }}"
         method: GET
         status_code: 200
         user: "{{admin_user}}"
