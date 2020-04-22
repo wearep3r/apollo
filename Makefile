@@ -1,7 +1,7 @@
 #!make
 include .env
 
-.PHONY: build ssh-gen ssh do-setup do-teardown do-show provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant ibm-login ibm-rg-create ibm-rg-delete ibm-init ibm-plan ibm-setup ibm-teardown test-traefik test-portainer
+.PHONY: build ssh-gen ssh do-setup do-teardown do-show provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant ibm-login ibm-rg-create ibm-rg-delete ibm-init ibm-plan ibm-setup ibm-teardown test-traefik test-portainer aws-init aws-plan aws-setup aws-teardown
 
 build:
 	docker build -t peter.saarland/zero:latest -f ./docker/zero/Dockerfile .
@@ -105,3 +105,20 @@ test-traefik:
 test-portainer:
 	cd roles/zero-app-portainer \
 		&& molecule test
+
+aws-init:
+	cd terraform/aws && terraform init
+
+aws-plan:
+	cd terraform/aws \
+		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
+		&& terraform plan
+aws-setup:
+	cd terraform/aws \
+		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
+		&& terraform apply
+
+aws-teardown:
+	cd terraform/aws \
+		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
+		&& terraform destroy

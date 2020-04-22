@@ -183,3 +183,13 @@ To run **zero** on IBM, follow these steps:
 
 Configuration:
 - Update the instance size to your needs, available options [can be found here](https://www.ibm.com/cloud/vpc/pricing)
+
+## On AWS
+
+For AWS, there is a terraform template located in `terraform/aws` setting up a single EC2 instance with a public elastic IP address
+
+To run **zero** on IBM, follow these steps
+1. Ensure you've setup your local ssh key (see above) using the `Makefile`
+2. Run `make aws-setup`
+3. Copy the public IP address and paste it into you `.env` file (see above)
+4. Run `make deploy`
