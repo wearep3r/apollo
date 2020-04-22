@@ -68,7 +68,11 @@ services:
           traefik.backend: "traefik"
           traefik.protocol: "http"
           traefik.frontend.headers.SSLRedirect: "true"
+          {% if letsencrypt_enabled|bool %}
           traefik.frontend.entryPoints: "http,https"
+          {% else %}
+          traefik.frontend.entryPoints: "http"
+          {%endif%}
           traefik.backend.loadbalancer.stickiness: "true"
           traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout | replace('$', '$$') }}"
 
