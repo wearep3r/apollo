@@ -129,3 +129,6 @@ ibm_resource_group_id: "{{ lookup('env','IBM_RESOURCE_GROUP_ID') | default(0, tr
 digitalocean_enabled: "{{ lookup('env','DIGITALOCEAN_ENABLED') | default(0, true) }}"
 digitalocean_auth_token: "{{ lookup('env','DIGITALOCEAN_AUTH_TOKEN') | default('', true) }}"
 digitalocean_ssh_key_id: "{{ lookup('env','DIGITALOCEAN_SSH_KEY_ID') | default('', true) }}"
+
+## AWS
+aws_enabled: "{{ lookup('env','AWS_ENABLED') | default(0, true) }}"
