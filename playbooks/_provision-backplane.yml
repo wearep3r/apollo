@@ -270,7 +270,7 @@
         state: present
         mode: replicated
         replicas: 1
-        image: grafana/loki:master-841befa-amd64
+        image: grafana/loki:1.4.1
         networks:
           - name: "monitoring"
             aliases:
