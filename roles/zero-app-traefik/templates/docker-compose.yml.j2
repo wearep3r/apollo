@@ -74,7 +74,7 @@ services:
           traefik.frontend.entryPoints: "http"
 {%endif%}
           traefik.backend.loadbalancer.stickiness: "true"
-          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout | replace('$', '$$')}}"
 
 networks:
   proxy:

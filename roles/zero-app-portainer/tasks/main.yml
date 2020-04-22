@@ -1,2 +1,70 @@
 ---
 # tasks file for zero-app-portainer
+- name: Provision Portainer
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-portainer.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision Portainer
+      docker_stack:
+        state: present
+        name: portainer
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-portainer.yml
+      register: portainer_provision
+      tags:
+          - portainer
+
+    - name: Debug Portainer
+      debug:
+        var: portainer_provision
+        verbosity: 1
+      tags:
+          - portainer
+      when: portainer_provision.changed
+
+    - name: "Wait for portainer.{{ base_domain }} to become ready"
+      uri:
+        url: "https://portainer.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - portainer
+
+    - name: Get Container ID
+      shell: docker ps -f name=portainer_portainer --format "{{ '{{' }}.ID{{ '}}'}}"
+      register: portainer_app
+
+    - name: Debug
+      debug:
+        var: portainer_app
+
+    - name: add container to inventory
+      add_host:
+        name: "{{ portainer_app.stdout }}"
+        ansible_connection: docker
+      changed_when: false
+      failed_when: portainer_app.stdout == ""        
+
+  rescue:
+    - name: Teardown Portainer
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: portainer
+      register: portainer_portainer
+      tags:
+          - portainer 

@@ -177,6 +177,7 @@ To run **zero** on IBM, follow these steps:
 - refer to the `terraform` template in `./terraform/ibm`. This requires the [IBM terraform provider](https://github.com/IBM-Cloud/terraform-provider-ibm)
 - Set `IBM_ENABLED=1`, `IBM_ACCESS_KEY=<your key>` and `IBM_RESOURCE_GROUP_ID=<your resource group id>` in the `.env` file
 - Ensure that you have a SSH key created (see [DigitalOcean](#on-digitalocean) section) 
+- Run `make ibm-login` to log in to the IBM CLI
 - Run `make ibm-rg-create` to create the target resource group (if not existing)
 - Run `make ibm-setup` to setup the VM and dependencies
 - Run `make deploy` (similar to digitalocean)
@@ -189,7 +190,21 @@ Configuration:
 For AWS, there is a terraform template located in `terraform/aws` setting up a single EC2 instance with a public elastic IP address
 
 To run **zero** on IBM, follow these steps
-1. Ensure you've setup your local ssh key (see above) using the `Makefile`
-2. Run `make aws-setup`
-3. Copy the public IP address and paste it into you `.env` file (see above)
-4. Run `make deploy`
+1. Ensure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` are properly populated
+2. Ensure you've setup your local ssh key (see above) using the `Makefile`
+3. Run `make aws-setup`
+4. Copy the public IP address and paste it into you `.env` file (see above)
+5. Run `make deploy`
+
+## HOW-TOs
+
+### How to test a local change?
+
+1. Save all files
+2. Run `make build` to build a new docker image of zero with your local changes
+3. Run `make deploy-local` to deploy that local image 
+
+### How to find out why `dockerd` is not starting on an Ubuntu host?
+
+1. SSH into the host via `make ssh` (for single node configurations)
+2. Run `journalctl -eu docker`

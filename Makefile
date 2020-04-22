@@ -1,7 +1,11 @@
 #!make
 include .env
 
+<<<<<<< HEAD
 .PHONY: build ssh-gen ssh do-setup do-teardown do-show provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant ibm-login ibm-rg-create ibm-rg-delete ibm-init ibm-plan ibm-setup ibm-teardown test-traefik test-portainer aws-init aws-plan aws-setup aws-teardown
+=======
+.PHONY: build ssh-gen ssh do-setup do-teardown do-show provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant ibm-login ibm-rg-create ibm-rg-delete ibm-init ibm-plan ibm-setup ibm-teardown test-traefik test-portainer
+>>>>>>> origin
 
 build:
 	docker build -t peter.saarland/zero:latest -f ./docker/zero/Dockerfile .
@@ -124,3 +128,4 @@ aws-teardown:
 	cd terraform/aws \
 		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
 		&& terraform destroy
+		

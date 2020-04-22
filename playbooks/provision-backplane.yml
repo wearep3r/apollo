@@ -29,3 +29,4 @@
   gather_facts: True
   roles:
     - zero-app-traefik
+    - zero-app-portainer
