@@ -25,6 +25,18 @@
         path: /etc/docker
         state: directory
         mode: '0755'
+
+    # - name: Copy Docker config
+    #   template:
+    #     src: templates/daemon.json.j2
+    #     dest: /etc/docker/daemon.json
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    #   notify: restart docker
+    #   tags:
+    #     - docker
+    #     - config
     
     - name: Add Docker apt key.
       apt_key:
@@ -57,6 +69,15 @@
       register: docker_install
       notify: restart docker
       changed_when: False
+
+    - name: Copy Docker config
+      template:
+        src: templates/daemon.json.j2
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart docker
 
     - name: Checking on Docker Installation
       async_status:
@@ -158,12 +179,3 @@
       tags:
         - docker
       when: "'loki:latest' not in loki_installed.stdout"
-
-    - name: Copy Docker config
-      template:
-        src: templates/daemon.json.j2
-        dest: /etc/docker/daemon.json
-        owner: root
-        group: root
-        mode: '0644'
-      notify: restart docker
