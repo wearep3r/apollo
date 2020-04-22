@@ -111,6 +111,17 @@ Here's what you have to do to spin up **zero**:
 3. Have 1+ Servers ready with your SSH public key
 4. Run **zero**: `docker run -v "${PWD}/.env:/infrastructure/.env" -v "${HOME}/.ssh:/.ssh" registry.gitlab.com/peter.saarland/zero:latest ./if0 provision`
 
+## Vagrant
+To quickly run **zero** on a local machine, you can use vagrant:
+
+`vagrant up`
+
+To (re-)provision **zero**:
+
+`vagrant provision`
+
+See the associated [Vagrantfile](Vagrantfile) for additional information.
+
 ## On DigitalOcean
 
 This is intended to be the minimal step required to run zero on a single Ubuntu VM meeting the [](#minimum-requirements), running on DigitalOcean.
