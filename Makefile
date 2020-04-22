@@ -1,6 +1,8 @@
 #!make
 include .env
 
+.PHONY: build ssh-gen ssh do-setup do-teardown do-show provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant ibm-login ibm-rg-create ibm-rg-delete ibm-init ibm-plan ibm-setup ibm-teardown test-traefik test-portainer
+
 build:
 	docker build -t peter.saarland/zero:latest -f ./docker/zero/Dockerfile .
 
@@ -49,8 +51,21 @@ deploy-local:
 		peter.saarland/zero:latest \
 		ansible-playbook -i inventory/zero.py provision.yml 
 
-deploy-vagrant:
+deploy-backplane:
+	docker run \
+		-v "${PWD}/.env:/infrastructure/.env" \
+		-v "${HOME}/.ssh:/.ssh" \
+		--env-file=.env \
+		registry.gitlab.com/peter.saarland/zero:latest \
+		ansible-playbook playbooks/provision-backplane.yml 
 
+deploy-backplane-local:
+	docker run \
+		-v "${PWD}/.env:/infrastructure/.env" \
+		-v "${HOME}/.ssh:/.ssh" \
+		--env-file=.env \
+		peter.saarland/zero:latest \
+		ansible-playbook playbooks/provision-backplane.yml 
 
 ibm-login:
 	ibmcloud login
@@ -82,3 +97,11 @@ ibm-teardown:
 		&& export TF_VAR_ssh_public_key=${SSH_PRIVATE_KEY_FILE}.pub \
 		&& export TF_VAR_resource_group_name=${IBM_RESOURCE_GROUP_ID} \
 		&& terraform destroy
+
+test-traefik:
+	cd roles/zero-app-traefik \
+		&& molecule test
+
+test-portainer:
+	cd roles/zero-app-portainer \
+		&& molecule test
