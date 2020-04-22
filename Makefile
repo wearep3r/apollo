@@ -50,7 +50,7 @@ deploy-local:
 		ansible-playbook -i inventory/zero.py provision.yml 
 
 deploy-vagrant:
-
+	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/provision-backplane.yml
 
 ibm-login:
 	ibmcloud login

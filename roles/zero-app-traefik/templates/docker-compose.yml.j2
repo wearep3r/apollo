@@ -70,7 +70,7 @@ services:
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.entryPoints: "http,https"
           traefik.backend.loadbalancer.stickiness: "true"
-          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout | replace('$', '$$') }}"
 
 networks:
   proxy:
