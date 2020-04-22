@@ -141,6 +141,8 @@ Build grafana:
 Build zero:
   stage: build
   image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
   variables:
     DOCKER_BUILDKIT: 1 
     # For Container Scanning
