@@ -66,6 +66,8 @@ deploy-backplane-local:
 		--env-file=.env \
 		peter.saarland/zero:latest \
 		ansible-playbook playbooks/provision-backplane.yml 
+deploy-vagrant:
+	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/provision-backplane.yml
 
 ibm-login:
 	ibmcloud login

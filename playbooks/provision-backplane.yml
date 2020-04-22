@@ -16,7 +16,7 @@
 
     - name: Generate admin password hash
       #shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
-      shell: "htpasswd -nbB admin '{{ admin_password }}' | sed -e s/\\$/\\$\\$/g"
+      shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2 | sed 's/\\$/\\$\\$/g' | head -1"
       register: admin_password_hash
       changed_when: false
 
