@@ -1,5 +1,5 @@
 #!make
-include .env
+#include .env
 
 .PHONY: build ssh-gen ssh do-setup do-teardown do-show provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant ibm-login ibm-rg-create ibm-rg-delete ibm-init ibm-plan ibm-setup ibm-teardown test-traefik test-portainer aws-init aws-plan aws-setup aws-teardown
 
@@ -66,8 +66,9 @@ deploy-backplane-local:
 		--env-file=.env \
 		peter.saarland/zero:latest \
 		ansible-playbook playbooks/provision-backplane.yml 
+
 deploy-vagrant:
-	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/provision-backplane.yml
+	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/detect-network-environment.yml
 
 ibm-login:
 	ibmcloud login

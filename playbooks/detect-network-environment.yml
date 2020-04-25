@@ -1,8 +1,48 @@
 - name: Detect networking environment
   hosts: all
   tasks:
+    # cluster_network: defines the private network that will be used for internal communication
+    # private_interfaces: all interfaces with private networks
+    # public_interfaces: all interfaces with public networks
+    # cluster_interface: the interface used for cluster communication (auto-discovery)
+    - name: Defining Cluster Interface
+      set_fact: 
+        private_interfaces: "{{ [private_iface] }}"
+        public_interfaces: "{{ [public_iface] }}"
     - name: Gathering Network Interfaces
+      set_fact:
+        ansible_eth: "{% set ansible_eth = ansible_eth|default([]) + [hostvars[inventory_hostname]['ansible_' + item]] %}{{ ansible_eth|list }}"
+      when: hostvars[inventory_hostname]['ansible_' + item]['type'] == 'ether' and not hostvars[inventory_hostname]['ansible_' + item]['device'].startswith("v")
+      with_items:
+        - "{{ansible_interfaces | sort}}"
+
+    - name: Listing Network Interfaces
       debug: 
-        msg: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
-      #with_items: "{{ ansible_interfaces }}"
-      #when: ansible_interface != 'lo'
+        msg: "{{ item['ipv4']['address'] | ipaddr('private')  }}"
+      with_items:
+        - "{{ansible_eth}}"
+      when: item['ipv4']['address'] is defined
+
+    - name: Defining Private Interfaces
+      set_fact: 
+        private_interfaces: "{% set private_interfaces = private_interfaces|default([private_iface]) + [item['device']] %}{{ private_interfaces|list }}"
+      with_items:
+        - "{{ansible_eth}}"
+      when: item['ipv4']['address'] is defined and item['ipv4']['address'] | ipaddr('private')
+
+    - name: Defining Public Interfaces
+      set_fact: 
+        public_interfaces: "{% set public_interfaces = public_interfaces|default([public_iface]) + [item['device']] %}{{ public_interfaces|list }}"
+      with_items:
+        - "{{ansible_eth}}"
+      when: item['ipv4']['address'] is defined and item['ipv4']['address'] | ipaddr('public')
+
+    - name: Defining Cluster Interface
+      set_fact: 
+        cluster_interface: "{{ private_interfaces|sort|first|default(private_iface) }}"
+        private_iface: "{{ private_interfaces|sort|first|default(private_iface) }}"
+        public_iface: "{{ public_interfaces|sort|first|default(public_iface) }}"
+
+    - name: Debug Interfaces
+      debug: 
+        msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Cluster Interface: '+cluster_interface }}"
