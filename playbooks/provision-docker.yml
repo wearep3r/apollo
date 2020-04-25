@@ -2,6 +2,7 @@
   gather_facts: False
   serial: 1
   order: reverse_sorted
+  become: True
   tags:
     - docker
   handlers:
