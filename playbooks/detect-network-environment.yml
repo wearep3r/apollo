@@ -43,6 +43,10 @@
         private_iface: "{{ private_interfaces|sort|first|default(private_iface) }}"
         public_iface: "{{ public_interfaces|sort|first|default(public_iface) }}"
 
+    - name: Defining Ingress IP
+      set_fact:
+        ingress_ip: "{{ hostvars[groups['all'][0]]['ansible_'+public_iface]['ipv4']['address'] }}"
+
     - name: Debug Interfaces
       debug: 
-        msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Cluster Interface: '+cluster_interface }}"
+        msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Cluster Interface: '+cluster_interface+' - Ingress IP: '+ingress_ip }}"
