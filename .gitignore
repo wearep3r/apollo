@@ -22,3 +22,4 @@ cio
 roles/
 !roles/zero-app*
 .vagrant
+inventory/windows
