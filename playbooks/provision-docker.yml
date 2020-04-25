@@ -71,15 +71,6 @@
       notify: restart docker
       changed_when: False
 
-    - name: Copy Docker config
-      template:
-        src: templates/daemon.json.j2
-        dest: /etc/docker/daemon.json
-        owner: root
-        group: root
-        mode: '0644'
-      notify: restart docker
-
     - name: Checking on Docker Installation
       async_status:
         jid: "{{ docker_install.ansible_job_id }}"
@@ -180,3 +171,28 @@
       tags:
         - docker
       when: "'loki:latest' not in loki_installed.stdout"
+
+- hosts: all
+  gather_facts: False
+  serial: 1
+  order: reverse_sorted
+  become: True
+  tags:
+    - docker
+  handlers:
+    - name: drain swarm node
+      shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
+      #listen: "restart docker"
+      notify: "restart docker"
+    - name: restart docker
+      service: name=docker state=restarted
+      listen: "restart docker"
+  tasks:
+    - name: Copy Docker config
+      template:
+        src: templates/daemon.json.j2
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart docker
