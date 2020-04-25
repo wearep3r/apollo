@@ -30,9 +30,9 @@
           - portainer
       when: portainer_provision.changed
 
-    - name: "Wait for portainer.{{ base_domain }} to become ready"
+    - name: "Wait for http://portainer.{{ base_domain }} to become ready"
       uri:
-        url: "https://portainer.{{ base_domain }}"
+        url: "http://portainer.{{ base_domain }}"
         method: GET
         status_code: 200
         validate_certs: no
