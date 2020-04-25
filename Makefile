@@ -42,7 +42,7 @@ deploy-backplane-local:
 		ansible-playbook playbooks/provision-backplane.yml 
 
 deploy-vagrant:
-	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/detect-network-environment.yml
+	ansible-playbook -i .vagrant/provisioners/ansible/inventory provision.yml
 
 test-traefik:
 	cd roles/zero-app-traefik \

@@ -7,7 +7,6 @@
 # Check git Status
 - name: Check Git Status
   import_playbook: playbooks/git-status.yml
-  # See group_vars/all
   when: check_git|bool
 - name: Enable AWS root access
   import_playbook: playbooks/aws.yml
@@ -16,6 +15,8 @@
   tags:
       - infrastructure
   when: terraform_enabled|bool
+- name: Detect Network Environment
+  import_playbook: playbooks/detect-network-environment.yml
 - import_playbook: playbooks/provision-node.yml
   tags:
       - node
