@@ -19,7 +19,9 @@ cio
 .terraform/
 *.tfstate
 *.tfstate.backup
-roles/
+!roles/
+roles/*
 !roles/zero-app*
+!roles/zero-module*
 .vagrant
 inventory/windows
