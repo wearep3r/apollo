@@ -1,5 +1,5 @@
 #!make
-include .env
+#include .env
 
 .PHONY: build provision destroy deploy deploy-local deploy-backplane deploy-backplane-local deploy-vagrant test-traefik test-portainer 
 
@@ -42,7 +42,7 @@ deploy-backplane-local:
 		ansible-playbook playbooks/provision-backplane.yml 
 
 deploy-vagrant:
-	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/provision-backplane.yml
+	ansible-playbook -i .vagrant/provisioners/ansible/inventory playbooks/detect-network-environment.yml
 
 test-traefik:
 	cd roles/zero-app-traefik \
