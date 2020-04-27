@@ -44,18 +44,6 @@ deploy-backplane-local:
 deploy-vagrant:
 	ansible-playbook -i .vagrant/provisioners/ansible/inventory provision.yml
 
-ibm-login:
-	ibmcloud login
-	
-ibm-rg-create:
-	ibmcloud resource group-create ${IBM_RESOURCE_GROUP_ID}
-
-ibm-rg-delete:
-	ibmcloud resource group-delete ${IBM_RESOURCE_GROUP_ID}
-
-deploy-vagrant:
-	ansible-playbook -i .vagrant/provisioners/ansible/inventory provision.yml
-
 test-traefik:
 	cd roles/zero-app-traefik \
 		&& molecule test
