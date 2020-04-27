@@ -34,6 +34,8 @@ services:
     networks:
       - proxy
       - portainer
+    volumes:
+      - portainer-data:/data
     deploy:
       mode: replicated
       replicas: 1
@@ -72,4 +74,12 @@ networks:
   proxy:
     driver: overlay
     external: true
-  
+
+volumes:
+  portainer-data:
+{% if storidge_enabled|bool %}
+    driver_config: 
+        name: "cio"
+        options:
+          profile: "SNAPSHOT"
+{% endif %}
