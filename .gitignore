@@ -21,7 +21,6 @@ cio
 *.tfstate.backup
 !roles/
 roles/*
-!roles/zero-app*
-!roles/zero-module*
+!roles/zero-*
 .vagrant
 inventory/windows
