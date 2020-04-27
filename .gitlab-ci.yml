@@ -1,13 +1,19 @@
+include:
+  - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/version.gitlab-ci.yml'
+  - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/release.gitlab-ci.yml'
+
 workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME =~ /-wip$/
+      when: never
+    - if: $CI_MERGE_REQUEST_ID
       when: never
     - if: $CI_COMMIT_TAG
       when: never
     - when: always
 
 stages:
-  - fetch-version
+  - version
   - build
   - test
   - release
@@ -18,37 +24,6 @@ cache:
   
 variables:
   DOCKER_TLS_CERTDIR: ""
-
-fetch-semantic-version:
-  # Requires Node >= 10.13 version
-  image: node:13
-  stage: fetch-version
-  only:
-    refs:
-    - master
-    - alpha
-    - /^(([0-9]+)\.)?([0-9]+)\.x/ # This matches maintenance branches
-    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ # This matches pre-releases
-  script:
-    - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
-    - npx semantic-release --generate-notes false --dry-run
-  artifacts:
-    paths:
-    - VERSION.txt
-
-generate-non-semantic-version:
-  stage: fetch-version
-  except:
-    refs:
-    - master
-    - alpha
-    - /^(([0-9]+)\.)?([0-9]+)\.x/ # This matches maintenance branches
-    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ # This matches pre-releases
-  script:
-    - echo build-$CI_PIPELINE_ID > VERSION.txt
-  artifacts:
-    paths:
-    - VERSION.txt
 
 Build node-exporter:
   stage: build
@@ -283,22 +258,3 @@ Release zero:
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: on_success
-
-release:
-  image: node:13
-  stage: release
-  only:
-    refs:
-    - master
-    - alpha
-    # This matches maintenance branches
-    - /^(([0-9]+)\.)?([0-9]+)\.x/
-    # This matches pre-releases
-    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-  script:
-    - touch CHANGELOG.md
-    - npm install @semantic-release/gitlab @semantic-release/changelog @semantic-release/exec
-    - npx semantic-release
-  artifacts:
-    paths:
-    - CHANGELOG.md
