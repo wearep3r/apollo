@@ -1,0 +1,4 @@
+- name: Detect networking environment
+  hosts: all
+  roles:
+    - zero-network
