@@ -3,7 +3,7 @@ zero - The App Platform
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release) [![pipeline status](https://gitlab.com/peter.saarland/zero/badges/master/pipeline.svg)](https://gitlab.com/peter.saarland/zero/-/commits/master)
 
-Maintained by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - Helping companies to develop software with starup speed and enterprise quality.
+Maintained by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - Helping companies to develop software with startup speed and enterprise quality.
 
 Additional Links:
 
@@ -15,27 +15,27 @@ Additional Links:
 [[_TOC_]]
 
 # Overview
-This repository contains the code for the **zero** DevOps Platform. The code composes of a variety of mechanisms and tools that, together, build a Docker Swarm or Kubernetes Based Platform and Backplane for modern App Deployments. The platform additionally features a distributed Storage Layer implemented with **Storidge**`**, spanning across Workers and Managers.
+This repository contains the code for the **zero** DevOps Platform. The code composes of a variety of mechanisms and tools that, together, build a Docker Swarm or Kubernetes based platform and backplane for modern app deployments. The platform additionally features a distributed storage layer implemented with **Storidge**, spanning across workers and managers.
 
 **The goal for zero is to get teams up and running fast, with a set of services to help them and infrastructure they do not need to worry about.**
 
 Zero is a **Platform for Apps**. It runs on **Docker Swarm** or **Kubernetes**. It's controlled by **if0 -** the CLI to tool them all.
 
-Zero is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about that. Your applications' data is available within your entire cluster and regularly backed up - automagically.
+Zero is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance. Your applications' data is available within your entire cluster and regularly backed up - automagically.
 
-Zero comes with a pre-configured set of Apps that integrate beautifully with each other - such as **GitLab, Sentry, Prometheus, Grafana, Loki, a User Backend** and more. You simply enable them and start working!
+Zero comes with a pre-configured set of apps that integrate beautifully with each other - such as **GitLab, Sentry, Prometheus, Grafana, Loki, a user backend** and more. You simply enable them and start working!
 
-Zero aims to accelerate your Digital Transformation and Development Process. It helps you to prototype rapidly, but also to deploy to production safely. Zero gets you going quickly, yet provides operational stability even in highly regulated and heterogeneous environments.
+Zero aims to accelerate your digital transformation and development process. It helps you to prototype rapidly, but also to deploy to production safely. Zero gets you going quickly, yet provides operational stability even in highly regulated and heterogeneous environments.
 
-Zero is tailored to Development teams. Made by seasoned Operators, it contains everything a DevOps-enabled team needs to start changing the world, without worrying about Ops too much.
+Zero is tailored to development teams. Made by seasoned operators, it contains everything a DevOps-enabled team needs to start changing the world, without worrying about Ops too much.
 
-Zero runs on every major and minor Cloud Provider, as well as directly on bare-metal, Embedded Devices or Platforms like Proxmox and VMWare. 
+Zero runs on every major and minor cloud provider, as well as directly on bare-metal, embedded devices or platforms like Proxmox and VMWare. 
 
-Zero is follows an **Infrastructure as Code** design-pattern. The Cluster, its state and the Apps running on the platform are merely a function applied to the data stored in Zero's storage layer. Zero strictly separates Data from Application, which means that migrating between Clusters is as easy as restoring a Backup to a new Cluster. Moving a Cluster is as easy as providing new Compute-Resources at a different Provider.
+Zero is follows an **Infrastructure as Code** design-pattern. The cluster, its state and the apps running on the platform are merely a function applied to the data stored in Zero's storage layer. Zero strictly separates data from application, which means that migrating between Clusters is as easy as restoring a backup to a new cluster. Moving a cluster is as easy as providing new compute-resources at a different provider.
 
-Zero is based on the latest technologies and design patterns. It strives to be fully automated. Zero greatly reduces the operational Overhead in organizations. It's a DevOps Platform, doing lots of the Ops work automagically for you. It also manages your Kubernetes Cluster!
+Zero is based on the latest technologies and design patterns. It strives to be fully automated. Zero greatly reduces the operational overhead in organizations. It's a DevOps platform, doing lots of the Ops work automagically for you. It also manages your Kubernetes cluster!
 
-Zero's best friend is **if0**, a CLI tool that controls all of Zero's features. The idea behind Zero and if0 is to blend the differences between local, production, staging and CI environments and give Developers a transparent way to interact with the Applications they develop or use to assist their development (like Sentry).
+Zero's best friend is **if0**, a CLI tool that controls all of Zero's features. The idea behind Zero and if0 is to blend the differences between local, production, staging and CI environments and give Developers a transparent way to interact with the applications they develop or use to assist their development (like Sentry).
 
 This is an example of what the deployment of and work with **zero** looks like:
 
@@ -142,6 +142,29 @@ New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled Tru
 ## Vagrant
 To quickly run **zero** on a local machine, you can use vagrant:
 
+```
+# Install the OpenSSH Client
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+
+# Install the OpenSSH Server
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+# Both of these should return the following output:
+
+Start-Service sshd
+# OPTIONAL but recommended:
+Set-Service -Name sshd -StartupType 'Automatic'
+# Confirm the Firewall rule is configured. It should be created automatically by setup. 
+Get-NetFirewallRule -Name *ssh*
+# There should be a firewall rule named "OpenSSH-Server-In-TCP", which should be enabled
+# If the firewall does not exist, create one
+New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+
+```
+
+## Vagrant
+To quickly run **zero** on a local machine, you can use vagrant:
+
 `vagrant up`
 
 To (re-)provision **zero**:
@@ -150,79 +173,16 @@ To (re-)provision **zero**:
 
 See the associated [Vagrantfile](Vagrantfile) for additional information.
 
-## On DigitalOcean
+## Cloud Infrastructure
 
-This is intended to be the minimal step required to run zero on a single Ubuntu VM meeting the [](#minimum-requirements), running on DigitalOcean.
+Use the `ZERO_NODES` parameter to feed IP addresses of the hosts to deploy to into zero when provisioning. To create infrastructure compatible with zero, use [dash1](https://gitlab.com/peter.saarland/dash1).
 
-### Prerequisites 
-
-- Install terraform on your local machine
-- Run `terraform init` once in the project root
-- Install and run docker on your local machine
-- Check the [configuration](#configuration) and [authentication](#authentication) sections above.
-
-### Steps
-
-1. Create the `.env` file with your settings (Hint: copy from `.env.example `)
-2. Set
-   - `DIGITALOCEAN_ENABLED=1`
-   - `DIGITALOCEAN_AUTH_TOKEN` to your access token
-   - `SSH_PRIVATE_KEY_FILE` to an existing ssh key or a non-existing one if you want to create a new one, e.g. `~/.ssh/id_rsa_zero`
-   - `REMOTE_USER=root` Deployment via `root` is required currently, due to assumptions other projects used by **zero** made
-3. (Optional) Run `make ssh-gen` to generate the new ssh key if its not existing yet
-4. Run `make setup`, this will create the Ubuntu droplet in your default project
-5. Run `make show` and copy the `ipv4_address` of the newly created VM
-6. Paste the address to the following variables in the `.env` file: `INGRESS_IP=<ipv4>`, `ZERO_NODES=<ipv4>`, `BASE_DOMAIN=<ipv4>.xip.io`
-7. Run `make deploy` to deploy zero with all backplane services to the VM
-
-    ℹ️ This command can be re-run over and over when making changes to the infrastructure, services or doing troubleshooting.
-
-8. (Optional) Run `make teardown` to stop and delete the VM.
-
-### Endpoints
+## Endpoints
 
 - Portainer: `portainer.<ipv4address>.xip.io`
 - Grafana: `grafana.<ipv4address>.xip.io`
 - Traefik: `proxy.<ipv4address>.xip.io`
 - Unsee: `alerts.<ipv4address>.xip.io`
-
-### Troubleshooting
-
-**The deployment complains about the network interface `eth1` not being available**
-
-Ubuntu can choose different names for its network interfaces and **zero** currently cannot cope with that. To workaround that issue:
-
-- ssh into VM via `make ssh` and run `ifconfig` to find the correct name of the adapter (check for the IP)
-- set the `PUBLIC_INTERFACE` and `PRIVATE_INTERFACE` variables in `.env` to the correct name
-
-**I've created my infrastructure with `docker-machine` and now the `Checking on Docker Installation` step fails**
-
-`docker-machine` already installs a newer version of Docker on the VM compared to the one **zero** uses. Unfortunately ansible is not capable allowing downgrades during installation (see [this issue](https://github.com/ansible/ansible/issues/29451)).
-
-## On IBM
-
-To run **zero** on IBM, follow these steps:
-- refer to the `terraform` template in `./terraform/ibm`. This requires the [IBM terraform provider](https://github.com/IBM-Cloud/terraform-provider-ibm)
-- Set `IBM_ENABLED=1`, `IBM_ACCESS_KEY=<your key>` and `IBM_RESOURCE_GROUP_ID=<your resource group id>` in the `.env` file
-- Ensure that you have a SSH key created (see [DigitalOcean](#on-digitalocean) section) 
-- Run `make ibm-login` to log in to the IBM CLI
-- Run `make ibm-rg-create` to create the target resource group (if not existing)
-- Run `make ibm-setup` to setup the VM and dependencies
-- Run `make deploy` (similar to digitalocean)
-
-Configuration:
-- Update the instance size to your needs, available options [can be found here](https://www.ibm.com/cloud/vpc/pricing)
-
-## On AWS
-
-For AWS, there is a terraform template located in `terraform/aws` setting up a single EC2 instance with a public elastic IP address
-
-To run **zero** on IBM, follow these steps
-1. Ensure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` are properly populated
-2. Ensure you've setup your local ssh key (see above) using the `Makefile`
-3. Run `make aws-setup`
-4. Copy the public IP address and paste it into you `.env` file (see above)
-5. Run `make deploy`
 
 ## HOW-TOs
 
