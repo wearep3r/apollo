@@ -5,7 +5,11 @@ zero - The App Platform
 
 Maintained by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - Helping companies to develop software with startup speed and enterprise quality.
 
-This README will hold an overview of the contents of this repo. This is **WIP**.
+Additional Links:
+
+- [ns0](https://gitlab.com/peter.saarland/ns0/) - The container-native DNS Proxy
+- [if0](https://gitlab.com/peter.saarland/if0/) - The CLI to tool them all
+- [dash1](https://gitlab.com/peter.saarland/dash1/) - Virtual Infrastructure for Zero
 
 # Table of Contents
 [[_TOC_]]

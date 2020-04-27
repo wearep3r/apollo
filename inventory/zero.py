@@ -40,6 +40,37 @@ class ZeroInventory(object):
             }  
         }
 
+        # Check infrastructure_provider
+        # Vagrant-Inventory: ../.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory
+        infrastructure_provider = os.getenv('INFRASTRUCTURE_PROVIDER', 'vagrant')
+
+        if infrastructure_provider == "vagrant":
+            inventory = {
+                "all": {
+                    "hosts": [
+                        "zero-1"
+                    ]
+                },
+                "docker": ["zero-1"],
+                "manager": ["zero-1"],
+                "swarm": {
+                    "children": ["docker"]
+                },
+                "_meta": {
+                    "hostvars": {
+                        "zero-1": {
+                            "ansible_host": os.getenv('VAGRANT_HOST', '127.0.0.1'),
+                            "ansible_port": os.getenv('VAGRANT_PORT', '2222'),
+                            "ansible_user": os.getenv('VAGRANT_USER', 'vagrant'),
+                            "ansible_ssh_private_key_file": os.getenv('VAGRANT_PRIVATE_KEY_FILE', '.vagrant/machines/zero-1/virtualbox/private_key')
+                        }
+                    }
+                }  
+            }
+            inventory = json.dumps(inventory)
+            return inventory
+
+
         # Check if TERRAFORM_ENABLED is set
         terraform_enabled = int(os.getenv('TERRAFORM_ENABLED', 0))
 

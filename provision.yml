@@ -14,7 +14,7 @@
   import_playbook: playbooks/aws.yml
   when: aws_enabled|bool
 - import_playbook: playbooks/provision-infrastructure.yml
-  when: terraform_enabled|bool
+  #when: terraform_enabled|bool
 # @zero-network
 - import_playbook: playbooks/provision-network.yml
 # @zero-core
