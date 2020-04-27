@@ -1,0 +1,25 @@
+---
+- name: Install Docker on Windows Server
+  hosts: peter
+  gather_facts: False
+
+  tasks:
+  
+  - name: Create directory 
+    win_file:
+      path: C:\k
+      state: directory
+
+  - name: Copy PrepareNode script
+    win_copy:
+      src: files/PrepareNode.ps1
+      dest: C:\k\PrepareNode.ps1
+  
+  - name: Run PrepareNode script
+    win_shell: C:\k\PrepareNode.ps1 -KubernetesVersion v1.18.0 >> c:\k\PrepareNode_log.txt
+
+  - name: Reboot Server
+    win_reboot:
+      reboot_timeout: 3600
+      post_reboot_delay: 60
+    ignore_errors: yes

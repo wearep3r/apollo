@@ -1,0 +1,55 @@
+---
+- name: Install Docker on Windows Server
+  hosts: peter
+  gather_facts: False
+
+  tasks:
+  - name: Check if Windows Containers Feature are already
+    win_shell: Get-WindowsOptionalFeature -Online –FeatureName Containers | Where State -CContains "Enabled"
+    register: check_feature_container_installed
+
+  - name: Install Windows Containers Feature  
+    win_shell: Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
+    when: check_feature_container_installed.stdout == ''
+    ignore_errors: yes
+    register: feature_container_installation   
+
+  - name: Reboot Server if Windows Containers Feature requires it
+    win_reboot:
+      reboot_timeout: 3600
+      post_reboot_delay: 60
+    when: feature_container_installation.changed
+    ignore_errors: yes
+
+  - name: Install - NuGet
+    win_shell: Install-PackageProvider -Name NuGet -Force
+
+  - name: Add DockerMsftProvider
+    win_psmodule:
+      name: DockerMsftProvider
+      repository: PSGallery
+      state: present
+
+  - name: Install - Docker
+    win_shell: Install-Package –ProviderName "DockerMsftProvider" -Name "Docker" -Force
+    args:
+      creates: "C:\\Program Files\\Docker\\metadata.json"
+    register: dockerinstall
+
+  - name: Create Docker\config path
+    win_file:
+      path: "C:\\ProgramData\\Docker\\config"
+      state: directory
+
+  - name: Reboot server if Docker package requires it
+    win_reboot:
+      reboot_timeout: 120
+      post_reboot_delay: 60
+    when: dockerinstall.changed
+
+  - name: Start docker service
+    win_service:
+      name: docker
+      state: started
+      start_mode: auto
+
