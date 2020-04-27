@@ -16,6 +16,7 @@ terraform/variables.tf
 ./docker-compose.yml
 .DS_Store
 cio
+terraform
 .terraform/
 *.tfstate
 *.tfstate.backup

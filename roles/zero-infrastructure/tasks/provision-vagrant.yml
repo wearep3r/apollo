@@ -1,8 +1,0 @@
-- name: Provision Vagrant
-  shell: 
-    chdir: "../" 
-    cmd: vagrant up
-- name: Refreshing Inventory
-  meta: refresh_inventory
-- name: Clearing gathered facts
-  meta: clear_facts

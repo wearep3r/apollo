@@ -14,13 +14,9 @@ remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
 become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
 
-# @zero-infrastructure
-infrastructure_provider: "{{ lookup('env','INFRASTRUCTURE_PROVIDER') | default('vagrant', true) }}"
-
 # Lets Encrypt
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(0, true) }}"
 letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
-
 
 # Kernel
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml

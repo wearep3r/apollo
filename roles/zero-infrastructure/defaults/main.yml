@@ -1,8 +1,0 @@
----
-# defaults file for zero-infrastructure
-# Terraform
-terraform_enabled: "{{ lookup('env','TERRAFORM_ENABLED') | default(0, true) }}"
-manager_count: "{{ lookup('env','MANAGER_COUNT') | default(1, true) }}"
-worker_count: "{{ lookup('env','WORKER_COUNT') | default(0, true) }}"
-satellite_count: "{{ lookup('env','SATELLITE_COUNT') | default(0, true) }}"
-volume_count: "{{ lookup('env','VOLUME_COUNT') | default(0, true) }}"
