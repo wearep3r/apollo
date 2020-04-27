@@ -19,6 +19,7 @@
 - import_playbook: playbooks/provision-network.yml
 # @zero-core
 - import_playbook: playbooks/provision-core.yml
+  when: ansible_os_family != "Windows"
 # @zero-engine
 - import_playbook: playbooks/provision-engine.yml
 # @zero-orchestrator

@@ -1,5 +1,4 @@
 - hosts: all
-  become: True
   gather_facts: True
   roles:
     - zero-engine-docker

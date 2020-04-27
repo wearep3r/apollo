@@ -111,6 +111,30 @@ Here's what you have to do to spin up **zero**:
 3. Have 1+ Servers ready with your SSH public key
 4. Run **zero**: `docker run -v "${PWD}/.env:/infrastructure/.env" -v "${HOME}/.ssh:/.ssh" registry.gitlab.com/peter.saarland/zero:latest ./if0 provision`
 
+## Windows
+- https://github.com/PowerShell/Win32-OpenSSH/wiki/Install-Win32-OpenSSH
+- https://computingforgeeks.com/install-and-configure-openssh-server-on-windows-server/
+
+```
+# Install the OpenSSH Client
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+
+# Install the OpenSSH Server
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+# Both of these should return the following output:
+
+Start-Service sshd
+# OPTIONAL but recommended:
+Set-Service -Name sshd -StartupType 'Automatic'
+# Confirm the Firewall rule is configured. It should be created automatically by setup. 
+Get-NetFirewallRule -Name *ssh*
+# There should be a firewall rule named "OpenSSH-Server-In-TCP", which should be enabled
+# If the firewall does not exist, create one
+New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+
+```
+
 ## Vagrant
 To quickly run **zero** on a local machine, you can use vagrant:
 

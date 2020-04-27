@@ -11,6 +11,9 @@ private_iface: "{{ lookup('env','PRIVATE_INTERFACE') | default('eth0', true) }}"
 public_iface: "{{ lookup('env','PUBLIC_INTERFACE') | default('eth1', true) }}"
 remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
 
+become: "{{ 'no' if ansible_facts['os_family'] == 'Windows' else 'yes' }}"
+become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
+
 # Access
 
 # Lets Encrypt
