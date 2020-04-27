@@ -122,56 +122,16 @@ To (re-)provision **zero**:
 
 See the associated [Vagrantfile](Vagrantfile) for additional information.
 
-## On DigitalOcean
+## Cloud Infrastructure
 
-This is intended to be the minimal step required to run zero on a single Ubuntu VM meeting the [](#minimum-requirements), running on DigitalOcean.
+Use the `ZERO_NODES` parameter to feed IP addresses of the hosts to deploy to into zero when provisioning. To create infrastructure compatible with zero, use [dash1](https://gitlab.com/peter.saarland/dash1).
 
-⚠️ Outdated: To be updated once **dash1** is in place
-
-### Prerequisites 
-
-- Install terraform on your local machine
-- Run `terraform init` once in the project root
-- Install and run docker on your local machine
-- Check the [configuration](#configuration) and [authentication](#authentication) sections above.
-
-### Steps
-
-1. Create the `.env` file with your settings (Hint: copy from `.env.example `)
-2. Set
-   - `DIGITALOCEAN_ENABLED=1`
-   - `DIGITALOCEAN_AUTH_TOKEN` to your access token
-   - `SSH_PRIVATE_KEY_FILE` to an existing ssh key or a non-existing one if you want to create a new one, e.g. `~/.ssh/id_rsa_zero`
-   - `REMOTE_USER=root` Deployment via `root` is required currently, due to assumptions other projects used by **zero** made
-3. (Optional) Run `make ssh-gen` to generate the new ssh key if its not existing yet
-4. Run `make setup`, this will create the Ubuntu droplet in your default project
-5. Run `make show` and copy the `ipv4_address` of the newly created VM
-6. Paste the address to the following variables in the `.env` file: `INGRESS_IP=<ipv4>`, `ZERO_NODES=<ipv4>`, `BASE_DOMAIN=<ipv4>.xip.io`
-7. Run `make deploy` to deploy zero with all backplane services to the VM
-
-    ℹ️ This command can be re-run over and over when making changes to the infrastructure, services or doing troubleshooting.
-
-8. (Optional) Run `make teardown` to stop and delete the VM.
-
-### Endpoints
+## Endpoints
 
 - Portainer: `portainer.<ipv4address>.xip.io`
 - Grafana: `grafana.<ipv4address>.xip.io`
 - Traefik: `proxy.<ipv4address>.xip.io`
 - Unsee: `alerts.<ipv4address>.xip.io`
-
-### Troubleshooting
-
-**The deployment complains about the network interface `eth1` not being available**
-
-Ubuntu can choose different names for its network interfaces and **zero** currently cannot cope with that. To workaround that issue:
-
-- ssh into VM via `make ssh` and run `ifconfig` to find the correct name of the adapter (check for the IP)
-- set the `PUBLIC_INTERFACE` and `PRIVATE_INTERFACE` variables in `.env` to the correct name
-
-**I've created my infrastructure with `docker-machine` and now the `Checking on Docker Installation` step fails**
-
-`docker-machine` already installs a newer version of Docker on the VM compared to the one **zero** uses. Unfortunately ansible is not capable allowing downgrades during installation (see [this issue](https://github.com/ansible/ansible/issues/29451)).
 
 ## HOW-TOs
 
