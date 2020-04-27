@@ -1,0 +1,3 @@
+- name: "Provision {{ zero_orchestrator }}"
+  include_role: 
+    name: "zero-orchestrator-{{ zero_orchestrator }}"

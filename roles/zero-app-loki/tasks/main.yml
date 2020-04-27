@@ -1,2 +1,70 @@
 ---
 # tasks file for zero-app-loki
+- name: Provision Loki
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-loki.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision Loki
+      docker_stack:
+        state: present
+        name: loki
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-loki.yml
+      register: loki_provision
+      tags:
+          - loki
+
+    - name: Debug Loki
+      debug:
+        var: loki_provision
+        verbosity: 1
+      tags:
+          - loki
+      when: loki_provision.changed
+
+    - name: "Wait for http://logs.{{ base_domain }} to become ready"
+      uri:
+        url: "http://logs.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - loki
+
+    - name: Get Container ID
+      shell: docker ps -f name=loki_loki --format "{{ '{{' }}.ID{{ '}}'}}"
+      register: loki_app
+
+    - name: Debug
+      debug:
+        var: loki_app
+
+    - name: add container to inventory
+      add_host:
+        name: "{{ loki_app.stdout }}"
+        ansible_connection: docker
+      changed_when: false
+      failed_when: loki_app.stdout == ""        
+
+  rescue:
+    - name: Teardown Loki
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: loki
+      register: loki_loki
+      tags:
+          - loki 

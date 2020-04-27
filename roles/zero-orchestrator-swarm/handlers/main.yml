@@ -7,3 +7,5 @@
 - name: restart docker
   service: name=docker state=restarted
   listen: "restart docker"
+- name: restart kubelet
+  service: name=kubelet state=restarted

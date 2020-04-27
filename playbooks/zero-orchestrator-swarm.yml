@@ -8,6 +8,13 @@
 # More information on this composition can be found in "hcloud.yml"
 #
 # 
+- name: Engine
+  hosts: all
+  become: True
+  gather_facts: True
+  roles:
+    - zero-orchestrator-swarm
+
 - hosts: manager
   become: True
   gather_facts: True

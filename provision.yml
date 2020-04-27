@@ -14,30 +14,29 @@
 - name: Enable AWS root access
   import_playbook: playbooks/aws.yml
   when: infrastructure_provider == "terraform"
-# @zero-network
-- import_playbook: playbooks/provision-network.yml
+
+  # @zero-network
+- import_playbook: playbooks/zero-network.yml
+
 # @zero-core
-- import_playbook: playbooks/provision-core.yml
+# TODO: provide Windows Core
+- import_playbook: playbooks/zero-core.yml
   when: ansible_os_family != "Windows"
-# @zero-engine
-- import_playbook: playbooks/provision-engine.yml
+
 # @zero-orchestrator
-- import_playbook: playbooks/provision-swarm.yml
-  when: swarm_enabled|bool
-- import_playbook: playbooks/provision-kubernetes.yml
-  when: kubernetes_enabled|bool
+- import_playbook: playbooks/zero-orchestrator-swarm.yml
+  when: zero_orchestrator == "swarm"
+- import_playbook: playbooks/zero-orchestrator-kubernetes.yml
+  when: zero_orchestrator == "kubernetes"
+
 # @zero-data
 - import_playbook: playbooks/provision-storidge.yml
-  tags:
-      - storidge
   when: storidge_enabled|bool
+
 # @zero-backplane
-- import_playbook: playbooks/provision-backplane.yml
-  tags:
-    - backplane
+- import_playbook: playbooks/zero-backplane.yml
   when: backplane_enabled|bool
+  
 # @zero-module-runner
 - import_playbook: playbooks/provision-runner.yml
-  tags:
-      - runner
   when: runner_enabled|bool

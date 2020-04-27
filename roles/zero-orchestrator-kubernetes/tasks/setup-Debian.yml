@@ -1,168 +1,97 @@
 ---
-# tasks file for zero-module-docker
-- name: Ensure old versions of Docker are not installed.
-  package:
-    name:
-      - docker
-      - docker-engine
-    state: absent
-
-- name: Create /etc/docker
-  file:
-    path: /etc/docker
-    state: directory
-    mode: '0755'
-
-# - name: Copy Docker config
-#   template:
-#     src: templates/daemon.json.j2
-#     dest: /etc/docker/daemon.json
-#     owner: root
-#     group: root
-#     mode: '0644'
-#   notify: restart docker
-#   tags:
-#     - docker
-#     - config
-
-- name: Add Docker apt key.
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-    state: present
-  register: add_repository_key
-  ignore_errors: "{{ docker_apt_ignore_key_error }}"
-
-- name: Add Docker apt key (alternative for older systems without SNI).
+# tasks file for zero-orchestrator-kubernetes
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
   shell: |
-    set -o pipefail
-    curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  args:
-    warn: false
-  when: add_repository_key is failed
+    swapoff -a
+  when: kubernetes_enabled|bool
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+  when: kubernetes_enabled|bool
 
-- name: Add Docker repository.
-  apt_repository:
-    repo: "{{ docker_apt_repository }}"
+- name: Add an apt signing key for Kubernetes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
-    update_cache: true
 
-- name: Installing Docker.
-  package:
-    name: "{{ docker_package }}"
-    state: "{{ docker_package_state }}"
-  async: 1000
-  poll: 0
-  register: docker_install
-  notify: restart docker
-  changed_when: False
-
-- name: Checking on Docker Installation
-  async_status:
-    jid: "{{ docker_install.ansible_job_id }}"
-  until: check_result.finished
-  register: check_result
-  retries: 300
-
-- name: Ensure Docker is started and enabled at boot.
-  service:
-    name: docker
-    state: "{{ docker_service_state }}"
-    enabled: "{{ docker_service_enabled }}"
-
-- name: Ensure handlers are notified now to avoid firewall conflicts.
-  meta: flush_handlers
-
-- name: Check current docker-compose version.
-  command: docker-compose --version
-  register: docker_compose_current_version
-  changed_when: false
-  failed_when: false
-
-- name: Delete existing docker-compose version if it's different.
-  file:
-    path: "{{ docker_compose_path }}"
-    state: absent
-  when: >
-    docker_compose_current_version.stdout is defined
-    and docker_compose_version not in docker_compose_current_version.stdout
-
-- name: Install Docker Compose (if configured).
-  get_url:
-    url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
-    dest: "{{ docker_compose_path }}"
-    mode: 0755
-    
-- name: Ensure docker users are added to the docker group.
-  user:
-    name: "{{ item }}"
-    groups: docker
-    append: true
-  with_items: "{{ docker_users }}"     
-
-- name: Copy udev config
+- name: Add Kubernetes apt preferences file to pin a version.
   template:
-    src: templates/01-net-setup-link.rules.j2
-    dest: /etc/udev/rules.d/01-net-setup-link.rules
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart docker
-  register: udev
-  tags:
-    - docker
-    - config
+    src: apt-preferences-kubernetes.j2
+    dest: /etc/apt/preferences.d/kubernetes
 
-- name: Copy systemd config
-  template:
-    src: templates/99-default.link.j2
-    dest: /etc/systemd/network/99-default.link
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart docker
-  register: systemd
-  tags:
-    - docker
-    - config
+- name: Adding apt repository for Kubernetes
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes.list
 
-- name: Reload udev rules
-  command: udevadm trigger
-  when: udev.changed
-  tags:
-    - config
+- name: Install Kubernetes binaries
+  apt: 
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  notify: restart kubelet
+  vars:
+    packages:
+      - kubelet 
+      - kubeadm 
+      - kubectl
+      - kubernetes-cni
 
-- name: reload systemd
+- name: Check for existence of kubelet environment file.
+  stat:
+    path: '{{ kubelet_environment_file_path }}'
+  register: kubelet_environment_file
+
+- name: Set facts for KUBELET_EXTRA_ARGS task if environment file exists.
+  set_fact:
+    kubelet_args_path: '{{ kubelet_environment_file_path }}'
+    kubelet_args_line: "{{ 'KUBELET_EXTRA_ARGS=' + kubernetes_kubelet_extra_args }}"
+    kubelet_args_regexp: '^KUBELET_EXTRA_ARGS='
+  when: kubelet_environment_file.stat.exists
+
+- name: Set facts for KUBELET_EXTRA_ARGS task if environment file doesn't exist.
+  set_fact:
+    kubelet_args_path: '/etc/systemd/system/kubelet.service.d/10-kubeadm.conf'
+    kubelet_args_line: "{{ 'Environment=\"KUBELET_EXTRA_ARGS=' + kubernetes_kubelet_extra_args + '\"' }}"
+    kubelet_args_regexp: '^Environment="KUBELET_EXTRA_ARGS='
+  when: not kubelet_environment_file.stat.exists
+
+- name: Configure KUBELET_EXTRA_ARGS.
+  lineinfile:
+    path: '{{ kubelet_args_path }}'
+    line: '{{ kubelet_args_line }}'
+    regexp: '{{ kubelet_args_regexp }}'
+    state: present
+  register: kubelet_config_file
+
+- name: Reload systemd unit if args were changed.
   systemd:
-    daemon_reload: True
-  when: systemd.changed
-  tags:
-    - config
+    state: restarted
+    daemon_reload: true
+    name: kubelet
+  when: kubelet_config_file is changed
 
-- name: Check if Loki Docker Plugin is installed
-  shell: docker plugin ls
-  register: loki_installed
-  ignore_errors: True
-  changed_when: False
-  tags:
-    - docker
+- name: Ensure kubelet is started and enabled at boot.
+  service:
+    name: kubelet
+    state: started
+    enabled: true
 
-- name: Docker Plugins
-  debug: 
-    msg: "{{ loki_installed }}"
-    verbosity: 1
+- name: Check if Kubernetes has already been initialized.
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_init_stat
 
-- name: Install Loki Docker Plugin
-  command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
-  tags:
-    - docker
-  when: "'loki:latest' not in loki_installed.stdout"
+# - name: Configure node ip
+#   lineinfile:
+#     path: /etc/default/kubelet
+#     line: "KUBELET_EXTRA_ARGS=--node-ip={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
 
-- name: Copy Docker config
-  template:
-    src: templates/daemon.json.j2
-    dest: /etc/docker/daemon.json
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart docker
+# - name: Restart kubelet
+#   service:
+#     name: kubelet
+#     daemon_reload: yes
+#     state: restarted
