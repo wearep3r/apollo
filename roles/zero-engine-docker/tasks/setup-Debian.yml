@@ -1,168 +1,170 @@
 ---
-# tasks file for zero-module-docker
-- name: Ensure old versions of Docker are not installed.
-  package:
-    name:
+  # tasks file for zero-engine-docker
+- block:
+  - name: Ensure old versions of Docker are not installed.
+    package:
+      name:
+        - docker
+        - docker-engine
+      state: absent
+
+  - name: Create /etc/docker
+    file:
+      path: /etc/docker
+      state: directory
+      mode: '0755'
+
+  # - name: Copy Docker config
+  #   template:
+  #     src: templates/daemon.json.j2
+  #     dest: /etc/docker/daemon.json
+  #     owner: root
+  #     group: root
+  #     mode: '0644'
+  #   notify: restart docker
+  #   tags:
+  #     - docker
+  #     - config
+
+  - name: Add Docker apt key.
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+      state: present
+    register: add_repository_key
+    ignore_errors: "{{ docker_apt_ignore_key_error }}"
+
+  - name: Add Docker apt key (alternative for older systems without SNI).
+    shell: |
+      set -o pipefail
+      curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    args:
+      warn: false
+    when: add_repository_key is failed
+
+  - name: Add Docker repository.
+    apt_repository:
+      repo: "{{ docker_apt_repository }}"
+      state: present
+      update_cache: true
+
+  - name: Installing Docker.
+    package:
+      name: "{{ docker_package }}"
+      state: "{{ docker_package_state }}"
+    async: 1000
+    poll: 0
+    register: docker_install
+    notify: restart docker
+    changed_when: False
+
+  - name: Checking on Docker Installation
+    async_status:
+      jid: "{{ docker_install.ansible_job_id }}"
+    until: check_result.finished
+    register: check_result
+    retries: 300
+
+  - name: Ensure Docker is started and enabled at boot.
+    service:
+      name: docker
+      state: "{{ docker_service_state }}"
+      enabled: "{{ docker_service_enabled }}"
+
+  - name: Ensure handlers are notified now to avoid firewall conflicts.
+    meta: flush_handlers
+
+  - name: Check current docker-compose version.
+    command: docker-compose --version
+    register: docker_compose_current_version
+    changed_when: false
+    failed_when: false
+
+  - name: Delete existing docker-compose version if it's different.
+    file:
+      path: "{{ docker_compose_path }}"
+      state: absent
+    when: >
+      docker_compose_current_version.stdout is defined
+      and docker_compose_version not in docker_compose_current_version.stdout
+
+  - name: Install Docker Compose (if configured).
+    get_url:
+      url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
+      dest: "{{ docker_compose_path }}"
+      mode: 0755
+      
+  - name: Ensure docker users are added to the docker group.
+    user:
+      name: "{{ item }}"
+      groups: docker
+      append: true
+    with_items: "{{ docker_users }}"     
+
+  - name: Copy udev config
+    template:
+      src: templates/01-net-setup-link.rules.j2
+      dest: /etc/udev/rules.d/01-net-setup-link.rules
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart docker
+    register: udev
+    tags:
       - docker
-      - docker-engine
-    state: absent
+      - config
 
-- name: Create /etc/docker
-  file:
-    path: /etc/docker
-    state: directory
-    mode: '0755'
+  - name: Copy systemd config
+    template:
+      src: templates/99-default.link.j2
+      dest: /etc/systemd/network/99-default.link
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart docker
+    register: systemd
+    tags:
+      - docker
+      - config
 
-# - name: Copy Docker config
-#   template:
-#     src: templates/daemon.json.j2
-#     dest: /etc/docker/daemon.json
-#     owner: root
-#     group: root
-#     mode: '0644'
-#   notify: restart docker
-#   tags:
-#     - docker
-#     - config
+  - name: Reload udev rules
+    command: udevadm trigger
+    when: udev.changed
+    tags:
+      - config
 
-- name: Add Docker apt key.
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-    state: present
-  register: add_repository_key
-  ignore_errors: "{{ docker_apt_ignore_key_error }}"
+  - name: reload systemd
+    systemd:
+      daemon_reload: True
+    when: systemd.changed
+    tags:
+      - config
 
-- name: Add Docker apt key (alternative for older systems without SNI).
-  shell: |
-    set -o pipefail
-    curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  args:
-    warn: false
-  when: add_repository_key is failed
+  - name: Check if Loki Docker Plugin is installed
+    shell: docker plugin ls
+    register: loki_installed
+    ignore_errors: True
+    changed_when: False
+    tags:
+      - docker
 
-- name: Add Docker repository.
-  apt_repository:
-    repo: "{{ docker_apt_repository }}"
-    state: present
-    update_cache: true
+  - name: Docker Plugins
+    debug: 
+      msg: "{{ loki_installed }}"
+      verbosity: 1
 
-- name: Installing Docker.
-  package:
-    name: "{{ docker_package }}"
-    state: "{{ docker_package_state }}"
-  async: 1000
-  poll: 0
-  register: docker_install
-  notify: restart docker
-  changed_when: False
+  - name: Install Loki Docker Plugin
+    command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+    tags:
+      - docker
+    when: "'loki:latest' not in loki_installed.stdout"
 
-- name: Checking on Docker Installation
-  async_status:
-    jid: "{{ docker_install.ansible_job_id }}"
-  until: check_result.finished
-  register: check_result
-  retries: 300
-
-- name: Ensure Docker is started and enabled at boot.
-  service:
-    name: docker
-    state: "{{ docker_service_state }}"
-    enabled: "{{ docker_service_enabled }}"
-
-- name: Ensure handlers are notified now to avoid firewall conflicts.
-  meta: flush_handlers
-
-- name: Check current docker-compose version.
-  command: docker-compose --version
-  register: docker_compose_current_version
-  changed_when: false
-  failed_when: false
-
-- name: Delete existing docker-compose version if it's different.
-  file:
-    path: "{{ docker_compose_path }}"
-    state: absent
-  when: >
-    docker_compose_current_version.stdout is defined
-    and docker_compose_version not in docker_compose_current_version.stdout
-
-- name: Install Docker Compose (if configured).
-  get_url:
-    url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
-    dest: "{{ docker_compose_path }}"
-    mode: 0755
-    
-- name: Ensure docker users are added to the docker group.
-  user:
-    name: "{{ item }}"
-    groups: docker
-    append: true
-  with_items: "{{ docker_users }}"     
-
-- name: Copy udev config
-  template:
-    src: templates/01-net-setup-link.rules.j2
-    dest: /etc/udev/rules.d/01-net-setup-link.rules
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart docker
-  register: udev
-  tags:
-    - docker
-    - config
-
-- name: Copy systemd config
-  template:
-    src: templates/99-default.link.j2
-    dest: /etc/systemd/network/99-default.link
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart docker
-  register: systemd
-  tags:
-    - docker
-    - config
-
-- name: Reload udev rules
-  command: udevadm trigger
-  when: udev.changed
-  tags:
-    - config
-
-- name: reload systemd
-  systemd:
-    daemon_reload: True
-  when: systemd.changed
-  tags:
-    - config
-
-- name: Check if Loki Docker Plugin is installed
-  shell: docker plugin ls
-  register: loki_installed
-  ignore_errors: True
-  changed_when: False
-  tags:
-    - docker
-
-- name: Docker Plugins
-  debug: 
-    msg: "{{ loki_installed }}"
-    verbosity: 1
-
-- name: Install Loki Docker Plugin
-  command: docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
-  tags:
-    - docker
-  when: "'loki:latest' not in loki_installed.stdout"
-
-- name: Copy Docker config
-  template:
-    src: templates/daemon.json.j2
-    dest: /etc/docker/daemon.json
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart docker
+  - name: Copy Docker config
+    template:
+      src: templates/daemon.json.j2
+      dest: /etc/docker/daemon.json
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart docker
+  become: True

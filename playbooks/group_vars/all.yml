@@ -1,4 +1,4 @@
-# Zero
+# @zero-core
 force_reboot: 0
 zero_id: "{{ lookup('env','ZERO_ID') | default('zero', true) }}"
 check_git: "{{ lookup('env','CHECK_GIT') | default(0, true) }}"
@@ -11,21 +11,16 @@ private_iface: "{{ lookup('env','PRIVATE_INTERFACE') | default('eth0', true) }}"
 public_iface: "{{ lookup('env','PUBLIC_INTERFACE') | default('eth1', true) }}"
 remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
 
-become: "{{ 'no' if ansible_facts['os_family'] == 'Windows' else 'yes' }}"
+become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
 become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
 
-# Access
+# @zero-infrastructure
+infrastructure_provider: "{{ lookup('env','INFRASTRUCTURE_PROVIDER') | default('vagrant', true) }}"
 
 # Lets Encrypt
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(0, true) }}"
 letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
 
-# Terraform
-terraform_enabled: "{{ lookup('env','TERRAFORM_ENABLED') | default(0, true) }}"
-manager_count: "{{ lookup('env','MANAGER_COUNT') | default(0, true) }}"
-worker_count: "{{ lookup('env','WORKER_COUNT') | default(0, true) }}"
-satellite_count: "{{ lookup('env','SATELLITE_COUNT') | default(0, true) }}"
-volume_count: "{{ lookup('env','VOLUME_COUNT') | default(0, true) }}"
 
 # Kernel
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
