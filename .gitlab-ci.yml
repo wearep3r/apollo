@@ -38,10 +38,12 @@ Build node-exporter:
     - cd docker/node-exporter
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/node-exporter/**
-      when: manual
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/node-exporter/**
+  #     when: manual
+  only:
+    - master
 
 Build prometheus:
   stage: build
@@ -56,10 +58,12 @@ Build prometheus:
     - cd docker/prometheus
     - docker build --cache-from $CI_REGISTRY_IMAGE/prometheus:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/prometheus/**
-      when: manual
+  #rules:
+  #  - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #    - docker/prometheus/**
+  #    when: manual
+  only:
+    - master
 
 Build alertmanager:
   stage: build
@@ -74,10 +78,12 @@ Build alertmanager:
     - cd docker/alertmanager
     - docker build --cache-from $CI_REGISTRY_IMAGE/alertmanager:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/alertmanager/**
-      when: manual
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/alertmanager/**
+  #     when: manual
+  only:
+    - master
 
 Build grafana:
   stage: build
@@ -92,10 +98,12 @@ Build grafana:
     - cd docker/grafana
     - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/grafana/**
-      when: manual
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/grafana/**
+  #     when: manual
+  only:
+    - master
 
 # Build loki:
 #   stage: build
@@ -169,12 +177,13 @@ Release prometheus:
     - docker push $CI_REGISTRY_IMAGE/prometheus:latest
     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/prometheus:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/prometheus:v$(cat VERSION.txt)
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/prometheus/**
-      when: manual
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/prometheus/**
+  #     when: manual
+  only:
+    - master
     
-
 Release alertmanager:
   stage: release
   image: docker:19.03.5
@@ -187,10 +196,12 @@ Release alertmanager:
     - docker push $CI_REGISTRY_IMAGE/alertmanager:latest
     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/alertmanager:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/alertmanager:v$(cat VERSION.txt)
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/alertmanager/**
-      when: manual    
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/alertmanager/**
+  #     when: manual   
+  only:
+    - master
 
 Release grafana:
   stage: release
@@ -204,10 +215,12 @@ Release grafana:
     - docker push $CI_REGISTRY_IMAGE/grafana:latest
     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/grafana:v$(cat VERSION.txt)
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/grafana/**
-      when: manual
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/grafana/**
+  #     when: manual
+  only:
+    - master
 
 Release node-exporter:
   stage: release
@@ -221,10 +234,12 @@ Release node-exporter:
     - docker push $CI_REGISTRY_IMAGE/node-exporter:latest
     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
     - docker push $CI_REGISTRY_IMAGE/node-exporter:v$(cat VERSION.txt)
-  rules:
-    - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-      - docker/node-exporter/**
-      when: manual
+  # rules:
+  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
+  #     - docker/node-exporter/**
+  #     when: manual
+  only:
+    - master
 
 # Release loki:
 #   stage: release
