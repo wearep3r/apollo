@@ -1,0 +1,64 @@
+---
+# tasks file for zero-app-prometheus
+- name: Provision prometheus
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-prometheus.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision prometheus
+      docker_stack:
+        state: present
+        name: prometheus
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-prometheus.yml
+      register: prometheus_provision
+
+    - name: Debug prometheus
+      debug:
+        var: prometheus_provision
+        verbosity: 1
+      when: prometheus_provision.changed
+
+    - name: "Wait for http://prometheus.{{ base_domain }} to become ready"
+      uri:
+        url: "http://prometheus.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+      register: _result
+      until: _result.status == 200
+      retries: 30
+      delay: 5
+
+    - name: Get Container ID
+      shell: docker ps -f name=prometheus_prometheus --format "{{ '{{' }}.ID{{ '}}'}}"
+      register: prometheus_app
+
+    - name: Debug
+      debug:
+        var: prometheus_app
+
+    - name: add container to inventory
+      add_host:
+        name: "{{ prometheus_app.stdout }}"
+        ansible_connection: docker
+      changed_when: false
+      failed_when: prometheus_app.stdout == ""        
+
+  rescue:
+    - name: Teardown prometheus
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: prometheus
+      register: prometheus_prometheus
