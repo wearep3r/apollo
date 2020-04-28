@@ -1,2 +1,62 @@
 ---
 # tasks file for zero-app-grafana
+- name: Provision Grafana
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-grafana.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision Grafana
+      docker_stack:
+        state: present
+        name: grafana
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-grafana.yml
+      register: grafana_provision
+
+    - name: Debug Grafana
+      debug:
+        var: grafana_provision
+        verbosity: 1
+      when: grafana_provision.changed
+
+    - name: "Wait for http://grafana.{{ base_domain }} to become ready"
+      uri:
+        url: "http://grafana.{{ base_domain }}/login"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30
+      delay: 5
+
+    - name: Get Container ID
+      shell: docker ps -f name=grafana_grafana --format "{{ '{{' }}.ID{{ '}}'}}"
+      register: grafana_app
+
+    - name: Debug
+      debug:
+        var: grafana_app
+
+    - name: add container to inventory
+      add_host:
+        name: "{{ grafana_app.stdout }}"
+        ansible_connection: docker
+      changed_when: false
+      failed_when: grafana_app.stdout == ""        
+
+  rescue:
+    - name: Teardown Grafana
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: grafana
+      register: grafana_grafana

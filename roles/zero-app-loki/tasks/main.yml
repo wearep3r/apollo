@@ -19,29 +19,24 @@
         compose:
           - /tmp/zero-app-loki.yml
       register: loki_provision
-      tags:
-          - loki
 
     - name: Debug Loki
       debug:
         var: loki_provision
         verbosity: 1
-      tags:
-          - loki
       when: loki_provision.changed
 
     - name: "Wait for http://logs.{{ base_domain }} to become ready"
       uri:
-        url: "http://logs.{{ base_domain }}"
+        # https://github.com/grafana/loki/blob/master/docs/api.md#get-ready
+        url: "http://logs.{{ base_domain }}/ready"
         method: GET
         status_code: 200
         validate_certs: no
       register: _result
       until: _result.status == 200
-      retries: 30 # retry X times  
-      delay: 5 # pause for X sec b/w each call
-      tags:
-        - loki
+      retries: 30
+      delay: 5
 
     - name: Get Container ID
       shell: docker ps -f name=loki_loki --format "{{ '{{' }}.ID{{ '}}'}}"
@@ -66,5 +61,3 @@
           state: absent
           name: loki
       register: loki_loki
-      tags:
-          - loki 

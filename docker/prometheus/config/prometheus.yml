@@ -60,6 +60,22 @@ scrape_configs:
       type: 'A'
       port: 8080
 
+  - job_name: 'loki'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.loki'
+      type: 'A'
+      port: 3100
+
+  - job_name: 'promtail'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.promtail'
+      type: 'A'
+      port: 80
+
   # - job_name: 'giltlab-runner'
   #   dns_sd_configs:
   #   - names:

@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "zero-1"
   config.vm.network "private_network", ip: "10.16.73.20"
   config.vm.provision "ansible" do |ansible|
-    ansible.verbose = "vvvv"
+    ansible.verbose = "v"
     ansible.playbook = "provision.yml"
     ansible.become = true
     

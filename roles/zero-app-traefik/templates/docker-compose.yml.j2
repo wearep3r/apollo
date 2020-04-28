@@ -6,7 +6,7 @@ services:
     command: > 
       traefik 
       --docker 
-{% if swarm_enabled %}
+{% if zero_orchestrator == "swarm" %}
       --docker.swarmmode 
 {% endif %}
       --docker.watch 
@@ -15,6 +15,7 @@ services:
       --entrypoints="Name:http Address::80" 
       --metrics
       --metrics.prometheus
+      --accessLog
 {% if letsencrypt_enabled|bool %}
       --entrypoints="Name:https Address::443 TLS" 
       --acme 
@@ -48,11 +49,13 @@ services:
       - traefik-config:/etc/traefik
       - /var/run/docker.sock:/var/run/docker.sock:ro
     deploy:
+      mode: replicated
+      replicas: 1
       update_config:
           parallelism: 1
           delay: 30s
           monitor: 30s
-          order: stop-first
+          order: start-first
           failure_action: rollback
       restart_policy:
           condition: on-failure
@@ -65,7 +68,7 @@ services:
           traefik.docker.network: "proxy"
           traefik.port: "8080"
           traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
-          traefik.backend: "traefik"
+          traefik.backend: "zero-app-traefik"
           traefik.protocol: "http"
 {% if letsencrypt_enabled|bool %}
           traefik.frontend.entryPoints: "http,https"
