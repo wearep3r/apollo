@@ -1,0 +1,40 @@
+---
+# tasks file for zero-app-node-exporter
+- name: Provision node-exporter
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-node-exporter.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision node-exporter
+      docker_stack:
+        state: present
+        name: node-exporter
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-node-exporter.yml
+      register: node_exporter_provision
+    
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-node-exporter.yml
+        state: absent
+
+  rescue:
+    - name: Teardown node-exporter
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: node-exporter
+      register: node_exporter_node_exporter
+      
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-node-exporter.yml
+        state: absent

@@ -1,0 +1,9 @@
+---
+# handlers file for zero-module-docker
+- name: drain swarm node
+  shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
+  #listen: "restart docker"
+  notify: "restart docker"
+- name: restart docker
+  service: name=docker state=restarted
+  listen: "restart docker"

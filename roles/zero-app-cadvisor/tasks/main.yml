@@ -1,0 +1,40 @@
+---
+# tasks file for zero-app-cadvisor
+- name: Provision cadvisor
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-cadvisor.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision cadvisor
+      docker_stack:
+        state: present
+        name: cadvisor
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-cadvisor.yml
+      register: cadvisor_provision  
+      
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-cadvisor.yml
+        state: absent
+
+  rescue:
+    - name: Teardown cadvisor
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: cadvisor
+      register: cadvisor_cadvisor
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-cadvisor.yml
+        state: absent
