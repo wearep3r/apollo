@@ -52,6 +52,8 @@ services:
   victoria:
     image: victoriametrics/victoria-metrics:latest
     command: -storageDataPath=/victoria-data -memory.allowedPercent=20
+    networks:
+      - monitoring
     deploy:
       labels:
         prometheus.enable: "true"

@@ -4,14 +4,16 @@ Vagrant.configure("2") do |config|
   config.vm.define "zero-1"
   config.vm.network "private_network", ip: "10.16.73.20"
   config.vm.provision "ansible" do |ansible|
-    ansible.verbose = "v"
+    ansible.verbose = ""
     ansible.playbook = "provision.yml"
     ansible.become = true
+    ansible.compatibility_mode = "2.0"
     
     ansible.extra_vars = {
       ingress_ip: "10.16.73.20",
       private_iface: "eth0",
-      public_iface: "eth1"
+      public_iface: "eth1",
+      docker_users: ["vagrant"]
     }
     galaxy_role_file = "requirements.yml"
     # https://www.vagrantup.com/docs/provisioning/ansible_intro.html

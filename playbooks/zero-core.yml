@@ -1,5 +1,5 @@
-# Standards
-- hosts: all
+- name: "@zero-core"
+  hosts: all
   gather_facts: true
   become: true
   roles:

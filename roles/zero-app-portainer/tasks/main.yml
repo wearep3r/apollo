@@ -22,14 +22,6 @@
       tags:
           - portainer
 
-    - name: Debug Portainer
-      debug:
-        var: portainer_provision
-        verbosity: 1
-      tags:
-          - portainer
-      when: portainer_provision.changed
-
     - name: "Wait for http://portainer.{{ base_domain }} to become ready"
       uri:
         url: "http://portainer.{{ base_domain }}"
@@ -38,26 +30,15 @@
         validate_certs: no
       register: _result
       until: _result.status == 200
-      retries: 30 # retry X times  
-      delay: 5 # pause for X sec b/w each call
+      retries: 30
+      delay: 10
       tags:
         - portainer
 
-    - name: Get Container ID
-      shell: docker ps -f name=portainer_portainer --format "{{ '{{' }}.ID{{ '}}'}}"
-      register: portainer_app
-
-    - name: Debug
-      debug:
-        var: portainer_app
-
-    - name: add container to inventory
-      add_host:
-        name: "{{ portainer_app.stdout }}"
-        ansible_connection: docker
-      changed_when: false
-      failed_when: portainer_app.stdout == ""        
-
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-portainer.yml
+        state: absent
   rescue:
     - name: Teardown Portainer
       docker_stack:
@@ -66,5 +47,8 @@
           state: absent
           name: portainer
       register: portainer_portainer
-      tags:
-          - portainer 
+    
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-portainer.yml
+        state: absent

@@ -8,14 +8,15 @@
 # More information on this composition can be found in "hcloud.yml"
 #
 # 
-- name: Engine
+- name: "@zero-orchestrator"
   hosts: all
   become: True
   gather_facts: True
   roles:
     - zero-orchestrator-kubernetes
 
-- hosts: manager[0]
+- name: "@zero-orchestrator-kubernetes"
+  hosts: manager[0]
   become: True
   gather_facts: True
   tasks:

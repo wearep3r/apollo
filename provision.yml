@@ -11,30 +11,37 @@
   # @orchestrator
   # @backplane
 # @zero-infrastructure
-- name: Enable AWS root access
+- name: "Enable AWS root access"
   import_playbook: playbooks/aws.yml
   when: infrastructure_provider == "terraform"
 
-  # @zero-network
-- import_playbook: playbooks/zero-network.yml
+# @zero-network
+- name: "@zero-network"
+  import_playbook: playbooks/zero-network.yml
+  tags:
+    - print_action
 
 # @zero-core
 # TODO: provide Windows Core
-- import_playbook: playbooks/zero-core.yml
+- name: "@zero-core"
+  import_playbook: playbooks/zero-core.yml
   when: ansible_os_family != "Windows"
 
 # @zero-orchestrator
-- import_playbook: playbooks/zero-orchestrator-swarm.yml
-  when: zero_orchestrator == "swarm"
-- import_playbook: playbooks/zero-orchestrator-kubernetes.yml
-  when: zero_orchestrator == "kubernetes"
+- name: "@zero-orchestrator"
+  import_playbook: playbooks/zero-orchestrator.yml
+# - name: "@zero-orchestrator"
+#   import_playbook: playbooks/zero-orchestrator-kubernetes.yml
+#   when: zero_orchestrator == "kubernetes"
 
 # @zero-data
-- import_playbook: playbooks/provision-storidge.yml
-  when: storidge_enabled|bool
+# - name: "@zero-data"
+#   import_playbook: playbooks/provision-storidge.yml
+#   when: storidge_enabled|bool
 
 # @zero-backplane
-- import_playbook: playbooks/zero-backplane.yml
+- name: "@zero-backplane"
+  import_playbook: playbooks/zero-backplane.yml
   when: backplane_enabled|bool
   
 # @zero-module-runner

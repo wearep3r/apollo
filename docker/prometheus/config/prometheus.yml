@@ -93,7 +93,7 @@ scrape_configs:
       # This A-Record is managed by Docker Swarm
       - 'tasks.promtail'
       type: 'A'
-      port: 80
+      port: 9080
 
   # - job_name: 'giltlab-runner'
   #   dns_sd_configs:

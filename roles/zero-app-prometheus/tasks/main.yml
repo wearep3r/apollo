@@ -20,12 +20,6 @@
           - /tmp/zero-app-prometheus.yml
       register: prometheus_provision
 
-    - name: Debug prometheus
-      debug:
-        var: prometheus_provision
-        verbosity: 1
-      when: prometheus_provision.changed
-
     - name: "Wait for http://prometheus.{{ base_domain }} to become ready"
       uri:
         url: "http://prometheus.{{ base_domain }}"
@@ -37,22 +31,26 @@
       register: _result
       until: _result.status == 200
       retries: 30
-      delay: 5
+      delay: 10
 
-    - name: Get Container ID
-      shell: docker ps -f name=prometheus_prometheus --format "{{ '{{' }}.ID{{ '}}'}}"
-      register: prometheus_app
+    # - name: Get Container ID
+    #   shell: docker ps -f name=prometheus_prometheus --format "{{ '{{' }}.ID{{ '}}'}}"
+    #   register: prometheus_app
 
-    - name: Debug
-      debug:
-        var: prometheus_app
+    # - name: Debug
+    #   debug:
+    #     var: prometheus_app
 
-    - name: add container to inventory
-      add_host:
-        name: "{{ prometheus_app.stdout }}"
-        ansible_connection: docker
-      changed_when: false
-      failed_when: prometheus_app.stdout == ""        
+    # - name: add container to inventory
+    #   add_host:
+    #     name: "{{ prometheus_app.stdout }}"
+    #     ansible_connection: docker
+    #   changed_when: false
+    #   failed_when: prometheus_app.stdout == ""
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-prometheus.yml
+        state: absent       
 
   rescue:
     - name: Teardown prometheus
@@ -62,3 +60,8 @@
           state: absent
           name: prometheus
       register: prometheus_prometheus
+    
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-prometheus.yml
+        state: absent

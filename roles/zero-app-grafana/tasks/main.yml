@@ -20,12 +20,6 @@
           - /tmp/zero-app-grafana.yml
       register: grafana_provision
 
-    - name: Debug Grafana
-      debug:
-        var: grafana_provision
-        verbosity: 1
-      when: grafana_provision.changed
-
     - name: "Wait for http://grafana.{{ base_domain }} to become ready"
       uri:
         url: "http://grafana.{{ base_domain }}/login"
@@ -35,22 +29,12 @@
       register: _result
       until: _result.status == 200
       retries: 30
-      delay: 5
+      delay: 10
 
-    - name: Get Container ID
-      shell: docker ps -f name=grafana_grafana --format "{{ '{{' }}.ID{{ '}}'}}"
-      register: grafana_app
-
-    - name: Debug
-      debug:
-        var: grafana_app
-
-    - name: add container to inventory
-      add_host:
-        name: "{{ grafana_app.stdout }}"
-        ansible_connection: docker
-      changed_when: false
-      failed_when: grafana_app.stdout == ""        
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-grafana.yml
+        state: absent      
 
   rescue:
     - name: Teardown Grafana
@@ -60,3 +44,8 @@
           state: absent
           name: grafana
       register: grafana_grafana
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-grafana.yml
+        state: absent

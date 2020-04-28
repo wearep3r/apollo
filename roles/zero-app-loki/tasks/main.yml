@@ -20,12 +20,6 @@
           - /tmp/zero-app-loki.yml
       register: loki_provision
 
-    - name: Debug Loki
-      debug:
-        var: loki_provision
-        verbosity: 1
-      when: loki_provision.changed
-
     - name: "Wait for http://logs.{{ base_domain }} to become ready"
       uri:
         # https://github.com/grafana/loki/blob/master/docs/api.md#get-ready
@@ -36,22 +30,12 @@
       register: _result
       until: _result.status == 200
       retries: 30
-      delay: 5
+      delay: 10
 
-    - name: Get Container ID
-      shell: docker ps -f name=loki_loki --format "{{ '{{' }}.ID{{ '}}'}}"
-      register: loki_app
-
-    - name: Debug
-      debug:
-        var: loki_app
-
-    - name: add container to inventory
-      add_host:
-        name: "{{ loki_app.stdout }}"
-        ansible_connection: docker
-      changed_when: false
-      failed_when: loki_app.stdout == ""        
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-loki.yml
+        state: absent      
 
   rescue:
     - name: Teardown Loki
@@ -61,3 +45,8 @@
           state: absent
           name: loki
       register: loki_loki
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-loki.yml
+        state: absent
