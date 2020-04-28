@@ -47,6 +47,14 @@ scrape_configs:
       type: 'A'
       port: 8428
 
+  - job_name: 'trickster'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.trickster'
+      type: 'A'
+      port: 8082
+
   - job_name: 'node-exporter'
     dns_sd_configs:
     - names:

@@ -47,6 +47,23 @@ services:
         traefik.frontend.entryPoints: "http"
 {%endif%}
 
+  trickster:
+    image: tricksterio/trickster
+    networks:
+      - monitoring
+    healthcheck:
+      test: "wget -q -Y off -O /dev/null http://localhost:9090/ping > /dev/null 2>&1"
+      interval: 25s
+      timeout: 3s
+      start_period: 120s
+    deploy:
+      labels:
+        prometheus.enable: "true"
+        prometheus.port: "8082"
+        prometheus.path: "/metrics"
+      mode: replicated
+      replicas: 1
+
 networks:
   monitoring:
     driver: overlay
