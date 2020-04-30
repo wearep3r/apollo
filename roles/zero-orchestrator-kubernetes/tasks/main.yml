@@ -1,1 +1,2 @@
-- include_tasks: "setup-{{ ansible_os_family }}.yml"
+- name: "@zero-orchestrator-kubernetes"
+  include_tasks: "setup-{{ ansible_os_family }}.yml"

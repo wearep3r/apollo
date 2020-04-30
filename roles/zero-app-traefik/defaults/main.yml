@@ -1,4 +1,5 @@
 ---
 # defaults file for zero-app-traefik
+traefik_version: 1
 traefik_dnschallenge_provider: "{{ lookup('env','TRAEFIK_DNSCHALLENGE_PROVIDER') | default('', true) }}"
 traefik_dnschallenge_resolvers: "{{ lookup('env','TRAEFIK_DNSCHALLENGE_RESOLVERS') | default('1.1.1.1:53', true) }}"
