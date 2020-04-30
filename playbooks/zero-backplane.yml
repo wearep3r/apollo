@@ -1,4 +1,5 @@
-- hosts: manager[0]
+- name: "@zero-backplane"
+  hosts: manager[0]
   become: True
   gather_facts: True
   pre_tasks:
