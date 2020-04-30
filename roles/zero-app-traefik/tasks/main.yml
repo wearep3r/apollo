@@ -4,7 +4,7 @@
   block:
     - name: Copy Stack-File
       template:
-        src: templates/docker-compose.yml.j2
+        src: templates/docker-compose.{{ traefik_version }}.yml.j2
         dest: /tmp/zero-app-traefik.yml
         owner: root
         group: root

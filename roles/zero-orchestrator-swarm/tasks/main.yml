@@ -1,1 +1,2 @@
-- include_tasks: "setup-{{ ansible_os_family }}.yml"
+- "@zero-orchestrator-swarm"
+  include_tasks: "setup-{{ ansible_os_family }}.yml"
