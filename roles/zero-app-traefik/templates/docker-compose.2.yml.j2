@@ -1,0 +1,128 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:v2.2
+    command: > 
+      #--docker
+      --api.dashboard=true
+      --api.debug=true
+      --api.insecure=true
+      --global.checknewversion=false
+      --global.sendanonymoususage=false
+      --log.level=DEBUG
+      --metrics.prometheus
+      --metrics.prometheus.addentrypointslabels=true
+      --metrics.prometheus.addserviceslabels=true
+      --ping
+{% if zero_orchestrator == "swarm" %}
+      --providers.docker.swarmMode=true
+{% endif %}
+      --providers.docker=true
+      --providers.docker.exposedbydefault=false
+      --providers.docker.watch=true
+      --providers.docker.network=proxy
+      --providers.docker.constraints='Label(`tag`,`proxy`)'
+      
+      --entrypoints.web.address=:80
+{% if letsencrypt_enabled|bool %}
+      --entrypoints.web-secured.address=:443
+      --certificatesresolvers.zero.acme.tlschallenge=true
+      --certificatesresolvers.zero.acme.email={{ letsencrypt_mail }}
+      --certificatesresolvers.zero.acme.storage=/letsencrypt/acme.json
+      --certificatesresolvers.zero.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      #--certificatesresolvers.zero.acme.dnschallenge=true
+      #--certificatesresolvers.zero.acme.dnschallenge.provider={{ traefik_dnschallenge_provider }}
+      #--certificatesresolvers.zero.acme.dnschallenge.delaybeforecheck=10
+      #--certificatesresolvers.zero.acme.dnschallenge.resolvers={{ traefik_dnschallenge_resolvers }}
+{% endif %}
+    environment:
+      - ZERO_VERSION=1
+      - DOCKER_TLS_VERIFY=0
+{% if cloudflare_enabled|bool and traefik_dnschallenge_provider == "cloudflare" %}
+      - CF_API_EMAIL: "{{ cloudflare_api_email }}"
+      - CF_API_KEY: "{{ cloudflare_api_key }}"
+{% endif %}
+    networks:
+      - proxy
+    ports:
+      - 80:80
+{% if letsencrypt_enabled|bool %}
+      - 443:443
+{% endif %}
+    volumes: 
+      - traefik-data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+          parallelism: 1
+          delay: 30s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+      restart_policy:
+          condition: on-failure
+      placement:
+          constraints: 
+          - node.role == manager
+      labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
+          traefik.backend: "zero-app-traefik"
+          traefik.protocol: "http"
+
+        #     labels:
+    #       traefik.enable: "true"
+
+    #       # Catch-All HTTPS Redirect
+    #       # traefik.http.routers.http_catchall.service: "http_catchall"
+    #       # traefik.http.routers.http_catchall.rule: HostRegexp(`{any:.+}`)
+    #       # traefik.http.routers.http_catchall.entrypoints: "web"
+    #       # traefik.http.routers.http_catchall.middlewares: "https_redirect"
+    #       traefik.http.middlewares.https_redirect.redirectscheme.scheme: "https"
+    #       traefik.http.middlewares.https_redirect.redirectscheme.permanent: "true"
+
+    #       # Dashboard
+    #       traefik.http.routers.proxy.service: "api@internal"
+    #       traefik.http.routers.proxy.rule: "Host(`proxy.{{ base_domain }}`)"
+    #       traefik.http.routers.proxy.entrypoints: "web"
+    #       traefik.http.routers.proxy.middlewares: "https_redirect"
+    #       traefik.http.services.proxy.loadbalancer.server.port: "8080"
+
+    #       # Dashboard (HTTPS)
+    #       traefik.http.routers.proxy-secured.service: "api@internal"
+    #       traefik.http.routers.proxy-secured.rule: "Host(`proxy.{{ base_domain }}`)"
+    #       traefik.http.routers.proxy-secured.entrypoints: "web-secured"
+    #       traefik.http.routers.proxy-secured.tls: "true"
+    #       traefik.http.routers.proxy-secured.tls.certresolver: "myresolver"
+    #       #traefik.http.routers.proxy-secured.tls.domains[0].main: "{{ base_domain }}"
+    #       #traefik.http.routers.proxy-secured.tls.domains[0].sans: "*.{{ base_domain }}"
+    #       traefik.http.services.proxy-secured.loadbalancer.server.port: "8080"
+{% if letsencrypt_enabled|bool %}
+          traefik.frontend.entryPoints: "http,https"
+          traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
+          traefik.frontend.entryPoints: "http"
+{%endif%}
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+
+networks:
+  proxy:
+    driver: overlay
+    attachable: true
+    name: proxy
+
+volumes:
+  traefik-config:
+    {% if storidge_enabled|bool %}
+    driver_config: 
+        name: "cio"
+        options:
+          profile: "SNAPSHOT"
+    {% endif %}
