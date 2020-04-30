@@ -120,10 +120,18 @@ Here's what you have to do to spin up **zero**:
 
 ⚠️ This setup assumes using terraform against an existing cluster with a certain configuration. To run **zero** against a single Ubuntu VM, see [](#on-digitalocean)
 
+<<<<<<< HEAD
+1. Create the `.env` file with your settings (Hint: copy from `.env.example `)
+2. Install Ansible roles by running `ansible-galaxy install -r requirements.yml`
+3. Make sure **Docker** is installed
+4. Have 1+ Servers ready with your SSH public key
+5. Run **zero**: `docker run -v "${PWD}/.env:/infrastructure/.env" -v "${HOME}/.ssh:/.ssh" registry.gitlab.com/peter.saarland/zero:latest ./if0 provision`
+=======
 1. Create the `.env` file with your settings (Hint: copy from `.env.example`)
 2. Make sure **Docker** is installed
 3. Have 1+ Servers ready with your SSH public key
 4. Run **zero**: `docker run -v "${PWD}/.env:/infrastructure/.env" -v "${HOME}/.ssh:/.ssh" registry.gitlab.com/peter.saarland/zero:latest ./if0 provision`
+>>>>>>> master
 
 ## Vagrant - Windows
 
