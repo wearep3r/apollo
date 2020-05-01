@@ -35,7 +35,7 @@ Build node-exporter:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/node-exporter:latest || true
-    - cd docker/node-exporter
+    - cd roles/zero-app-node-exporter/files/docker
     - docker build --cache-from $CI_REGISTRY_IMAGE/node-exporter:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/node-exporter:$CI_COMMIT_SHORT_SHA
   # rules:
