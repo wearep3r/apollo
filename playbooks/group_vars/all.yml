@@ -69,7 +69,7 @@ backplane_services:
 ingress_ip: "{{ lookup('env','INGRESS_IP') | default('127.0.0.1', true) }}"
 base_domain: "{{ lookup('env','BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
 admin_user: "{{ lookup('env','ADMIN_USER') | default('admin', true) }}"
-admin_password: "{{ lookup('env','ADMIN_PASSWORD') | default('admin', true) }}"
+admin_password: "{{ lookup('env','ADMIN_PASSWORD') | default('zero', true) }}"
 
 # Cloudflare
 cloudflare_enabled: "{{ lookup('env','CLOUDFLARE_ENABLED') | default(0, true) }}"
