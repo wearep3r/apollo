@@ -153,6 +153,10 @@ New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled Tru
 
 To quickly run **zero** on a local machine, you can use vagrant:
 
+1. Install Ansible + Molecule: `python3 -m pip install --user "molecule[lint]"`
+2. Install Ansible Requirements: `ansible-galaxy install -r requirements.yml`
+3. Install Vagrant
+
 `vagrant up`
 
 To (re-)provision **zero**:
