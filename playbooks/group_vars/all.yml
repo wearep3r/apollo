@@ -8,7 +8,8 @@ ansible_python_interpreter: "{{ lookup('env','PYTHON_INTERPRETER') | default('/u
 ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
-
+app_healthcheck_retries: "{{ lookup('env','ZERO_APP_HEALTHCHECK_RETRIES') | default(30, true) }}"
+app_healthcheck_delay: "{{ lookup('env','ZERO_APP_HEALTHCHECK_DELAY') | default(30, true) }}"
 remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
 
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"

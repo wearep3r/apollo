@@ -25,6 +25,8 @@
         path: /tmp/zero-app-gitlab-runner.yml
         state: absent
 
+    
+
   rescue:
     - name: Teardown gitlab-runner
       docker_stack:

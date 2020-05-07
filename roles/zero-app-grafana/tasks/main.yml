@@ -10,6 +10,12 @@
         group: root
         mode: '0644'
 
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
     - name: Provision Grafana
       docker_stack:
         state: present
@@ -28,8 +34,8 @@
         validate_certs: no
       register: _result
       until: _result.status == 200
-      retries: 30
-      delay: 10
+      retries: "{{ app_healthcheck_retries }}"
+      delay: "{{ app_healthcheck_delay }}"
 
     - name: Remove Stack File
       file:
