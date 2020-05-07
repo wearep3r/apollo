@@ -1,8 +1,8 @@
 FROM python:3.8.2-buster
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
-ARG TERRAFORM_VERSION=0.12.20
-ARG TERRAFORM_INVENTORY_VERSION=0.9
+#ARG TERRAFORM_VERSION=0.12.20
+#ARG TERRAFORM_INVENTORY_VERSION=0.9
 ARG KOMPOSE_VERSION=v1.21.0
 
 USER root
@@ -28,18 +28,18 @@ RUN apt update && apt install -y --no-install-recommends \
     ansible-lint \
     docker-compose \
     molecule[lint] \
-    # Terraform
-    && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
-    && unzip terraform.zip \
-    && rm terraform.zip \
-    && chmod +x terraform \
-    && mv terraform /usr/local/bin/ \
-    # terraform-invenvory
-    && curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v${TERRAFORM_INVENTORY_VERSION}/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
-    && unzip terraform-inventory.zip \
-    && rm terraform-inventory.zip \
-    && chmod +x terraform-inventory \
-    && mv terraform-inventory /usr/local/bin/ \
+    # # Terraform
+    # && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
+    # && unzip terraform.zip \
+    # && rm terraform.zip \
+    # && chmod +x terraform \
+    # && mv terraform /usr/local/bin/ \
+    # # terraform-invenvory
+    # && curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v${TERRAFORM_INVENTORY_VERSION}/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
+    # && unzip terraform-inventory.zip \
+    # && rm terraform-inventory.zip \
+    # && chmod +x terraform-inventory \
+    # && mv terraform-inventory /usr/local/bin/ \
     # minio client
     && curl -fsSL "https://dl.min.io/client/mc/release/linux-amd64/mc" -o /usr/local/bin/mc \
     && chmod +x /usr/local/bin/mc \
@@ -56,8 +56,8 @@ RUN apt update && apt install -y --no-install-recommends \
 RUN mkdir /infrastructure \
     && mkdir /root/.ssh
 
-WORKDIR /infrastructure/terraform
-RUN terraform init
+#WORKDIR /infrastructure/terraform
+#RUN terraform init
 WORKDIR /infrastructure
 COPY . .
 RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \

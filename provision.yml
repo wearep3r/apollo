@@ -13,7 +13,7 @@
 # @zero-infrastructure
 - name: "Enable AWS root access"
   import_playbook: playbooks/aws.yml
-  when: infrastructure_provider == "terraform"
+  when: zero_provider == "aws"
 
 # @zero-network
 - name: "@zero-network"
