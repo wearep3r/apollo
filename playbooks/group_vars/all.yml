@@ -1,7 +1,9 @@
 # @zero-core
 force_reboot: 0
+local_user: "{{ lookup('env','USERNAME') | default(0, true) }}"
 zero_id: "{{ lookup('env','ZERO_ID') | default('zero', true) }}"
 ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('~/.ssh/id_rsa', true) }}"
+ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default('~/.ssh/id_rsa.pub', true) }}"
 ansible_python_interpreter: "{{ lookup('env','PYTHON_INTERPRETER') | default('/usr/bin/python3', true) }}"
 ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
@@ -12,9 +14,9 @@ remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
 become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
 
-private_iface: "{{ lookup('env','PRIVATE_INTERFACE') | default('eth0', true) }}"
-public_iface: "{{ lookup('env','PUBLIC_INTERFACE') | default('eth1', true) }}"
-infrastructure_provider: "{{ lookup('env','INFRASTRUCTURE_PROVIDER') | default('vagrant', true) }}"
+private_iface: "{{ lookup('env','ZERO_PRIVATE_INTERFACE') | default('eth0', true) }}"
+public_iface: "{{ lookup('env','ZERO_PUBLIC_INTERFACE') | default('eth1', true) }}"
+zero_provider: "{{ lookup('env','ZERO_PROVIDER') | default('vagrant', true) }}"
 zero_engine: "{{ lookup('env','ZERO_ENGINE') | default('docker', true) }}"
 zero_orchestrator: "{{ lookup('env','ZERO_ORCHESTRATOR') | default('swarm', true) }}"
 
@@ -66,8 +68,8 @@ backplane_services:
     - zero-app-grafana
 
 # Custom
-ingress_ip: "{{ lookup('env','INGRESS_IP') | default('127.0.0.1', true) }}"
-base_domain: "{{ lookup('env','BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
+ingress_ip: "{{ lookup('env','ZERO_INGRESS_IP') | default('127.0.0.1', true) }}"
+base_domain: "{{ lookup('env','ZERO_BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
 admin_user: "{{ lookup('env','ADMIN_USER') | default('admin', true) }}"
 admin_password: "{{ lookup('env','ADMIN_PASSWORD') | default('zero', true) }}"
 

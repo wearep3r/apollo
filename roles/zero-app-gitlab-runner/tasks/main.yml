@@ -1,0 +1,40 @@
+---
+# tasks file for zero-app-gitlab-runner
+- name: Provision gitlab-runner
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-gitlab-runner.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision gitlab-runner
+      docker_stack:
+        state: present
+        name: gitlab-runner
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-gitlab-runner.yml
+      register: gitlab_runner_provision  
+      
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-gitlab-runner.yml
+        state: absent
+
+  rescue:
+    - name: Teardown gitlab-runner
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: gitlab-runner
+      register: gitlab_runner_gitlab_runner
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-gitlab-runner.yml
+        state: absent

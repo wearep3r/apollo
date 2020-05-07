@@ -4,6 +4,32 @@
   hostname:
     name: "{{ansible_hostname}}"
 
+- name: Get local user
+  become: false
+  local_action: command whoami
+  register: whoami
+  changed_when: false
+  when: not local_user|bool
+
+- name: Set local user
+  set_fact:
+    local_user: "{{ whoami.stdout }}"
+  changed_when: false
+  when: not local_user|bool
+
+- name: Add local user
+  user:
+    name: "{{ local_user }}"
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: Set authorized key
+  authorized_key:
+    user: "{{ local_user }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
 - name: Building /etc/hosts file
   lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname']}}" state=present
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
