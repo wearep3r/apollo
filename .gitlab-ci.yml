@@ -97,19 +97,19 @@ Build grafana:
 #   tags: 
 #     - build
 
-Build zero:
-  stage: build
-  image: docker:19.03.5
-  services:
-    - docker:19.03.5-dind
-  variables:
-    DOCKER_BUILDKIT: 1 
-    # For Container Scanning
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-  script:
-    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
-    - docker build --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f Dockerfile .
-    - docker push $IMAGE_TAG
+# Build zero:
+#   stage: build
+#   image: docker:19.03.5
+#   services:
+#     - docker:19.03.5-dind
+#   variables:
+#     DOCKER_BUILDKIT: 1 
+#     # For Container Scanning
+#     IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+#   script:
+#     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
+#     - docker build --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f Dockerfile .
+#     - docker push $IMAGE_TAG
 
 # include:
 #   - template: Container-Scanning.gitlab-ci.yml
@@ -230,18 +230,18 @@ Release node-exporter:
 #   tags: 
 #     - build
 
-Release zero:
-  stage: release
-  image: docker:19.03.5
-  services:
-    - docker:19.03.5-dind
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA || true
-    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
-    - docker push $CI_REGISTRY_IMAGE:latest
-    - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
-    - docker push $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
-  rules:
-    - if: '$CI_COMMIT_REF_NAME == "master"'
-      when: on_success
+# Release zero:
+#   stage: release
+#   image: docker:19.03.5
+#   services:
+#     - docker:19.03.5-dind
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#     - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA || true
+#     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+#     - docker push $CI_REGISTRY_IMAGE:latest
+#     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
+#     - docker push $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
+#   rules:
+#     - if: '$CI_COMMIT_REF_NAME == "master"'
+#       when: on_success

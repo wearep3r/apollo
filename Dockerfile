@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/ansible-boilerplate:latest
+FROM registry.gitlab.com/peter.saarland/ansible-boilerplate
 
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
