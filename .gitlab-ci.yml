@@ -1,29 +1,5 @@
 include:
-  - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/version.gitlab-ci.yml'
-  - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/release.gitlab-ci.yml'
-
-workflow:
-  rules:
-    - if: $CI_COMMIT_REF_NAME =~ /-wip$/
-      when: never
-    - if: $CI_MERGE_REQUEST_ID
-      when: never
-    - if: $CI_COMMIT_TAG
-      when: never
-    - when: always
-
-stages:
-  - version
-  - build
-  - test
-  - release
-  - deploy
-    
-cache:
-  key: "$CI_JOB_NAME"
-  
-variables:
-  DOCKER_TLS_CERTDIR: ""
+  - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/default.gitlab-ci.yml'
 
 Build node-exporter:
   stage: build
@@ -132,11 +108,7 @@ Build zero:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   script:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
-    #- export BASE_IMAGE=$(grep -oE 'FROM .+$' docker/zero/Dockerfile | head -n 1 | cut -d ' ' -f 2)
-    #- docker pull $CI_REGISTRY_IMAGE:latest || true
-    #- docker pull $BASE_IMAGE
-    #- docker build --cache-from $CI_REGISTRY_IMAGE:latest,$BASE_IMAGE --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
-    - docker build --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f docker/zero/Dockerfile .
+    - docker build --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f Dockerfile .
     - docker push $IMAGE_TAG
 
 # include:
