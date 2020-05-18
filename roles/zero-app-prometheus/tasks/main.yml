@@ -20,9 +20,9 @@
           - /tmp/zero-app-prometheus.yml
       register: prometheus_provision
 
-    - name: "Wait for http://prometheus.{{ base_domain }} to become ready"
+    - name: "Wait for http://prometheus.{{ platform_domain }} to become ready"
       uri:
-        url: "http://prometheus.{{ base_domain }}"
+        url: "http://prometheus.{{ platform_domain }}"
         method: GET
         status_code: 200
         validate_certs: no

@@ -1,6 +1,3 @@
 - src: geerlingguy.ntp
 - src: robertdebock.locale
-- src: geerlingguy.pip
-- src: geerlingguy.docker
-- src: geerlingguy.git
 - src: riemers.gitlab-runner

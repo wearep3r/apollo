@@ -2,14 +2,14 @@
   hosts: manager[0]
   become: True
   gather_facts: True
-  pre_tasks:
-    - name: Generate admin password hash
-      #shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
-      shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2 | sed 's/\\$/\\$\\$/g' | head -1"
-      register: admin_password_hash
-      changed_when: false
-    - debug:
-        var: admin_password_hash
-        verbosity: 1
+  # pre_tasks:
+  #   - name: Generate admin password hash
+  #     #shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
+  #     shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2 | sed 's/\\$/\\$\\$/g' | head -1"
+  #     register: admin_password_hash
+  #     changed_when: false
+  #   - debug:
+  #       var: admin_password_hash
+  #       verbosity: 1
   roles:
     - zero-backplane

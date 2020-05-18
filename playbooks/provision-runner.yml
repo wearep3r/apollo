@@ -1,43 +1,23 @@
-- hosts: manager[0]
-  become: True
-  tasks:
-    - name: Delete A record for Runners
-      cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "runners"
-        type: A
-        state: absent
-        account_email: "{{ cloudflare_api_email }}"
-        account_api_token: "{{ cloudflare_api_key }}"
-      register: record
-      tags:
-        - dns
-      when: cloudflare_enabled|bool
-
-- hosts: manager
+- hosts: worker
   become: True
   pre_tasks:
     - name: List Runners
       command: "gitlab-runner list"
       register: registered_runners
       ignore_errors: True
+    
     - name: Unregister Runners
       command: "gitlab-runner unregister --name {{ ansible_hostname }}-build"
-      when: '"{{ ansible_hostname }}-build" in registered_runners.stderr'
+      when: 'registered_runners is defined and "{{ ansible_hostname }}-build" in registered_runners.stderr'
       ignore_errors: True
   vars:
-    gitlab_runner_package_name: 'gitlab-runner'
-    gitlab_runner_registration_token: "{{ runner_token }}"
-    gitlab_runner_concurrent: 4
-    gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-build"
         env_vars: "{{ runner_env }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
-          - docker
-          - infrastructure
+          - "{{ if0_environment }}"
           - build
         docker_privileged: True
         docker_volumes:
@@ -52,36 +32,6 @@
   tags:
     - runner
     - build
-  tasks:
-    # Here we're overloading the nodes.mbiosphere.com A-Record with the IP of each node.
-    # This way we don't need to specify each Swarm Node in the Prometheus Config
-    # but can use the same mechanic of discovery that is used by the other exporters.
-    # Prometheus simply queries nodes.mbiosphere.com and gets a list of IPs returned
-    # which it then scrapes.
-    #
-    # EXAMPLE
-    #
-    # $ dig nodes.mbiosphere.com
-    #
-    # ;; ANSWER SECTION:
-    # nodes.mbiosphere.com.	299	IN	A	157.230.122.88
-    # nodes.mbiosphere.com.	299	IN	A	157.230.101.99
-    # nodes.mbiosphere.com.	299	IN	A	68.183.219.80
-    # nodes.mbiosphere.com.	299	IN	A	157.230.101.24
-    # nodes.mbiosphere.com.	299	IN	A	157.230.123.216
-    # nodes.mbiosphere.com.	299	IN	A	157.230.99.2
-    # nodes.mbiosphere.com.	299	IN	A	157.230.109.225
-    - name: Create A record for Runners (Prometheus)
-      cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "runners"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cloudflare_api_email }}"
-        account_api_token: "{{ cloudflare_api_key }}"
-      register: record
-      tags:
-        - dns
 
 - hosts: manager
   become: True
@@ -89,14 +39,14 @@
     - name: List Runners
       command: "gitlab-runner list"
       register: registered_runners
+      ignore_errors: True
+
     - name: Unregister Runners
       command: "gitlab-runner unregister --name {{ ansible_hostname }}-deploy"
-      when: '"{{ ansible_hostname }}-deploy" in registered_runners.stderr'
+      when: 'registered_runners is defined and "{{ ansible_hostname }}-deploy" in registered_runners.stderr'
+      ignore_errors: True
   vars:
-    gitlab_runner_package_name: 'gitlab-runner'
-    gitlab_runner_registration_token: "{{ runner_token }}"
     gitlab_runner_concurrent: 1
-    gitlab_runner_listen_address: ":9252"
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-deploy"
         env_vars: "{{ runner_env }}"
@@ -104,6 +54,7 @@
         docker_image: "{{ ci_docker_image }}"
         tags:
           - deploy
+          - "{{ if0_environment }}"
         run_untagged: false
         docker_privileged: True
         docker_volumes:
@@ -120,15 +71,3 @@
   tags:
     - runner
     - deploy
-  tasks:
-    - name: Create A record for Runners
-      cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "runners"
-        type: A
-        value: "{{ ansible_default_ipv4.address }}"
-        account_email: "{{ cloudflare_api_email }}"
-        account_api_token: "{{ cloudflare_api_key }}"
-      register: record
-      tags:
-        - dns

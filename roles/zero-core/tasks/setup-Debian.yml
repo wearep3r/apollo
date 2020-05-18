@@ -28,7 +28,7 @@
   authorized_key:
     user: "{{ local_user }}"
     state: present
-    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    key: "{{ lookup('file', environment_dir+'/.ssh/id_rsa.pub') }}"
 
 - name: Building /etc/hosts file
   lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname']}}" state=present
@@ -36,21 +36,37 @@
   with_items: "{{ groups['all'] }}"
 
 - name: Building /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp=".*logs.{{ base_domain }}$" line="127.0.0.1 logs.{{ base_domain }}" state=present
+  lineinfile: dest=/etc/hosts regexp=".*logs.{{ platform_domain }}$" line="127.0.0.1 logs.{{ platform_domain }}" state=present
 
 # - name: Set up authorized keys for user root
 #   authorized_key: user=root key="{{ item }}"
 #   with_file:
 #     - ../.ssh/id_rsa.pub
 
-# - name: Set root SSH keys
-#   copy:
-#     src=../.ssh/id_rsa
-#     dest=/root/id_rsa.pem
-#     owner=root
-#     group=root
-#     mode=0600
+- name: Set root SSH Pem key
+  copy:
+    src="{{ environment_dir }}/.ssh/id_rsa"
+    dest=/root/id_rsa.pem
+    owner=root
+    group=root
+    mode=0600
 
+- name: Set root SSH Private key
+  copy:
+    src="{{ environment_dir }}/.ssh/id_rsa"
+    dest=/root/.ssh/id_rsa
+    owner=root
+    group=root
+    mode=0600
+
+- name: Set root SSH Public key
+  copy:
+    src="{{ environment_dir }}/.ssh/id_rsa.pub"
+    dest=/root/.ssh/id_rsa.pub
+    owner=root
+    group=root
+    mode=0600
+    
 - name: Enabling passwordless sudo
   lineinfile:
     path: /etc/sudoers
@@ -59,6 +75,13 @@
     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
     validate: 'visudo -cf %s'
 
+- name: Remove require tty
+  lineinfile: 
+    regexp: '^(Defaults\s+requiretty)$'
+    line: '# \1'
+    dest: /etc/sudoers 
+    #state: absent
+    backrefs: yes
 
 # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
 - name: Fixing IBM Issue 1
@@ -205,10 +228,10 @@
     - name: Getting Grub Update Status
       set_fact:
         ku_update_grub_changed: "{{ ku_update_grub_result.changed }}"
-  when: ansible_distribution == 'Ubuntu' and storidge_enabled|bool
+  when: kernel_version|bool
 
 - name: Rebooting Nodes
   reboot:
     reboot_timeout: 180
-  when: ku_update_grub_changed is defined and ku_update_grub_changed
+  when: ku_update_grub_changed is defined and ku_update_grub_changed and kernel_version|bool
 

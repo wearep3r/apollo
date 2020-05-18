@@ -28,7 +28,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "3100"
-        traefik.frontend.rule: "Host:logs.{{ base_domain }}"
+        traefik.frontend.rule: "Host:logs.{{ platform_domain }}"
         traefik.backend: "zero-app-loki"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
@@ -71,9 +71,8 @@ networks:
 
 volumes:
   loki-data:
-{% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
 {% endif %}
