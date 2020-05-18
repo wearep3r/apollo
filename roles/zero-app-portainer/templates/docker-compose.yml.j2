@@ -27,7 +27,7 @@ services:
 
   portainer:
     image: portainer/portainer:1.23.2
-    command: "-H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics --admin-password {{ admin_password_hash.stdout }}"
+    command: "-H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics --admin-password {{ admin_password_hash }}"
     environment:
       - AGENT_CLUSTER_ADDR=tasks.portainer-agent
       - CAP_HOST_MANAGEMENT=1
@@ -55,7 +55,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9000"
-        traefik.frontend.rule: "Host:portainer.{{ base_domain }}"
+        traefik.frontend.rule: "Host:portainer.{{ platform_domain }}"
         traefik.backend: "zero-app-portainer"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
@@ -77,9 +77,8 @@ networks:
 
 volumes:
   portainer-data:
-{% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
 {% endif %}

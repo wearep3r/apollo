@@ -26,9 +26,9 @@
           - /tmp/zero-app-grafana.yml
       register: grafana_provision
 
-    - name: "Wait for http://grafana.{{ base_domain }} to become ready"
+    - name: "Wait for http://grafana.{{ platform_domain }} to become ready"
       uri:
-        url: "http://grafana.{{ base_domain }}/login"
+        url: "http://grafana.{{ platform_domain }}/login"
         method: GET
         status_code: 200
         validate_certs: no

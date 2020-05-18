@@ -29,7 +29,7 @@ services:
 {% endif %}
       --logLevel=INFO 
       --api 
-      --docker.domain={{ base_domain }} 
+      --docker.domain={{ platform_domain }} 
       --ping 
       --rest 
       --retry 
@@ -67,7 +67,7 @@ services:
           traefik.tags: "proxy"
           traefik.docker.network: "proxy"
           traefik.port: "8080"
-          traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
+          traefik.frontend.rule: "Host:proxy.{{ platform_domain }}"
           traefik.backend: "zero-app-traefik"
           traefik.protocol: "http"
 {% if letsencrypt_enabled|bool %}
@@ -77,7 +77,7 @@ services:
           traefik.frontend.entryPoints: "http"
 {%endif%}
           traefik.backend.loadbalancer.stickiness: "true"
-          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
 
 networks:
   proxy:
@@ -87,9 +87,8 @@ networks:
 
 volumes:
   traefik-config:
-    {% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
-    {% endif %}
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}

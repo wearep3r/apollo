@@ -5,7 +5,7 @@ LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 COPY config /etc/prometheus/
 USER root
 RUN chmod +x /etc/prometheus/docker-entrypoint.sh
-USER nobody
+#USER nobody
 
 ENTRYPOINT [ "/etc/prometheus/docker-entrypoint.sh" ]
 CMD        [ "--config.file=/etc/prometheus/prometheus.yml", \

@@ -1,10 +1,13 @@
 # @zero-core
 force_reboot: 0
 local_user: "{{ lookup('env','USERNAME') | default(0, true) }}"
-zero_id: "{{ lookup('env','ZERO_ID') | default('zero', true) }}"
-ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('~/.ssh/id_rsa', true) }}"
-ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default('~/.ssh/id_rsa.pub', true) }}"
-ansible_python_interpreter: "{{ lookup('env','PYTHON_INTERPRETER') | default('/usr/bin/python3', true) }}"
+if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default('zero', true) }}"
+environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.if0/.environments/zero', true) }}"
+
+ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('~/.if0/.environments/zero/.ssh/id_rsa', true) }}"
+ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default('~/.if0/.environments/zero/.ssh/id_rsa.pub', true) }}"
+
+ansible_python_interpreter: '/usr/bin/python3'
 ntp_timezone: "{{ lookup('env','NTP_TIMEZONE') | default('Etc/UTC', true) }}"
 locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
@@ -20,6 +23,7 @@ public_iface: "{{ lookup('env','ZERO_PUBLIC_INTERFACE') | default('eth1', true) 
 zero_provider: "{{ lookup('env','ZERO_PROVIDER') | default('vagrant', true) }}"
 zero_engine: "{{ lookup('env','ZERO_ENGINE') | default('docker', true) }}"
 zero_orchestrator: "{{ lookup('env','ZERO_ORCHESTRATOR') | default('swarm', true) }}"
+zero_data: "{{ lookup('env','ZERO_DATA') | default('generic', true) }}"
 
 # Lets Encrypt
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(0, true) }}"
@@ -27,6 +31,7 @@ letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
 
 # Kernel
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
+kernel_version: 0
 kernel_update_grub_requested_kernel_version: 4.15.0-91-generic
 kernel_update_config_prefix_grub_default: 99
 kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
@@ -71,8 +76,10 @@ backplane_services:
 # Custom
 ingress_ip: "{{ lookup('env','ZERO_INGRESS_IP') | default('127.0.0.1', true) }}"
 base_domain: "{{ lookup('env','ZERO_BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
-admin_user: "{{ lookup('env','ADMIN_USER') | default('admin', true) }}"
-admin_password: "{{ lookup('env','ADMIN_PASSWORD') | default('zero', true) }}"
+platform_domain: "{{ lookup('env','ZERO_PLATFORM_DOMAIN') | default(if0_environment + '.' + base_domain, true) }}"
+admin_user: "{{ lookup('env','ZERO_ADMIN_USER') | default('admin', true) }}"
+admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('zero', true) }}"
+admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$IMPY.afzKkzUi5RHvAAS8ec.mopdiq.JuDwSthv7NG.SA4rvwj342', true) }}"
 
 # Cloudflare
 cloudflare_enabled: "{{ lookup('env','CLOUDFLARE_ENABLED') | default(0, true) }}"
@@ -82,29 +89,27 @@ cloudflare_api_key: "{{ lookup('env','CLOUDFLARE_API_KEY') }}"
 # GitLab
 # GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
 runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(0, true) }}"
-gl_token: "{{ lookup('env','GITLAB_GL_TOKEN') }}"
+gl_token: "{{ lookup('env','GL_TOKEN') }}"
 registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
 registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
 registry_password: "{{ lookup('env','GITLAB_REGISTRY_PASSWORD') | default(gl_token, true) }}"
 runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default('SUCHSECRETMUCHWOW', true) }}"
-ci_docker_image: "docker:19.03.5"
-ci_dind_image: "docker:19.03.5-dind"
+ci_docker_image: "docker:19.03.6"
+ci_dind_image: "docker:19.03.6-dind"
 runner_env: 
-    - "GL_TOKEN={{ gl_token }}"
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"
+gitlab_runner_package_version: 12.10.2
+gitlab_runner_listen_address: ":9252"
+gitlab_runner_concurrent: 4
+gitlab_runner_registration_token: "{{ runner_token }}"
+gitlab_runner_package_name: 'gitlab-runner'
 
 # Slack
 slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
 slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
 slack_user: "{{ lookup('env','SLACK_USER') | default('zero', true) }}"
 
-
-# Storidge
-storidge_min_nodes: 4
-storidge_enabled: "{{ lookup('env','STORIDGE_ENABLED') | default(0, true) }}"
-storidge_install_version: "{{ lookup('env','STORIDGE_INSTALL_VERSION') | default('3186', true) }}" #3138
-storidge_fix_iscsi: "{{ lookup('env','STORIDGE_FIX_ISCSI') | default(0, true) }}"
 
 # Cloud Integrations
 ## IBM

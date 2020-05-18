@@ -37,11 +37,11 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9090"
-        traefik.frontend.rule: "Host:prometheus.{{ base_domain }}"
+        traefik.frontend.rule: "Host:prometheus.{{ platform_domain }}"
         traefik.backend: "zero-app-prometheus"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
-        traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+        traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
 {% if letsencrypt_enabled|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"
@@ -77,16 +77,14 @@ networks:
 
 volumes:
   prometheus-data:
-{% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
 {% endif %}
   victoria-data:
-{% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
 {% endif %}

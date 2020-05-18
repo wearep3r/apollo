@@ -1,21 +1,28 @@
-FROM registry.gitlab.com/ansible-boilerplate:latest
+FROM registry.gitlab.com/peter.saarland/ansible-boilerplate:latest
 
 LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
-WORKDIR /ansible
+ENV ENVIRONMENT_DIR=/root/.if0/.environments/zero
+
+RUN mkdir -p ${ENVIRONMENT_DIR} /root/.ssh /zero
+
+WORKDIR /zero
 
 COPY requirements.yml requirements.yml
 
+RUN ansible-galaxy install --ignore-errors -r requirements.yml
+
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-RUN ansible-galaxy install --ignore-errors -r requirements.yml \
-    && chmod +x /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+RUN echo 'export PS1="[\$IF0_ENVIRONMENT] \W # "' >> /root/.bashrc
 
 COPY . .
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-CMD ["ansible-playbook","-v"]
+CMD ["/bin/bash"]
 
 ARG BUILD_DATE
 

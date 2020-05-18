@@ -36,7 +36,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "3000"
-        traefik.frontend.rule: "Host:grafana.{{ base_domain }}"
+        traefik.frontend.rule: "Host:grafana.{{ platform_domain }}"
         traefik.backend: "zero-app-grafana"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
@@ -74,9 +74,8 @@ networks:
 
 volumes:
   grafana-data:
-{% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
 {% endif %}

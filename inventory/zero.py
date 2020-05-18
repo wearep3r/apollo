@@ -40,53 +40,41 @@ class ZeroInventory(object):
             }  
         }
 
-        # Check if TERRAFORM_ENABLED is set
-        terraform_enabled = int(os.getenv('TERRAFORM_ENABLED', 0))
+        if0_environment = os.getenv('IF0_ENVIRONMENT', 'zero')
 
         # Check if ZERO_NODES is set
-        if not terraform_enabled:
-            # We're running on a custom inventory
-            zero_nodes = os.getenv('ZERO_NODES', "")
+        if if0_environment:
+            zero_nodes_manager = os.getenv('ZERO_NODES_MANAGER', "")
+            zero_nodes_worker = os.getenv('ZERO_NODES_WORKER', "")
 
-            if zero_nodes and zero_nodes != "":
+            if zero_nodes_manager and zero_nodes_manager != "":
+                inventory["manager"] = []
                 i = 1
                 #node_count = zero_nodes.split(",").length
-                for node in zero_nodes.split(","):
-                    inventory['all']['hosts'].append("zero-{}".format(i))
-                    inventory['_meta']['hostvars']["zero-{}".format(i)] = {
+                for node in zero_nodes_manager.split(","):
+                    hostname = "{}-manager-{}".format(if0_environment,i)
+                    inventory['all']['hosts'].append(hostname)
+                    inventory["manager"].append(hostname)
+                    inventory['_meta']['hostvars'][hostname] = {
                         "ansible_host": node
                     }
                     i += 1
-                
-                # Set Docker Group
-                inventory["docker"] = []
-                for node in inventory['all']['hosts']:
-                    inventory["docker"].append(node)
 
-                # Set Manager Group
-                inventory["manager"] = []
-                for node in inventory['all']['hosts']:
-                    inventory["manager"].append(node)
-                
-                # Set Swarm Group
-                inventory["swarm"] = {
-                    "children": ["docker"]
-                }
-
-                # Set Storidge Group
-                inventory["storidge"] = {
-                    "children": ["manager"]
-                }
+            if zero_nodes_worker and zero_nodes_worker != "":
+                inventory["worker"] = []
+                i = 1
+                #node_count = zero_nodes.split(",").length
+                for node in zero_nodes_worker.split(","):
+                    hostname = "{}-worker-{}".format(if0_environment,i)
+                    inventory['all']['hosts'].append(hostname)
+                    inventory["worker"].append(hostname)
+                    inventory['_meta']['hostvars'][hostname] = {
+                        "ansible_host": node
+                    }
+                    i += 1
             inventory = json.dumps(inventory)
         else:
-            inventory_path = os.path.dirname(os.path.abspath(__file__))
-            tf_path = "{}/{}".format(inventory_path,"../terraform/")
-            os.environ["TF_STATE"] = tf_path
-            os.environ["TF_HOSTNAME_KEY_NAME"] = "name"
-            args = sys.argv[1:]
-            command = ["/usr/local/bin/terraform-inventory"] + args + [tf_path]
-            process = subprocess.run(command, check=True, stdout=subprocess.PIPE, universal_newlines=True)
-            inventory = process.stdout
+            return False
     
         return inventory
 

@@ -60,9 +60,8 @@ networks:
 
 volumes:
   gitlab-runner-data:
-{% if storidge_enabled|bool %}
-    driver_config: 
-        name: "cio"
-        options:
-          profile: "SNAPSHOT"
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
 {% endif %}
