@@ -49,7 +49,7 @@ class ZeroInventory(object):
 
             if zero_nodes_manager and zero_nodes_manager != "":
                 inventory["manager"] = []
-                i = 1
+                i = 0
                 #node_count = zero_nodes.split(",").length
                 for node in zero_nodes_manager.split(","):
                     hostname = "{}-manager-{}".format(if0_environment,i)
@@ -62,7 +62,7 @@ class ZeroInventory(object):
 
             if zero_nodes_worker and zero_nodes_worker != "":
                 inventory["worker"] = []
-                i = 1
+                i = 0
                 #node_count = zero_nodes.split(",").length
                 for node in zero_nodes_worker.split(","):
                     hostname = "{}-worker-{}".format(if0_environment,i)

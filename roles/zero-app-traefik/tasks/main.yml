@@ -48,10 +48,10 @@
     #   changed_when: false
     #   failed_when: traefik_app.stdout == ""        
 
-    - name: Remove Stack File
-      file:
-        path: /tmp/zero-app-traefik.yml
-        state: absent
+    # - name: Remove Stack File
+    #   file:
+    #     path: /tmp/zero-app-traefik.yml
+    #     state: absent
   rescue:
     - name: Teardown Traefik
       docker_stack:
@@ -62,7 +62,7 @@
       register: traefik_traefik
       tags:
           - traefik 
-    - name: Remove Stack File
-      file:
-        path: /tmp/zero-app-traefik.yml
-        state: absent
+    # - name: Remove Stack File
+    #   file:
+    #     path: /tmp/zero-app-traefik.yml
+    #     state: absent

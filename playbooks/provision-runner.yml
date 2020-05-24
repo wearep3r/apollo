@@ -19,10 +19,13 @@
         tags:
           - "{{ if0_environment }}"
           - build
+        run_untagged: True
         docker_privileged: True
         docker_volumes:
           - "/cache"
         extra_configs:
+          runners.custom_build_dir: 
+            enaled: True
           runners.docker:
             memory: 2048mb
             privileged: True
@@ -61,6 +64,8 @@
           - "/var/run/docker.sock:/var/run/docker.sock"
           - "/cache"
         extra_configs:
+          runners.custom_build_dir: 
+            enaled: True
           runners.docker:
             memory: 512mb
             privileged: True

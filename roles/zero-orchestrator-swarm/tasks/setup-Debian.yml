@@ -84,6 +84,6 @@
 
 - name: Set Node Labels # noqa 301
   shell: >
-    docker node update --label-add role=manager --label-add environment={{ if0_environment }} --label-add provider={{ zero_provider }} {{ ansible_hostname }}
+    docker node update --label-add role=worker --label-add environment={{ if0_environment }} --label-add provider={{ zero_provider }} {{ ansible_hostname }}
   when: swarm_worker_joined.changed and inventory_hostname != groups['manager'][0]
   delegate_to: "{{ groups['manager'][0] }}"

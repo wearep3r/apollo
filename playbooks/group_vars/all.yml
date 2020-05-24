@@ -104,6 +104,7 @@ gitlab_runner_listen_address: ":9252"
 gitlab_runner_concurrent: 4
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
+gitlab_runner_coordinator_url: "{{ lookup('env','GITLAB_RUNNER_COORDINATOR_URL') | default('https://gitlab.com', true) }}"
 
 # Slack
 slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"

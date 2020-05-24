@@ -2,5 +2,6 @@
   hosts: all
   gather_facts: true
   become: true
+  strategy: linear
   roles:
     - zero-data
