@@ -8,4 +8,3 @@
         path: /root/.ssh/authorized_keys
         regexp: "^.*(?=(ssh-rsa))"
         replace: ""
-      when: aws_enabled|bool

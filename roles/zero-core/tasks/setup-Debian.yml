@@ -115,6 +115,8 @@
       - apache2-utils
       - apt-transport-https
       - ca-certificates
+      - sysstat
+      - lm-sensors
     state: present
     update_cache: False
   tags:
@@ -126,9 +128,35 @@
       - jsondiff
       - pyyaml
       - docker
+      - psutil
   tags:
     - packages
     - docker
+
+- name: Installing bashtop
+  block:
+    - name: Clone bashtop Git repository
+      git:
+        repo: 'https://github.com/aristocratos/bashtop.git'
+        dest: /opt/bashtop
+      
+    - name: Install bashtop
+      command: make install
+        chdir=/opt/bashtop
+
+- name: Installing lazydocker
+  block:
+    - name: Download lazydocker
+      get_url:
+        url: "{{ lazydocker_url }}"
+        dest: /usr/local/src/lazydocker.tar.gz
+        mode: '0440'
+    
+    - name: Extract lazydocker
+      unarchive:
+        src: /usr/local/src/lazydocker.tar.gz
+        dest: /usr/local/bin/
+        remote_src: True
 
 - name: Setting up Kernel (Ubuntu)
   block:

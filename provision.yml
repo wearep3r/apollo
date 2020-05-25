@@ -38,13 +38,13 @@
 - name: "@zero-data"
   import_playbook: playbooks/zero-data.yml
 
-# @zero-module-runner
-- name: "@zero-runner"
-  import_playbook: playbooks/provision-runner.yml
-  when: runner_enabled|bool
-
 # @zero-backplane
 - name: "@zero-backplane"
   import_playbook: playbooks/zero-backplane.yml
   when: backplane_enabled|bool
   
+# @zero-module-runner
+- name: "@zero-runner"
+  import_playbook: playbooks/provision-runner.yml
+  when: runner_enabled|bool
+

@@ -41,6 +41,7 @@ class ZeroInventory(object):
         }
 
         if0_environment = os.getenv('IF0_ENVIRONMENT', 'zero')
+        zero_provider = os.getenv('ZERO_PROVIDER', 'vagrant')
 
         # Check if ZERO_NODES is set
         if if0_environment:
@@ -49,7 +50,7 @@ class ZeroInventory(object):
 
             if zero_nodes_manager and zero_nodes_manager != "":
                 inventory["manager"] = []
-                i = 1
+                i = 0
                 #node_count = zero_nodes.split(",").length
                 for node in zero_nodes_manager.split(","):
                     hostname = "{}-manager-{}".format(if0_environment,i)
@@ -62,7 +63,7 @@ class ZeroInventory(object):
 
             if zero_nodes_worker and zero_nodes_worker != "":
                 inventory["worker"] = []
-                i = 1
+                i = 0
                 #node_count = zero_nodes.split(",").length
                 for node in zero_nodes_worker.split(","):
                     hostname = "{}-worker-{}".format(if0_environment,i)
@@ -71,6 +72,11 @@ class ZeroInventory(object):
                     inventory['_meta']['hostvars'][hostname] = {
                         "ansible_host": node
                     }
+
+                    # Fix connection parameters by provider
+                    if zero_provider == "aws":
+                        inventory['_meta']['hostvars'][hostname]["ansible_remote_user"] = "ubuntu"
+
                     i += 1
             inventory = json.dumps(inventory)
         else:

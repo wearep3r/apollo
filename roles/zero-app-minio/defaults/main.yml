@@ -1,0 +1,4 @@
+---
+# defaults file for zero-app-minio
+images:
+  minio: "{{ lookup('env','ZERO_APP_MINIO_IMAGES_MINIO') | default('minio/minio:RELEASE.2020-05-16T01-33-21Z', true) }}"

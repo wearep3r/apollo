@@ -12,15 +12,11 @@ COPY requirements.yml requirements.yml
 
 RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-
-RUN chmod +x /docker-entrypoint.sh
+COPY . .
 
 RUN echo 'export PS1="[\$IF0_ENVIRONMENT] \W # "' >> /root/.bashrc
 
-COPY . .
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 CMD ["/bin/bash"]
 
