@@ -1,11 +1,11 @@
 ---
-# tasks file for zero-app-grafana
-- name: Provision Grafana
+# tasks file for zero-app-minio
+- name: Provision minio
   block:
     - name: Copy Stack-File
       template:
         src: templates/docker-compose.yml.j2
-        dest: /tmp/zero-app-grafana.yml
+        dest: /tmp/zero-app-minio.yml
         owner: root
         group: root
         mode: '0644'
@@ -16,19 +16,19 @@
         source: pull
       with_dict: "{{ images }}"
 
-    - name: Provision Grafana
+    - name: Provision minio
       docker_stack:
         state: present
-        name: grafana
+        name: minio
         prune: yes
         with_registry_auth: yes
         compose:
-          - /tmp/zero-app-grafana.yml
-      register: grafana_provision
+          - /tmp/zero-app-minio.yml
+      register: minio_provision
 
-    - name: "Wait for http://grafana.{{ platform_domain }} to become ready"
+    - name: "Wait for http://minio.{{ platform_domain }} to become ready"
       uri:
-        url: "http://grafana.{{ platform_domain }}/login"
+        url: "http://minio.{{ platform_domain }}/minio/health/live"
         method: GET
         status_code: 200
         validate_certs: no
@@ -36,17 +36,17 @@
       until: _result.status == 200
       retries: "{{ app_healthcheck_retries }}"
       delay: "{{ app_healthcheck_delay }}"
-      
+
   rescue:
-    - name: Teardown Grafana
+    - name: Teardown minio
       docker_stack:
           absent_retries: 5
           absent_retries_interval: 10
           state: absent
-          name: grafana
-      register: grafana_grafana
+          name: minio
+      register: minio_minio
 
     - name: Remove Stack File
       file:
-        path: /tmp/zero-app-grafana.yml
+        path: /tmp/zero-app-minio.yml
         state: absent

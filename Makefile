@@ -29,7 +29,6 @@ load: /tmp/.loaded.sentinel
 
 /tmp/.loaded.sentinel: $(shell find ${ENVIRONMENT_DIR} -type f -name '*.env') ## help
 > @if [ ! -z $$IF0_ENVIRONMENT ]; then echo "Loading Environment ${IF0_ENVIRONMENT}"; fi
-> @if [ ! -z $$DASH1_MODULE ]; then echo "Loading Provider ${DASH1_MODULE}"; else echo "No Provider selected. Exit."; exit 1; fi
 > @touch /tmp/.loaded.sentinel
 
 .PHONY: provision

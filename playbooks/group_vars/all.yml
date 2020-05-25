@@ -81,6 +81,9 @@ admin_user: "{{ lookup('env','ZERO_ADMIN_USER') | default('admin', true) }}"
 admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('zero', true) }}"
 admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$IMPY.afzKkzUi5RHvAAS8ec.mopdiq.JuDwSthv7NG.SA4rvwj342', true) }}"
 
+# lazydocker
+lazydocker_url: "https://github.com/jesseduffield/lazydocker/releases/download/v0.8/lazydocker_0.8_{{ ansible_system }}_{{ ansible_architecture }}.tar.gz"
+
 # Cloudflare
 cloudflare_enabled: "{{ lookup('env','CLOUDFLARE_ENABLED') | default(0, true) }}"
 cloudflare_api_email: "{{ lookup('env','CLOUDFLARE_API_EMAIL') }}"

@@ -1,35 +1,35 @@
 ---
-# tasks file for zero-app-gitlab-runner
-- name: Provision gitlab-runner
+# tasks file for zero-app-cadvisor
+- name: Provision garbage-collector
   block:
     - name: Copy Stack-File
       template:
         src: templates/docker-compose.yml.j2
-        dest: /tmp/zero-app-gitlab-runner.yml
+        dest: /tmp/zero-app-garbage-collector.yml
         owner: root
         group: root
         mode: '0644'
 
-    - name: Provision gitlab-runner
+    - name: Provision garbage-collector
       docker_stack:
         state: present
-        name: gitlab-runner
+        name: garbage-collector
         prune: yes
         with_registry_auth: yes
         compose:
-          - /tmp/zero-app-gitlab-runner.yml
-      register: gitlab_runner_provision  
+          - /tmp/zero-app-garbage-collector.yml
+      register: garbage_collector_provision  
 
   rescue:
-    - name: Teardown gitlab-runner
+    - name: Teardown garbage-collector
       docker_stack:
           absent_retries: 5
           absent_retries_interval: 10
           state: absent
-          name: gitlab-runner
-      register: gitlab_runner_gitlab_runner
+          name: cadvisor
+      register: garbage_collector_garbage_collector
 
     - name: Remove Stack File
       file:
-        path: /tmp/zero-app-gitlab-runner.yml
+        path: /tmp/zero-app-garbage-collector.yml
         state: absent

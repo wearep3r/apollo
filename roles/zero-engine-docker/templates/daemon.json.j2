@@ -7,7 +7,7 @@
   {% if backplane_enabled|bool %}
   "log-driver": "loki:latest",
   "log-opts": {
-      "loki-url": "http://logs.{{ platform_domain }}/loki/api/v1/push",
+      "loki-url": "http://127.0.0.1:3100/loki/api/v1/push",
       "loki-batch-size": "400",
       "max-size": "50m",    
       "max-file": "5",
