@@ -36,3 +36,11 @@ networks:
   monitoring:
     driver: overlay
     external: true
+
+volumes:
+  alertmanager-data:
+# {% if zero_data == "storidge" %}
+#     driver: cio
+#     driver_opts: 
+#       profile: "SNAPSHOT"
+# {% endif %}
