@@ -1,0 +1,35 @@
+---
+# tasks file for zero-app-cadvisor
+- name: Provision dockerd-exporter
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-dockerd-exporter.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision dockerd-exporter
+      docker_stack:
+        state: present
+        name: dockerd-exporter
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-dockerd-exporter.yml
+      register: dockerd_exporter_provision  
+
+  rescue:
+    - name: Teardown dockerd-exporter
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: cadvisor
+      register: dockerd_exporter_dockerd_exporter
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-dockerd-exporter.yml
+        state: absent

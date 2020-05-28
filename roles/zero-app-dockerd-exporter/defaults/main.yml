@@ -1,0 +1,8 @@
+---
+# defaults file for zero-app-dockerd-exporter
+images:
+  dockerd_exporter: "{{ lookup('env','ZERO_APP_DOCKERD_EXPORTER_IMAGES_DOCKERD_EXPORTER') | default('stefanprodan/dockerd-exporter:latest', true) }}"
+
+# 
+dockerd_in: "{{ lookup('env','ZERO_APP_DOCKERD_EXPORTER_ENV_IN') | default('172.18.0.1:9323', true) }}"
+dockerd_out: "{{ lookup('env','ZERO_APP_DOCKERD_EXPORTER_ENV_OUT') | default('9323', true) }}"
