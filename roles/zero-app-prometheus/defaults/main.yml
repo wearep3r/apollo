@@ -1,2 +1,4 @@
 ---
-# defaults file for zero-app-grafana
+# defaults file for zero-app-prometheus
+images:
+  prometheus: "{{ lookup('env','ZERO_APP_PROMETHEUS_IMAGES_PROMETHEUS') | default('registry.gitlab.com/peter.saarland/zero/prometheus', true) }}"

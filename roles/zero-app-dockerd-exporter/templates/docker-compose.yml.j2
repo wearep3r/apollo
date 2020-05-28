@@ -8,8 +8,6 @@ services:
       OUT: "{{ dockerd_out }}"
     networks: 
       - monitoring
-    volumes: 
-      - alertmanager-data:/alertmanager
     healthcheck:
       test: "/bin/wget -q -Y off http://localhost:9093/metrics -O /dev/null > /dev/null 2>&1"
       interval: 25s
