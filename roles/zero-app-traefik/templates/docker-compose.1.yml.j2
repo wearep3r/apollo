@@ -42,11 +42,11 @@ services:
 {% endif %}
     networks:
       - proxy
-{% if traefik_extra_networks|length > 0 %}
 {% for network in traefik_extra_networks %}
+{% if network != '' %}
       - {{ network }}
-{% endfor %}
 {% endif %}
+{% endfor %}
     ports:
       - 80:80
       - 443:443
@@ -89,14 +89,14 @@ networks:
     driver: overlay
     attachable: true
     name: proxy
-{% if traefik_extra_networks|length > 0 %}
 {% for network in traefik_extra_networks %}
+{% if network != '' %}
   {{ network }}:
     driver: overlay
     attachable: true
     name: {{ network }}
-{% endfor %}
 {% endif %}
+{% endfor %}
 
 volumes:
   traefik-config:

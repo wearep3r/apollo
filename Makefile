@@ -18,7 +18,8 @@ DOCKER_SHELLFLAGS ?= run --rm -it -e IF0_ENVIRONMENT=${IF0_ENVIRONMENT} --name z
 ZERO_PROVIDER ?= generic
 ENVIRONMENT_DIR ?= ${HOME}/.if0/.environments/zero
 PROVIDER_UPPERCASE=$(shell echo $(ZERO_PROVIDER) | tr  '[:lower:]' '[:upper:]')
-ANSIBLE_V ?= 
+VERBOSITY ?= 0
+export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 
 .PHONY: help
 help:
@@ -33,7 +34,11 @@ load: /tmp/.loaded.sentinel
 
 .PHONY: provision
 provision: /tmp/.loaded.sentinel
->	@ansible-playbook provision.yml --flush-cache ${ANSIBLE_V}
+>	@ansible-playbook provision.yml --flush-cache
+
+.PHONY: check
+check: /tmp/.loaded.sentinel
+>	@ansible-playbook provision.yml --flush-cache --check
 
 .PHONY: retry
 retry:
@@ -81,3 +86,7 @@ ${ENVIRONMENT_DIR}/.ssh/id_rsa ${ENVIRONMENT_DIR}/.ssh/id_rsa.pub: ${ENVIRONMENT
 .PHONY: inventory
 inventory:
 > @python inventory/zero.py --list | jq
+
+.PHONY: setup
+setup:
+> @ansible -i inventory/zero.py all -m setup -e "ansible_ssh_private_key_file=${ENVIRONMENT_DIR}/.ssh/id_rsa"
