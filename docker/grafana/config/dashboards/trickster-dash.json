@@ -3,7 +3,7 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "Prometheus",
         "enable": true,
         "expr": "changes(process_start_time_seconds{$trickster_label_name=~\"$trickster_label_value\", instance=~\"$instance\"}[1m]) > 0",
         "hide": false,
@@ -95,7 +95,7 @@
         "label": "Others",
         "threshold": 0
       },
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Shows percentage of query cache hit or miss of Trickster. \nFor more info about cache success see graph info on the right.",
       "fontSize": "80%",
       "format": "short",
@@ -147,7 +147,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": 2,
       "description": "Shows percentage and count of queried points found of not in Trickster cache.\n\n- cached = found in cache\n- uncached = not found in cache\n\n**The more cached the better.**",
       "fill": 7,
@@ -248,7 +248,7 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(245, 54, 54, 0.9)"
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "How many instances are running",
       "format": "none",
       "gauge": {
@@ -340,7 +340,7 @@
         "label": "Other",
         "threshold": "0.03"
       },
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": 1,
       "description": "Shows percentage of query cache hit types of Trickster. \nFor more info about cache hit types see graph info on the right.",
       "fontSize": "80%",
@@ -397,7 +397,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": 2,
       "description": "Shows percentage and count of query cache hit types. Those are:\n\n- rmiss = query range miss\n- kmiss = key not found in cache \n- phit = partial hit\n- hit = found all data in cache\n- purge = i'm not sure :) (probably cache flush)",
       "fill": 10,
@@ -493,7 +493,7 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(245, 54, 54, 0.9)"
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total count of points served",
       "format": "short",
       "gauge": {
@@ -579,7 +579,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total count of requests aggregated by instance.\nShows how are the requests balanced.",
       "fill": 4,
       "gridPos": {
@@ -688,7 +688,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Shows how long the requests took to be served as histogram using quantiles. This means that x% was served faster than the value of the metric.\nThat means:\n- 50%: shows time before 50% of requests was served\n- 90%: shows time before 90% of requests was served\n- 99%: shows time before 99% of requests was served",
       "fill": 1,
       "gridPos": {
@@ -798,7 +798,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Shows total query count aggregated by type.\nThere are two types;\n- query: instant query resulting in data in given time\n- query_range: query for data in given time interval",
       "fill": 4,
       "gridPos": {
@@ -903,7 +903,7 @@
           "value": "total"
         }
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "This table shows query count by origin on which it was called. Those can differ depending on configuration of Trickster.",
       "fontSize": "100%",
       "gridPos": {
@@ -995,7 +995,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": 2,
       "fill": 1,
       "gridPos": {
@@ -1123,7 +1123,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 7,
@@ -1232,7 +1232,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "This shows how long did it take  Prometheus to server requests.\nThis could be possibly lower time when using Trickster since the queries can be for smaller more recent time range.",
       "editable": true,
       "error": false,
@@ -1323,7 +1323,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Shows total request count on Prometheus server.",
       "editable": true,
       "error": false,
@@ -1421,7 +1421,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Shows duration how long it takes to Prometheus to server requests aggregated by handlers",
       "editable": true,
       "error": false,
@@ -1508,7 +1508,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": 2,
       "fill": 1,
       "gridPos": {
@@ -1606,7 +1606,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 7,
@@ -1779,7 +1779,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": "Instance",

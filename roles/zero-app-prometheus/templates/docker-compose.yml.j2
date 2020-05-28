@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   prometheus:
-    image: registry.gitlab.com/peter.saarland/zero/prometheus
+    image: "{{ images.prometheus }}"
     command: 
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"

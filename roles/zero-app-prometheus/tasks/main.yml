@@ -10,6 +10,12 @@
         group: root
         mode: '0644'
 
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
     - name: Provision prometheus
       docker_stack:
         state: present
