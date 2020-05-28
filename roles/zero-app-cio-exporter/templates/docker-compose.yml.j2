@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  cio-exporter:
+    image: {{ images.cio_prom }}
+    networks: 
+      - monitoring
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: stop-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.role == manager
+
+networks:
+  monitoring:
+    driver: overlay
+    external: true

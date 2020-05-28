@@ -27,7 +27,7 @@ services:
         parallelism: 1
         delay: 60s
         monitor: 30s
-        order: start-first
+        order: stop-first
         failure_action: rollback
       restart_policy:
         condition: on-failure
@@ -77,8 +77,8 @@ networks:
 
 volumes:
   grafana-data:
-{% if zero_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
+# {% if zero_data == "storidge" %}
+#     driver: cio
+#     driver_opts: 
+#       profile: "SNAPSHOT"
+# {% endif %}

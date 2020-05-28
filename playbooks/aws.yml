@@ -1,8 +1,12 @@
 - hosts: all
   become: True
-  remote_user: "ubuntu" # AWS EC2 VMs by default only allow login to user 'ubuntu', by preventing root login through prefixing the ssh key in /root/.ssh/authorized_keys
   gather_facts: False
   tasks:
+    - name: Debug
+      debug:
+        msg: 
+          #- "Remote User: {{ remote_user }}"
+          - "SSH User: {{ ansible_user }}"
     - name: Fixing AWS root SSH access
       replace:
         path: /root/.ssh/authorized_keys

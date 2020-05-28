@@ -23,11 +23,11 @@
         docker_privileged: True
         docker_volumes:
           - "/cache"
+          - "/var/run/docker.sock:/var/run/docker.sock"
         extra_configs:
           runners.custom_build_dir: 
             enaled: True
           runners.docker:
-            memory: 2048mb
             privileged: True
             disable_cache: False
   roles:
@@ -57,6 +57,7 @@
         docker_image: "{{ ci_docker_image }}"
         tags:
           - deploy
+          - ship
           - "{{ if0_environment }}"
         run_untagged: false
         docker_privileged: True
@@ -67,7 +68,6 @@
           runners.custom_build_dir: 
             enaled: True
           runners.docker:
-            memory: 512mb
             privileged: True
             disable_cache: False
             allowed_images: ["docker:*"]

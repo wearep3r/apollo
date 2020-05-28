@@ -95,18 +95,10 @@ scrape_configs:
       type: 'A'
       port: 9080
 
-  - job_name: 'giltlab-runner build'
+  - job_name: 'giltlab-runner'
     dns_sd_configs:
     - names:
       # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
-      - 'tasks.build'
-      type: 'A'
-      port: 9252
-
-  - job_name: 'giltlab-runner deploy'
-    dns_sd_configs:
-    - names:
-      # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
-      - 'tasks.deploy'
+      - 'zero.nodes'
       type: 'A'
       port: 9252

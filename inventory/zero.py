@@ -42,6 +42,7 @@ class ZeroInventory(object):
 
         if0_environment = os.getenv('IF0_ENVIRONMENT', 'zero')
         zero_provider = os.getenv('ZERO_PROVIDER', 'vagrant')
+        worker_os_family = os.getenv('TF_VAR_worker_os_family', 'ubuntu')
 
         # Check if ZERO_NODES is set
         if if0_environment:
@@ -57,9 +58,13 @@ class ZeroInventory(object):
                     inventory['all']['hosts'].append(hostname)
                     inventory["manager"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
-                        "ansible_host": node
+                        "ansible_host": node,
+                        "ansible_user ": "root"
                     }
                     i += 1
+
+                    if zero_provider == "aws":
+                        inventory['_meta']['hostvars'][hostname]["ansible_user"] = "ubuntu"
 
             if zero_nodes_worker and zero_nodes_worker != "":
                 inventory["worker"] = []
@@ -70,12 +75,17 @@ class ZeroInventory(object):
                     inventory['all']['hosts'].append(hostname)
                     inventory["worker"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
-                        "ansible_host": node
+                        "ansible_host": node,
+                        "ansible_user ": "root"
                     }
 
                     # Fix connection parameters by provider
-                    if zero_provider == "aws":
-                        inventory['_meta']['hostvars'][hostname]["ansible_remote_user"] = "ubuntu"
+                    if zero_provider == "aws" and worker_os_family == "ubuntu":
+                        inventory['_meta']['hostvars'][hostname]["ansible_user"] = "ubuntu"
+
+                    # Fix user if windows machine
+                    if worker_os_family == "windows":
+                        inventory['_meta']['hostvars'][hostname]["ansible_user"] = "administrator"
 
                     i += 1
             inventory = json.dumps(inventory)

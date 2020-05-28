@@ -4,6 +4,9 @@ local_user: "{{ lookup('env','USERNAME') | default(0, true) }}"
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default('zero', true) }}"
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.if0/.environments/zero', true) }}"
 
+# OS detection helper
+worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
+
 ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default('~/.if0/.environments/zero/.ssh/id_rsa', true) }}"
 ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default('~/.if0/.environments/zero/.ssh/id_rsa.pub', true) }}"
 
@@ -13,7 +16,7 @@ locale_lang: "{{ lookup('env','LOCALE_LANG') | default('de_DE.UTF-8', true) }}"
 pip_package: "{{ lookup('env','PIP_PACKAGE') | default('python3-pip', true) }}"
 app_healthcheck_retries: "{{ lookup('env','ZERO_APP_HEALTHCHECK_RETRIES') | default(30, true) }}"
 app_healthcheck_delay: "{{ lookup('env','ZERO_APP_HEALTHCHECK_DELAY') | default(30, true) }}"
-remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
+#remote_user: "{{ lookup('env','REMOTE_USER') | default('root', true) }}"
 
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
 become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
@@ -78,8 +81,9 @@ ingress_ip: "{{ lookup('env','ZERO_INGRESS_IP') | default('127.0.0.1', true) }}"
 base_domain: "{{ lookup('env','ZERO_BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
 platform_domain: "{{ lookup('env','ZERO_PLATFORM_DOMAIN') | default(if0_environment + '.' + base_domain, true) }}"
 admin_user: "{{ lookup('env','ZERO_ADMIN_USER') | default('admin', true) }}"
-admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('zero', true) }}"
-admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$IMPY.afzKkzUi5RHvAAS8ec.mopdiq.JuDwSthv7NG.SA4rvwj342', true) }}"
+admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('insecure!', true) }}"
+#admin_password_hash_escaped: "{{ admin_password_hash | replace('$','$$') }}"
+admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$KjJMrwd7ZQbn/6p0uQvXYusZoR6uGNgEgvPfAzhmJ12T4bPFal/se', true) }}"
 
 # lazydocker
 lazydocker_url: "https://github.com/jesseduffield/lazydocker/releases/download/v0.8/lazydocker_0.8_{{ ansible_system }}_{{ ansible_architecture }}.tar.gz"
@@ -104,16 +108,9 @@ runner_env:
     - "DOCKER_BUILDKIT=1"
 gitlab_runner_package_version: 12.10.2
 gitlab_runner_listen_address: ":9252"
-gitlab_runner_concurrent: 4
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
 gitlab_runner_coordinator_url: "{{ lookup('env','GITLAB_RUNNER_COORDINATOR_URL') | default('https://gitlab.com', true) }}"
-
-# Slack
-slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
-slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
-slack_user: "{{ lookup('env','SLACK_USER') | default('zero', true) }}"
-
 
 # Cloud Integrations
 ## IBM
