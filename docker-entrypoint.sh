@@ -13,8 +13,8 @@ then
   for file in $env_files;
   do
     set -o allexport
-    source $file
-    #export $(grep -hv '^#' $ENVIRONMENT_DIR/*.env | xargs)
+    #source $file
+    export $(grep -hv '^#' $file | xargs)
     set +o allexport
   done
 fi

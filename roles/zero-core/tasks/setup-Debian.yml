@@ -30,13 +30,32 @@
 #     state: present
 #     key: "{{ lookup('file', environment_dir+'/.ssh/id_rsa.pub') }}"
 
-- name: Building /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname']}}" state=present
+- name: $node A-Records
+  lineinfile: 
+    dest=/etc/hosts 
+    regexp='.*{{ item }}$' 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname']}}" 
+    state=present
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
 
-- name: Building /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp=".*logs.{{ platform_domain }}$" line="127.0.0.1 logs.{{ platform_domain }}" state=present
+- name: nodes.* A-Record
+  lineinfile: 
+    dest=/etc/hosts 
+    regexp=".*logs.{{ platform_domain }}$" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.{{ platform_domain }}" 
+    state=present
+  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  with_items: "{{ groups['all'] }}"
+
+- name: nodes.* A-Record
+  lineinfile: 
+    dest=/etc/hosts 
+    regexp=".*logs.{{ platform_domain }}$" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} zero.nodes" 
+    state=present
+  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  with_items: "{{ groups['all'] }}"
 
 # - name: Set up authorized keys for user root
 #   authorized_key: user=root key="{{ item }}"

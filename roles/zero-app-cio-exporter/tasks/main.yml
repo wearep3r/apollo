@@ -33,3 +33,4 @@
       file:
         path: /tmp/zero-app-cio-exporter.yml
         state: absent
+  when: inventory_hostname == groups["manager"][0]

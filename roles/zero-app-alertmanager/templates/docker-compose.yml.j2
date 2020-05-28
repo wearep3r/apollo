@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   alertmanager:
-    image: {{ images.grafana }}
+    image: {{ images.alertmanager }}
     environment:
       SLACK_URL: "{{ slack_webhook }}"
       SLACK_CHANNEL: "{{ slack_channel }}"
