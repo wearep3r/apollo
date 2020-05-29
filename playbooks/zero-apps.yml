@@ -1,6 +1,6 @@
-- name: "@zero-backplane"
+- name: "@zero-apps"
   hosts: manager[0]
   become: True
   gather_facts: True
   roles:
-    - zero-backplane
+    - zero-apps

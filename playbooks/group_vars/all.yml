@@ -3,6 +3,7 @@ force_reboot: 0
 local_user: "{{ lookup('env','USERNAME') | default(0, true) }}"
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default('zero', true) }}"
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.if0/.environments/zero', true) }}"
+zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
 
 # OS detection helper
 worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
@@ -69,12 +70,6 @@ kubernetes_allow_pods_on_master: True
 
 # Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
-backplane_services:
-    - zero-app-traefik
-    - zero-app-portainer
-    - zero-app-prometheus
-    - zero-app-loki
-    - zero-app-grafana
 
 # Custom
 ingress_ip: "{{ lookup('env','ZERO_INGRESS_IP') | default('127.0.0.1', true) }}"
@@ -100,13 +95,14 @@ gl_token: "{{ lookup('env','GL_TOKEN') }}"
 registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
 registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
 registry_password: "{{ lookup('env','GITLAB_REGISTRY_PASSWORD') | default(gl_token, true) }}"
-runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default('SUCHSECRETMUCHWOW', true) }}"
+gitlab_shared_runners_token: "{{ lookup('env','GITLAB_SHARED_RUNNERS_TOKEN') | default('z7e3r2o0', true) }}"
+runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default(gitlab_shared_runners_token, true) }}"
 ci_docker_image: "docker:19.03.6"
 ci_dind_image: "docker:19.03.6-dind"
 runner_env: 
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"
-gitlab_runner_package_version: 12.10.2
+gitlab_runner_package_version: 13.0.0
 gitlab_runner_listen_address: ":9252"
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
@@ -125,3 +121,9 @@ digitalocean_ssh_key_id: "{{ lookup('env','DIGITALOCEAN_SSH_KEY_ID') | default('
 
 ## AWS
 aws_enabled: "{{ lookup('env','AWS_ENABLED') | default(0, true) }}"
+
+# Rexray S3FS
+s3fs_accesskey: "{{ lookup('env','S3FS_ACCESSKEY') }}"
+s3fs_secretkey: "{{ lookup('env','S3FS_SECRETKEY') }}"
+s3fs_endpoint: "{{ lookup('env','S3FS_ENDPOINT') }}"
+s3fs_options: "{{ lookup('env','S3FS_OPTIONS') | default('allow_other,use_path_request_style,nonempty,url=http://minio.'+platform_domain, true) }}"
