@@ -1,0 +1,34 @@
+version: '3.7'
+
+services:
+  smtp:
+    image: "{{ images.smtp }}"
+    environment:
+      SMTP_SERVER: "{{ zero_smtp_server }}"
+      SMTP_PORT: "{{ zero_smtp_port }}"
+      SMTP_USERNAME: "{{ zero_smtp_username }}"
+      SMTP_PASSWORD: "{{ zero_smtp_password }}"
+      SERVER_HOSTNAME: "{{ platform_domain }}"
+      DEBUG: 1
+    networks: 
+      - smtp
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.platform.os == linux
+
+networks:
+  smtp:
+    driver: overlay
+    attachable: true
+    name: smtp
