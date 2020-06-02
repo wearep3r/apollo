@@ -1,4 +1,4 @@
 ---
 # defaults file for zero-app-smtp
 images:
-  smtp: "{{ lookup('env','ZERO_APP_SMTP_IMAGES_SMTP') | default('juanluisbaptiste/postfix:latest', true) }}"
+  smtp: "{{ lookup('env','ZERO_APP_SMTP_IMAGES_SMTP') | default('namshi/smtp', true) }}"

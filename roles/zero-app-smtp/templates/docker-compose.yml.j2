@@ -4,12 +4,12 @@ services:
   smtp:
     image: "{{ images.smtp }}"
     environment:
-      SMTP_SERVER: "{{ zero_smtp_server }}"
-      SMTP_PORT: "{{ zero_smtp_port }}"
-      SMTP_USERNAME: "{{ zero_smtp_username }}"
-      SMTP_PASSWORD: "{{ zero_smtp_password }}"
-      SERVER_HOSTNAME: "{{ platform_domain }}"
-      DEBUG: 1
+      SMARTHOST_ADDRESS: "{{ zero_smtp_server }}"
+      SMARTHOST_PORT: "{{ zero_smtp_port }}"
+      SMARTHOST_USER: "{{ zero_smtp_username }}"
+      SMARTHOST_PASSWORD: "{{ zero_smtp_password }}"
+      SMARTHOST_ALIASES: "*.{{ platform_domain }}"
+      MAILNAME: "{{ platform_domain }}"
     networks: 
       - smtp
     deploy:
