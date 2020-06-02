@@ -43,6 +43,11 @@
   import_playbook: playbooks/zero-backplane.yml
   when: backplane_enabled|bool
   
+# @zero-apps
+- name: "@zero-apps"
+  import_playbook: playbooks/zero-apps.yml
+  when: zero_apps|length > 0
+
 # @zero-module-runner
 - name: "@zero-runner"
   import_playbook: playbooks/provision-runner.yml

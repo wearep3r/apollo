@@ -1,6 +1,6 @@
 galaxy_info:
   author: Fabian Peter
-  description: Installs Traefik on a Zero Cluster
+  description: Installs Apps on a Zero Cluster
   company: Peter.SAARLAND
 
   # If the issue tracker for your role is not on github, uncomment the
@@ -47,17 +47,5 @@ galaxy_info:
     # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
     #       Maximum 20 tags per role.
 
-dependencies:
-  - zero-app-traefik
-  - zero-app-loki
-  - zero-app-portainer
-  - zero-app-prometheus
-  - zero-app-alertmanager
-  - zero-app-grafana
-  - zero-app-cadvisor
-  - zero-app-node-exporter
-  - zero-app-dockerd-exporter
-  - zero-app-minio
-  - zero-app-gc
-  - zero-app-alertmanager
-  - zero-app-smtp
+dependencies: []
+  

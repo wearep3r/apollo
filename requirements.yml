@@ -1,3 +1,4 @@
 - src: geerlingguy.ntp
 - src: robertdebock.locale
 - src: riemers.gitlab-runner
+- src: rexray.rexray

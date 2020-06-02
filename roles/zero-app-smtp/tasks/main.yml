@@ -1,0 +1,41 @@
+---
+# tasks file for zero-app-minio
+- name: Provision smtp
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-smtp.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
+    - name: Provision smtp
+      docker_stack:
+        state: present
+        name: smtp
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-smtp.yml
+      register: smtp_provision
+
+  rescue:
+    - name: Teardown smtp
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: smtp
+      register: smtp_smtp
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-smtp.yml
+        state: absent

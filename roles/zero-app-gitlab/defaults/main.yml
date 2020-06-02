@@ -1,0 +1,23 @@
+---
+# defaults file for zero-app-gitlab
+images:
+  gitlab: "{{ lookup('env','ZERO_APP_GITLAB_IMAGES_GITLAB') | default('gitlab/gitlab-ce:latest', true) }}"
+  db: "{{ lookup('env','ZERO_APP_GITLAB_IMAGES_DB') | default('postgres:11', true) }}"
+  redis: "{{ lookup('env','ZERO_APP_GITLAB_IMAGES_DB') | default('sameersbn/redis:latest', true) }}"
+gitlab_domain: "{{ lookup('env','GITLAB_DOMAIN') | default('gitlab.'+platform_domain, true) }}"
+gitlab_registry_domain: "{{ lookup('env','GITLAB_REGISTRY_DOMAIN') | default('registry.'+platform_domain, true) }}"
+gitlab_ssh_port: "{{ lookup('env','GITLAB_SSH_PORT') | default('2222', true) }}"
+gitlab_db_host: "{{ lookup('env','GITLAB_DB_HOST') | default('postgres', true) }}"
+gitlab_db_port: "{{ lookup('env','GITLAB_DB_PORT') | default('5432', true) }}"
+gitlab_db_name: "{{ lookup('env','GITLAB_DB_NAME') | default('gitlab', true) }}"
+gitlab_db_user: "{{ lookup('env','GITLAB_DB_USER') | default('gitlab', true) }}"
+gitlab_db_password: "{{ lookup('env','GITLAB_DB_PASSWORD') | default('gitlab', true) }}"
+gitlab_smtp_host: "{{ lookup('env','GITLAB_SMTP_HOST') | default('smtp', true) }}"
+gitlab_smtp_port: "{{ lookup('env','GITLAB_SMTP_PORT') | default('25', true) }}"
+gitlab_smtp_user_name: "{{ lookup('env','GITLAB_SMTP_USER_NAME') | default('gitlab', true) }}"
+gitlab_smtp_password: "{{ lookup('env','GITLAB_SMTP_PASSWORD') | default('gitlab', true) }}"
+gitlab_smtp_domain: "{{ lookup('env','GITLAB_SMTP_DOMAIN') | default(platform_domain, true) }}"
+gitlab_email_from: "{{ lookup('env','GITLAB_SMTP_FROM') | default('gitlab@'+platform_domain, true) }}"
+gitlab_email_display_name: "{{ lookup('env','GITLAB_EMAIL_DISPLAY_NAME') | default(if0_environment+' GitLab', true) }}"
+gitlab_email_reply_to: "{{ lookup('env','GITLAB_EMAIL_REPLY_TO') | default('gitlab@'+platform_domain, true) }}"
+gitlab_runner_coordinator_url: "{{ lookup('env','GITLAB_RUNNER_COORDINATOR_URL') | default(gitlab_domain, true) }}"

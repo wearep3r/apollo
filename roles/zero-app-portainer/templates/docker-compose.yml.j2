@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   portainer-agent:
-    image: portainer/agent:1.5.1
+    image: "{{ images.agent }}"
     environment:
       - AGENT_CLUSTER_ADDR=tasks.portainer-agent
       - CAP_HOST_MANAGEMENT=1
@@ -26,7 +26,7 @@ services:
         - node.platform.os == linux
 
   portainer:
-    image: portainer/portainer:1.23.2
+    image: "{{ images.portainer }}"
     command: "-H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics --admin-password {{ admin_password_hash }}"
     environment:
       - AGENT_CLUSTER_ADDR=tasks.portainer-agent
