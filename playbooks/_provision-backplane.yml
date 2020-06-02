@@ -1,0 +1,1183 @@
+- hosts: manager[0]
+  become: True
+  gather_facts: True
+  tasks:
+    - name: Create Swarm Overlay networks
+      docker_network:
+        name: "{{ item }}"
+        driver: overlay
+        attachable: True
+      with_items: "{{ swarm_networks }}"
+      tags:
+        - traefik
+        - portainer
+        - consul
+        - monitoring
+
+    - name: Generate admin password hash
+      shell: "htpasswd -nbB admin '{{ admin_password }}' | cut -d ':' -f 2"
+      register: admin_password_hash
+      tags:
+        - portainer
+        - traefik
+        - consul
+        - prometheus
+        - monitoring
+        - unsee
+        - loki
+      changed_when: false
+
+    - debug:
+        var: admin_password_hash
+        verbosity: 1
+      tags:
+        - traefik
+        - portainer
+        - consul
+        - prometheus
+        - monitoring
+        - unsee
+        - loki
+
+    # - name: Log into docker registry
+    #   docker_login:
+    #     registry: "{{ registry_url }}"
+    #     username: "{{ registry_user }}"
+    #     password: "{{ registry_password }}"
+    #     reauthorize: no
+
+    # - name: Provision Traefik
+    #   docker_swarm_service:
+    #     name: traefik
+    #     state: present
+    #     mode: replicated
+    #     replicas: 1
+    #     image: traefik:v2.1.4
+    #     #image: registry.gitlab.com/mbio/mbiosphere/infrastructure/traefik:latest
+    #     resolve_image: True
+    #     command: 
+    #       - "traefik"
+    #       - "--api.insecure=true"
+    #       - "--api.dashboard=true"
+    #       - "--api.debug=true"
+    #       - "--log.level=DEBUG"
+    #       - "--providers.docker=true"
+    #       - "--providers.docker.swarmMode=true"
+    #       - "--providers.docker.exposedbydefault=false"
+    #       - "--providers.docker.network=proxy"
+    #       - "--providers.docker.watch=true"
+    #       #- "--providers.docker.constraints='Label(`tag`,`proxy`)'"
+    #       - "--entrypoints.web.address=:80"
+    #       - "--entrypoints.web-secured.address=:443"
+    #       #- "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+    #       #- "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+    #       - "--certificatesresolvers.myresolver.acme.email={{ letsencrypt_mail }}"
+    #       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    #       #- "--certificatesresolvers.myresolver.acme.dnschallenge.delaybeforecheck=10"
+    #       #- "--certificatesresolvers.myresolver.acme.dnschallenge.resolvers=1.1.1.1:53"
+    #       - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+    #       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+    #       - "--metrics.prometheus"
+    #       - "--metrics.prometheus.addentrypointslabels=true"
+    #       - "--metrics.prometheus.addserviceslabels=true"
+    #       - "--ping"
+    #       - "--global.checknewversion=false"
+    #       - "--global.sendanonymoususage=false"
+    #     env:
+    #       cloudflare_api_email: "{{ cloudflare_api_email }}"
+    #       cloudflare_api_key: "{{ cloudflare_api_key }}"
+    #       DOCKER_TLS_VERIFY: "0"
+    #     networks:
+    #       - name: "proxy"
+    #         aliases:
+    #           - "traefik"
+    #         options:
+    #           driver: "overlay"
+    #     publish:
+    #       - mode: ingress
+    #         protocol: tcp
+    #         published_port: 443
+    #         target_port: 443
+    #       - mode: ingress
+    #         protocol: tcp
+    #         published_port: 80
+    #         target_port: 80
+    #     mounts:
+    #       - source: traefik-letsencrypt
+    #         target: /letsencrypt
+    #         type: volume
+    #         readonly: no
+    #         driver_config: 
+    #           name: "cio"
+    #           options:
+    #             profile: "SNAPSHOT"
+    #       - source: /var/run/docker.sock
+    #         target: /var/run/docker.sock
+    #         type: bind
+    #         readonly: True
+    #     update_config:
+    #       parallelism: 2
+    #       delay: 60s
+    #       monitor: 30s
+    #       order: start-first
+    #       failure_action: rollback
+    #     restart_config:
+    #       condition: on-failure
+    #     placement:
+    #       constraints: 
+    #         - node.role == manager
+    #     labels:
+    #       traefik.enable: "true"
+
+    #       # Catch-All HTTPS Redirect
+    #       # traefik.http.routers.http_catchall.service: "http_catchall"
+    #       # traefik.http.routers.http_catchall.rule: HostRegexp(`{any:.+}`)
+    #       # traefik.http.routers.http_catchall.entrypoints: "web"
+    #       # traefik.http.routers.http_catchall.middlewares: "https_redirect"
+    #       traefik.http.middlewares.https_redirect.redirectscheme.scheme: "https"
+    #       traefik.http.middlewares.https_redirect.redirectscheme.permanent: "true"
+
+    #       # Dashboard
+    #       traefik.http.routers.proxy.service: "api@internal"
+    #       traefik.http.routers.proxy.rule: "Host(`proxy.{{ base_domain }}`)"
+    #       traefik.http.routers.proxy.entrypoints: "web"
+    #       traefik.http.routers.proxy.middlewares: "https_redirect"
+    #       traefik.http.services.proxy.loadbalancer.server.port: "8080"
+
+    #       # Dashboard (HTTPS)
+    #       traefik.http.routers.proxy-secured.service: "api@internal"
+    #       traefik.http.routers.proxy-secured.rule: "Host(`proxy.{{ base_domain }}`)"
+    #       traefik.http.routers.proxy-secured.entrypoints: "web-secured"
+    #       traefik.http.routers.proxy-secured.tls: "true"
+    #       traefik.http.routers.proxy-secured.tls.certresolver: "myresolver"
+    #       #traefik.http.routers.proxy-secured.tls.domains[0].main: "{{ base_domain }}"
+    #       #traefik.http.routers.proxy-secured.tls.domains[0].sans: "*.{{ base_domain }}"
+    #       traefik.http.services.proxy-secured.loadbalancer.server.port: "8080"
+      # register: traefik_provision
+      # tags:
+      #   - traefik
+      #   - monitoring
+      #   - prometheus
+      #   - minio
+      #   - unsee
+    - name: Provision Traefik
+      docker_swarm_service:
+        name: traefik
+        state: present
+        mode: replicated
+        replicas: 1
+        image: traefik:v1.7.22-alpine
+        #image: registry.gitlab.com/mbio/mbiosphere/infrastructure/traefik:latest
+        resolve_image: True
+        command: 
+          traefik --docker --docker.swarmmode --docker.watch --docker.exposedbydefault=false --insecureSkipVerify --entrypoints="Name:http Address::80" --entrypoints="Name:https Address::443 TLS" --metrics --metrics.prometheus --acme --acme.email={{ letsencrypt_mail }} --acme.storage="/etc/traefik/acme.json" --acme.entryPoint=https --acme.dnsChallenge.provider=cloudflare --acme.dnsChallenge.resolvers="1.1.1.1:53" --acme.onhostrule=true --acme.acmelogging=true --logLevel=INFO --api --docker.domain={{ base_domain }} --ping --rest --retry --configFile=/config/traefik.toml
+        env:
+          cloudflare_api_email: "{{ cloudflare_api_email }}"
+          cloudflare_api_key: "{{ cloudflare_api_key }}"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+        publish:
+          - mode: ingress
+            protocol: tcp
+            published_port: 443
+            target_port: 443
+          - mode: ingress
+            protocol: tcp
+            published_port: 80
+            target_port: 80
+        mounts:
+          - source: traefik-config
+            target: /etc/traefik
+            type: volume
+            readonly: no
+            # driver_config: 
+            #   name: "cio"
+            #   options:
+            #     profile: "SNAPSHOT"
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: True
+        update_config:
+          parallelism: 1
+          delay: 30s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        restart_config:
+          condition: on-failure
+        placement:
+          constraints: 
+            - node.role == manager
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:proxy.{{ base_domain }}"
+          traefik.backend: "traefik"
+          traefik.protocol: "http"
+          #traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+      register: traefik_provision
+      tags:
+        - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+
+    - debug:
+        var: traefik_provision
+        verbosity: 1
+      tags:
+        - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+      when: traefik_provision.changed
+
+    - name: "Wait for proxy.{{ base_domain }} to become ready"
+      uri:
+        url: "https://proxy.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call 
+      tags:
+        - traefik
+        - monitoring
+        - prometheus
+        - minio
+        - unsee
+
+    - name: Provision Loki
+      docker_swarm_service:
+        name: loki
+        resolve_image: True
+        state: present
+        mode: replicated
+        replicas: 1
+        image: grafana/loki:1.4.1
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "s3"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: loki-data
+            target: /tmp/loki
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "3100"
+          traefik.frontend.rule: "Host:logs.{{ base_domain }}"
+          traefik.backend: "logs"
+          traefik.protocol: "http"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+      register: loki_provision
+      tags:
+        - loki
+        - monitoring
+
+    - debug:
+        var: loki_provision
+        verbosity: 1
+      tags:
+        - loki
+        - monitoring
+      when: loki_provision.changed
+
+    - name: "Wait for logs.{{ base_domain }} to become ready"
+      uri:
+        url: "https://logs.{{ base_domain }}/ready"
+        method: GET
+        status_code: 200
+        #user: "{{admin_user}}"
+        #password: "{{admin_password}}"
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - loki
+        - monitoring
+    
+    - name: Provision Portainer Agent
+      docker_swarm_service:
+        name: portainer-agent
+        state: present
+        mode: global
+        image: portainer/agent:1.5.1
+        resolve_image: True
+        env:
+          AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
+          CAP_HOST_MANAGEMENT: "1"
+        networks:
+          - name: "portainer"
+            aliases:
+              - "portainer"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: /var/lib/docker/volumes
+            target: /var/lib/docker/volumes
+            type: bind
+            readonly: no
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: portainer_agent_provision
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure portainer-agent is up and running"
+        seconds: 30
+      when: portainer_agent_provision.changed
+
+    - name: Provision Portainer
+      docker_swarm_service:
+        command: "/portainer -H tcp://tasks.portainer-agent:9001 --tlsskipverify --no-analytics --admin-password {{ admin_password_hash.stdout }}"
+        name: portainer
+        state: present
+        mode: replicated
+        replicas: 1
+        image: portainer/portainer:1.23.2
+        resolve_image: True
+        env:
+          AGENT_CLUSTER_ADDR: "tasks.portainer-agent"
+          CAP_HOST_MANAGEMENT: "1"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "portainer"
+            aliases:
+              - "portainer"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: portainer-data
+            target: /data
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.role == manager
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9000"
+          traefik.frontend.rule: "Host:portainer.{{ base_domain }}"
+          traefik.backend: "portainer-swarm"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "false"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+      register: portainer_provision
+      tags:
+        - portainer
+
+    - debug:
+        var: portainer_provision
+        verbosity: 1
+      tags:
+        - portainer
+      when: portainer_provision.changed
+
+    - name: "Wait for portainer.{{ base_domain }} to become ready"
+      uri:
+        url: "https://portainer.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - portainer
+
+    # - name: Provision Docker in Docker
+    #   docker_swarm_service:
+    #     name: dind
+    #     state: present
+    #     mode: replicated
+    #     replicas: 1
+    #     image: docker:dind
+    #     resolve_image: True
+    #     mounts:
+    #       - source: /var/run/docker.sock
+    #         target: /var/run/docker.sock
+    #         type: bind
+    #         readonly: no
+    #     restart_config:
+    #       condition: on-failure
+    #     limits:
+    #       memory: 128M
+    #     reservations:
+    #       memory: 64M
+    #     update_config:
+    #       parallelism: 2
+    #       delay: 60s
+    #       monitor: 30s
+    #       order: start-first
+    #       failure_action: rollback
+    #     placement:
+    #       constraints: 
+    #         - node.hostname == satellite-1
+    #   tags:
+    #     - garbage-collector
+    #   register: garbage_collector_provision
+
+    # - debug:
+    #     var: garbage_collector_provision
+    #     verbosity: 1
+    #   tags:
+    #     - garbage-collector
+    #   when: garbage_collector_provision.changed
+
+    # - name: Pause until Service is up
+    #   pause: 
+    #     prompt: "Make sure gargabe-collector is up and running"
+    #     seconds: 30
+    #   tags:
+    #     - garbage-collector
+    #   when: garbage_collector_provision.changed
+
+    - name: Provision cadvisor
+      docker_swarm_service:
+        name: cadvisor
+        state: present
+        mode: global
+        image: gcr.io/google-containers/cadvisor:v0.34.0
+        resolve_image: True
+        command: /usr/bin/cadvisor -logtostderr -docker_only
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: /
+            target: /rootfs
+            type: bind
+            readonly: True
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: True
+          - source: /var/run
+            target: /var/run
+            type: bind
+            readonly: True
+          - source: /sys
+            target: /sys
+            type: bind
+            readonly: True
+          - source: /var/lib/docker
+            target: /var/lib/docker
+            type: bind
+            readonly: True
+          - source: /dev/disk
+            target: /dev/disk
+            type: bind
+            readonly: True
+        restart_config:
+          condition: on-failure
+        labels:
+          prometheus.enable: "true"
+          prometheus.port: "8080"
+          prometheus.path: "/metrics"
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_cadvisor
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure cadvisor is up and running"
+        seconds: 30
+      when: provision_cadvisor.changed
+
+    - name: Provision cio-exporter
+      docker_swarm_service:
+        name: cio-exporter
+        state: present
+        mode: replicated
+        replicas: 1
+        image: storidge/cio-prom:latest
+        resolve_image: True
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        restart_config:
+          condition: on-failure
+        labels:
+          prometheus.enable: "true"
+          prometheus.port: "16995"
+          prometheus.path: "/metrics"
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.role == manager
+      register: cio_exporter_provision
+      when: storidge_enabled|bool
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure cio-exporter is up and running"
+        seconds: 30
+      when: cio_exporter_provision is defined and cio_exporter_provision.changed
+
+    - name: Provision dockerd-exporter
+      docker_swarm_service:
+        name: dockerd-exporter
+        state: present
+        mode: global
+        image: stefanprodan/dockerd-exporter:latest
+        resolve_image: True
+        env:
+          IN: "172.18.0.1:9323"
+          OUT: "9323"
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        restart_config:
+          condition: on-failure
+        labels:
+          prometheus.enable: "true"
+          prometheus.port: "8080"
+          prometheus.path: "/metrics"
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_dockerd_exporter
+      tags:
+        - dockerd-exporter
+
+    - debug:
+        var: provision_dockerd_exporter
+        verbosity: 1
+      tags:
+        - dockerd-exporter
+      when: provision_dockerd_exporter.changed
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure dockerd-exporter is up and running"
+        seconds: 30
+      when: provision_dockerd_exporter.changed
+      tags:
+        - dockerd-exporter
+
+    - name: Provision node-exporter
+      docker_swarm_service:
+        name: node-exporter
+        state: present
+        mode: global
+        image: registry.gitlab.com/peter.saarland/zero/node-exporter
+        resolve_image: True
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        env:
+          - NODE_ID={{ "{{.Node.ID}}" }}
+        mounts:
+          - source: /
+            target: /rootfs
+            type: bind
+            readonly: True
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: True
+          - source: /proc
+            target: /host/proc
+            type: bind
+            readonly: True
+          - source: /sys
+            target: /host/sys
+            type: bind
+            readonly: True
+          - source: /etc/hostname
+            target: /etc/nodename
+            type: bind
+            readonly: True
+        restart_config:
+          condition: on-failure
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      tags:
+        - node-exporter
+      register: node_exporter_provision
+
+    - debug:
+        var: node_exporter_provision
+        verbosity: 1
+      tags:
+        - node-exporter
+      when: node_exporter_provision.changed
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure node-exporter is up and running"
+        seconds: 30
+      tags:
+        - node-exporter
+      when: node_exporter_provision.changed
+
+    - name: Provision promtail
+      docker_swarm_service:
+        name: promtail
+        state: present
+        mode: global
+        image: grafana/promtail:latest
+        resolve_image: True
+        command: /usr/bin/promtail -config.file=/etc/promtail/docker-config.yaml
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: /var/log
+            target: /var/log
+            type: bind
+            readonly: True
+        restart_config:
+          condition: on-failure
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      register: provision_promtail
+      tags:
+        - promtail
+        - monitoring
+
+    - debug:
+        var: provision_promtail
+        verbosity: 1
+      tags:
+        - promtail
+      when: provision_promtail.changed
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure promtail is up and running"
+        seconds: 30
+      when: provision_promtail.changed
+      tags:
+        - promtail
+
+    - name: Provision Docker garbage-collector
+      docker_swarm_service:
+        name: garbage-collector
+        state: present
+        mode: global
+        image: clockworksoul/docker-gc-cron:latest
+        resolve_image: True
+        mounts:
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+            readonly: no
+        restart_config:
+          condition: on-failure
+        env:
+          - CRON=*/15 * * * *
+          # By default, docker will not remove an image if it is tagged in multiple repositories. If
+          # you have a server running docker where this is the case, for example in CI environments
+          # where dockers are being built, re-tagged, and pushed, you can set this flag to 1 to override.
+          - FORCE_IMAGE_REMOVAL=1
+          # By default, if an error is encountered when cleaning up a container, Docker will report the
+          # error back and leave it on disk. This can sometimes lead to containers accumulating. If
+          # you run into this issue, you can force the removal of the container by setting this flag.
+          - FORCE_CONTAINER_REMOVAL=1
+          # By default, docker-gc will not remove a container if it exited less than 1 hour ago.
+          # Set the GRACE_PERIOD_SECONDS variable to override this default.
+          - GRACE_PERIOD_SECONDS=3600
+          # By default, docker-gc will proceed with deletion of containers and images. To test your
+          # settings set the DRY_RUN variable to override this default
+          - DRY_RUN=0
+          # By default, this process will leave any dangling volumes untouched. To instruct the
+          # process to automatically clean up any dangling volumes, simply set this value to 1.
+          - CLEAN_UP_VOLUMES=0
+          # If you don't like all your log output and cron times being in UTC, you can set the
+          # TZ variable to override the default.
+          #- TZ=America/Chicago
+          - MINIMUM_IMAGES_TO_SAVE=2
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - node.platform.os == linux
+      tags:
+        - garbage-collector
+      register: garbage_collector_provision
+
+    - debug:
+        var: garbage_collector_provision
+        verbosity: 1
+      tags:
+        - garbage-collector
+      when: garbage_collector_provision.changed
+
+    - name: Pause until Service is up
+      pause: 
+        prompt: "Make sure gargabe-collector is up and running"
+        seconds: 30
+      tags:
+        - garbage-collector
+      when: garbage_collector_provision.changed
+
+    - name: Provision Prometheus
+      docker_swarm_service:
+        command: 
+          - "/bin/prometheus"
+          - "--config.file=/etc/prometheus/prometheus.yml"
+          #- "--web.console.libraries=/etc/prometheus/console_libraries"
+          #- "--web.console.templates=/etc/prometheus/consoles"
+          - "--storage.tsdb.path=/prometheus"
+          - "--storage.tsdb.retention.time=48h"
+          - "--web.enable-admin-api"
+        name: prometheus
+        resolve_image: True
+        state: present
+        mode: replicated
+        replicas: 1
+        image: registry.gitlab.com/peter.saarland/zero/prometheus
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: prometheus-data
+            target: /prometheus
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 1024M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "9090"
+          traefik.frontend.rule: "Host:prometheus.{{ base_domain }}"
+          traefik.backend: "prometheus"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "false"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+          prometheus.enable: "true"
+          prometheus.port: "9090"
+          prometheus.path: "/metrics"
+        healthcheck:
+          test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
+          interval: 25s
+          timeout: 3s
+          start_period: 60s
+      register: prometheus_provision
+      tags:
+        - prometheus
+        - monitoring
+
+    - debug:
+        var: prometheus_provision
+        verbosity: 1
+      tags:
+        - prometheus
+        - monitoring
+      when: prometheus_provision.changed
+
+    - name: "Wait for prometheus.{{ base_domain }} to become ready"
+      uri:
+        url: "https://prometheus.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - prometheus
+        - monitoring
+
+    - name: Provision Alertmanager
+      docker_swarm_service:
+        name: alertmanager
+        resolve_image: True
+        state: present
+        mode: replicated
+        replicas: 1
+        image: registry.gitlab.com/peter.saarland/zero/alertmanager
+        env:
+          SLACK_URL: "{{ slack_webhook }}"
+          SLACK_CHANNEL: "{{ slack_channel }}"
+          SLACK_USER: "zero"
+        networks:
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: alertmanager-data
+            target: /alertmanager
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+        healthcheck:
+          test: "/bin/wget -q -Y off http://localhost:9093/metrics -O /dev/null > /dev/null 2>&1"
+          interval: 25s
+          timeout: 3s
+          start_period: 30s
+      register: alertmanager_provision
+      tags:
+        - alertmanager
+        - monitoring
+
+    - debug:
+        var: alertmanager_provision
+        verbosity: 1
+      tags:
+        - alertmanager
+        - monitoring
+      when: alertmanager_provision.changed
+
+    - name: Provision Unsee
+      docker_swarm_service:
+        name: unsee
+        resolve_image: True
+        state: present
+        mode: replicated
+        replicas: 1
+        image: cloudflare/unsee:latest
+        env:
+          ALERTMANAGER_URI: http://alertmanager:9093
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+        limits:
+          memory: 2658M
+        reservations:
+          memory: 128M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:alerts.{{ base_domain }}"
+          traefik.backend: "unsee"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "false"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash.stdout}}"
+      register: unsee_provision
+      tags:
+        - unsee
+        - monitoring
+
+    - debug:
+        var: unsee_provision
+        verbosity: 1
+      tags:
+        - unsee
+        - monitoring
+      when: unsee_provision.changed
+
+    - name: "Wait for alerts.{{ base_domain }} to become ready"
+      uri:
+        url: "https://alerts.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - unsee
+        - monitoring
+
+    - name: Provision Grafana
+      docker_swarm_service:
+        name: grafana
+        state: present
+        mode: replicated
+        resolve_image: True
+        replicas: 1
+        image: registry.gitlab.com/peter.saarland/zero/grafana
+        env:
+          GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
+          GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"
+          GF_USERS_ALLOW_SIGN_UP: "false"
+        networks:
+          - name: "proxy"
+            aliases:
+              - "traefik"
+            options:
+              driver: "overlay"
+          - name: "monitoring"
+            aliases:
+              - "monitoring"
+            options:
+              driver: "overlay"
+        mounts:
+          - source: grafana-data
+            target: /var/lib/grafana
+            type: volume
+            readonly: no
+        restart_config:
+          condition: on-failure
+        update_config:
+          parallelism: 2
+          delay: 60s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+        placement:
+          constraints: 
+            - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 128M
+        labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "3000"
+          traefik.frontend.rule: "Host:grafana.{{ base_domain }}"
+          traefik.backend: "grafana"
+          traefik.protocol: "http"
+          traefik.frontend.headers.SSLRedirect: "false"
+          traefik.frontend.entryPoints: "http,https"
+          traefik.backend.loadbalancer.stickiness: "true"
+          prometheus.enable: "true"
+          prometheus.port: "3000"
+          prometheus.path: "/metrics"
+        healthcheck:
+          test: "wget -q -Y off -O /dev/null http://localhost:3000/login > /dev/null 2>&1"
+          interval: 25s
+          timeout: 3s
+          start_period: 120s
+      register: grafana_provision
+      tags:
+        - grafana
+        - monitoring
+
+    - debug:
+        var: grafana_provision
+        verbosity: 1
+      tags:
+        - grafana
+        - monitoring
+      when: grafana_provision.changed
+
+    - name: "Wait for grafana.{{ base_domain }} to become ready"
+      uri:
+        url: "https://grafana.{{ base_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 5 # pause for X sec b/w each call
+      tags:
+        - grafana
+        - monitoring

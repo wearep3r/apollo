@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include zero-app-loki"
+      include_role:
+        name: "zero-app-loki"

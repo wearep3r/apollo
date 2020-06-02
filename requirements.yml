@@ -1,8 +1,3 @@
-#- src: dev-sec.os-hardening
-#- src: dev-sec.ssh-hardening
 - src: geerlingguy.ntp
 - src: robertdebock.locale
-- src: geerlingguy.pip
-- src: geerlingguy.docker
-- src: geerlingguy.git
 - src: riemers.gitlab-runner

@@ -1,0 +1,14 @@
+- hosts: all
+  become: True
+  gather_facts: False
+  tasks:
+    - name: Debug
+      debug:
+        msg: 
+          #- "Remote User: {{ remote_user }}"
+          - "SSH User: {{ ansible_user }}"
+    - name: Fixing AWS root SSH access
+      replace:
+        path: /root/.ssh/authorized_keys
+        regexp: "^.*(?=(ssh-rsa))"
+        replace: ""

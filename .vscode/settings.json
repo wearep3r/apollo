@@ -1,3 +1,5 @@
 {
-  "editor.formatOnSave": false
+"editor.formatOnSave": false,
+"restructuredtext.confPath": "",
+"editor.tabSize": 2
 }

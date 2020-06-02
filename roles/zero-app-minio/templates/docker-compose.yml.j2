@@ -1,0 +1,69 @@
+version: '3.7'
+
+services:
+  minio:
+    image: "{{ images.minio }}"
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: "{{ admin_user }}"
+      MINIO_SECRET_KEY: "{{ admin_password }}"
+    networks: 
+      - proxy
+      - monitoring
+      - s3
+    volumes: 
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.port: "9000"
+        traefik.frontend.rule: "Host:minio.{{ platform_domain }}"
+        traefik.backend: "zero-app-minio"
+        traefik.protocol: "http"
+        traefik.backend.loadbalancer.stickiness: "true"
+{% if letsencrypt_enabled|bool %}
+        traefik.frontend.entryPoints: "http,https"
+        traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
+        traefik.frontend.entryPoints: "http"
+{%endif%}
+
+networks:
+  s3:
+    driver: overlay
+    attachable: true
+    name: s3
+  monitoring:
+    driver: overlay
+    external: true
+  proxy:
+    driver: overlay
+    external: true
+
+volumes:
+  minio-data:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}

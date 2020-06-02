@@ -1,0 +1,107 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:v1.7.22-alpine
+    command: > 
+      traefik 
+      --docker 
+{% if zero_orchestrator == "swarm" %}
+      --docker.swarmmode 
+{% endif %}
+      --docker.watch 
+      --docker.exposedbydefault=false 
+      --insecureSkipVerify 
+      --entrypoints="Name:http Address::80" 
+      --metrics
+      --metrics.prometheus
+      --accessLog
+{% if letsencrypt_enabled|bool %}
+      --entrypoints="Name:https Address::443 TLS" 
+      --acme 
+      --acme.email={{ letsencrypt_mail }} 
+      --acme.storage="/etc/traefik/acme.json" 
+      --acme.entryPoint=https 
+      --acme.httpChallenge 
+      --acme.httpChallenge.entrypoint="http" 
+      --acme.onhostrule=true 
+      --acme.acmelogging=true 
+{% endif %}
+      --logLevel=INFO 
+      --api 
+      --docker.domain={{ platform_domain }} 
+      --ping 
+      --rest 
+      --retry 
+      --configFile=/config/traefik.toml
+    environment:
+      - ZERO_VERSION=1
+{% if cloudflare_enabled|bool and traefik_dnschallenge_provider == "cloudflare" %}
+      - CF_API_EMAIL: "{{ cloudflare_api_email }}"
+      - CF_API_KEY: "{{ cloudflare_api_key }}"
+{% endif %}
+    networks:
+      - proxy
+{% for network in traefik_extra_networks %}
+{% if network != '' %}
+      - {{ network }}
+{% endif %}
+{% endfor %}
+    ports:
+      - 80:80
+      - 443:443
+    volumes: 
+      - traefik-config:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+          parallelism: 1
+          delay: 30s
+          monitor: 30s
+          order: start-first
+          failure_action: rollback
+      restart_policy:
+          condition: on-failure
+      placement:
+          constraints: 
+          - node.role == manager
+      labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:proxy.{{ platform_domain }}"
+          traefik.backend: "zero-app-traefik"
+          traefik.protocol: "http"
+{% if letsencrypt_enabled|bool %}
+          traefik.frontend.entryPoints: "http,https"
+          traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
+          traefik.frontend.entryPoints: "http"
+{%endif%}
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
+
+networks:
+  proxy:
+    driver: overlay
+    attachable: true
+    name: proxy
+{% for network in traefik_extra_networks %}
+{% if network != '' %}
+  {{ network }}:
+    driver: overlay
+    attachable: true
+    name: {{ network }}
+{% endif %}
+{% endfor %}
+
+volumes:
+  traefik-config:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}

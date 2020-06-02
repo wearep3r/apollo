@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  node-exporter:
+    image: registry.gitlab.com/peter.saarland/zero/node-exporter
+    environment:
+      - NODE_ID={{ "{{.Node.ID}}" }}
+    networks: 
+      - monitoring
+    volumes: 
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/hostname:/etc/nodename:ro
+    deploy:
+      mode: global
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.platform.os == linux
+      labels:
+        prometheus.enable: "true"
+        prometheus.port: "9100"
+        prometheus.path: "/metrics"
+
+networks:
+  monitoring:
+    driver: overlay
+    external: true

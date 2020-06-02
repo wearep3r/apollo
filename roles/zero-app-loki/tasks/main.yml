@@ -1,0 +1,47 @@
+---
+# tasks file for zero-app-loki
+- name: Provision Loki
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-loki.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision Loki
+      docker_stack:
+        state: present
+        name: loki
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-loki.yml
+      register: loki_provision
+
+    - name: "Wait for http://logs.{{ platform_domain }} to become ready"
+      uri:
+        # https://github.com/grafana/loki/blob/master/docs/api.md#get-ready
+        url: "http://logs.{{ platform_domain }}/ready"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30
+      delay: 10
+
+  rescue:
+    - name: Teardown Loki
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: loki
+      register: loki_loki
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-loki.yml
+        state: absent

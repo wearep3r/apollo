@@ -1,0 +1,9 @@
+---
+# handlers file for zero-core
+- name: restart firewall
+  service:
+    name: iptables
+    state: restarted
+- name: reload systemd
+  systemd:
+    daemon_reload: True

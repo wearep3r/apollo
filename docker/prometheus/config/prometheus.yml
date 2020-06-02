@@ -5,6 +5,9 @@ global:
   external_labels:
     monitor: 'prometheus'
 
+remote_write:
+  - url: http://victoria:8428/api/v1/write
+
 rule_files:
   - "swarm_node.rules.yml"
   - "swarm_task.rules.yml"
@@ -35,6 +38,22 @@ scrape_configs:
       - 'tasks.cadvisor'
       type: 'A'
       port: 8080
+  
+  - job_name: 'victoria'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.victoria'
+      type: 'A'
+      port: 8428
+
+  - job_name: 'trickster'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.trickster'
+      type: 'A'
+      port: 8082
 
   - job_name: 'node-exporter'
     dns_sd_configs:
@@ -60,10 +79,26 @@ scrape_configs:
       type: 'A'
       port: 8080
 
-  # - job_name: 'giltlab-runner'
-  #   dns_sd_configs:
-  #   - names:
-  #     # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
-  #     - 'runners.zero.local'
-  #     type: 'A'
-  #     port: 9252
+  - job_name: 'loki'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.loki'
+      type: 'A'
+      port: 3100
+
+  - job_name: 'promtail'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.promtail'
+      type: 'A'
+      port: 9080
+
+  - job_name: 'giltlab-runner'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
+      - 'zero.nodes'
+      type: 'A'
+      port: 9252

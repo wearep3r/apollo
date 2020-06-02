@@ -1,0 +1,97 @@
+---
+# tasks file for zero-orchestrator-kubernetes
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+  when: kubernetes_enabled|bool
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+  when: kubernetes_enabled|bool
+
+- name: Add an apt signing key for Kubernetes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes apt preferences file to pin a version.
+  template:
+    src: apt-preferences-kubernetes.j2
+    dest: /etc/apt/preferences.d/kubernetes
+
+- name: Adding apt repository for Kubernetes
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes.list
+
+- name: Install Kubernetes binaries
+  apt: 
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  notify: restart kubelet
+  vars:
+    packages:
+      - kubelet 
+      - kubeadm 
+      - kubectl
+      - kubernetes-cni
+
+- name: Check for existence of kubelet environment file.
+  stat:
+    path: '{{ kubelet_environment_file_path }}'
+  register: kubelet_environment_file
+
+- name: Set facts for KUBELET_EXTRA_ARGS task if environment file exists.
+  set_fact:
+    kubelet_args_path: '{{ kubelet_environment_file_path }}'
+    kubelet_args_line: "{{ 'KUBELET_EXTRA_ARGS=' + kubernetes_kubelet_extra_args }}"
+    kubelet_args_regexp: '^KUBELET_EXTRA_ARGS='
+  when: kubelet_environment_file.stat.exists
+
+- name: Set facts for KUBELET_EXTRA_ARGS task if environment file doesn't exist.
+  set_fact:
+    kubelet_args_path: '/etc/systemd/system/kubelet.service.d/10-kubeadm.conf'
+    kubelet_args_line: "{{ 'Environment=\"KUBELET_EXTRA_ARGS=' + kubernetes_kubelet_extra_args + '\"' }}"
+    kubelet_args_regexp: '^Environment="KUBELET_EXTRA_ARGS='
+  when: not kubelet_environment_file.stat.exists
+
+- name: Configure KUBELET_EXTRA_ARGS.
+  lineinfile:
+    path: '{{ kubelet_args_path }}'
+    line: '{{ kubelet_args_line }}'
+    regexp: '{{ kubelet_args_regexp }}'
+    state: present
+  register: kubelet_config_file
+
+- name: Reload systemd unit if args were changed.
+  systemd:
+    state: restarted
+    daemon_reload: true
+    name: kubelet
+  when: kubelet_config_file is changed
+
+- name: Ensure kubelet is started and enabled at boot.
+  service:
+    name: kubelet
+    state: started
+    enabled: true
+
+- name: Check if Kubernetes has already been initialized.
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_init_stat
+
+# - name: Configure node ip
+#   lineinfile:
+#     path: /etc/default/kubelet
+#     line: "KUBELET_EXTRA_ARGS=--node-ip={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+
+# - name: Restart kubelet
+#   service:
+#     name: kubelet
+#     daemon_reload: yes
+#     state: restarted

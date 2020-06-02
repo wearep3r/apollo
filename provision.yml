@@ -4,38 +4,47 @@
 # @action provision # this action describes the installation  
 
 ---
-# Check git Status
-- name: Check Git Status
-  import_playbook: playbooks/git-status.yml
-  # See group_vars/all
-  when: check_git|bool
-- import_playbook: playbooks/provision-infrastructure.yml
+  # @infrastructure
+  # @network
+  # @core
+  # @engine
+  # @orchestrator
+  # @backplane
+# @zero-infrastructure
+- name: "Enable AWS root access"
+  import_playbook: playbooks/aws.yml
+  when: zero_provider == "aws"
+
+# @zero-network
+- name: "@zero-network"
+  import_playbook: playbooks/zero-network.yml
   tags:
-      - infrastructure
-  when: terraform_enabled|bool
-- import_playbook: playbooks/provision-node.yml
-  tags:
-      - node
-- import_playbook: playbooks/provision-docker.yml
-  tags:
-      - docker
-- import_playbook: playbooks/provision-swarm.yml
-  tags:
-      - swarm
-  when: swarm_enabled|bool
-- import_playbook: playbooks/provision-kubernetes.yml
-  tags:
-      - kubernetes
-  when: kubernetes_enabled|bool
-- import_playbook: playbooks/provision-storidge.yml
-  tags:
-      - storidge
-  when: storidge_enabled|bool
-- import_playbook: playbooks/provision-runner.yml
-  tags:
-      - runner
-  when: runner_enabled|bool
-- import_playbook: playbooks/provision-backplane.yml
-  tags:
-    - backplane
+    - print_action
+
+# @zero-core
+# TODO: provide Windows Core
+- name: "@zero-core"
+  import_playbook: playbooks/zero-core.yml
+  when: ansible_os_family != "Windows"
+
+# @zero-orchestrator
+- name: "@zero-orchestrator"
+  import_playbook: playbooks/zero-orchestrator.yml
+# - name: "@zero-orchestrator"
+#   import_playbook: playbooks/zero-orchestrator-kubernetes.yml
+#   when: zero_orchestrator == "kubernetes"
+
+# @zero-data
+- name: "@zero-data"
+  import_playbook: playbooks/zero-data.yml
+
+# @zero-backplane
+- name: "@zero-backplane"
+  import_playbook: playbooks/zero-backplane.yml
   when: backplane_enabled|bool
+  
+# @zero-module-runner
+- name: "@zero-runner"
+  import_playbook: playbooks/provision-runner.yml
+  when: runner_enabled|bool
+

@@ -1,0 +1,36 @@
+---
+# tasks file for zero-app-cadvisor
+- name: Provision cio-exporter
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-cio-exporter.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Provision cio-exporter
+      docker_stack:
+        state: present
+        name: cio-exporter
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-cio-exporter.yml
+      register: cio_exporter_provision  
+
+  rescue:
+    - name: Teardown cio-exporter
+      docker_stack:
+          absent_retries: 5
+          absent_retries_interval: 10
+          state: absent
+          name: cadvisor
+      register: cio_exporter_cio_exporter
+
+    - name: Remove Stack File
+      file:
+        path: /tmp/zero-app-cio-exporter.yml
+        state: absent
+  when: inventory_hostname == groups["manager"][0]

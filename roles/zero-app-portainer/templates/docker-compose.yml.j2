@@ -1,0 +1,84 @@
+version: '3.7'
+
+services:
+  portainer-agent:
+    image: portainer/agent:1.5.1
+    environment:
+      - AGENT_CLUSTER_ADDR=tasks.portainer-agent
+      - CAP_HOST_MANAGEMENT=1
+    networks: 
+      - portainer
+    volumes: 
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      update_config:
+        parallelism: 2
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.platform.os == linux
+
+  portainer:
+    image: portainer/portainer:1.23.2
+    command: "-H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics --admin-password {{ admin_password_hash }}"
+    environment:
+      - AGENT_CLUSTER_ADDR=tasks.portainer-agent
+      - CAP_HOST_MANAGEMENT=1
+    networks:
+      - proxy
+      - portainer
+    volumes:
+      - portainer-data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 60s
+        monitor: 30s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.role == manager
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.port: "9000"
+        traefik.frontend.rule: "Host:portainer.{{ platform_domain }}"
+        traefik.backend: "zero-app-portainer"
+        traefik.protocol: "http"
+        traefik.backend.loadbalancer.stickiness: "true"
+{% if letsencrypt_enabled|bool %}
+        traefik.frontend.entryPoints: "http,https"
+        traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
+        traefik.frontend.entryPoints: "http"
+{%endif%}
+
+networks:
+  portainer:
+    driver: overlay
+    attachable: true
+    name: portainer
+  proxy:
+    driver: overlay
+    external: true
+
+volumes:
+  portainer-data:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}

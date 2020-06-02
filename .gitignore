@@ -1,5 +1,6 @@
 .ssh
 tmp
+inventory/enventory.py
 _deprecated/
 playbooks/_deprecated
 playbooks/_services.yml
@@ -7,6 +8,7 @@ playbooks/services
 _README.md
 docker/traefik
 .env
+.env.bak
 terraform/.terraform
 terraform/.dev
 terraform/terraform.tfstate
@@ -14,7 +16,12 @@ terraform/variables.tf
 ./docker-compose.yml
 .DS_Store
 cio
-roles/
+terraform
 .terraform/
 *.tfstate
 *.tfstate.backup
+!roles/
+roles/*
+!roles/zero-*
+.vagrant
+inventory/windows

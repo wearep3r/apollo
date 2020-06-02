@@ -1,0 +1,201 @@
+# Provision Swarm
+# This Playbook tries to bring the Swarm to an operational state
+# It determines the current Swarm Status of each Manager/Worker
+# and then bootstraps the Swarm or joins nodes if needed
+#
+# "manager" and "worker" are dynamic groups composed of
+# HETZNER servers with labels "role: manager" and "role: worker"
+# More information on this composition can be found in "hcloud.yml"
+#
+# 
+- name: "@zero-orchestrator"
+  hosts: all
+  become: True
+  gather_facts: True
+  roles:
+    - zero-orchestrator-swarm
+
+- name: "@zero-orchestrator-swarm"
+  hosts: manager
+  become: True
+  gather_facts: True
+  tasks:
+    - name: Determine Manager Swarm Status
+      shell: |
+        set -o pipefail
+        docker info | egrep 'Swarm: ' | cut -d ' ' -f3
+      register: swarm_status
+      changed_when: False
+      args:
+        executable: /bin/bash
+    - name: Save Swarm Status
+      set_fact:
+        swarm: "{{ swarm_status }}"
+
+    # Create dynamic in-memory groups "swarm_manager_active"
+    # and "swarm_manager_inactive" depending on the output of `docker info`
+    - name: Create swarm_manager_* Group
+      group_by:
+        key: swarm_manager_{{ swarm.stdout }}
+
+- hosts: worker
+  become: True
+  tasks:
+    - name: Determine Worker Swarm Status
+      shell: |
+        set -o pipefail
+        docker info | egrep 'Swarm: ' | cut -d ' ' -f3
+      register: swarm_status
+      changed_when: False
+      args:
+        executable: /bin/bash
+    - name: Save Worker Swarm Status
+      set_fact:
+        swarm: "{{ swarm_status }}"
+
+    # Create dynamic in-memory groups "swarm_worker_active"
+    # and "swarm_worker_inactive" depending on the output of `docker info` (Swarm: active/inactive)
+    - name: Create swarm_worker_* Group
+      group_by:
+        key: swarm_worker_{{ swarm.stdout }}
+
+- hosts: satellite
+  become: True
+  tasks:
+    - name: Determine Satellite Swarm Status
+      shell: |
+        set -o pipefail
+        docker info | egrep 'Swarm: ' | cut -d ' ' -f3
+      register: swarm_status
+      changed_when: False
+      args:
+        executable: /bin/bash
+    - name: Save Satellite Swarm Status
+      set_fact:
+        swarm: "{{ swarm_status }}"
+
+    # Create dynamic in-memory groups "swarm_worker_active"
+    # and "swarm_worker_inactive" depending on the output of `docker info` (Swarm: active/inactive)
+    - name: Create swarm_satellite_* Group
+      group_by:
+        key: swarm_satellite_{{ swarm.stdout }}
+
+# If there are inactive Swarm Managers (i.e. not yet part of a swarm)
+# check if the Swarm needs to be bootstrapped (initialized)
+- hosts: swarm_manager_inactive[0]
+  become: True
+  tasks:
+    - name: Initialize Swarm Cluster
+      shell: >
+        docker swarm init
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+        #--advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+      when: "'swarm_manager_active' not in groups"
+      register: bootstrap_first_node
+
+    - name: Add initialized host to swarm_manager_active Group # noqa 403 503
+      add_host:
+        hostname: "{{ play_hosts[0] }}"
+        groups: swarm_manager_active
+      when: bootstrap_first_node.changed
+      register: swarm_manager_active
+
+    - name: Set Node Labels # noqa 403 503
+      shell: >
+        docker node update --label-add role=manager --label-add storage=cio --label-add namespace=zero {{ ansible_hostname }}
+      when: swarm_manager_active.changed
+
+# Gather Swarm related information (Join tokens)
+- hosts: swarm_manager_active[0]
+  become: True
+  vars:
+    # hostvars[ansible_hostname]['ansible_default_ipv4']['interface']
+    iface: "{{ hostvars[ansible_hostname]['ansible_'+private_iface]['device'] }}"
+  tasks:
+    - name: Retrieve Swarm Manager Token
+      shell: docker swarm join-token -q manager # noqa 305
+      register: swarm_manager_token
+      changed_when: False
+    - name: Retrieve Swarm Worker Token # noqa 305
+      shell: docker swarm join-token -q worker
+      register: swarm_worker_token
+      changed_when: False
+    # This list will be used to feed new nodes an IP address
+    # to join the Swarm (see below)
+    # - name: Populate list of Manager IPs
+    #   add_host:
+    #     hostname: "{{ hostvars[item.inventory_hostname]['ansible_' + iface]['ipv4']['address'] }}"
+    #     groups: swarm_manager_ips
+    #   #with_items: "{{ play_hosts }}"
+    #   with_items: "{{ groups['manager'] }}"
+    #   changed_when: False
+
+# Have all inactive Swarm Managers join the existing Swarm as Manager
+- hosts: swarm_manager_inactive:!swarm_manager_active
+  become: True
+  vars:
+    token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
+  tasks:
+    - name: Join Manager Nodes to Cluster # noqa 301
+      # hostvars[ansible_hostname]['ansible_default_ipv4']['address']
+      shell: >
+        docker swarm join
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+        --token={{ token }}
+        {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+    - name: Set Node Labels # noqa 301
+      shell: >
+        docker node update --label-add role=manager --label-add storage=cio --label-add namespace=zero {{ ansible_hostname }}
+
+# Have all inactive Swarm Workers join the existing Swarm as Worker
+- hosts: swarm_worker_inactive
+  become: True
+  vars:
+    token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_worker_token']['stdout'] }}"
+  tasks:
+    - name: Join Worker Nodes to Cluster # noqa 301
+      shell: >
+        docker swarm join
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+        --token={{ token }}
+        {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+
+- hosts: swarm_satellite_inactive
+  become: True
+  vars:
+    token: "{{ hostvars[groups['swarm_manager_active'][0]]['swarm_manager_token']['stdout'] }}"
+  tasks:
+    - name: Join Satellite Nodes to Cluster # noqa 301
+      shell: >
+        docker swarm join
+        --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+        --token={{ token }}
+        {{ groups['manager'][0]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+
+- hosts: swarm_manager_active[0]
+  become: True
+  tasks:
+    - name: Set Worker Node Labels # noqa 301
+      shell: >
+          docker node update --label-add role=worker --label-add storage=cio {{ hostvars[item]["ansible_hostname"] }}
+      with_items: "{{ groups['worker'] }}"
+      when: groups["worker"] is defined and (groups["worker"]|length>0)
+    - name: Set Satellite Node Labels # noqa 301
+      shell: >
+          docker node update --label-add role=satellite --label-add storage=local {{ hostvars[item]["ansible_hostname"] }}
+      with_items: "{{ groups['satellite'] }}"
+      when: groups["satellite"] is defined and (groups["satellite"]|length>0)
+
+    - name: Create A record for Swarm
+      cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "swarm"
+        type: A
+        value: "{{ ingress_ip }}"
+        account_email: "{{ cloudflare_api_email }}"
+        account_api_token: "{{ cloudflare_api_key }}"
+        solo: True
+        proxied: False
+      register: record
+      when: cloudflare_enabled|bool
+
