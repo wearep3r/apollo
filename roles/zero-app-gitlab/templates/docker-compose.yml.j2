@@ -54,6 +54,7 @@ services:
       - gitlab
       - proxy
       - monitoring
+      - smtp
     deploy:
       mode: replicated
       replicas: 1
@@ -155,6 +156,9 @@ networks:
     driver: overlay
     external: true
   proxy:
+    driver: overlay
+    external: true
+  smtp:
     driver: overlay
     external: true
   gitlab:

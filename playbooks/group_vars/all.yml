@@ -5,6 +5,11 @@ if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default('zero', true) }}"
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.if0/.environments/zero', true) }}"
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
 
+zero_smtp_server: "{{ lookup('env','ZERO_SMTP_SERVER') | default('', true) }}"
+zero_smtp_username: "{{ lookup('env','ZERO_SMTP_USERNAME') | default('', true) }}"
+zero_smtp_password: "{{ lookup('env','ZERO_SMTP_PASSWORD') | default('', true) }}"
+zero_smtp_port: "{{ lookup('env','ZERO_SMTP_PORT') | default('25', true) }}"
+
 # OS detection helper
 worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
 
@@ -70,6 +75,20 @@ kubernetes_allow_pods_on_master: True
 
 # Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
+backplane_apps:
+    - zero-app-traefik
+    - zero-app-loki
+    - zero-app-portainer
+    - zero-app-prometheus
+    - zero-app-alertmanager
+    - zero-app-grafana
+    - zero-app-cadvisor
+    - zero-app-node-exporter
+    - zero-app-dockerd-exporter
+    - zero-app-minio
+    - zero-app-gc
+    - zero-app-alertmanager
+    - zero-app-smtp
 
 # Custom
 ingress_ip: "{{ lookup('env','ZERO_INGRESS_IP') | default('127.0.0.1', true) }}"
