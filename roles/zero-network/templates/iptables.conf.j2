@@ -32,7 +32,12 @@
 -A FILTERS -s 10.0.0.0/8 -j ACCEPT
 -A FILTERS -s 172.0.0.0/8 -j ACCEPT
 {% for host in groups['all']|sort %}
+# Fix for AWS Windows machines
+{% if hostvars[host]['ansible_os_family'] == "Windows" %}
+-A FILTERS -s {{ hostvars[host]['ansible_ip_addresses'][0] }} -j ACCEPT
+{% else %}
 -A FILTERS -s {{ hostvars[host]['ansible_'+public_iface]['ipv4']['address'] }} -j ACCEPT
+{% endif %}
 {% endfor %}
 -A FILTERS -m limit --limit 15/min -j LOG --log-prefix "Dropped by firewall: " --log-level 7
 -A FILTERS -j REJECT --reject-with icmp-host-prohibited

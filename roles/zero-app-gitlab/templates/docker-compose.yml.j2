@@ -25,7 +25,7 @@ services:
   postgres:
     image: '{{ images.db }}'
     volumes:
-      - postgres-data:/var/lib/postgresql:Z
+      - postgres-data:/var/lib/postgresql/data:Z
     networks:
       - gitlab
     environment:
@@ -60,8 +60,8 @@ services:
       replicas: 1
       update_config:
         parallelism: 1
-        delay: 60s
-        monitor: 30s
+        delay: 120s
+        monitor: 60s
         order: stop-first
         failure_action: rollback
       restart_policy:
@@ -102,6 +102,7 @@ services:
           'X-Forwarded-Ssl' => 'on'
         }
         nginx['client_max_body_size'] = '2G'
+        postgresql['enable'] = false
         gitlab_rails['gravatar_enabled'] = false
         gitlab_rails['gitlab_ssh_host'] = '{{ gitlab_domain }}:{{ gitlab_ssh_port }}'
         gitlab_rails['initial_root_password'] = '{{ admin_password }}'
@@ -125,8 +126,7 @@ services:
         gitlab_rails['smtp_user_name'] = "{{ gitlab_smtp_user_name }}"
         gitlab_rails['smtp_password'] = "{{ gitlab_smtp_password }}"
         gitlab_rails['smtp_domain'] = "{{ gitlab_smtp_domain }}"
-        gitlab_rails['smtp_authentication'] = "login"
-        gitlab_rails['smtp_enable_starttls_auto'] = false
+        gitlab_rails['smtp_enable_starttls_auto'] = true
         gitlab_rails['gitlab_email_from'] = '{{ gitlab_email_from }}'
         gitlab_rails['gitlab_email_display_name'] = '{{ gitlab_email_display_name }}'
         gitlab_rails['gitlab_email_reply_to'] = '{{ gitlab_email_reply_to }}'
@@ -144,12 +144,55 @@ services:
         gitlab_rails['registry_enabled'] = true
         registry_nginx['listen_port'] = 80
         registry_nginx['listen_https'] = false
+        gitlab_rails['incoming_email_enabled'] = true
+        gitlab_rails['incoming_email_address'] = "{{ gitlab_email_from }}"
+        gitlab_rails['incoming_email_email'] = "{{ gitlab_smtp_user_name }}"
+        gitlab_rails['incoming_email_password'] = "{{ gitlab_smtp_password }}"
+        gitlab_rails['incoming_email_host'] = "{{ gitlab_smtp_host }}"
+        gitlab_rails['incoming_email_port'] = 993
+        gitlab_rails['incoming_email_ssl'] = true
+        gitlab_rails['incoming_email_start_tls'] = false
+        gitlab_rails['incoming_email_mailbox_name'] = "inbox"
+        gitlab_rails['incoming_email_idle_timeout'] = 60
+        gitlab_rails['incoming_email_expunge_deleted'] = true
     ports:
       - "2222:22"
     volumes:
       - gitlab-config:/etc/gitlab
       - gitlab-logs:/var/log/gitlab
       - gitlab-data:/var/opt/gitlab
+  
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local
+    volumes:
+      - /srv/backups/gitlab-postgres:/backups
+    networks:
+      - gitlab
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 120s
+        monitor: 60s
+        order: stop-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB={{ gitlab_db_password }}
+      - POSTGRES_USER={{ gitlab_db_user }}
+      - POSTGRES_PASSWORD={{ gitlab_db_password }}
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+      - SCHEDULE=@every 0h30m00s
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=81
 
 networks:
   monitoring:

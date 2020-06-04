@@ -56,22 +56,6 @@ swarm_networks:
 
 # Kubernetes
 kubernetes_enabled: "{{ lookup('env','KUBERNETES_ENABLED') | default(0, true) }}"
-kubernetes_pod_cidr: "{{ lookup('env','KUBERNETES_POD_CIDR') | default('172.16.11.0/16', true) }}"
-kubernetes_pod_cni: 'flannel'
-kubernetes_version: '1.17'
-kubernetes_version_kubeadm: 'stable-{{ kubernetes_version }}'
-kubernetes_ignore_preflight_errors: 'all'
-kubernetes_enable_web_ui: True
-kubernetes_kubelet_extra_args: "--cgroup-driver=systemd"
-kubernetes_kubeadm_init_extra_opts: ""
-kubernetes_join_command_extra_opts: ""
-kubernetes_web_ui_manifest_file: https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
-kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-rbac.yml
-kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-kubernetes_calico_manifest_file: https://docs.projectcalico.org/v3.10/manifests/calico.yaml
-kubelet_environment_file_path: /etc/default/kubelet
-kubernetes_allow_pods_on_master: True
-
 
 # Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"

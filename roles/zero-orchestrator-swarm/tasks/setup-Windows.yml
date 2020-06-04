@@ -1,0 +1,33 @@
+---
+- name: Determine Swarm Status
+  win_shell: "((docker info | findstr 'Swarm:') -Split ': ')[1]"
+  register: swarm_status
+  changed_when: False
+
+- name: Save Swarm Status
+  set_fact:
+    swarm: "{{ swarm_status|trim|regex_replace('(\r\n)','') }}"
+
+# Create dynamic in-memory groups "swarm_manager_active"
+# and "swarm_manager_inactive" depending on the output of `docker info`
+- name: Create dynamic Swarm Groups
+  group_by:
+    key: swarm_{{ item }}_{{ swarm.stdout_lines[0] }}
+  when: "item in group_names"
+  with_items:
+    - worker
+
+- name: Join Worker Nodes to Cluster # noqa 301
+  win_shell: >
+    docker swarm join
+    --advertise-addr={{ hostvars[inventory_hostname]['ansible_ip_addresses'][0] }}:2377
+    --token={{ hostvars[groups['manager'][0]]['swarm_worker_token']['stdout'] }}
+    {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+  when: "'swarm_worker_inactive' in group_names and 'swarm_worker_active' not in group_names and inventory_hostname != groups['manager'][0]"
+  register: swarm_worker_joined
+
+- name: Set Node Labels # noqa 301
+  shell: >
+    docker node update --label-add role=worker --label-add environment={{ if0_environment }} --label-add provider={{ zero_provider }} {{ ansible_hostname }}
+  when: swarm_worker_joined.changed and inventory_hostname != groups['manager'][0]
+  delegate_to: "root@{{ groups['manager'][0] }}"

@@ -26,6 +26,19 @@
           - /tmp/zero-app-smtp.yml
       register: smtp_provision
 
+    - name: "Wait for http://maildev.{{ platform_domain }} to become ready"
+      uri:
+        url: "http://maildev.{{ platform_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 10 # pause for X sec b/w each call 
+
   rescue:
     - name: Teardown smtp
       docker_stack:
