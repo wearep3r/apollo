@@ -1,10 +1,10 @@
 {
   "metrics-addr" : "0.0.0.0:9323",
   "experimental" : true,
-  {% if kubernetes_enabled|bool %}
+{% if zero_orchestrator == "kubernetes!" %}
   "exec-opts": ["native.cgroupdriver=systemd"],
-  {% endif %}
-  {% if backplane_enabled|bool %}
+{% endif %}
+{% if backplane_enabled|bool %}
   "log-driver": "loki:latest",
   "log-opts": {
       "loki-url": "http://127.0.0.1:3100/loki/api/v1/push",
@@ -16,6 +16,6 @@
       "loki-timeout": "5s",
       "loki-batch-wait": "5s"
   },
-  {% endif %}
+{% endif %}
   "debug": false
 }

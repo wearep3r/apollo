@@ -6,16 +6,16 @@
 # cluster_interface: the interface used for cluster communication (auto-discovery)
 
 # TODO: Fix this. Currently only works as tested on IBM Windows Server 2019 machines
-- name: Defining Cluster Interface
-  set_fact: 
-    cluster_interface: "{{ ansible_interfaces[0]['interface_index'] }}"
-    private_iface: "{{ ansible_interfaces[0]['interface_index'] }}"
-    public_iface: "{{ ansible_interfaces[1]['interface_index'] }}"
+# - name: Defining Cluster Interface
+#   set_fact: 
+#     cluster_interface: "{{ ansible_interfaces[0]['interface_index'] }}"
+#     private_iface: "{{ ansible_interfaces[0]['interface_index'] }}"
+#     public_iface: "{{ ansible_interfaces[1]['interface_index'] }}"
 
-- name: Defining Ingress IP
-  set_fact:
-    ingress_ip: "{{ public_iface }}"
+# - name: Defining Ingress IP
+#   set_fact:
+#     ingress_ip: "{{ public_iface }}"
 
-- name: Debug Interfaces
-  debug: 
-    msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Cluster Interface: '+cluster_interface+' - Ingress IP: '+ingress_ip }}"
+# - name: Debug Interfaces
+#   debug: 
+#     msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Cluster Interface: '+cluster_interface+' - Ingress IP: '+ingress_ip }}"

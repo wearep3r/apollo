@@ -62,3 +62,9 @@
     name: docker
     state: started
     start_mode: auto
+
+# - name: Copy Docker config
+#   template:
+#     src: templates/daemon.json.j2
+#     dest: "C:\\ProgramData\\Docker\\config\\daemon.json"
+#   notify: restart docker

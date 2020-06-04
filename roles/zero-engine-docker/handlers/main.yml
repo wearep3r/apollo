@@ -7,3 +7,7 @@
 - name: restart docker
   service: name=docker state=restarted
   listen: "restart docker"
+- name: restart docker
+  win_service: name=docker state=restarted
+  listen: "restart docker"
+  when: ansible_os_family == "Windows"

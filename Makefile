@@ -32,8 +32,8 @@ load: /tmp/.loaded.sentinel
 > @if [ ! -z $$IF0_ENVIRONMENT ]; then echo "Loading Environment ${IF0_ENVIRONMENT}"; fi
 > @touch /tmp/.loaded.sentinel
 
-.PHONY: provision
-provision: /tmp/.loaded.sentinel
+.PHONY: platform
+platform: /tmp/.loaded.sentinel
 >	@ansible-playbook provision.yml --flush-cache
 
 .PHONY: check

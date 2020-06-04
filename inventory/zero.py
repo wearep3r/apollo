@@ -86,6 +86,10 @@ class ZeroInventory(object):
                     # Fix user if windows machine
                     if worker_os_family == "windows":
                         inventory['_meta']['hostvars'][hostname]["ansible_user"] = "administrator"
+                        inventory['_meta']['hostvars'][hostname]["ansible_shell_type"] = "cmd"
+                        inventory['_meta']['hostvars'][hostname]["ansible_become_method"] = "runas"
+                        inventory['_meta']['hostvars'][hostname]["ansible_become_user"] = "Administrator"
+                        
 
                     i += 1
             inventory = json.dumps(inventory)
