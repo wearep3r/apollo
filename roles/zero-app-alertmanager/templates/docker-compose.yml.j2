@@ -20,12 +20,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      update_config:
-        parallelism: 1
-        delay: 60s
-        monitor: 30s
-        order: stop-first
-        failure_action: rollback
       restart_policy:
         condition: on-failure
       placement:

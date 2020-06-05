@@ -18,19 +18,6 @@
         with_registry_auth: yes
         compose:
           - /tmp/zero-app-cio-exporter.yml
-      register: cio_exporter_provision  
-
-  rescue:
-    - name: Teardown cio-exporter
-      docker_stack:
-          absent_retries: 5
-          absent_retries_interval: 10
-          state: absent
-          name: cadvisor
-      register: cio_exporter_cio_exporter
-
-    - name: Remove Stack File
-      file:
-        path: /tmp/zero-app-cio-exporter.yml
-        state: absent
+      register: cio_exporter_provision 
+      ignore_errors: True
   when: inventory_hostname == groups["manager"][0]
