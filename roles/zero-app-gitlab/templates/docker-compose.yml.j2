@@ -138,17 +138,19 @@ services:
         gitlab_rails['registry_enabled'] = true
         registry_nginx['listen_port'] = 80
         registry_nginx['listen_https'] = false
+{% if gitlab_incoming_email_enabled == 'true' %}
         gitlab_rails['incoming_email_enabled'] = true
-        gitlab_rails['incoming_email_address'] = "{{ gitlab_email_from }}"
-        gitlab_rails['incoming_email_email'] = "{{ gitlab_smtp_user_name }}"
-        gitlab_rails['incoming_email_password'] = "{{ gitlab_smtp_password }}"
-        gitlab_rails['incoming_email_host'] = "{{ gitlab_smtp_host }}"
-        gitlab_rails['incoming_email_port'] = 993
-        gitlab_rails['incoming_email_ssl'] = true
-        gitlab_rails['incoming_email_start_tls'] = false
+        gitlab_rails['incoming_email_address'] = "{{ gitlab_incoming_email_address }}"
+        gitlab_rails['incoming_email_email'] = "{{ gitlab_incoming_email_email }}"
+        gitlab_rails['incoming_email_password'] = "{{ gitlab_incoming_email_password }}"
+        gitlab_rails['incoming_email_host'] = "{{ gitlab_incoming_email_host }}"
+        gitlab_rails['incoming_email_port'] = "{{ gitlab_incoming_email_port }}"
+        gitlab_rails['incoming_email_ssl'] = "{{ gitlab_incoming_email_ssl }}"
+        gitlab_rails['incoming_email_start_tls'] = "{{ gitlab_incoming_email_start_tls }}"
         gitlab_rails['incoming_email_mailbox_name'] = "inbox"
         gitlab_rails['incoming_email_idle_timeout'] = 60
         gitlab_rails['incoming_email_expunge_deleted'] = true
+{% endif %}
     ports:
       - "2222:22"
     volumes:
