@@ -7,7 +7,7 @@ datasources:
 - name: Prometheus
   type: prometheus
   access: proxy
-  url: http://trickster:9090
+  url: http://trickster:8480
   isDefault: true
   version: 1
   editable: false

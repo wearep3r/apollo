@@ -4,5 +4,5 @@
   service: 
     name: kubelet 
     state: restarted
-    daemon_reload: ye
+    daemon_reload: yes
   listen: "restart kubelet"

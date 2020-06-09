@@ -13,12 +13,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: global
-      update_config:
-        parallelism: 2
-        delay: 60s
-        monitor: 30s
-        order: stop-first
-        failure_action: rollback
       restart_policy:
         condition: on-failure
       placement:
@@ -39,12 +33,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      update_config:
-        parallelism: 2
-        delay: 60s
-        monitor: 30s
-        order: stop-first
-        failure_action: rollback
       restart_policy:
         condition: on-failure
       placement:
