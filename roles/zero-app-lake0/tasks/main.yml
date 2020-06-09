@@ -1,0 +1,27 @@
+---
+# tasks file for zero-app-minio
+- name: Provision Lake0
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-lake0.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
+    - name: Provision lake0
+      docker_stack:
+        state: present
+        name: lake0
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-lake0.yml
+      register: lake0_provision
