@@ -51,13 +51,13 @@ dependencies:
   - zero-app-traefik
   - zero-app-loki
   - zero-app-portainer
+  - zero-app-cadvisor
+  - zero-app-node-exporter
+  - zero-app-gc
   - zero-app-prometheus
   - zero-app-alertmanager
   - zero-app-grafana
-  - zero-app-cadvisor
-  - zero-app-node-exporter
-  - zero-app-dockerd-exporter
+  #- zero-app-dockerd-exporter
   - zero-app-minio
-  - zero-app-gc
-  - zero-app-alertmanager
   - zero-app-smtp
+  - zero-app-lake0

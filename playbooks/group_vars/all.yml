@@ -124,6 +124,10 @@ digitalocean_ssh_key_id: "{{ lookup('env','DIGITALOCEAN_SSH_KEY_ID') | default('
 
 ## AWS
 aws_enabled: "{{ lookup('env','AWS_ENABLED') | default(0, true) }}"
+aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default(admin_user, true) }}"
+aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default(admin_password, true) }}"
+
+hcloud_token: "{{ lookup('env','HCLOUD_TOKEN') }}"
 
 # Rexray S3FS
 s3fs_accesskey: "{{ lookup('env','S3FS_ACCESSKEY') }}"

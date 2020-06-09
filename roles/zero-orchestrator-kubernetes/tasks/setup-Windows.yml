@@ -178,7 +178,7 @@
     state: directory
 
 - name: Link kubectl config
-  win_command: mklink C:\Users\Administrator\.kube\config C:\etc\kubernetes\kubelet.conf
+  win_command: cmd.exe /k mklink C:\Users\Administrator\.kube\config C:\etc\kubernetes\kubelet.conf
 
  
     

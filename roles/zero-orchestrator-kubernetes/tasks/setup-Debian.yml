@@ -134,6 +134,25 @@
   changed_when: "'created' in flannel_result.stdout"
   when: kubernetes_pod_cni == 'flannel'
 
+- name: Flanel Windows
+  block:
+    - name: Template Flannel Windows Config
+      template:
+        src: kube-proxy.yml.j2
+        dest: /tmp/kube-proxy.yml
+
+    - name: Configure Flannel networking for Windows
+      command: "{{ item }}"
+      with_items:
+        - kubectl apply -f /tmp/kube-proxy.yml
+        - kubectl apply -f https://github.com/kubernetes-sigs/sig-windows-tools/releases/latest/download/flannel-host-gw.yml
+        # Reference: https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/adding-windows-nodes/
+        # Reference: https://github.com/kubernetes-sigs/sig-windows-tools/issues/61
+      register: flannel_windows_result
+      #changed_when: "'created' in flannel_windows_result.stdout"
+  when: >
+    kubernetes_pod_cni == 'flannel'
+
 - name: Configure Calico networking.
   command: "{{ item }}"
   with_items:
@@ -198,3 +217,10 @@
     creates=/etc/kubernetes/kubelet.conf
   tags: ['skip_ansible_lint']
   when: inventory_hostname != groups["manager"][0]
+
+- name: Copy "kubectl-config" to if0_environment
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.if0/.environments/zero/kubectl-config.yml
+    flat: yes
+  ignore_errors: True

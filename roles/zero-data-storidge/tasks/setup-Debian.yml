@@ -2,7 +2,13 @@
 #   fail:
 #     msg: "Storidge can only be installed on Ubuntu"
 #   when: ansible_distribution != 'Ubuntu'
-
+- name: Installing apt dependencies
+  apt:
+    name:
+      - linux-headers-{{ ansible_kernel }}
+    state: present
+    update_cache: False
+  
 - name: Creating storidge_nodes Group
   group_by:
     key: storidge_nodes
@@ -205,7 +211,7 @@
   when: inventory_hostname == groups["manager"][0]
 
 - name: Joining Nodes to Storidge Cluster
-  shell: "cioctl join {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+  shell: "cioctl join {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} ip- {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }} --ip {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
   register: result
   when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != groups['manager'][0]"
   retries: 6
