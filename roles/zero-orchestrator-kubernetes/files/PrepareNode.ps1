@@ -75,4 +75,12 @@ Write-Host "Registering kubelet service"
 nssm install kubelet $global:Powershell $global:PowershellArgs $global:StartKubeletScript
 nssm set kubelet DependOnService docker
 
+mkdir -Force C:\flannel\
+DownloadFile C:\flannel\flanneld.exe https://github.com/coreos/flannel/releases/download/v0.12.0/flanneld.exe
+nssm install flanneld C:\flannel\flanneld.exe
+nssm set flanneld AppParameters --kubeconfig-file=/etc/kubernetes/kubelet.conf --ip-masq=1 --kube-subnet-mgr=1
+nssm set flanneld AppEnvironmentExtra NODE_NAME=$(hostname)
+nssm set flanneld AppDirectory C:\flannel
+nssm start flanneld
+
 New-NetFirewallRule -Name kubelet -DisplayName 'kubelet' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 10250

@@ -1,28 +1,164 @@
 ---
-
-# - name: setup kubernetes 
-#   win_chocolatey:
-#     state: present  
-#     name: "{{ item }}"
-#     force: yes
-#     ignore_checksums: yes
-#     version:  1.14.0-rc1
-#   with_items: 
-#     - kubernetes-node 
   
 - name: Create directory 
   win_file:
     path: C:\k
     state: directory
 
+- name: setup kubernetes 
+  win_chocolatey:
+    state: present  
+    name: "{{ item }}"
+    force: yes
+    ignore_checksums: yes
+  with_items: 
+    - kubernetes-cli
+    - 7zip
+    
+- name: Ensure that any old instance of flanneld is stopped
+  win_service:
+    name: flanneld
+    state: stopped
+    force_dependent_services: yes
+  ignore_errors: yes
+  tags: cni
+  
 - name: Copy PrepareNode script
   win_copy:
     src: files/PrepareNode.ps1
     dest: C:\k\PrepareNode.ps1
 
 - name: Run PrepareNode script
-  win_shell: C:\k\PrepareNode.ps1 -KubernetesVersion v1.18.0 >> c:\k\PrepareNode_log.txt
+  win_shell: C:\k\PrepareNode.ps1 -KubernetesVersion v1.17.6 >> c:\k\PrepareNode_log.txt
 
+- name: Firewall rule to allow flannel on TCP port 8285
+  win_firewall_rule:
+    name: flannel udp
+    localport: 8285
+    action: allow
+    direction: in
+    protocol: udp
+    state: present
+    enabled: yes
+
+- name: Firewall rule to allow flannel on TCP port 8472
+  win_firewall_rule:
+    name: flannel vxlan
+    localport: 8472
+    action: allow
+    direction: in
+    protocol: udp
+    state: present
+    enabled: yes
+
+- name: Ensure that download temporary kubernetes directory exists
+  win_file:
+    path: "{{ download_temp_path }}"
+    state: directory
+    recurse: yes
+  tags: cni
+
+- name: check if cni file is downloaded
+  win_stat:
+    path: "{{ download_temp_path }}/{{ flannel_package_file }}"
+  register: flannel_stat_package_file_info
+
+- name: Download flannel package with host-gw support
+  win_get_url:
+    url: "{{ flannel_package_url }}"
+    dest: "{{ download_temp_path }}/{{ flannel_package_file }}"
+    force: yes
+  when: not flannel_stat_package_file_info.stat.exists
+  tags: cni
+
+- name: Ensure that unzip temporary directory exists
+  win_file:
+    path: "{{ unzip_temp_path }}"
+    state: directory
+    recurse: yes
+  tags: cni
+
+- name: Unzip flannel package
+  win_shell: 7z x "{{ download_temp_path }}/{{ flannel_package_file }}" -so | 7z x -aoa -si -ttar -o"{{ unzip_temp_path }}"
+  args:
+    executable: cmd  # Required as powershell provides unwanted buffering
+  when: not flannel_stat_package_file_info.stat.exists
+  tags: cni
+
+- name: Ensure that flannel installation directory exists
+  win_file:
+    path: "{{ flannel_installation_path }}"
+    state: directory
+    recurse: yes
+  tags: cni
+    
+- name: Copy flannel to destination directory
+  win_copy:
+    remote_src: yes
+    src: "{{ unzip_temp_path }}"
+    dest: "{{ flannel_installation_path }}"
+  when: not flannel_stat_package_file_info.stat.exists
+  tags: cni
+
+- name: Ensure that flannel config directory exists
+  win_file:
+    path: "{{ flannel_config_path }}"
+    state: directory
+    recurse: yes
+  tags: cni
+
+- name: Copy flannel configuration file
+  win_template:
+    src: net-conf.json.j2
+    dest: "{{ flannel_config_path }}/net-conf.json"
+  tags: cni
+
+- name: Ensure that flannel is in PATH environment variable
+  win_path:
+    elements: "{{ flannel_installation_path }}"
+    scope: machine
+    state: present
+  tags: cni
+
+- name: Install flannel service
+  block:
+    - name: Copy flannel daemon file
+      win_template:
+        src: flannel-daemon.ps1.j2
+        dest: "{{ flannel_installation_path }}/flannel-daemon.ps1"
+
+    - name: Ensure that flannel log directory exists
+      win_file:
+        path: "{{ flannel_log_path }}"
+        state: directory
+        recurse: yes
+     
+    - name: Create flannel service
+      win_nssm:
+        name: "{{ flannel_service_name }}"
+        application: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+        app_parameters_free_form: "-ExecutionPolicy Bypass -Noninteractive -File '{{ flannel_installation_path }}/flannel-daemon.ps1'"
+        stdout_file: "{{ flannel_log_path }}/{{ flannel_service_name }}-stdout.log"
+        stderr_file: "{{ flannel_log_path }}/{{ flannel_service_name }}-stderr.log"
+        state: present
+        start_mode: auto
+        dependencies: "{{ kubelet_service_name }}"  # latest NSSM throws a lot of errors when used with ansible and multiple dependencies. Defining them manually below
+
+    - name: Set flannel service restart delay for short executions
+      win_shell: "nssm set {{ flannel_service_name }} AppThrottle 1500"
+
+    - name: Set flannel service default failure action to restart
+      win_shell: "nssm set {{ flannel_service_name }} AppExit Default Restart"
+
+    - name: Set flannel service restart delay in case of failure
+      win_shell: "nssm set {{ flannel_service_name }} AppRestartDelay 5000"
+
+    - name: Set flannel service to not overwrite stdout file
+      win_shell: "nssm set {{ flannel_service_name }} AppStdoutCreationDisposition 4"
+
+    - name: Set flannel service to not overwrite stderr file
+      win_shell: "nssm set {{ flannel_service_name }} AppStderrCreationDisposition 4"
+      
 - name: Reboot Server
   win_reboot:
     reboot_timeout: 3600
@@ -35,3 +171,14 @@
     creates=/etc/kubernetes/kubelet.conf
   tags: ['skip_ansible_lint']
   when: inventory_hostname != groups["manager"][0]
+
+- name: Set kubectl config directory
+  win_file:
+    path: C:\Users\Administrator\.kube\
+    state: directory
+
+- name: Link kubectl config
+  win_command: mklink C:\Users\Administrator\.kube\config C:\etc\kubernetes\kubelet.conf
+
+ 
+    
