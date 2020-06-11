@@ -49,3 +49,4 @@ galaxy_info:
 
 dependencies: 
   - zero-engine-docker
+  - geerlingguy.helm
