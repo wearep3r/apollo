@@ -1,0 +1,60 @@
+---
+# tasks file for zero-app-gitlab
+- name: Provision GitLab
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-gitlab.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
+    - name: Provision GitLab
+      docker_stack:
+        state: present
+        name: gitlab
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-gitlab.yml
+      register: gitlab_provision
+
+    - name: "Wait for http://{{ gitlab_domain }} to become ready"
+      uri:
+        url: "http://{{ gitlab_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: "{{ app_healthcheck_retries }}"
+      delay: "{{ app_healthcheck_delay }}"
+    
+    - name: Set runner configuration globally
+      set_fact:
+        gitlab_runner_coordinator_url: "{{ gitlab_domain }}"
+        runner_token: "{{ runner_token }}"
+      when: runner_token != gitlab_shared_runners_token
+      delegate_to: "{{ item }}"
+      delegate_facts: true
+      with_items: "{{ groups['all'] }}"
+  # rescue:
+  #   - name: Teardown GitLab
+  #     docker_stack:
+  #         absent_retries: 5
+  #         absent_retries_interval: 10
+  #         state: absent
+  #         name: gitlab
+  #     register: gitlab_gitlab
+
+  #   - name: Remove Stack File
+  #     file:
+  #       path: /tmp/zero-app-gitlab.yml
+  #       state: absent

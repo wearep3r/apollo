@@ -51,22 +51,16 @@ services:
       - 80:80
       - 443:443
     volumes: 
-      - traefik-config:/etc/traefik
+      - traefik-data:/etc/traefik
       - /var/run/docker.sock:/var/run/docker.sock:ro
     deploy:
       mode: replicated
       replicas: 1
-      update_config:
-          parallelism: 1
-          delay: 30s
-          monitor: 30s
-          order: start-first
-          failure_action: rollback
       restart_policy:
           condition: on-failure
       placement:
           constraints: 
-          - node.role == manager
+          - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
       labels:
           traefik.enable: "true"
           traefik.tags: "proxy"
@@ -99,7 +93,7 @@ networks:
 {% endfor %}
 
 volumes:
-  traefik-config:
+  traefik-data:
 {% if zero_data == "storidge" %}
     driver: cio
     driver_opts: 

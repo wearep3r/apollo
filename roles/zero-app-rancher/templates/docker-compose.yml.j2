@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  lake0:
+    image: "{{ images.lake0 }}"
+    environment:
+      RESTIC_REPOSITORY: "{{ restic_repository }}"
+      RESTIC_PASSWORD: "{{ restic_password }}"
+      RESTIC_TAG: "{{ if0_environment }}"
+      BACKUP_CRON: "{{ restic_backup_cron }}"
+      RESTIC_FORGET_ARGS: "{{ restic_forget_args }}"
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    networks: 
+      - monitoring
+      - s3
+    volumes: 
+      - /var/lib/docker/volumes:/data
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+networks:
+  s3:
+    driver: overlay
+    external: true
+  monitoring:
+    driver: overlay
+    external: true

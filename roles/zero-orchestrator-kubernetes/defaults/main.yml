@@ -1,16 +1,33 @@
 ---
-# defaults file for zero-module-docker
-docker_edition: 'ce'
-docker_package: "docker-{{ docker_edition }}=5:19.03.6~3-0~{{ ansible_distribution | lower }}-{{ ansible_distribution_release }}"
-docker_package_state: present
-docker_service_state: started
-docker_service_enabled: true
-docker_restart_handler_state: restarted
-docker_install_compose: true
-docker_compose_version: "1.25.4"
-docker_compose_path: /usr/local/bin/docker-compose
-docker_apt_release_channel: stable
-docker_apt_arch: amd64
-docker_apt_repository: "deb [arch={{ docker_apt_arch }}] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ docker_apt_release_channel }}"
-docker_apt_ignore_key_error: true
-docker_users: []
+# defaults file for zero-orchestrator-kubernetes
+kubernetes_pod_cidr: "{{ lookup('env','KUBERNETES_POD_CIDR') | default('10.244.0.0/16', true) }}"
+kubernetes_pod_cni: 'flannel'
+kubernetes_version: '1.17'
+kubernetes_version_kubeadm: 'stable-{{ kubernetes_version }}'
+kubernetes_ignore_preflight_errors: 'all'
+kubernetes_enable_web_ui: True
+kubernetes_kubelet_extra_args: "--cgroup-driver=cgroupfs"
+kubernetes_kubeadm_init_extra_opts: ""
+kubernetes_join_command_extra_opts: ""
+kubernetes_web_ui_manifest_file: https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-rbac.yml
+kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubernetes_calico_manifest_file: https://docs.projectcalico.org/v3.10/manifests/calico.yaml
+kubelet_environment_file_path: /etc/default/kubelet
+kubernetes_allow_pods_on_master: True
+
+flannel_version: "flannel-v0.12.0-windows-amd64"
+flannel_package_file: "{{ flannel_version }}.tar.gz"
+flannel_package_url: "https://github.com/coreos/flannel/releases/download/v0.12.0/{{ flannel_package_file }}"
+flannel_installation_path: "C:/k/"
+flannel_config_path: "C:/etc/kube-flannel/"  # This is the recommended directory - flanneld will automatically load configuration
+flannel_log_path: "C:/var/log/"
+flannel_service_name: flanneld
+
+download_temp_path: "C:/Temp/"
+unzip_temp_path: "C:/Temp/flannel/{{ flannel_version }}"
+
+kubernetes_pod_network_cidr: "10.244.0.0/16"
+kubernetes_config_path: "C:/etc/kubernetes/kubelet.conf"
+
+kubelet_service_name: kubelet # used as dependency on flanneld service

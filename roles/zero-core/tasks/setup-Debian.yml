@@ -166,6 +166,7 @@
     - name: Install bashtop
       command: make install
         chdir=/opt/bashtop
+      changed_when: False
 
 - name: Installing lazydocker
   block:

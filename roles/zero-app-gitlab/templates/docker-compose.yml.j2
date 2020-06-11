@@ -1,0 +1,244 @@
+version: '3.7'
+
+services:
+  redis:
+    image: '{{ images.redis }}'
+    volumes:
+      - redis-data:/var/lib/redis:Z
+    networks:
+      - gitlab
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 120s
+        monitor: 600s
+        order: stop-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+
+  postgres:
+    image: '{{ images.db }}'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:Z
+    networks:
+      - gitlab
+    environment:
+      - POSTGRES_USER={{ gitlab_db_user }}
+      - POSTGRES_PASSWORD={{ gitlab_db_password }}
+      - POSTGRES_DB={{ gitlab_db_name }}
+      - DB_EXTENSION=postgresql
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+        monitor: 30s
+        order: stop-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+
+  gitlab:
+    image: '{{ images.gitlab }}'
+    networks:
+      - gitlab
+      - proxy
+      - monitoring
+      - smtp
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.gitlab.port: "80"
+        traefik.registry.port: "80"
+        traefik.gitlab.frontend.rule: "Host:{{ gitlab_domain }}"
+        traefik.registry.frontend.rule: "Host:{{ gitlab_registry_domain }}"
+        traefik.gitlab.backend: "zero-app-gitlab"
+        traefik.registry.backend: "zero-app-registry"
+        traefik.gitlab.protocol: "http"
+        traefik.registry.protocol: "http"
+{% if letsencrypt_enabled|bool %}
+        traefik.gitlab.frontend.entryPoints: "http,https"
+        traefik.gitlab.frontend.headers.SSLRedirect: "true"
+        traefik.registry.frontend.entryPoints: "http,https"
+        traefik.registry.frontend.headers.SSLRedirect: "true"
+{% else %}
+        traefik.gitlab.frontend.entryPoints: "http"
+        traefik.registry.frontend.entryPoints: "http"
+{% endif %}
+        traefik.backend.loadbalancer.stickiness: "true"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://{{ gitlab_domain }}'
+        nginx['redirect_http_to_https'] = false
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_set_headers'] = {
+          'X-Forwarded-Proto' => 'https',
+          'X-Forwarded-Ssl' => 'on'
+        }
+        nginx['client_max_body_size'] = '2G'
+        postgresql['enable'] = false
+        gitlab_rails['gravatar_enabled'] = false
+        gitlab_rails['gitlab_ssh_host'] = '{{ gitlab_domain }}:{{ gitlab_ssh_port }}'
+        gitlab_rails['initial_root_password'] = '{{ admin_password }}'
+        gitlab_rails['initial_shared_runners_registration_token'] = "{{ gitlab_shared_runners_token }}"
+        gitlab_rails['db_adapter'] = "postgresql"
+        gitlab_rails['db_encoding'] = "unicode"
+        gitlab_rails['db_database'] = "{{ gitlab_db_name }}"
+        gitlab_rails['db_pool'] = 10
+        gitlab_rails['db_username'] = "{{ gitlab_db_user }}"
+        gitlab_rails['db_password'] = "{{ gitlab_db_password }}"
+        gitlab_rails['db_host'] = "{{ gitlab_db_host }}"
+        gitlab_rails['db_sslmode'] = "disable"
+        gitlab_rails['db_port'] = {{ gitlab_db_port }}
+        gitlab_rails['redis_host'] = "redis"
+        gitlab_rails['redis_port'] = 6379
+        gitlab_rails['redis_ssl'] = false
+        gitlab_rails['redis_enable_client'] = true
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "{{ gitlab_smtp_host }}"
+        gitlab_rails['smtp_port'] = {{ gitlab_smtp_port }}
+        gitlab_rails['smtp_user_name'] = "{{ gitlab_smtp_user_name }}"
+        gitlab_rails['smtp_password'] = "{{ gitlab_smtp_password }}"
+        gitlab_rails['smtp_domain'] = "{{ gitlab_smtp_domain }}"
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['gitlab_email_from'] = '{{ gitlab_email_from }}'
+        gitlab_rails['gitlab_email_display_name'] = '{{ gitlab_email_display_name }}'
+        gitlab_rails['gitlab_email_reply_to'] = '{{ gitlab_email_reply_to }}'
+        unicorn['worker_timeout'] = 60
+        unicorn['worker_processes'] = 2
+        sidekiq['concurrency'] = 15
+        postgresql['shared_buffers'] = "512MB"
+        gitlab_rails['artifacts_enabled'] = true
+        gitlab_rails['artifacts_path'] = "/var/opt/gitlab/gitlab-artifacts"
+        gitlab_rails['lfs_enabled'] = true
+        gitlab_rails['backup_keep_time'] = 172600
+        gitlab_ci['backup_keep_time'] = 172600
+        gitlab_rails['time_zone'] = "Europe/Berlin"
+        registry_external_url = 'http://{{ gitlab_registry_domain }}'
+        gitlab_rails['registry_enabled'] = true
+        registry_nginx['listen_port'] = 80
+        registry_nginx['listen_https'] = false
+{% if gitlab_incoming_email_enabled == 'true' %}
+        gitlab_rails['incoming_email_enabled'] = true
+        gitlab_rails['incoming_email_address'] = "{{ gitlab_incoming_email_address }}"
+        gitlab_rails['incoming_email_email'] = "{{ gitlab_incoming_email_email }}"
+        gitlab_rails['incoming_email_password'] = "{{ gitlab_incoming_email_password }}"
+        gitlab_rails['incoming_email_host'] = "{{ gitlab_incoming_email_host }}"
+        gitlab_rails['incoming_email_port'] = "{{ gitlab_incoming_email_port }}"
+        gitlab_rails['incoming_email_ssl'] = "{{ gitlab_incoming_email_ssl }}"
+        gitlab_rails['incoming_email_start_tls'] = "{{ gitlab_incoming_email_start_tls }}"
+        gitlab_rails['incoming_email_mailbox_name'] = "inbox"
+        gitlab_rails['incoming_email_idle_timeout'] = 60
+        gitlab_rails['incoming_email_expunge_deleted'] = true
+{% endif %}
+    ports:
+      - "2222:22"
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+  
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local
+    volumes:
+      - /srv/backups/gitlab-postgres:/backups
+    networks:
+      - gitlab
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 120s
+        monitor: 60s
+        order: stop-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB={{ gitlab_db_password }}
+      - POSTGRES_USER={{ gitlab_db_user }}
+      - POSTGRES_PASSWORD={{ gitlab_db_password }}
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+      - SCHEDULE=@every 0h30m00s
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=81
+
+networks:
+  monitoring:
+    driver: overlay
+    external: true
+  proxy:
+    driver: overlay
+    external: true
+  smtp:
+    driver: overlay
+    external: true
+  gitlab:
+    driver: overlay
+    attachable: true
+    name: gitlab
+
+volumes:
+  gitlab-data:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}
+{% if zero_data == "nfs" %}
+    driver_opts:
+      type: "nfs"
+      o: "addr={{ nfs_storage_address }},nolock,soft,rw"
+      device: ":/{{ if0_environment }}/gitlab-data"
+{% endif %}
+  gitlab-config:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}
+  gitlab-logs:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}
+  redis-data:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}
+  postgres-data:
+{% if zero_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}

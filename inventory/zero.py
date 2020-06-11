@@ -52,6 +52,8 @@ class ZeroInventory(object):
             if zero_nodes_manager and zero_nodes_manager != "":
                 inventory["manager"] = []
                 i = 0
+                if if0_environment == "platform":
+                    i = 1
                 #node_count = zero_nodes.split(",").length
                 for node in zero_nodes_manager.split(","):
                     hostname = "{}-manager-{}".format(if0_environment,i)
@@ -69,6 +71,8 @@ class ZeroInventory(object):
             if zero_nodes_worker and zero_nodes_worker != "":
                 inventory["worker"] = []
                 i = 0
+                if if0_environment == "platform":
+                    i = 1
                 #node_count = zero_nodes.split(",").length
                 for node in zero_nodes_worker.split(","):
                     hostname = "{}-worker-{}".format(if0_environment,i)
@@ -86,6 +90,10 @@ class ZeroInventory(object):
                     # Fix user if windows machine
                     if worker_os_family == "windows":
                         inventory['_meta']['hostvars'][hostname]["ansible_user"] = "administrator"
+                        inventory['_meta']['hostvars'][hostname]["ansible_shell_type"] = "cmd"
+                        inventory['_meta']['hostvars'][hostname]["ansible_become_method"] = "runas"
+                        inventory['_meta']['hostvars'][hostname]["ansible_become_user"] = "Administrator"
+                        
 
                     i += 1
             inventory = json.dumps(inventory)

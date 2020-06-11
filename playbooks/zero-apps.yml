@@ -1,0 +1,6 @@
+- name: "@zero-apps"
+  hosts: manager[0]
+  become: True
+  gather_facts: True
+  roles:
+    - zero-apps

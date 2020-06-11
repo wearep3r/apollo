@@ -1,0 +1,10 @@
+- name: Zero Apps
+  debug:
+    msg: "Provisioning Apps"
+
+- name: Load Apps
+  include_role:
+    name: "zero-app-{{ item }}"
+  with_items:
+    - "{{ zero_apps }}"
+  when: item != ""

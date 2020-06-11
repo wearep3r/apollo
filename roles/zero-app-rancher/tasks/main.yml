@@ -1,0 +1,34 @@
+---
+# tasks file for zero-app-minio
+- name: Provision Rancher
+  block:
+    - name: Add Helm Repo
+      command: helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+
+    - name: Add Cattle Namespace
+      command: kubectl create namespace cattle-system
+
+    - name: Setup Cert-Manager CRDs
+      command: kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.0/cert-manager.crds.yaml
+
+    - name: Create Cert-Manager Namespace
+      command: kubectl create namespace cert-manager
+
+    - name: Add Helm Repo
+      command: helm repo add jetstack https://charts.jetstack.io
+
+    - name: Update Helm Repo
+      command: helm repo update
+
+    - name: Install Cert-Manager
+      command: helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v0.15.0
+      register: cert_manager_install
+
+    - name: Waiting for Cert-Manager to be fully up
+      pause:
+        prompt: "Waiting for Cert-Manager to become fully available"
+        seconds: 180
+      when: cert_manager_install.changed
+
+    - name: Install Rancher
+      command: "helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.{{ platform_domain }}"    

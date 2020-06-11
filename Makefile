@@ -14,7 +14,7 @@ endif
 
 export DOCKER_BUILDKIT=1
 IF0_ENVIRONMENT ?= zero
-DOCKER_SHELLFLAGS ?= run --rm -it -e IF0_ENVIRONMENT=${IF0_ENVIRONMENT} --name zero-${IF0_ENVIRONMENT} -v ${PWD}:/zero -v ${HOME}/.if0/.environments/${IF0_ENVIRONMENT}:/root/.if0/.environments/zero -v ${HOME}/.gitconfig:/root/.gitconfig zero
+DOCKER_SHELLFLAGS ?= run --rm -it -e IF0_ENVIRONMENT=${IF0_ENVIRONMENT} --name zero -v ${PWD}:/zero -v ${HOME}/.if0/.environments/${IF0_ENVIRONMENT}:/root/.if0/.environments/zero -v ${HOME}/.gitconfig:/root/.gitconfig zero
 ZERO_PROVIDER ?= generic
 ENVIRONMENT_DIR ?= ${HOME}/.if0/.environments/zero
 PROVIDER_UPPERCASE=$(shell echo $(ZERO_PROVIDER) | tr  '[:lower:]' '[:upper:]')
@@ -32,8 +32,8 @@ load: /tmp/.loaded.sentinel
 > @if [ ! -z $$IF0_ENVIRONMENT ]; then echo "Loading Environment ${IF0_ENVIRONMENT}"; fi
 > @touch /tmp/.loaded.sentinel
 
-.PHONY: provision
-provision: /tmp/.loaded.sentinel
+.PHONY: platform
+platform: /tmp/.loaded.sentinel
 >	@ansible-playbook provision.yml --flush-cache
 
 .PHONY: check
