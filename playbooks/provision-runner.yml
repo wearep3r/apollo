@@ -1,4 +1,4 @@
-- hosts: worker
+- hosts: all
   become: True
   pre_tasks:
     - name: List Runners
