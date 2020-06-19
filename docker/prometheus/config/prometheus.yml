@@ -23,13 +23,22 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'dockerd-exporter'
+  - job_name: 'minio'
     dns_sd_configs:
-    - names:
-      # This A-Record is managed by Docker Swarm
-      - 'tasks.dockerd-exporter'
-      type: 'A'
-      port: 9323
+      - names:
+        # This A-Record is managed by Docker Swarm
+        - 'tasks.minio'
+        type: 'A'
+        port: 9000
+    metrics_path: /minio/prometheus/metrics
+    
+  # - job_name: 'dockerd-exporter'
+  #   dns_sd_configs:
+  #   - names:
+  #     # This A-Record is managed by Docker Swarm
+  #     - 'tasks.dockerd-exporter'
+  #     type: 'A'
+  #     port: 9323
 
   - job_name: 'cadvisor'
     dns_sd_configs:

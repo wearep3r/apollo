@@ -5,7 +5,7 @@ SHELL := bash
 #.DELETE_ON_ERROR:
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL := platform
 
 ifeq ($(origin .RECIPEPREFIX), undefined)
   $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
