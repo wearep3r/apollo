@@ -27,6 +27,9 @@
 {% if zero_orchestrator in ["kubernetes", "k3s"] %}
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 6443 -j ACCEPT
 {% endif %}
+{% if "gitlab" in zero_apps %}
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 2222 -j ACCEPT
+{% endif %}
 # Whitelist private network
 -A FILTERS -s {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['network']+"/"+hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['netmask'] }} -j ACCEPT
 -A FILTERS -s 10.0.0.0/8 -j ACCEPT

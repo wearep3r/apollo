@@ -54,7 +54,7 @@ services:
       - gitlab
       - proxy
       - monitoring
-      - smtp
+      #- smtp
     deploy:
       mode: replicated
       replicas: 1
@@ -98,7 +98,7 @@ services:
         nginx['client_max_body_size'] = '2G'
         postgresql['enable'] = false
         gitlab_rails['gravatar_enabled'] = false
-        gitlab_rails['gitlab_ssh_host'] = '{{ gitlab_domain }}:{{ gitlab_ssh_port }}'
+        gitlab_rails['gitlab_shell_ssh_port'] = '{{ gitlab_ssh_port }}'
         gitlab_rails['initial_root_password'] = '{{ admin_password }}'
         gitlab_rails['initial_shared_runners_registration_token'] = "{{ gitlab_shared_runners_token }}"
         gitlab_rails['db_adapter'] = "postgresql"
@@ -197,9 +197,9 @@ networks:
   proxy:
     driver: overlay
     external: true
-  smtp:
-    driver: overlay
-    external: true
+  # smtp:
+  #   driver: overlay
+  #   external: true
   gitlab:
     driver: overlay
     attachable: true

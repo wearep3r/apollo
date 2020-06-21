@@ -4,32 +4,6 @@
   hostname:
     name: "{{inventory_hostname}}"
 
-# - name: Get local user
-#   become: false
-#   local_action: command whoami
-#   register: whoami
-#   changed_when: false
-#   when: not local_user|bool
-
-# - name: Set local user
-#   set_fact:
-#     local_user: "{{ whoami.stdout }}"
-#   changed_when: false
-#   when: not local_user|bool
-
-# - name: Add local user
-#   user:
-#     name: "{{ local_user }}"
-#     shell: /bin/bash
-#     groups: sudo
-#     append: yes
-
-# - name: Set authorized key
-#   authorized_key:
-#     user: "{{ local_user }}"
-#     state: present
-#     key: "{{ lookup('file', environment_dir+'/.ssh/id_rsa.pub') }}"
-
 - name: $node A-Records
   lineinfile: 
     dest=/etc/hosts 
@@ -48,7 +22,7 @@
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
 
-- name: nodes.* A-Record
+- name: zero.nodes A-Record
   lineinfile: 
     dest=/etc/hosts 
     regexp=".*logs.{{ platform_domain }}$" 
@@ -57,10 +31,10 @@
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
 
-# - name: Set up authorized keys for user root
-#   authorized_key: user=root key="{{ item }}"
-#   with_file:
-#     - ../.ssh/id_rsa.pub
+- name: Set up authorized keys for user root
+  authorized_key: user=root key="{{ item }}"
+  with_file:
+    - "{{ environment_dir }}/.ssh/id_rsa.pub"
 
 - name: Set root SSH Pem key
   copy:
@@ -94,13 +68,13 @@
     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
     validate: 'visudo -cf %s'
 
-- name: Remove require tty
-  lineinfile: 
-    regexp: '^(Defaults\s+requiretty)$'
-    line: '# \1'
-    dest: /etc/sudoers 
-    #state: absent
-    backrefs: yes
+# - name: Remove require tty
+#   lineinfile: 
+#     regexp: '^(Defaults\s+requiretty)$'
+#     line: '# \1'
+#     dest: /etc/sudoers 
+#     #state: absent
+#     backrefs: yes
 
 # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
 - name: Fixing IBM Issue 1
@@ -140,6 +114,10 @@
       - sysstat
       - lm-sensors
       - make
+      - zsh
+      #- fzf
+      - ack
+      - open-iscsi
     state: present
     update_cache: False
   tags:
@@ -155,6 +133,52 @@
   tags:
     - packages
     - docker
+
+- name: Installing ZSH
+  block:
+    - name: Check if .zshrc exists
+      stat:
+        path: ~/.zshrc
+      register: stat_rc_result
+
+    - name: Check if .oh-my-zsh exists
+      stat:
+        path: ~/.oh-my-zsh
+      register: stat_oh_my_zsh_result
+
+    - name: Cloning oh-my-zsh
+      git:
+        repo=https://github.com/zsh-users/zsh-autosuggestions
+        dest=~/.oh-my-zsh
+      when: not stat_oh_my_zsh_result.stat.exists
+
+    - name: Cloning zsh-autosuggestions
+      git:
+        repo=https://github.com/robbyrussell/oh-my-zsh
+        dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
+
+    - name: Cloning zsh-completions
+      git:
+        repo=https://github.com/zsh-users/zsh-completions
+        dest=~/.oh-my-zsh/plugins/zsh-completions
+    
+    - name: Cloning zsh-syntax-highlighting
+      git:
+        repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
+
+    - name: Cloning fzf-tab-completion
+      git:
+        repo=https://github.com/lincheney/fzf-tab-completion.git
+        dest=~/.oh-my-zsh/plugins/fzf-tab-completion
+      
+    - name: Create ~/.zshrc
+      template:
+        src: templates/zshrc.j2
+        dest: /root/.zshrc
+        group: root
+        owner: root
+        mode: 0644
 
 - name: Installing bashtop
   block:

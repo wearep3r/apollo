@@ -58,6 +58,5 @@ dependencies:
   - zero-app-alertmanager
   - zero-app-grafana
   #- zero-app-dockerd-exporter
-  - zero-app-minio
-  - zero-app-smtp
+  #- zero-app-smtp
   - zero-app-lake0

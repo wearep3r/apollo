@@ -1,6 +1,5 @@
 # @zero-core
 force_reboot: 0
-local_user: "{{ lookup('env','USERNAME') | default(0, true) }}"
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default('zero', true) }}"
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.if0/.environments/zero', true) }}"
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
@@ -94,6 +93,8 @@ cloudflare_api_key: "{{ lookup('env','CLOUDFLARE_API_KEY') }}"
 # GitLab
 # GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
 runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(0, true) }}"
+runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(1, true) }}"
+runner_build_enabled: "{{ lookup('env','RUNNER_BUILD_ENABLED') | default(1, true) }}"
 gl_token: "{{ lookup('env','GL_TOKEN') }}"
 registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
 registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"

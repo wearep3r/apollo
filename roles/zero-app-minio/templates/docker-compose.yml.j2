@@ -7,6 +7,8 @@ services:
     environment:
       MINIO_ACCESS_KEY: "{{ admin_user }}"
       MINIO_SECRET_KEY: "{{ admin_password }}"
+      MINIO_DOMAIN: "minio.{{ platform_domain }}"
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
     networks: 
       - proxy
       - monitoring
@@ -35,6 +37,7 @@ services:
         traefik.backend: "zero-app-minio"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
+        traefik.frontend.passHostHeader: "true"
 {% if letsencrypt_enabled|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"
