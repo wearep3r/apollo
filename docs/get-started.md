@@ -54,7 +54,7 @@ if0 init
 # it to ~/.if0/if0.env
 #
 # if0 will create a **private** repository at
-# gitlab.com derfabianpeter/$VPC_NAME automatically for you
+# $IF0_REGISTRY_URL/$IF0_REGISTRY_GROUP/$VPC_NAME automatically for you
 #
 # You can disable this by setting
 # IF0_REPOSITORY_AUTO_CREATE=0
@@ -63,25 +63,82 @@ if0 init
 
 ### Create your Zero VPC ###
 Name: draconic-envelope-galore
-Size (Horizontal; No of machines): 
-Size (Vertical; Size of machines): 
 Provider: [aws, digitalocean, hcloud]
-Domain: $IP.xip.io
+Base Domain: (defaults to $IP.xip.io)
 
 # Success! New VPC designed. Now go ship it!
 ```
 
+**ATTENTION:** `Name` must be a URL/DNS-conform string, like `zero-test-1`. This name will be used as a subdomain, so choose carefully.
+
 ### 3. Ship your Zero VPC
 
 ```bash
-if0 ship
+if0 ship $VPC_NAME
 ```
 
 ## Advanced usage
 
 ### Architecture
 
-Zero is organized in **VPC**s aka **Virtual Private Clouds**. Such a **VPC** works as a private environment with a specific configuration and size. A VPC is designed to be ephemeral 
+Zero is organized in **VPC**s aka **Virtual Private Clouds**. Such a **VPC** works as a private environment with a specific configuration and size. A VPC is designed to be ephemeral but offers strong capabilities for stateful workloads and long-living clusters.
+
+**VPCs** are managed with `if0`. You can [use GitLab to store and collaborate on **VPCs**](manage-vpcs.md).
 
 ### Configuration
 
+Zero is a PaaS component. It is accompanied by an IaaS component - Dash1. Together, they form a **VPC**. The following outlines typical **VPC** configurations. For more advanced use-cases, see [Advanced Configuration](advanced-configuration.md).
+
+#### IaaS - Dash1
+
+**Dash1**, just like Zero, reads configuration from the **Environment**. Dash1 is designed to run in a container and exports the content of any file matching the following expression to the running container's environment on container start: `/root/.if0/.environments/zero/*.env`
+
+Typically, Dash1 expects its configuration in a file called `dash1.env` living in `$IF0_ENVIRONMENT_DIR` (which defaults to `/root/.if0/.environments/zero/`).
+
+The **minimum viable config** to spin up infrastructure as code with Dash1 would be:
+
+```bash
+DASH1_MODULE=[hcloud|aws|digitalocean]
+PROVIDER_API_KEY=
+```
+
+This would spin up **1 small Ubuntu 18.04 VM** at your cloud provider of choice. It will add 3 files to your **VPC** config:
+
+- `dash1.plan` is a [Terraform Planfile](https://www.terraform.io/docs/commands/plan.html)
+- `dash1.tfstate` is a [Terraform Statefile](https://www.terraform.io/docs/state/index.html)
+- `dash1-zero.env` contains configuration necessary for Zero to deploy the PaaS component to the VM
+
+#### PaaS - Zero
+
+**Zero** reads its configuration from the **Environment**. Like Dash1, it's designed to run in a container and export configuration found in the **VPC** directory to the container's environment. This includes the aforementioned `dash1-zero.env` that only exists if Dash1 infrastructure has been provisioned successfully.
+
+Assuming we use Dash1 to provide infrastructure, the **minimum viable config** to deploy a platform with Zero would be:
+
+```bash
+IF0_ENVIRONMENT=$VPC_NAME
+```
+
+**ATTENTION**: You need to replace `$VPC_NAME` with the name of the VPC this Zero-Deployment is part of. It's the name you picked during `if0 init`.
+
+This configuration would deploy the platform with a `$ZERO_BASE_DOMAIN` of `$ZERO_INGRESS_IP.xip.io` (`$ZERO_INGRESS_IP` will be provided by Dash1), Docker Swarm as orchestrator and a few backend services. Assuming `ZERO_INGRESS_IP=213.45.74.3` and `IF0_ENVIRONMENT=draconic-envelope-galore`, you would have access to the following services:
+
+- Portainer: http://portainer.draconic-envelope-galore.213.45.74.3.xip.io
+- Traefik: http://proxy.draconic-envelope-galore.213.45.74.3.xip.io
+- Prometheus: http://prometheus.draconic-envelope-galore.213.45.74.3.xip.io
+- Grafana: http://grafana.draconic-envelope-galore.213.45.74.3.xip.io
+
+Username is `admin` and password is `insecure!`.
+
+**Pro-Tipp**: if you want to use your own domain - beingyou.rocks - add the following records to your DNS and set `ZERO_BASE_DOMAIN=beingyou.rocks` in `zero.env`:
+
+```bash
+@ draconic-envelope-galore.beingyou.rocks 213.45.74.3
+* draconic-envelope-galore.beingyou.rocks 213.45.74.3
+```
+
+This would give you access to the following endpoints automagically:
+
+- Portainer: http://portainer.draconic-envelope-galore.beingyou.rocks
+- Traefik: http://proxy.draconic-envelope-galore.beingyou.rocks
+- Prometheus: http://prometheus.draconic-envelope-galore.beingyou.rocks
+- Grafana: http://grafana.draconic-envelope-galore.beingyou.rocks
