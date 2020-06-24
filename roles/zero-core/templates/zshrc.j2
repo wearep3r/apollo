@@ -1,0 +1,21 @@
+# If you come from bash you might have to change your $PATH.
+export GOPATH=$HOME/go
+export PATH=$HOME/bin:/usr/local/bin:$GOPATH/bin:/usr/local/opt/make/libexec/gnubin:$PATH
+export ZSH="/root/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+plugins=(
+	git
+	zsh-autosuggestions
+	zsh-completions
+  zsh-syntax-highlighting
+  fzf
+)
+
+autoload -U compinit && compinit
+
+source $ZSH/oh-my-zsh.sh
+
+source $HOME/.oh-my-zsh/custom/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
+
+# Aliases
+alias ls="colorls --sd -A"

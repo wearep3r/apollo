@@ -25,7 +25,9 @@
 # TODO: provide Windows Core
 - name: "@zero-core"
   import_playbook: playbooks/zero-core.yml
-  when: ansible_os_family != "Windows"
+  tags:
+    - print_action
+  #when: ansible_os_family != "Windows"
 
 # @zero-orchestrator
 - name: "@zero-orchestrator"

@@ -7,3 +7,8 @@
 - name: reload systemd
   systemd:
     daemon_reload: True
+
+- name: restart resolvconf
+  service:
+    name: resolvconf
+    state: restarted

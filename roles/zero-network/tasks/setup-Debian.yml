@@ -61,6 +61,7 @@
   notify: restart firewall
   tags:
     - firewall
+
 - name: Copying firewall service
   template:
     src: templates/iptables.service.j2
@@ -71,6 +72,7 @@
   notify: reload systemd
   tags:
     - firewall
+
 - name: Enabling firewall service
   service:
     name: iptables

@@ -21,7 +21,7 @@ services:
 
   portainer:
     image: "{{ images.portainer }}"
-    command: "-H tcp://tasks.portainer-agent:9001 --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics --admin-password {{ admin_password_hash }}"
+    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics"
     environment:
       - AGENT_CLUSTER_ADDR=tasks.portainer-agent
       - CAP_HOST_MANAGEMENT=1
@@ -47,6 +47,7 @@ services:
         traefik.backend: "zero-app-portainer"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
+        traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
 {% if letsencrypt_enabled|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"
