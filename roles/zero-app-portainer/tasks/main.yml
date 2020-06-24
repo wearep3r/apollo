@@ -28,6 +28,8 @@
         method: GET
         status_code: 200
         validate_certs: no
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
       register: _result
       until: _result.status == 200
       retries: 30

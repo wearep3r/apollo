@@ -9,6 +9,12 @@ zero_smtp_username: "{{ lookup('env','ZERO_SMTP_USERNAME') | default('', true) }
 zero_smtp_password: "{{ lookup('env','ZERO_SMTP_PASSWORD') | default('', true) }}"
 zero_smtp_port: "{{ lookup('env','ZERO_SMTP_PORT') | default('587', true) }}"
 
+# REASONING
+# June 22nd, 2020: Digitalocean VMs can't resolve github.com
+# curl github.com
+# curl: (6) Could not resolve host: github.com
+appollo_custom_resolvers: "{{ lookup('env','APPOLLO_CUSTOM_RESOLVERS').split(',') | default([], true) }}"
+
 # OS detection helper
 worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
 
@@ -40,7 +46,7 @@ letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL') }}"
 # Kernel
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
 kernel_version: 0
-kernel_update_grub_requested_kernel_version: 4.15.0-91-generic
+kernel_update_grub_requested_kernel_version: 4.15.0-99-generic
 kernel_update_config_prefix_grub_default: 99
 kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
 

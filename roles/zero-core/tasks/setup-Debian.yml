@@ -2,7 +2,8 @@
 # tasks file for zero-core
 - name: Setting Hostname
   hostname:
-    name: "{{inventory_hostname}}"
+    name: "{{ inventory_hostname }}"
+  ignore_errors: true
 
 - name: $node A-Records
   lineinfile: 
@@ -34,11 +35,12 @@
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
   with_file:
-    - "{{ environment_dir }}/.ssh/id_rsa.pub"
+    #- "{{ environment_dir }}/.ssh/id_rsa.pub"
+    - "{{ ssh_public_key_file }}"
 
 - name: Set root SSH Pem key
   copy:
-    src="{{ environment_dir }}/.ssh/id_rsa"
+    src="{{ ssh_private_key_file }}"
     dest=/root/id_rsa.pem
     owner=root
     group=root
@@ -46,7 +48,7 @@
 
 - name: Set root SSH Private key
   copy:
-    src="{{ environment_dir }}/.ssh/id_rsa"
+    src="{{ ssh_private_key_file }}"
     dest=/root/.ssh/id_rsa
     owner=root
     group=root
@@ -54,7 +56,7 @@
 
 - name: Set root SSH Public key
   copy:
-    src="{{ environment_dir }}/.ssh/id_rsa.pub"
+    src="{{ ssh_public_key_file }}"
     dest=/root/.ssh/id_rsa.pub
     owner=root
     group=root
@@ -118,6 +120,7 @@
       #- fzf
       - ack
       - open-iscsi
+      - resolvconf
     state: present
     update_cache: False
   tags:
@@ -133,6 +136,18 @@
   tags:
     - packages
     - docker
+
+- name: Copying custom resolver config
+  block:
+    - name: Copying resolvconf config
+      template:
+        src: templates/head.j2
+        dest: /etc/resolvconf/resolv.conf.d/head
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart resolvconf
+  when: appollo_custom_resolvers|length > 0
 
 - name: Installing ZSH
   block:
@@ -179,6 +194,8 @@
         group: root
         owner: root
         mode: 0644
+  ignore_errors: yes
+
 
 - name: Installing bashtop
   block:
@@ -191,6 +208,8 @@
       command: make install
         chdir=/opt/bashtop
       changed_when: False
+  ignore_errors: yes
+
 
 - name: Installing lazydocker
   block:
@@ -205,6 +224,8 @@
         src: /usr/local/src/lazydocker.tar.gz
         dest: /usr/local/bin/
         remote_src: True
+  ignore_errors: yes
+
 
 - name: Setting up Kernel (Ubuntu)
   block:
