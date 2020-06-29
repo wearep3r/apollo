@@ -109,5 +109,6 @@ scrape_configs:
     - names:
       # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
       - 'zero.nodes'
+      - 'nodes.apollo'
       type: 'A'
       port: 9252

@@ -1,4 +1,3 @@
-# @zero-core
 force_reboot: 0
 
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
@@ -6,8 +5,10 @@ apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('ap
 # Deprecated
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
+apollo_space: "{{ lookup('env','APOLLO_SPACE') | default(apollo_environment, true) }}"
 
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whitelabel_name+'/.environments/'+apollo_whitelabel_name, true) }}"
+apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default(environment_dir, true) }}"
 
 # Deprecated
 zero_smtp_server: "{{ lookup('env','ZERO_SMTP_SERVER') | default('', true) }}"

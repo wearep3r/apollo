@@ -1,0 +1,37 @@
+- hosts: all
+  become: True
+  pre_tasks:
+    - name: List Runners
+      command: "gitlab-runner list"
+      register: registered_runners
+      ignore_errors: True
+    
+    - name: Unregister Runners
+      command: "gitlab-runner unregister --name {{ ansible_hostname }}-build"
+      when: 'registered_runners is defined and "{{ ansible_hostname }}-build" in registered_runners.stderr'
+      ignore_errors: True
+  vars:
+    gitlab_runner_runners:
+      - name: "{{ ansible_hostname }}-build"
+        env_vars: "{{ runner_env }}"
+        executor: docker
+        docker_image: "{{ ci_docker_image }}"
+        tags:
+          - "{{ apollo_environment }}"
+          - build
+        run_untagged: True
+        docker_privileged: True
+        docker_volumes:
+          - "/cache"
+          #- "/var/run/docker.sock:/var/run/docker.sock"
+        extra_configs:
+          runners.custom_build_dir: 
+            enaled: True
+          runners.docker:
+            privileged: True
+            disable_cache: False
+  roles:
+    - { role: riemers.gitlab-runner }
+  tags:
+    - runner
+    - build

@@ -1,57 +1,37 @@
-# @meta author: Fabian Peter
-# @meta description: zero
-# @meta email: fabian@peter.saarland
-# @action provision # this action describes the installation  
-
 ---
-  # @infrastructure
-  # @network
-  # @core
-  # @engine
-  # @orchestrator
-  # @backplane
-# @zero-infrastructure
-- name: "Enable AWS root access"
+- name: "AWS: Enable root access"
   import_playbook: playbooks/aws.yml
-  when: zero_provider == "aws"
+  when: apollo_provider == "aws"
 
-# @zero-network
-- name: "@zero-network"
-  import_playbook: playbooks/zero-network.yml
+- name: "@apollo-network"
+  import_playbook: playbooks/apollo-network.yml
   tags:
     - print_action
 
-# @zero-core
-# TODO: provide Windows Core
-- name: "@zero-core"
-  import_playbook: playbooks/zero-core.yml
+- name: "@apollo-core"
+  import_playbook: playbooks/apollo-core.yml
   tags:
     - print_action
-  #when: ansible_os_family != "Windows"
 
-# @zero-orchestrator
-- name: "@zero-orchestrator"
-  import_playbook: playbooks/zero-orchestrator.yml
-# - name: "@zero-orchestrator"
-#   import_playbook: playbooks/zero-orchestrator-kubernetes.yml
-#   when: zero_orchestrator == "kubernetes"
+- name: "@apollo-orchestrator"
+  import_playbook: playbooks/apollo-orchestrator.yml
+  tags:
+    - print_action
 
-# @zero-data
-- name: "@zero-data"
-  import_playbook: playbooks/zero-data.yml
+- name: "@apollo-data"
+  import_playbook: playbooks/apollo-data.yml
+  tags:
+    - print_action
 
-# @zero-backplane
-- name: "@zero-backplane"
-  import_playbook: playbooks/zero-backplane.yml
+- name: "@apollo-backplane"
+  import_playbook: playbooks/apollo-backplane.yml
   when: backplane_enabled|bool
   
-# @zero-apps
-- name: "@zero-apps"
-  import_playbook: playbooks/zero-apps.yml
-  when: zero_apps|length > 0
+- name: "@apollo-apps"
+  import_playbook: playbooks/apollo-apps.yml
+  when: apollo_apps|length > 0
 
-# @zero-module-runner
-- name: "@zero-runner"
+- name: "@apollo-runner"
   import_playbook: playbooks/provision-runner.yml
   when: runner_enabled|bool
 

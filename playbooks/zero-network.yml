@@ -1,6 +1,0 @@
-- name: "@zero-network"
-  hosts: all
-  gather_facts: true
-  become: true
-  roles:
-    - zero-network

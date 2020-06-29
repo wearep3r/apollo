@@ -12,7 +12,7 @@ variable "ssh_public_key_file" {
 
 variable "environment" {
   type        = string
-  description = "The name to be used within all resources as an environment identifier for if0"
+  description = "The name to be used within all resources as an environment identifier for apollo"
   default     = "apollo"
 }
 
@@ -90,7 +90,7 @@ variable "device_name" {
 
 variable "volume_count" {
     type = number
-    description = "Number of storage volumes in the zero cluster"
+    description = "Number of storage volumes in the apollo cluster"
     default = 0
 }
 

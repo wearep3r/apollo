@@ -19,8 +19,8 @@ resource "aws_key_pair" "ssh_key" {
 }
 
 #create AWS security group
-resource "aws_security_group" "zero_sg" {
-  vpc_id = aws_vpc.zero_vpc.id
+resource "aws_security_group" "apollo_sg" {
+  vpc_id = aws_vpc.apollo_vpc.id
   ingress {
     cidr_blocks = ["0.0.0.0/0"]
     from_port   = 22
@@ -108,9 +108,9 @@ resource "aws_instance" "manager" {
   count                       = var.manager_instances
   ami                         = var.ami_selection[var.manager_os_family]
   instance_type               = var.manager_size
-  vpc_security_group_ids      = [aws_security_group.zero_sg.id]
+  vpc_security_group_ids      = [aws_security_group.apollo_sg.id]
   key_name                    = aws_key_pair.ssh_key.key_name
-  subnet_id                   = aws_subnet.zero_subnet.id
+  subnet_id                   = aws_subnet.apollo_subnet.id
   associate_public_ip_address = true
   user_data                   = data.template_file.userdata_win.rendered
 
@@ -127,9 +127,9 @@ resource "aws_instance" "worker_win" {
   count                       = var.worker_os_family == "windows" ? var.worker_instances : 0
   ami                         = var.ami_selection[var.worker_os_family]
   instance_type               = var.worker_size
-  vpc_security_group_ids      = [aws_security_group.zero_sg.id]
+  vpc_security_group_ids      = [aws_security_group.apollo_sg.id]
   key_name                    = aws_key_pair.ssh_key.key_name
-  subnet_id                   = aws_subnet.zero_subnet.id
+  subnet_id                   = aws_subnet.apollo_subnet.id
   associate_public_ip_address = true
   user_data                   = data.template_file.userdata_win.rendered
 
@@ -146,9 +146,9 @@ resource "aws_instance" "worker_lin" {
   count                       = var.worker_os_family != "windows" ? var.worker_instances : 0
   ami                         = var.ami_selection[var.worker_os_family]
   instance_type               = var.worker_size
-  vpc_security_group_ids      = [aws_security_group.zero_sg.id]
+  vpc_security_group_ids      = [aws_security_group.apollo_sg.id]
   key_name                    = aws_key_pair.ssh_key.key_name
-  subnet_id                   = aws_subnet.zero_subnet.id
+  subnet_id                   = aws_subnet.apollo_subnet.id
   associate_public_ip_address = true
 
   credit_specification {
@@ -164,9 +164,9 @@ resource "aws_instance" "worker_lin" {
 #   count                       = var.worker_instances
 #   ami                         = var.ami_selection[var.worker_os_family]
 #   instance_type               = var.worker_size
-#   vpc_security_group_ids      = [aws_security_group.zero_sg.id]
+#   vpc_security_group_ids      = [aws_security_group.apollo_sg.id]
 #   key_name                    = aws_key_pair.ssh_key.key_name
-#   subnet_id                   = aws_subnet.zero_subnet.id
+#   subnet_id                   = aws_subnet.apollo_subnet.id
 #   associate_public_ip_address = true
 #   user_data                   = data.template_file.userdata_win.rendered
 
@@ -210,36 +210,36 @@ resource "aws_volume_attachment" "worker" {
 }
 
 #create vpc
-resource "aws_vpc" "zero_vpc" {
+resource "aws_vpc" "apollo_vpc" {
   cidr_block           = var.cidr_vpc
   enable_dns_hostnames = true
   enable_dns_support   = true
 }
 
 #create internet gateway
-resource "aws_internet_gateway" "zero_igw" {
-  vpc_id = aws_vpc.zero_vpc.id
+resource "aws_internet_gateway" "apollo_igw" {
+  vpc_id = aws_vpc.apollo_vpc.id
 }
 
 #create subnet
-resource "aws_subnet" "zero_subnet" {
-  vpc_id                  = aws_vpc.zero_vpc.id
+resource "aws_subnet" "apollo_subnet" {
+  vpc_id                  = aws_vpc.apollo_vpc.id
   cidr_block              = var.cidr_subnet
   availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
 }
 
 #create route table
-resource "aws_route_table" "zero_route_table" {
-  vpc_id = aws_vpc.zero_vpc.id
+resource "aws_route_table" "apollo_route_table" {
+  vpc_id = aws_vpc.apollo_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.zero_igw.id
+    gateway_id = aws_internet_gateway.apollo_igw.id
   }
 }
 
 #associate route table and subnet
-resource "aws_route_table_association" "zero_subnet_association" {
-  subnet_id      = aws_subnet.zero_subnet.id
-  route_table_id = aws_route_table.zero_route_table.id
+resource "aws_route_table_association" "apollo_subnet_association" {
+  subnet_id      = aws_subnet.apollo_subnet.id
+  route_table_id = aws_route_table.apollo_route_table.id
 }

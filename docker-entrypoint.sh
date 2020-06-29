@@ -7,7 +7,6 @@ set -e
 
 if [ -d $ENVIRONMENT_DIR ];
 then
-  # ToDo: replace this with `if0 environment load`
   env_files=`find $ENVIRONMENT_DIR -type f -name "*.env"`
 
   for file in $env_files;

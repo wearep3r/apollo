@@ -18,10 +18,10 @@ output "APOLLO_INGRESS_IP" {
  value = aws_eip.manager_eip[0].public_ip
 }
 
-output "ZEROAPOLLO_PUBLIC_INTERFACE" {
+output "APOLLO_PUBLIC_INTERFACE" {
  value = "eth0"
 }
 
-output "ZEROAPOLLO_PRIVATE_INTERFACE" {
+output "APOLLO_PRIVATE_INTERFACE" {
  value = "eth0"
 }

@@ -1,3 +1,0 @@
-- name: Zero Backplane
-  debug:
-    msg: "Provisioning Backplane"

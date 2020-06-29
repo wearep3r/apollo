@@ -1,0 +1,6 @@
+- name: "@apollo-network"
+  hosts: all
+  gather_facts: true
+  become: true
+  roles:
+    - apollo-network

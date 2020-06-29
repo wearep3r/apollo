@@ -1,3 +1,4 @@
+![apollo - Platform as a Service](../wallpaper.png)
 
 [[_TOC_]]
 
@@ -59,7 +60,7 @@ apollo add
 # $APOLLO_REGISTRY_URL/$APOLLO_REGISTRY_GROUP/$APOLLO_SPACE automatically for you
 #
 # You can disable this by setting
-# IF0_REPOSITORY_AUTO_CREATE=0
+# APOLLO_REPOSITORY_AUTO_CREATE=0
 # in ~/.apollo/apollo.env
 #
 

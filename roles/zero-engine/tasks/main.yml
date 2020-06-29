@@ -1,3 +1,0 @@
-- name: "Provision {{ zero_engine }}"
-  include_role: 
-    name: "zero-engine-{{ zero_engine }}"

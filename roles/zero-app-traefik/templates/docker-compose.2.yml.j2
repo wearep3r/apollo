@@ -37,11 +37,11 @@ services:
       #--certificatesresolvers.zero.acme.dnschallenge.resolvers={{ traefik_dnschallenge_resolvers }}
 {% endif %}
     environment:
-      - ZERO_VERSION=1
+      - APOLLO_VERSION=1
       - DOCKER_TLS_VERIFY=0
 {% if cloudflare_enabled|bool and traefik_dnschallenge_provider == "cloudflare" %}
-      - CF_API_EMAIL: "{{ cloudflare_api_email }}"
-      - CF_API_KEY: "{{ cloudflare_api_key }}"
+      - CF_API_EMAIL="{{ cloudflare_api_email }}"
+      - CF_API_KEY="{{ cloudflare_api_key }}"
 {% endif %}
     networks:
       - proxy

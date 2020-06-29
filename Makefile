@@ -53,7 +53,7 @@ modules/${APOLLO_PROVIDER}/.terraform: /tmp/.loaded.sentinel
 
 /tmp/.validated.sentinel: modules/${APOLLO_PROVIDER}/.terraform
 >	@cd modules/${APOLLO_PROVIDER}
-> @export TF_VAR_environment=${IF0_ENVIRONMENT}
+> @export TF_VAR_environment=${APOLLO_ENVIRONMENT}
 >	@terraform validate > /dev/null
 > @touch /tmp/.validated.sentinel
 
@@ -80,7 +80,7 @@ destroy:
 > @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/nodes.appollo.env
 
 .PHONY: infrastructure
-infrastructure: ${ENVIRONMENT_DIR}/dash1-zero.env ## Generate the configuration for zero
+infrastructure: ${ENVIRONMENT_DIR}/dnodes.appollo.env ## apollo IaaS
 
 ${ENVIRONMENT_DIR}/nodes.appollo.env: ${TF_STATE_PATH}
 > @cd modules/${APOLLO_PROVIDER}
@@ -98,7 +98,7 @@ show:
 
 # PLATFORM
 .PHONY: platform
-platform: /tmp/.loaded.sentinel
+platform: /tmp/.loaded.sentinel ## apollo PaaS
 >	@ansible-playbook provision.yml --flush-cache
 
 .PHONY: check

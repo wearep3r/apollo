@@ -1,9 +1,8 @@
 ---
-# defaults file for zero-app-alertmanager
 images:
-  alertmanager: "{{ lookup('env','ZERO_APP_ALERTMANAGER_IMAGES_ALERTMANAGER') | default('registry.gitlab.com/peter.saarland/zero/alertmanager', true) }}"
+  alertmanager: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_IMAGES_ALERTMANAGER') | default('registry.gitlab.com/peter.saarland/apollo/alertmanager', true) }}"
 
 # Slack
 slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
 slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
-slack_user: "{{ lookup('env','SLACK_USER') | default('zero', true) }}"
+slack_user: "{{ lookup('env','SLACK_USER') | default('apollo', true) }}"

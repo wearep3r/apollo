@@ -216,7 +216,7 @@ volumes:
     driver_opts:
       type: "nfs"
       o: "addr={{ nfs_storage_address }},nolock,soft,rw"
-      device: ":/{{ if0_environment }}/gitlab-data"
+      device: ":/{{ apollo_environment }}/gitlab-data"
 {% endif %}
   gitlab-config:
 {% if zero_data == "storidge" %}

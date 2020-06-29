@@ -46,10 +46,11 @@ class ZeroInventory(object):
         apollo_provider = os.getenv('APOLLO_PROVIDER', zero_provider)
         worker_os_family = os.getenv('TF_VAR_worker_os_family', 'ubuntu')
 
-        # Check if ZERO_NODES is set
         if apollo_environment:
-            apollo_nodes_manager = os.getenv('ZERO_NODES_MANAGER', "")
-            apollo_nodes_worker = os.getenv('ZERO_NODES_WORKER', "")
+            zero_nodes_manager = os.getenv('ZERO_NODES_MANAGER', "")
+            apollo_nodes_manager = os.getenv('APOLLO_NODES_MANAGER', zero_nodes_manager)
+            zero_nodes_worker = os.getenv('ZERO_NODES_WORKER', "")
+            apollo_nodes_worker = os.getenv('APOLLO_NODES_WORKER', zero_nodes_worker)
 
             if apollo_nodes_manager and apollo_nodes_manager != "":
                 inventory["manager"] = []

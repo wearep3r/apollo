@@ -4,10 +4,10 @@ services:
   smtp:
     image: "{{ images.smtp }}"
     environment:
-      MAILDEV_OUTGOING_HOST: "{{ zero_smtp_server }}"
-      MAILDEV_OUTGOING_PORT: "{{ zero_smtp_port }}"
-      MAILDEV_OUTGOING_USER: "{{ zero_smtp_username }}"
-      MAILDEV_OUTGOING_PASS: "{{ zero_smtp_password }}"
+      MAILDEV_OUTGOING_HOST: "{{ apollo_smtp_server }}"
+      MAILDEV_OUTGOING_PORT: "{{ apollo_smtp_port }}"
+      MAILDEV_OUTGOING_USER: "{{ apollo_smtp_username }}"
+      MAILDEV_OUTGOING_PASS: "{{ apollo_smtp_password }}"
       MAILDEV_AUTO_RELAY: 1
       MAILDEV_INCOMING_USER: "{{ admin_user }}"
       MAILDEV_INCOMING_PASS: "{{ admin_password }}"
