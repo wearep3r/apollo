@@ -5,7 +5,7 @@ SHELL := bash
 #.DELETE_ON_ERROR:
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
-.DEFAULT_GOAL := platform
+.DEFAULT_GOAL := help
 
 ifeq ($(origin .RECIPEPREFIX), undefined)
   $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
@@ -16,6 +16,8 @@ export DOCKER_BUILDKIT=1
 IF0_ENVIRONMENT ?= zero
 DOCKER_SHELLFLAGS ?= run --rm -it -e IF0_ENVIRONMENT=${IF0_ENVIRONMENT} --name zero -v ${PWD}:/zero -v ${HOME}/.if0/.environments/${IF0_ENVIRONMENT}:/root/.if0/.environments/zero -v ${HOME}/.gitconfig:/root/.gitconfig zero
 ZERO_PROVIDER ?= generic
+TF_STATE_PATH=${ENVIRONMENT_DIR}/appollo.tfstate
+TF_PLAN_PATH=${ENVIRONMENT_DIR}/appollo.plan
 ENVIRONMENT_DIR ?= ${HOME}/.if0/.environments/zero
 PROVIDER_UPPERCASE=$(shell echo $(ZERO_PROVIDER) | tr  '[:lower:]' '[:upper:]')
 VERBOSITY ?= 0
@@ -32,6 +34,57 @@ load: /tmp/.loaded.sentinel
 > @if [ ! -z $$IF0_ENVIRONMENT ]; then echo "Loading Environment ${IF0_ENVIRONMENT}"; fi
 > @touch /tmp/.loaded.sentinel
 
+# INFRASTRUCTURE
+modules/${ZERO_PROVIDER}/.terraform: /tmp/.loaded.sentinel
+> @cd modules/${ZERO_PROVIDER}
+>	@terraform init -compact-warnings -input=false
+
+/tmp/.validated.sentinel: modules/${ZERO_PROVIDER}/.terraform
+>	@cd modules/${ZERO_PROVIDER}
+> @export TF_VAR_environment=${IF0_ENVIRONMENT}
+>	@terraform validate > /dev/null
+> @touch /tmp/.validated.sentinel
+
+.PHONY: plan
+plan: ${TF_PLAN_PATH} ## Plan
+
+# Plan
+${TF_PLAN_PATH}: /tmp/.validated.sentinel
+> @cd modules/${ZERO_PROVIDER}
+> @terraform plan -lock=true -compact-warnings -input=false -out=${TF_PLAN_PATH} -state=${TF_STATE_PATH} 
+
+.PHONY: apply
+apply: plan ${TF_STATE_PATH}
+
+${TF_STATE_PATH}: ${TF_PLAN_PATH}
+> @cd modules/${ZERO_PROVIDER}
+> terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH}
+
+.PHONY: destroy
+destroy: 
+> @cd modules/${ZERO_PROVIDER}
+> @terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
+> @rm -rf /tmp/.*.sentinel
+> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/infrastructure.appollo.env
+
+.PHONY: infrastructure
+infrastructure: ${ENVIRONMENT_DIR}/dash1-zero.env ## Generate the configuration for zero
+
+${ENVIRONMENT_DIR}/infrastructure.appollo.env: ${TF_STATE_PATH}
+> @cd modules/${ZERO_PROVIDER}
+> @terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${ENVIRONMENT_DIR}/infrastructure.appollo.env
+
+.PHONY: output
+output:
+> @cd modules/${ZERO_PROVIDER}
+> terraform output -state=${TF_STATE_PATH} | tr -d ' '
+
+.PHONY: show
+show:
+> @cd modules/${ZERO_PROVIDER}
+> @terraform show ${TF_STATE_PATH}
+
+# PLATFORM
 .PHONY: platform
 platform: /tmp/.loaded.sentinel
 >	@ansible-playbook provision.yml --flush-cache
@@ -39,29 +92,6 @@ platform: /tmp/.loaded.sentinel
 .PHONY: check
 check: /tmp/.loaded.sentinel
 >	@ansible-playbook provision.yml --flush-cache --check
-
-.PHONY: retry
-retry:
-> @ansible-playbook provision.yml --limit @/root/.ansible/.retry/provision.retry
-
-deploy:
->	@docker run \
-		-v "${PWD}/.env:/infrastructure/.env" \
-		-v "${HOME}/.ssh:/.ssh" \
-		--env-file=.env \
-		registry.gitlab.com/peter.saarland/zero:latest \
-		ansible-playbook -i inventory/zero.py provision.yml 
-
-deploy-vagrant:
->	ansible-playbook -i .vagrant/provisioners/ansible/inventory provision.yml
-
-test-traefik:
->	cd roles/zero-app-traefik \
-		&& molecule test
-
-test-portainer:
->	cd roles/zero-app-portainer \
-		&& molecule test
 
 # Development
 .PHONY: build

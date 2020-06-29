@@ -5,3 +5,5 @@ tmp
 _depcrecated
 playbooks/_deprecated
 playbooks/_services.yml
+**/.terraform/*
+**/.vagrant

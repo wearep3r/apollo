@@ -1,5 +1,8 @@
+# include:
+#   - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/default.gitlab-ci.yml'
+
 include:
-  - remote: 'https://gitlab.com/peter.saarland/scratch/-/raw/master/ci/templates/default.gitlab-ci.yml'
+  - remote: "https://gitlab.com/peter.saarland/shipmate/-/raw/master/shipmate.gitlab-ci.yml"
 
 Build node-exporter:
   stage: build
@@ -80,49 +83,6 @@ Build grafana:
   #     when: manual
   only:
     - master
-
-# Build loki:
-#   stage: build
-#   image: docker:19.03.5
-#   variables:
-#     DOCKER_BUILDKIT: 1 
-#   services:
-#     - docker:19.03.5-dind
-#   script:
-#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-#     - docker pull $CI_REGISTRY_IMAGE/loki:latest || true
-#     - cd docker/loki
-#     - docker build --cache-from $CI_REGISTRY_IMAGE/loki:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA .
-#     - docker push $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA
-#   tags: 
-#     - build
-
-# Build zero:
-#   stage: build
-#   image: docker:19.03.5
-#   services:
-#     - docker:19.03.5-dind
-#   variables:
-#     DOCKER_BUILDKIT: 1 
-#     # For Container Scanning
-#     IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-#   script:
-#     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY --username=gitlab-ci-token --password-stdin
-#     - docker build --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $IMAGE_TAG -f Dockerfile .
-#     - docker push $IMAGE_TAG
-
-# include:
-#   - template: Container-Scanning.gitlab-ci.yml
-
-# include:
-#   - template: License-Scanning.gitlab-ci.yml
-  
-# include:
-#   - template: Dependency-Scanning.gitlab-ci.yml
-
-# include:
-#   - template: SAST.gitlab-ci.yml
-  
     
 # # Lint Ansible files
 # test:ansible:
@@ -212,36 +172,3 @@ Release node-exporter:
   #     when: manual
   only:
     - master
-
-# Release loki:
-#   stage: release
-#   image: docker:19.03.5
-#   services:
-#     - docker:19.03.5-dind
-#   script:
-#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-#     - docker pull $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA || true
-#     - docker tag $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/loki:latest
-#     - docker push $CI_REGISTRY_IMAGE/loki:latest
-#     - docker tag $CI_REGISTRY_IMAGE/loki:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/loki:v$RELEASE_VERSION
-#     - docker push $CI_REGISTRY_IMAGE/loki:v$RELEASE_VERSION
-#   only:
-#     - master
-#   tags: 
-#     - build
-
-# Release zero:
-#   stage: release
-#   image: docker:19.03.5
-#   services:
-#     - docker:19.03.5-dind
-#   script:
-#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-#     - docker pull $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA || true
-#     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
-#     - docker push $CI_REGISTRY_IMAGE:latest
-#     - docker tag $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
-#     - docker push $CI_REGISTRY_IMAGE:v$(cat VERSION.txt)
-#   rules:
-#     - if: '$CI_COMMIT_REF_NAME == "master"'
-#       when: on_success

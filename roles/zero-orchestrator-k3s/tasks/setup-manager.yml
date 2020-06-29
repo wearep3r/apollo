@@ -44,7 +44,7 @@
 
 - name: Create directory .kube
   file:
-    path: ~{{ ansible_user }}/.kube
+    path: /root/.kube
     state: directory
     owner: "{{ ansible_user }}"
 
@@ -68,8 +68,6 @@
     dest: /root/.if0/.environments/zero/kubectl-config.yml
     flat: yes
   ignore_errors: True
-
-
 
 - name: Create kubectl symlink
   file:
