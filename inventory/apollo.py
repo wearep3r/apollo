@@ -18,11 +18,11 @@ class ZeroInventory(object):
 
         # Called with `--list`.
         if self.args.list:
-            self.inventory = self.zero_inventory()
+            self.inventory = self.apollo_inventory()
         # Called with `--host [hostname]`.
         elif self.args.host:
             # Not implemented, since we return _meta info `--list`.
-            self.inventory = self.zero_inventory()
+            self.inventory = self.apollo_inventory()
         # If no groups or vars are present, return an empty inventory.
         else:
             self.inventory = self.empty_inventory()
@@ -30,7 +30,7 @@ class ZeroInventory(object):
         print(self.inventory)
 
     # Example inventory for testing.
-    def zero_inventory(self):
+    def apollo_inventory(self):
         inventory = {
             "all": {
                 "hosts": []
@@ -40,23 +40,24 @@ class ZeroInventory(object):
             }  
         }
 
-        if0_environment = os.getenv('IF0_ENVIRONMENT', 'zero')
-        zero_provider = os.getenv('ZERO_PROVIDER', 'vagrant')
+        if0_environment = os.getenv('IF0_ENVIRONMENT', 'apollo')
+        apollo_environment = os.getenv('APOLLO_ENVIRONMENT', if0_environment)
+        zero_provider = os.getenv('ZERO_PROVIDER', 'generic')
+        apollo_provider = os.getenv('APOLLO_PROVIDER', zero_provider)
         worker_os_family = os.getenv('TF_VAR_worker_os_family', 'ubuntu')
 
         # Check if ZERO_NODES is set
-        if if0_environment:
-            zero_nodes_manager = os.getenv('ZERO_NODES_MANAGER', "")
-            zero_nodes_worker = os.getenv('ZERO_NODES_WORKER', "")
+        if apollo_environment:
+            apollo_nodes_manager = os.getenv('ZERO_NODES_MANAGER', "")
+            apollo_nodes_worker = os.getenv('ZERO_NODES_WORKER', "")
 
-            if zero_nodes_manager and zero_nodes_manager != "":
+            if apollo_nodes_manager and apollo_nodes_manager != "":
                 inventory["manager"] = []
                 i = 0
-                if if0_environment == "platform":
+                if apollo_environment == "platform":
                     i = 1
-                #node_count = zero_nodes.split(",").length
-                for node in zero_nodes_manager.split(","):
-                    hostname = "{}-manager-{}".format(if0_environment,i)
+                for node in apollo_nodes_manager.split(","):
+                    hostname = "{}-manager-{}".format(apollo_environment,i)
                     inventory['all']['hosts'].append(hostname)
                     inventory["manager"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
@@ -65,17 +66,16 @@ class ZeroInventory(object):
                     }
                     i += 1
 
-                    if zero_provider == "aws":
+                    if apollo_provider == "aws":
                         inventory['_meta']['hostvars'][hostname]["ansible_user"] = "ubuntu"
 
-            if zero_nodes_worker and zero_nodes_worker != "":
+            if apollo_nodes_worker and apollo_nodes_worker != "":
                 inventory["worker"] = []
                 i = 0
-                if if0_environment == "platform":
+                if apollo_environment == "platform":
                     i = 1
-                #node_count = zero_nodes.split(",").length
-                for node in zero_nodes_worker.split(","):
-                    hostname = "{}-worker-{}".format(if0_environment,i)
+                for node in apollo_nodes_worker.split(","):
+                    hostname = "{}-worker-{}".format(apollo_environment,i)
                     inventory['all']['hosts'].append(hostname)
                     inventory["worker"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
@@ -84,7 +84,7 @@ class ZeroInventory(object):
                     }
 
                     # Fix connection parameters by provider
-                    if zero_provider == "aws" and worker_os_family == "ubuntu":
+                    if apollo_provider == "aws" and worker_os_family == "ubuntu":
                         inventory['_meta']['hostvars'][hostname]["ansible_user"] = "ubuntu"
 
                     # Fix user if windows machine

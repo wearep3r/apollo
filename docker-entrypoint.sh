@@ -19,10 +19,10 @@ then
   done
 fi
 
-ZERO_SSH_DIR=${ZERO_SSH_DIR:-/.ssh}
-if [ -d "$ZERO_SSH_DIR" ]; then
-    if [ "$(ls -A $ZERO_SSH_DIR)" ]; then
-        echo "Found SSH Keys in $ZERO_SSH_DIR"
+SSH_DIR=${SSH_DIR:-/.ssh}
+if [ -d "$SSH_DIR" ]; then
+    if [ "$(ls -A $SSH_DIR)" ]; then
+        echo "Found SSH Keys in $SSH_DIR"
         cp /.ssh/* /root/.ssh/. && chmod 0600 /root/.ssh/id_rsa
         echo "Copied SSH Keys to /root/.ssh"
     fi

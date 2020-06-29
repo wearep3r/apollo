@@ -12,16 +12,28 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-export DOCKER_BUILDKIT=1
-IF0_ENVIRONMENT ?= zero
-DOCKER_SHELLFLAGS ?= run --rm -it -e IF0_ENVIRONMENT=${IF0_ENVIRONMENT} --name zero -v ${PWD}:/zero -v ${HOME}/.if0/.environments/${IF0_ENVIRONMENT}:/root/.if0/.environments/zero -v ${HOME}/.gitconfig:/root/.gitconfig zero
+# Apollo
+APOLLO_WHITELABEL_NAME ?= apollo
+APOLLO_VERSION ?= latest
+
+# Deprecated
+IF0_ENVIRONMENT ?= ${APOLLO_WHITELABEL_NAME}
+APOLLO_ENVIRONMENT ?= ${IF0_ENVIRONMENT}
+
+# Deprecated
 ZERO_PROVIDER ?= generic
-TF_STATE_PATH=${ENVIRONMENT_DIR}/appollo.tfstate
-TF_PLAN_PATH=${ENVIRONMENT_DIR}/appollo.plan
-ENVIRONMENT_DIR ?= ${HOME}/.if0/.environments/zero
-PROVIDER_UPPERCASE=$(shell echo $(ZERO_PROVIDER) | tr  '[:lower:]' '[:upper:]')
+APOLLO_PROVIDER ?= ${ZERO_PROVIDER}
+
+ENVIRONMENT_DIR ?= ${HOME}/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_WHITELABEL_NAME}
+
+DOCKER_SHELLFLAGS ?= run --rm -it -e APOLLO_ENVIRONMENT=${APOLLO_ENVIRONMENT} --name ${APOLLO_WHITELABEL_NAME} -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_ENVIRONMENT}:/root/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
+
+TF_STATE_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.tfstate
+TF_PLAN_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.plan
+
 VERBOSITY ?= 0
 export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
+export DOCKER_BUILDKIT=1
 
 .PHONY: help
 help:
@@ -31,16 +43,16 @@ help:
 load: /tmp/.loaded.sentinel
 
 /tmp/.loaded.sentinel: $(shell find ${ENVIRONMENT_DIR} -type f -name '*.env') ## help
-> @if [ ! -z $$IF0_ENVIRONMENT ]; then echo "Loading Environment ${IF0_ENVIRONMENT}"; fi
+> @if [ ! -z $$APOLLO_ENVIRONMENT ]; then echo "Loading Environment ${APOLLO_ENVIRONMENT}"; fi
 > @touch /tmp/.loaded.sentinel
 
 # INFRASTRUCTURE
-modules/${ZERO_PROVIDER}/.terraform: /tmp/.loaded.sentinel
-> @cd modules/${ZERO_PROVIDER}
+modules/${APOLLO_PROVIDER}/.terraform: /tmp/.loaded.sentinel
+> @cd modules/${APOLLO_PROVIDER}
 >	@terraform init -compact-warnings -input=false
 
-/tmp/.validated.sentinel: modules/${ZERO_PROVIDER}/.terraform
->	@cd modules/${ZERO_PROVIDER}
+/tmp/.validated.sentinel: modules/${APOLLO_PROVIDER}/.terraform
+>	@cd modules/${APOLLO_PROVIDER}
 > @export TF_VAR_environment=${IF0_ENVIRONMENT}
 >	@terraform validate > /dev/null
 > @touch /tmp/.validated.sentinel
@@ -50,38 +62,38 @@ plan: ${TF_PLAN_PATH} ## Plan
 
 # Plan
 ${TF_PLAN_PATH}: /tmp/.validated.sentinel
-> @cd modules/${ZERO_PROVIDER}
+> @cd modules/${APOLLO_PROVIDER}
 > @terraform plan -lock=true -compact-warnings -input=false -out=${TF_PLAN_PATH} -state=${TF_STATE_PATH} 
 
 .PHONY: apply
 apply: plan ${TF_STATE_PATH}
 
 ${TF_STATE_PATH}: ${TF_PLAN_PATH}
-> @cd modules/${ZERO_PROVIDER}
+> @cd modules/${APOLLO_PROVIDER}
 > terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH}
 
 .PHONY: destroy
 destroy: 
-> @cd modules/${ZERO_PROVIDER}
+> @cd modules/${APOLLO_PROVIDER}
 > @terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
 > @rm -rf /tmp/.*.sentinel
-> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/infrastructure.appollo.env
+> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/nodes.appollo.env
 
 .PHONY: infrastructure
 infrastructure: ${ENVIRONMENT_DIR}/dash1-zero.env ## Generate the configuration for zero
 
-${ENVIRONMENT_DIR}/infrastructure.appollo.env: ${TF_STATE_PATH}
-> @cd modules/${ZERO_PROVIDER}
-> @terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${ENVIRONMENT_DIR}/infrastructure.appollo.env
+${ENVIRONMENT_DIR}/nodes.appollo.env: ${TF_STATE_PATH}
+> @cd modules/${APOLLO_PROVIDER}
+> @terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${ENVIRONMENT_DIR}/nodes.appollo.env
 
 .PHONY: output
 output:
-> @cd modules/${ZERO_PROVIDER}
+> @cd modules/${APOLLO_PROVIDER}
 > terraform output -state=${TF_STATE_PATH} | tr -d ' '
 
 .PHONY: show
 show:
-> @cd modules/${ZERO_PROVIDER}
+> @cd modules/${APOLLO_PROVIDER}
 > @terraform show ${TF_STATE_PATH}
 
 # PLATFORM
@@ -96,7 +108,7 @@ check: /tmp/.loaded.sentinel
 # Development
 .PHONY: build
 build:
-> @docker build --pull -t zero .
+> @docker build --pull -t ${APOLLO_WHITELABEL_NAME} .
 
 .PHONY: dev
 dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
@@ -115,8 +127,8 @@ ${ENVIRONMENT_DIR}/.ssh/id_rsa ${ENVIRONMENT_DIR}/.ssh/id_rsa.pub: ${ENVIRONMENT
 
 .PHONY: inventory
 inventory:
-> @python inventory/zero.py --list | jq
+> @python inventory/apollo.py --list | jq
 
 .PHONY: setup
 setup:
-> @ansible -i inventory/zero.py all -m setup -e "ansible_ssh_private_key_file=${ENVIRONMENT_DIR}/.ssh/id_rsa"
+> @ansible -i inventory/apollo.py all -m setup -e "ansible_ssh_private_key_file=${ENVIRONMENT_DIR}/.ssh/id_rsa"

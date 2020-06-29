@@ -147,7 +147,7 @@
         group: root
         mode: '0644'
       notify: restart resolvconf
-  when: appollo_custom_resolvers|length > 0
+  when: apollo_custom_resolvers|length > 0
 
 - name: Installing ZSH
   block:

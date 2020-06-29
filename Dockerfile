@@ -6,9 +6,11 @@ ENV TERRAFORM_VERSION=0.12.26
 
 ENV TERRAFORM_INVENTORY_VERSION=0.9
 
-ENV ENVIRONMENT_DIR=/root/.if0/.environments/zero
+ENV APOLLO_WHITELABEL_NAME=apollo
 
-RUN mkdir -p ${ENVIRONMENT_DIR} /root/.ssh /zero
+ENV ENVIRONMENT_DIR=/root/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_WHITELABEL_NAME}
+
+RUN mkdir -p ${ENVIRONMENT_DIR} /root/.ssh /apollo
 
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
@@ -28,7 +30,7 @@ RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/te
     && unzip terraform-provider-ibm.zip \
     && rm terraform-provider-ibm.zip
 
-WORKDIR /zero
+WORKDIR /${APOLLO_WHITELABEL_NAME}
 
 COPY requirements.yml requirements.yml
 
@@ -36,7 +38,7 @@ RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
 COPY . .
 
-RUN echo 'export PS1="[\$IF0_ENVIRONMENT] \W # "' >> /root/.bashrc
+RUN echo 'export PS1="[\$APOLLO_ENVIRONMENT] \W # "' >> /root/.bashrc
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 

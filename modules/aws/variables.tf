@@ -7,13 +7,13 @@ variable "region" {
 variable "ssh_public_key_file" {
   type        = string
   description = "The SSH public key"
-  default     = "/root/.if0/.environments/zero/.ssh/id_rsa.pub"
+  default     = "/root/.apollo/.environments/apollo/.ssh/id_rsa.pub"
 }
 
 variable "environment" {
   type        = string
   description = "The name to be used within all resources as an environment identifier for if0"
-  default     = "zero"
+  default     = "apollo"
 }
 
 variable "manager_instances" {
