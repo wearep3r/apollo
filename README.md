@@ -1,17 +1,20 @@
 !["Wallpaper"](wallpaper.png)
 
-# Overview
+# apollo - Platform as a Service toolkit
 
-Maintained by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - Helping companies to develop software with startup speed and enterprise quality.
+## Documentation
 
-This software is developed on GitLab and mirrored to GitHub.
+- [Get Started](docs/get-started.md)
+- [FAQ](docs/faq.md)
+
+This software is maintained and commercially supported by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - helping companies to develop software with startup speed and enterprise quality.
 
 ## Related Links
 
-- [apollo](https://gitlab.com/peter.saarland/apollo/) - Platform as a Service
-- [apollo-cli](https://gitlab.com/peter.saarland/apollo-cli/) - The CLI to tool them all
+- [apollo](https://gitlab.com/peter.saarland/apollo/) - Platform as a Service toolkit
+- [apollo-cli](https://gitlab.com/peter.saarland/apollo-cli/) - The **apollo** CLI
 - [lake0](https://gitlab.com/peter.saarland/lake0/) - Container-native Backups
-- [ns0](https://gitlab.com/peter.saarland/ns0/) - The container-native DNS Proxy
+- [ns0](https://gitlab.com/peter.saarland/ns0/) - Container-native DNS Proxy
 - [shipmate](https://gitlab.com/peter.saarland/shipmate/) - Advanced Software Logistics
 - [shopware](https://gitlab.com/peter.saarland/shopware/) - Shopware 5 in Docker
 
@@ -23,8 +26,3 @@ This software is developed on GitLab and mirrored to GitHub.
 - [GitLab](https://gitlab.com/peter.saarland)
 - [GitHub](https://github.com/Peter-SAARLAND/)
 - [Matrix](https://matrix.to/#/!RcYHgbzWjyNTYeEIZj:hello.peter.saarland?via=hello.peter.saarland)
-
-## Documentation
-
-- [Get Started](docs/get-started.md)
-- [FAQ](docs/faq.md)
