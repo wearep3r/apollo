@@ -80,6 +80,11 @@
 #   when:
 #     - ansible_distribution == 'Ubuntu'
     
+- name: "HELM"
+  include_role: 
+    name: "geerlingguy.helm"
+  when: ansible_os_family != "Windows"
+
 - name: "Setup Manager"
   include_tasks: "setup-manager.yml"
   when: inventory_hostname == groups['manager'][0]
