@@ -1,5 +1,5 @@
 **dash1 for Vsphere Vcenter**
-Terraform module to setup dash1 as infrastructure for zero on vsphere vcenter. Key facts are:
+Terraform module to setup dash1 as infrastructure for apollo on vsphere vcenter. Key facts are:
 
 ## Deploys (Single/Multiple) Windows Virtual Machines to your vSphere environment
 

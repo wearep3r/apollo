@@ -8,17 +8,17 @@
 
 **apollo** is a **Platform as a Service** toolkit. You can use it to build and run applications in a batteries-included and git-versioned environment with the following features:
 
-- **Docker** as container runtime
-- **Docker Swarm**, **vanilla Kubernetes** or **k3s** as orchestrator
-- Scales from 1 to infinite nodes
-- Support for stateless & stateful workloads
-- Automatically integrated with [Storidge](https://storidge.com/) container IO (minimum cluster size: 4) for **Docker Swarm**
-- Can be deployed to any cluster of Ubuntu/Debian nodes
-- Supports **Windows Workers** in **Docker Swarm** and **Kubernetes** (currently AWS only)
-- Comes with integrations for AWS, DigitalOcean, HETZNER Cloud and VMware
-- **Swarm only**: cool backplane (reverse-proxy, auto-ssl, monitoring, auto-backups, dashboards)!
-- **Apps**: turn-key GitLab, Minio, GitLab Runner, Rancher, more to come ...
-- Management CLI
+🚀 **Docker** as container runtime<br/>
+🚀 **Docker Swarm**, **vanilla Kubernetes** or **k3s** as orchestrator<br/>
+🚀 Scales from 1 to infinite nodes<br/>
+🚀 Support for stateless & stateful workloads<br/>
+🚀 Automatically integrated with [Storidge](https://storidge.com/) container IO (minimum cluster size: 4) for **Docker Swarm**<br/>
+🚀 Can be deployed to any cluster of Ubuntu/Debian nodes<br/>
+🚀 Supports **Windows Workers** in **Docker Swarm** and **Kubernetes** (currently AWS only)<br/>
+🚀 Comes with integrations for AWS, DigitalOcean, HETZNER Cloud and VMware<br/>
+🚀 **Swarm only**: cool backplane (reverse-proxy, auto-ssl, monitoring, auto-backups, dashboards)!<br/>
+🚀 **Apps**: turn-key GitLab, Minio, GitLab Runner, Rancher, more to come ...<br/>
+🚀 Management CLI<br/>
 
 > The goal for **apollo** is to get teams up and running fast, with a turn-key platform to accelerate development and innovation
 
@@ -40,7 +40,7 @@
 
 ## apollo, ship! From buster to cluster in 3 simple steps
 
-### 1. Download apollo-cli
+### 🚀 1. Download apollo-cli
 
 ```bash
 curl -fsSL -o ~/bin/apollo https://gitlab.com/peter.saarland/apollo-cli/-/jobs/artifacts/master/raw/build/darwin_amd64/apollo?job=compile
@@ -48,7 +48,7 @@ chmod +x ~/bin/apollo
 apollo version
 ```
 
-### 2. Create your Apollo Space
+### 🚀 2. Create your Apollo Space
 
 ```bash
 apollo add
@@ -77,7 +77,7 @@ Enter Base Domain: [beingyou.rocks]
 
 **ATTENTION:** `Name` must be a URL/DNS-conform string, like `apollo-test-1`. This name will be used as a subdomain, so choose carefully.
 
-### 3. Ship your Apollo Space
+### 🚀 3. Ship your Apollo Space
 
 ```bash
 apollo ship $SPACE_NAME

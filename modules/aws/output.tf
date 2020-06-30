@@ -11,7 +11,7 @@ output "APOLLO_PROVIDER" {
 }
 
 output "APOLLO_CLUSTER_NETWORK" {
- value = aws_subnet.zero_subnet.cidr_block
+ value = aws_subnet.apollo_subnet.cidr_block
 }
 
 output "APOLLO_INGRESS_IP" {

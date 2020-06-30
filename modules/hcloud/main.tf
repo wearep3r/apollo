@@ -76,7 +76,7 @@ resource "hcloud_network" "cluster_network" {
 }
 
 #config location/type and ip range to network
-resource "hcloud_network_subnet" "zero" {
+resource "hcloud_network_subnet" "apollo" {
   network_id = hcloud_network.cluster_network.id
   type = "server"
   network_zone = var.cluster_network_zone
