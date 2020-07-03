@@ -91,14 +91,7 @@
     get_url:
       url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
       dest: "{{ docker_compose_path }}"
-      mode: 0755
-      
-  - name: Ensure docker users are added to the docker group.
-    user:
-      name: "{{ item }}"
-      groups: docker
-      append: true
-    with_items: "{{ docker_users }}"     
+      mode: 0755    
 
   - name: Copy udev config
     template:

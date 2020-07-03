@@ -7,6 +7,9 @@ MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 .DEFAULT_GOAL := help
 
+MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+APP_NAME ?= $(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
+
 ifeq ($(origin .RECIPEPREFIX), undefined)
   $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
 endif
@@ -80,7 +83,7 @@ destroy:
 > @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/nodes.appollo.env
 
 .PHONY: infrastructure
-infrastructure: ${ENVIRONMENT_DIR}/dnodes.appollo.env ## apollo IaaS
+infrastructure: ${ENVIRONMENT_DIR}/nodes.appollo.env ## apollo IaaS
 
 ${ENVIRONMENT_DIR}/nodes.appollo.env: ${TF_STATE_PATH}
 > @cd modules/${APOLLO_PROVIDER}
@@ -98,7 +101,7 @@ show:
 
 # PLATFORM
 .PHONY: platform
-platform: /tmp/.loaded.sentinel ## apollo PaaS
+platform: ${ENVIRONMENT_DIR}/nodes.appollo.env ## apollo PaaS
 >	@ansible-playbook provision.yml --flush-cache
 
 .PHONY: check
