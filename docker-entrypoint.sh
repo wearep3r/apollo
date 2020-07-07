@@ -18,6 +18,25 @@ then
   done
 fi
 
+if [ -d $HOME/.apollo ];
+then
+  env_files=`find $HOME/.apollo -maxdepth 1 -type f -name  "*.env"`
+
+  for file in $env_files;
+  do
+    set -o allexport
+    #source $file
+    export $(grep -hv '^#' $file | xargs)
+    set +o allexport
+  done
+fi
+
+if [ ! -d $HOME/.apollo/.spaces ];
+then
+  mkdir -p $HOME/.apollo/.spaces
+fi
+
+# Backwards compatibility
 SSH_DIR=${SSH_DIR:-/.ssh}
 if [ -d "$SSH_DIR" ]; then
     if [ "$(ls -A $SSH_DIR)" ]; then

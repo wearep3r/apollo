@@ -172,13 +172,13 @@
 
     - name: Cloning oh-my-zsh
       git:
-        repo=https://github.com/zsh-users/zsh-autosuggestions
+        repo=https://github.com/robbyrussell/oh-my-zsh
         dest=~/.oh-my-zsh
       when: not stat_oh_my_zsh_result.stat.exists
 
     - name: Cloning zsh-autosuggestions
       git:
-        repo=https://github.com/robbyrussell/oh-my-zsh
+        repo=https://github.com/zsh-users/zsh-autosuggestions
         dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
 
     - name: Cloning zsh-completions

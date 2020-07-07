@@ -10,7 +10,22 @@ ENV APOLLO_WHITELABEL_NAME=apollo
 
 ENV ENVIRONMENT_DIR=/root/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_WHITELABEL_NAME}
 
-RUN mkdir -p ${ENVIRONMENT_DIR} /root/.ssh /apollo
+RUN mkdir -p /root/.apollo/.spaces ${ENVIRONMENT_DIR} /root/.ssh /apollo
+
+RUN apt update && apt -y --no-install-recommends install zsh less ruby man silversearcher-ag \
+    && gem install lolcat  \
+    && rm -rf /var/lib/apt/lists/* \
+    && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
+    && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
+    && ~/.fzf/install --all --key-bindings --completion \
+    && git clone https://github.com/wfxr/forgit ~/.forgit \
+    && git clone https://github.com/dracula/zsh.git ~/dracula-zsh \
+    && mkdir -p ~/.oh-my-zsh/themes \
+    && ln -s ~/dracula-zsh/dracula.zsh-theme ~/.oh-my-zsh/themes/dracula.zsh-theme \
+    && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/plugins/zsh-autosuggestions \
+    && git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/plugins/zsh-completions \
+    && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/plugins/zsh-syntax-highlighting \
+    && git clone https://github.com/lincheney/fzf-tab-completion.git ~/.oh-my-zsh/plugins/fzf-tab-completion
 
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
@@ -36,13 +51,13 @@ COPY requirements.yml requirements.yml
 
 RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
-COPY . .
+COPY roles/apollo-core/templates/zshrc.j2 /root/.zshrc
 
-RUN echo 'export PS1="[\$APOLLO_ENVIRONMENT] \W # "' >> /root/.bashrc
+COPY . .
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
-CMD ["/bin/bash"]
+CMD ["/bin/zsh"]
 
 ARG BUILD_DATE
 
