@@ -81,6 +81,22 @@ kernel_update_grub_requested_kernel_version: 4.15.0-99-generic
 kernel_update_config_prefix_grub_default: 99
 kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
 
+# Network
+wireguard_port: "5888"
+wireguard_path: "/etc/wireguard"
+
+wireguard_network_name: "private"
+
+debian_enable_testing: true
+debian_pin_packages: true
+
+client_vpn_ip: ""
+client_wireguard_path: "~/wg.conf"
+
+wireguard_additional_peers: false
+wireguard_post_up: false
+wireguard_post_down: false
+
 # Docker Swarm
 swarm_enabled: "{{ lookup('env','SWARM_ENABLED') | default(1, true) }}"
 swarm_networks:

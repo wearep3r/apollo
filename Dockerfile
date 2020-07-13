@@ -78,4 +78,8 @@ CMD ["/bin/zsh"]
 
 ARG BUILD_DATE
 
+ARG APOLLO_VERSION
+
+ENV APOLLO_VERSION=$APOLLO_VERSION
+
 LABEL org.label-schema.build-date=$BUILD_DATE

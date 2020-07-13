@@ -16,11 +16,10 @@ apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\
 apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s" '\e[0;32m' '\e[0m' "$@" }
 
 # Apollo commands
-apollo::load(){
-
-  if [ $1 != "" ];
+apollo::load() {
+  if [ "$1" != "" ];
   then
-    if [ $1 = "." ];
+    if [ "$1" = "." ];
     then
       export APOLLO_SPACE_DIR=$PWD
     fi

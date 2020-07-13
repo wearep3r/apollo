@@ -4,22 +4,33 @@
     name: "{{ inventory_hostname }}"
   ignore_errors: true
 
+- name: Disabling Ubuntu motd-news
+  shell: "chmod -x *"
+  args:
+    chdir: /etc/update-motd.d
+  
+- name: Setting apollo motd
+  template:
+    src: "motd.j2"
+    dest: "/etc/motd"
+    mode: 0700
+
 - name: $node A-Records
   lineinfile: 
     dest=/etc/hosts 
     regexp='.*{{ item }}$' 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname']}}" 
+    line="{{ hostvars[item]['vpn_ip'] }} {{ hostvars[item]['ansible_hostname']}}" 
     state=present
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['vpn_ip']['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
 
 - name: nodes.* A-Record
   lineinfile: 
     dest=/etc/hosts 
     regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.{{ platform_domain }}" 
+    line="{{ hostvars[item]['vpn_ip'] }} nodes.{{ platform_domain }}" 
     state=present
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['vpn_ip'] is defined
   with_items: "{{ groups['all'] }}"
 
 # Deprecated
@@ -27,24 +38,23 @@
   lineinfile: 
     dest=/etc/hosts 
     regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} zero.nodes" 
+    line="{{ hostvars[item]['vpn_ip'] }} zero.nodes" 
     state=present
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['vpn_ip'] is defined
   with_items: "{{ groups['all'] }}"
 
 - name: nodes.apollo A-Record
   lineinfile: 
     dest=/etc/hosts 
     regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.apollo" 
+    line="{{ hostvars[item]['vpn_ip'] }} nodes.apollo" 
     state=present
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['vpn_ip'] is defined
   with_items: "{{ groups['all'] }}"
 
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
   with_file:
-    #- "{{ environment_dir }}/.ssh/id_rsa.pub"
     - "{{ ansible_ssh_public_key_file }}"
 
 - name: Set root SSH Pem key
