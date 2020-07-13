@@ -2,7 +2,10 @@
 export GOPATH=$HOME/go
 export PATH=$HOME/bin:/usr/local/bin:$GOPATH/bin:/usr/local/opt/make/libexec/gnubin:$PATH
 export ZSH="/root/.oh-my-zsh"
-ZSH_THEME="robbyrussell"
+export HISTFILE="/root/.apollo/.history"
+export DRACULA_ARROW_ICON="🚀"
+
+ZSH_THEME="dracula"
 plugins=(
 	git
 	zsh-autosuggestions
@@ -18,6 +21,7 @@ source $ZSH/oh-my-zsh.sh
 
 source $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
 source $ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /apollo/apollo.plugin.zsh
 
 # forgit - https://github.com/wfxr/forgit
 [ -f ~/.forgit/forgit.plugin.zsh ] && source ~/.forgit/forgit.plugin.zsh
@@ -30,3 +34,6 @@ alias ls='ls --color=auto'
 alias grep='grep --color'
 alias zshrc="nano ~/.zshrc"
 alias -g Z='| fzf'
+
+# MOTD
+cat /etc/motd  | /usr/local/bin/lolcat

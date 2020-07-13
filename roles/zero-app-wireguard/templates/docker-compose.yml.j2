@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  wg-web:
+    restart: always
+    image: "{{ images.wg_web }}"
+    environment:
+      WG_CONF_DIR: "/data"
+      WG_INTERFACE_NAME: "wg0.conf"
+    networks: 
+      - monitoring
+      - proxy
+    volumes: 
+      - /etc/wireguard:/data
+    deploy:
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.port: "8080"
+        traefik.frontend.rule: "Host:wireguard.{{ platform_domain }}"
+        traefik.backend: "zero-app-wireguard"
+        traefik.protocol: "http"
+        traefik.backend.loadbalancer.stickiness: "true"
+        traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
+{% if letsencrypt_enabled|bool %}
+        traefik.frontend.entryPoints: "http,https"
+        traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
+        traefik.frontend.entryPoints: "http"
+{%endif%}
+
+networks:
+  monitoring:
+    driver: overlay
+    external: true
+  proxy:
+    driver: overlay
+    external: true

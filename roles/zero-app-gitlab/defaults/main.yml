@@ -18,7 +18,7 @@ gitlab_smtp_user_name: "{{ lookup('env','GITLAB_SMTP_USER_NAME') | default(zero_
 gitlab_smtp_password: "{{ lookup('env','GITLAB_SMTP_PASSWORD') | default(zero_smtp_password, true) }}"
 gitlab_smtp_domain: "{{ lookup('env','GITLAB_SMTP_DOMAIN') | default(gitlab_domain, true) }}"
 gitlab_email_from: "{{ lookup('env','GITLAB_SMTP_FROM') | default('gitlab@'+platform_domain, true) }}"
-gitlab_email_display_name: "{{ lookup('env','GITLAB_EMAIL_DISPLAY_NAME') | default(apollo_environment+' GitLab', true) }}"
+gitlab_email_display_name: "{{ lookup('env','GITLAB_EMAIL_DISPLAY_NAME') | default(apollo_space+' GitLab', true) }}"
 gitlab_email_reply_to: "{{ lookup('env','GITLAB_EMAIL_REPLY_TO') | default('gitlab@'+platform_domain, true) }}"
 gitlab_incoming_email_email: "{{ lookup('env','GITLAB_INCOMING_EMAIL_EMAIL') | default(gitlab_smtp_user_name, true) }}"
 gitlab_incoming_email_address: "{{ gitlab_incoming_email_email.split('@')[0]+'+%{key}'+'@'+gitlab_incoming_email_email.split('@')[1] | default(gitlab_incoming_email_email, true) }}"

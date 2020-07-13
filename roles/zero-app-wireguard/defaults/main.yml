@@ -1,4 +1,8 @@
 ---
+# defaults file for zero-app-minio
+images:
+  wg_web: "{{ lookup('env','APOLLO_APP_WIREGUARD_IMAGES_WG_WEB') | default('vx3r/wg-gen-web:latest', true) }}"
+
 wireguard_port: "5888"
 wireguard_path: "/etc/wireguard"
 

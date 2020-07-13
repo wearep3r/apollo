@@ -7,7 +7,7 @@ services:
       GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
       GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"
       GF_USERS_ALLOW_SIGN_UP: "false"
-      #GF_DEFAULT_INSTANCE_NAME: "{{ apollo_environment }}"
+      #GF_DEFAULT_INSTANCE_NAME: "{{ apollo_space }}"
       #GF_ANALYTICS_REPORTING_ENABLED: "false"
       #GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
     networks: 
@@ -24,7 +24,7 @@ services:
       mode: replicated
       replicas: 1
       restart_policy:
-        condition: on-failure
+        condition: any
       placement:
         constraints: 
         - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
@@ -71,7 +71,7 @@ networks:
 
 volumes:
   grafana-data:
-# {% if zero_data == "storidge" %}
+# {% if apollo_data == "storidge" %}
 #     driver: cio
 #     driver_opts: 
 #       profile: "SNAPSHOT"

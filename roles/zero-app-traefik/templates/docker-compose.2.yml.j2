@@ -120,7 +120,7 @@ networks:
 
 volumes:
   traefik-config:
-{% if zero_data == "storidge" %}
+{% if apollo_data == "storidge" %}
     driver: cio
     driver_opts: 
       profile: "SNAPSHOT"

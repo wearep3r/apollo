@@ -27,6 +27,9 @@
 {% if apollo_orchestrator in ["kubernetes", "k3s"] %}
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 6443 -j ACCEPT
 {% endif %}
+{% if "wireguard" in apollo_apps %}
+-A FILTERS -m state --state NEW -m udp -p udp --dport 5888 -j ACCEPT
+{% endif %}
 {% if "gitlab" in apollo_apps %}
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 2222 -j ACCEPT
 {% endif %}

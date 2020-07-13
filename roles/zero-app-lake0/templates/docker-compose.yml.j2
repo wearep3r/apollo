@@ -6,7 +6,7 @@ services:
     environment:
       RESTIC_REPOSITORY: "{{ restic_repository }}"
       RESTIC_PASSWORD: "{{ restic_password }}"
-      RESTIC_TAG: "{{ apollo_environment }}"
+      RESTIC_TAG: "{{ apollo_space }}"
       BACKUP_CRON: "{{ restic_backup_cron }}"
       RESTIC_FORGET_ARGS: "{{ restic_forget_args }}"
       RESTIC_JOB_ARGS: "{{ restic_job_args }}"
@@ -15,11 +15,15 @@ services:
     networks: 
       - monitoring
     volumes: 
+{% if apollo_data == "storidge" %}
+      - /cio/volumes:/data
+{% else %}
       - /var/lib/docker/volumes:/data
+{% endif %}
     deploy:
       mode: global
       restart_policy:
-        condition: on-failure
+        condition: any
 
 networks:
   monitoring:
