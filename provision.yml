@@ -25,7 +25,7 @@
 
 - name: "@apollo-backplane"
   import_playbook: playbooks/apollo-backplane.yml
-  when: backplane_enabled|bool
+  when: apollo_backplane_enabled|bool
   
 - name: "@apollo-apps"
   import_playbook: playbooks/apollo-apps.yml
@@ -33,5 +33,5 @@
 
 - name: "@apollo-runner"
   import_playbook: playbooks/provision-runner.yml
-  when: runner_enabled|bool
+  when: apollo_runner_enabled|bool
 

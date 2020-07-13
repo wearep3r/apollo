@@ -27,11 +27,12 @@ APOLLO_ENVIRONMENT ?= ${IF0_ENVIRONMENT}
 ZERO_PROVIDER ?= generic
 APOLLO_PROVIDER ?= ${ZERO_PROVIDER}
 
-ENVIRONMENT_DIR ?= ${HOME}/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_WHITELABEL_NAME}
+APOLLO_SPACE_DIR ?= ${HOME}/.${APOLLO_WHITELABEL_NAME}/.spaces
+ENVIRONMENT_DIR ?= ${APOLLO_SPACE_DIR}
 
 export HISTFILE="${ENVIRONMENT_DIR}/.history"
 
-DOCKER_SHELLFLAGS ?= run --rm -it -e APOLLO_ENVIRONMENT=${APOLLO_ENVIRONMENT} --name ${APOLLO_WHITELABEL_NAME} -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
+DOCKER_SHELLFLAGS ?= run --rm -it -e APOLLO_ENVIRONMENT=${APOLLO_ENVIRONMENT} --name ${APOLLO_WHITELABEL_NAME} -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
 
 TF_STATE_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.tfstate
 TF_PLAN_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.plan
@@ -82,14 +83,14 @@ destroy:
 > @cd modules/${APOLLO_PROVIDER}
 > @terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
 > @rm -rf /tmp/.*.sentinel
-> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/nodes.appollo.env
+> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/nodes.apollo.env
 
 .PHONY: infrastructure
-infrastructure: ${ENVIRONMENT_DIR}/nodes.appollo.env ## apollo IaaS
+infrastructure: ${ENVIRONMENT_DIR}/nodes.apollo.env ## apollo IaaS
 
-${ENVIRONMENT_DIR}/nodes.appollo.env: ${TF_STATE_PATH}
+${ENVIRONMENT_DIR}/nodes.apollo.env: ${TF_STATE_PATH}
 > @cd modules/${APOLLO_PROVIDER}
-> @terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${ENVIRONMENT_DIR}/nodes.appollo.env
+> @terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${ENVIRONMENT_DIR}/nodes.apollo.env
 
 .PHONY: output
 output:
@@ -103,7 +104,7 @@ show:
 
 # PLATFORM
 .PHONY: platform
-platform: ${ENVIRONMENT_DIR}/nodes.appollo.env ## apollo PaaS
+platform: ## apollo PaaS
 >	@ansible-playbook provision.yml --flush-cache
 
 .PHONY: check

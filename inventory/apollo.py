@@ -41,12 +41,12 @@ class ZeroInventory(object):
         }
 
         if0_environment = os.getenv('IF0_ENVIRONMENT', 'apollo')
-        apollo_environment = os.getenv('APOLLO_ENVIRONMENT', if0_environment)
+        apollo_space = os.getenv('APOLLO_SPACE', if0_environment)
         zero_provider = os.getenv('ZERO_PROVIDER', 'generic')
         apollo_provider = os.getenv('APOLLO_PROVIDER', zero_provider)
         worker_os_family = os.getenv('TF_VAR_worker_os_family', 'ubuntu')
 
-        if apollo_environment:
+        if apollo_space:
             zero_nodes_manager = os.getenv('ZERO_NODES_MANAGER', "")
             apollo_nodes_manager = os.getenv('APOLLO_NODES_MANAGER', zero_nodes_manager)
             zero_nodes_worker = os.getenv('ZERO_NODES_WORKER', "")
@@ -55,13 +55,14 @@ class ZeroInventory(object):
             if apollo_nodes_manager and apollo_nodes_manager != "":
                 inventory["manager"] = []
                 i = 0
-                if apollo_environment == "platform":
+                if apollo_space == "platform":
                     i = 1
                 for node in apollo_nodes_manager.split(","):
-                    hostname = "{}-manager-{}".format(apollo_environment,i)
+                    hostname = "{}-manager-{}".format(apollo_space,i)
                     inventory['all']['hosts'].append(hostname)
                     inventory["manager"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
+                        "vpn_ip": "10.1.0.{}/32".format(i+1),
                         "ansible_host": node,
                         "ansible_user ": "root"
                     }
@@ -73,13 +74,14 @@ class ZeroInventory(object):
             if apollo_nodes_worker and apollo_nodes_worker != "":
                 inventory["worker"] = []
                 i = 0
-                if apollo_environment == "platform":
+                if apollo_space == "platform":
                     i = 1
                 for node in apollo_nodes_worker.split(","):
-                    hostname = "{}-worker-{}".format(apollo_environment,i)
+                    hostname = "{}-worker-{}".format(apollo_space,i)
                     inventory['all']['hosts'].append(hostname)
                     inventory["worker"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
+                        "vpn_ip": "10.1.1.{}/32".format(i+1),
                         "ansible_host": node,
                         "ansible_user ": "root"
                     }

@@ -13,7 +13,7 @@ variable "environment" {
 variable "ssh_public_key_file" {
   type        = string
   description = "SSH Public Key File"
-  default     = "/root/.apollo/.environments/apollo/.ssh/id_rsa.pub"
+  default     = "$APOLLO_SPACE_DIR/.ssh/id_rsa.pub"
 }
 
 variable "manager_instances" {

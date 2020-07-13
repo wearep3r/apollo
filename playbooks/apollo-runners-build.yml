@@ -17,7 +17,7 @@
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
-          - "{{ apollo_environment }}"
+          - "{{ apollo_space }}"
           - build
         run_untagged: True
         docker_privileged: True

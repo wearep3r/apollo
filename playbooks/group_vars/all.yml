@@ -7,7 +7,7 @@ if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
 apollo_space: "{{ lookup('env','APOLLO_SPACE') | default(apollo_environment, true) }}"
 
-environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whitelabel_name+'/.environments/'+apollo_whitelabel_name, true) }}"
+environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whitelabel_name+'/.spaces/'+apollo_whitelabel_name, true) }}"
 apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default(environment_dir, true) }}"
 
 # Deprecated
@@ -35,8 +35,8 @@ apollo_custom_resolvers: "{{ lookup('env','APOLLO_CUSTOM_RESOLVERS').split(',') 
 # OS detection helper
 worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
 
-ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default(environment_dir+'/.ssh/id_rsa', true) }}"
-ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default(environment_dir+'/.ssh/id_rsa.pub', true) }}"
+ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default(apollo_space_dir+'/.ssh/id_rsa', true) }}"
+ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default(apollo_space_dir+'/.ssh/id_rsa.pub', true) }}"
 
 ansible_python_interpreter: '/usr/bin/python3'
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
@@ -93,8 +93,12 @@ swarm_networks:
 # Kubernetes
 kubernetes_enabled: "{{ lookup('env','KUBERNETES_ENABLED') | default(0, true) }}"
 
+# Backups
+apollo_backups_enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(1, true) }}"
+
 # Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
+apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(backplane_enabled, true) }}"
 backplane_apps:
     - zero-app-traefik
     - zero-app-loki
@@ -120,9 +124,9 @@ zero_base_domain: "{{ lookup('env','ZERO_BASE_DOMAIN') | default(ingress_ip + '.
 base_domain: "{{ lookup('env','APOLLO_BASE_DOMAIN') | default(zero_base_domain, true) }}"
 
 # Deprecated: use "space_domain" in the future
-zero_platform_domain: "{{ lookup('env','ZERO_PLATFORM_DOMAIN') | default(apollo_environment + '.' + base_domain, true) }}"
+zero_platform_domain: "{{ lookup('env','ZERO_PLATFORM_DOMAIN') | default(apollo_space + '.' + base_domain, true) }}"
 platform_domain: "{{ lookup('env','APOLLO_PLATFORM_DOMAIN') | default(zero_platform_domain, true) }}"
-space_domain: "{{ lookup('env','APOLLO_SPACE_DOMAIN') | default(apollo_environment + '.' + base_domain, true) }}"
+space_domain: "{{ lookup('env','APOLLO_SPACE_DOMAIN') | default(apollo_space + '.' + base_domain, true) }}"
 
 # Deprecated
 zero_admin_user: "{{ lookup('env','ZERO_ADMIN_USER') | default('admin', true) }}"
@@ -157,6 +161,7 @@ cloudflare_api_key: "{{ lookup('env','CLOUDFLARE_API_KEY') }}"
 # GitLab
 # GitLab Personal Access token: https://gitlab.com/profile/personal_access_tokens
 runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(0, true) }}"
+apollo_runner_enabled: "{{ lookup('env','APOLLO_RUNNER_ENABLED') | default(runner_enabled, true) }}"
 runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(1, true) }}"
 runner_build_enabled: "{{ lookup('env','RUNNER_BUILD_ENABLED') | default(1, true) }}"
 gl_token: "{{ lookup('env','GL_TOKEN') }}"

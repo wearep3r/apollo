@@ -8,14 +8,25 @@ ENV TERRAFORM_INVENTORY_VERSION=0.9
 
 ENV APOLLO_WHITELABEL_NAME=apollo
 
-ENV ENVIRONMENT_DIR=/root/.${APOLLO_WHITELABEL_NAME}/.environments/${APOLLO_WHITELABEL_NAME}
+ENV APOLLO_CONFIG_DIR=/root/.${APOLLO_WHITELABEL_NAME}
 
-RUN mkdir -p /root/.apollo/.spaces ${ENVIRONMENT_DIR} /root/.ssh /apollo
+ENV APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 
-RUN apt update && apt -y --no-install-recommends install zsh less ruby man silversearcher-ag \
+RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh
+
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install zsh less ruby man silversearcher-ag sudo software-properties-common gnupg-agent apt-transport-https gnupg2 ca-certificates figlet \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian  $(lsb_release -cs) stable" \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install docker-ce-cli \
     && gem install lolcat  \
     && rm -rf /var/lib/apt/lists/* \
+    && curl -O -L "https://github.com/grafana/loki/releases/download/v1.5.0/logcli-linux-amd64.zip" -o logcli-linux-amd64.zip \
+    && unzip "logcli-linux-amd64.zip" \
+    && mv logcli-linux-amd64 /usr/local/bin/logcli \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
+    && curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash \
     && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
     && ~/.fzf/install --all --key-bindings --completion \
     && git clone https://github.com/wfxr/forgit ~/.forgit \
@@ -51,11 +62,17 @@ COPY requirements.yml requirements.yml
 
 RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
-COPY roles/apollo-core/templates/zshrc.j2 /root/.zshrc
+COPY .zshrc /root/.zshrc
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+COPY roles/apollo-core/templates/motd.j2 /etc/motd
 
 COPY . .
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+WORKDIR ${APOLLO_SPACES_DIR}
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 CMD ["/bin/zsh"]
 

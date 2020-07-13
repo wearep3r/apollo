@@ -20,7 +20,7 @@
         tags:
           - deploy
           - ship
-          - "{{ apollo_environment }}"
+          - "{{ apollo_space }}"
         run_untagged: false
         docker_privileged: True
         docker_volumes:
