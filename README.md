@@ -1,4 +1,4 @@
-!["Wallpaper"](wallpaper.png)
+!["Wallpaper"](wallpaper.jpg)
 
 # apollo - Platform as a Service toolkit
 
