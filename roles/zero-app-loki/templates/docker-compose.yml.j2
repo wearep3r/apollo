@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   loki:
-    image: grafana/loki:1.4.1
+    image: grafana/loki:1.5.0
     command: -config.file=/etc/loki/local-config.yaml
     networks: 
       - proxy
@@ -19,21 +19,6 @@ services:
       placement:
         constraints: 
         - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
-      labels:
-        traefik.enable: "true"
-        traefik.tags: "proxy"
-        traefik.docker.network: "proxy"
-        traefik.port: "3100"
-        traefik.frontend.rule: "Host:logs.{{ platform_domain }}"
-        traefik.backend: "zero-app-loki"
-        traefik.protocol: "http"
-        traefik.backend.loadbalancer.stickiness: "true"
-{% if letsencrypt_enabled|bool %}
-        traefik.frontend.entryPoints: "http,https"
-        traefik.frontend.headers.SSLRedirect: "true"
-{% else %}
-        traefik.frontend.entryPoints: "http"
-{%endif%}
 
   promtail:
     image: grafana/promtail:1.4.1

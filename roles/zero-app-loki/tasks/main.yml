@@ -20,17 +20,17 @@
           - /tmp/zero-app-loki.yml
       register: loki_provision
 
-    - name: "Wait for http://logs.{{ platform_domain }} to become ready"
-      uri:
-        # https://github.com/grafana/loki/blob/master/docs/api.md#get-ready
-        url: "http://logs.{{ platform_domain }}/ready"
-        method: GET
-        status_code: 200
-        validate_certs: no
-      register: _result
-      until: _result.status == 200
-      retries: 30
-      delay: 10
+    # - name: "Wait for http://logs.{{ platform_domain }} to become ready"
+    #   uri:
+    #     # https://github.com/grafana/loki/blob/master/docs/api.md#get-ready
+    #     url: "http://logs.{{ platform_domain }}/ready"
+    #     method: GET
+    #     status_code: 200
+    #     validate_certs: no
+    #   register: _result
+    #   until: _result.status == 200
+    #   retries: 30
+    #   delay: 10
 
   rescue:
     - name: Teardown Loki
