@@ -24,7 +24,7 @@ services:
       mode: replicated
       replicas: 1
       restart_policy:
-        condition: on-failure
+        condition: any
       placement:
         constraints: 
         - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
@@ -59,7 +59,7 @@ networks:
 
 volumes:
   minio-data:
-{% if zero_data == "storidge" %}
+{% if apollo_data == "storidge" %}
     driver: cio
     driver_opts: 
       profile: "SNAPSHOT"

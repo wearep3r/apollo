@@ -1,20 +1,65 @@
 ---
-# tasks file for zero-app-grafana
 - name: Provision Grafana
   block:
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
     - name: Copy Stack-File
       template:
         src: templates/docker-compose.yml.j2
-        dest: /tmp/zero-app-grafana.yml
+        dest: "{{ app_dir }}/docker-compose.yml"
         owner: root
         group: root
         mode: '0644'
+      register: stack_file
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
+
+    # - name: Copy Config Files
+    #   template:
+    #     src: "files/{{ config }}"
+    #     dest: "{{ app_dir }}/{{ config }}"
+    #     owner: root
+    #     group: root
+    #   with_items:
+    #     - dashboards
+    #     - datasources
+    #     - dashboards.yml
+    #   loop_control:
+    #     loop_var: config
 
     - name: Pull images
       docker_image:
-        name: "{{ item.value }}"
+        name: "{{ image.value }}"
         source: pull
       with_dict: "{{ images }}"
+      loop_control:
+        loop_var: image
 
     - name: Provision Grafana
       docker_stack:
@@ -23,7 +68,7 @@
         prune: yes
         with_registry_auth: yes
         compose:
-          - /tmp/zero-app-grafana.yml
+          - "{{ app_dir }}/docker-compose.yml"
       register: grafana_provision
 
     - name: "Wait for http://grafana.{{ platform_domain }} to become ready"
@@ -36,17 +81,4 @@
       until: _result.status == 200
       retries: "{{ app_healthcheck_retries }}"
       delay: "{{ app_healthcheck_delay }}"
-      
-  rescue:
-    - name: Teardown Grafana
-      docker_stack:
-          absent_retries: 5
-          absent_retries_interval: 10
-          state: absent
-          name: grafana
-      register: grafana_grafana
-
-    - name: Remove Stack File
-      file:
-        path: /tmp/zero-app-grafana.yml
-        state: absent
+      when: grafana_provision.changed

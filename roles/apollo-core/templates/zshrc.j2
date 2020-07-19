@@ -1,0 +1,32 @@
+# If you come from bash you might have to change your $PATH.
+export GOPATH=$HOME/go
+export PATH=$HOME/bin:/usr/local/bin:$GOPATH/bin:/usr/local/opt/make/libexec/gnubin:$PATH
+export ZSH="/root/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+plugins=(
+	git
+	zsh-autosuggestions
+	zsh-completions
+  zsh-syntax-highlighting
+  fzf
+)
+
+# zsh-completions
+autoload -U compinit && compinit
+
+source $ZSH/oh-my-zsh.sh
+
+source $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
+source $ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# forgit - https://github.com/wfxr/forgit
+[ -f ~/.forgit/forgit.plugin.zsh ] && source ~/.forgit/forgit.plugin.zsh
+
+# ALIASES
+
+# Generic commands
+alias reload="source ~/.zshrc"
+alias ls='ls --color=auto'
+alias grep='grep --color'
+alias zshrc="nano ~/.zshrc"
+alias -g Z='| fzf'

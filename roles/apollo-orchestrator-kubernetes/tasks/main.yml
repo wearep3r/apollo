@@ -1,0 +1,7 @@
+---
+- name: "@apollo-orchestrator-kubernetes"
+  include_tasks: "setup-{{ ansible_os_family }}.yml"
+
+- name: "HELM"
+  include_role: "geerlingguy.helm"
+  when: ansible_os_family != "Windows"

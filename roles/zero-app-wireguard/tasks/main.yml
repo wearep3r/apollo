@@ -1,0 +1,41 @@
+- include_tasks: "setup-{{ ansible_os_family }}.yml"
+
+# - name: Provision wireguard webinterface
+#   block:
+#     - name: Copy Stack-File
+#       template:
+#         src: templates/docker-compose.yml.j2
+#         dest: /tmp/zero-app-wireguard.yml
+#         owner: root
+#         group: root
+#         mode: '0644'
+
+#     - name: Pull images
+#       docker_image:
+#         name: "{{ item.value }}"
+#         source: pull
+#       with_dict: "{{ images }}"
+
+#     - name: Provision wireguard webinterface
+#       docker_stack:
+#         state: present
+#         name: wireguard
+#         prune: yes
+#         with_registry_auth: yes
+#         compose:
+#           - /tmp/zero-app-wireguard.yml
+#       register: wireguard_provision
+
+#     - name: "Wait for http://wireguard.{{ platform_domain }} to become ready"
+#       uri:
+#         url: "http://wireguard.{{ platform_domain }}"
+#         method: GET
+#         status_code: 200
+#         validate_certs: no
+#         user: "{{admin_user}}"
+#         password: "{{admin_password}}"
+#       register: _result
+#       until: _result.status == 200
+#       retries: 30
+#       delay: 10
+  

@@ -19,6 +19,7 @@ cio
 !roles/
 roles/*
 !roles/zero-*
+!roles/apollo-*
 .vagrant
 inventory/windows
 terraform
@@ -43,3 +44,7 @@ terraform.rc
 **/dash1.env
 **/dash1-zero.env
 **/zero.env
+**/apollo.env
+**/infrastructure.apollo.env
+**/nodes.apollo.env
+**/*.env

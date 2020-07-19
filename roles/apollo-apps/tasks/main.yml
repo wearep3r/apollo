@@ -1,0 +1,6 @@
+- name: "@apollo-apps"
+  include_role:
+    name: "zero-app-{{ item }}"
+  with_items:
+    - "{{ apollo_apps }}"
+  when: item != ""

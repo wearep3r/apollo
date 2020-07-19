@@ -7,30 +7,30 @@ variable "region" {
 variable "environment" {
   type        = string
   description = "The name to be used within all ressources as an environment identifier"
-  default     = "zero"
+  default     = "apollo"
 }
 
 variable "ssh_public_key_file" {
   type        = string
   description = "SSH Public Key File"
-  default     = "/root/.if0/.environments/zero/.ssh/id_rsa.pub"
+  default     = "/root/.apollo/.environments/apollo/.ssh/id_rsa.pub"
 }
 
 variable "manager_instances" {
   type        = number
-  description = "Number of manager instances in the zero cluster"
+  description = "Number of manager instances in the apollo cluster"
   default     = 1
 }
 
 variable "worker_instances" {
   type        = number
-  description = "Number of worker instances in the zero cluster"
+  description = "Number of worker instances in the apollo cluster"
   default     = 0
 }
 
 variable "volume_count" {
   type        = number
-  description = "Number of storage volumes in the zero cluster"
+  description = "Number of storage volumes in the apollo cluster"
   default     = 0
 }
 

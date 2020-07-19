@@ -1,0 +1,50 @@
+# https://unrouted.io/2017/08/15/docker-firewall/
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:FILTERS - [0:0]
+:DOCKER-USER - [0:0]
+
+-F INPUT
+-F DOCKER-USER
+-F FILTERS
+
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp --icmp-type any -j ACCEPT
+-A INPUT -j FILTERS
+
+# Docker
+-A DOCKER-USER -i {{ hostvars[inventory_hostname]['ansible_'+public_iface]['device'] }} -j FILTERS
+-A DOCKER-USER -i {{ hostvars[inventory_hostname]['ansible_'+private_iface]['device'] }} -j FILTERS
+
+# Filters
+-A FILTERS -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 23 -j ACCEPT
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+{% if apollo_orchestrator in ["kubernetes", "k3s"] %}
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 6443 -j ACCEPT
+{% endif %}
+{% if "wireguard" in apollo_apps %}
+-A FILTERS -m state --state NEW -m udp -p udp --dport 5888 -j ACCEPT
+{% endif %}
+{% if "gitlab" in apollo_apps %}
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 2222 -j ACCEPT
+{% endif %}
+# Whitelist private network
+-A FILTERS -s {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['network']+"/"+hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['netmask'] }} -j ACCEPT
+-A FILTERS -s 10.0.0.0/8 -j ACCEPT
+-A FILTERS -s 172.0.0.0/8 -j ACCEPT
+{% for host in groups['all']|sort %}
+# Fix for AWS Windows machines
+{% if hostvars[host]['ansible_os_family'] == "Windows" %}
+-A FILTERS -s {{ hostvars[host]['ansible_ip_addresses'][0] }} -j ACCEPT
+{% else %}
+-A FILTERS -s {{ hostvars[host]['ansible_'+public_iface]['ipv4']['address'] }} -j ACCEPT
+{% endif %}
+{% endfor %}
+-A FILTERS -m limit --limit 15/min -j LOG --log-prefix "Dropped by firewall: " --log-level 7
+-A FILTERS -j REJECT --reject-with icmp-host-prohibited
+COMMIT

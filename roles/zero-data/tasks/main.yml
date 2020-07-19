@@ -1,3 +1,0 @@
-- name: "Provision {{ zero_data }}"
-  include_role: 
-    name: "zero-data-{{ zero_data }}"

@@ -7,14 +7,27 @@ services:
       GF_SECURITY_ADMIN_USER: "{{ admin_user }}"
       GF_SECURITY_ADMIN_PASSWORD: "{{ admin_password }}"
       GF_USERS_ALLOW_SIGN_UP: "false"
-      #GF_DEFAULT_INSTANCE_NAME: "{{ if0_environment }}"
-      #GF_ANALYTICS_REPORTING_ENABLED: "false"
-      #GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_USERS_DEFAULT_THEME: "light"
+      GF_PANELS_DISABLE_SANITIZE_HTML: "true"
+      GF_INSTALL_PLUGINS: "grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel"
+      GF_DEFAULT_INSTANCE_NAME: "{{ apollo_space }}"
+      GF_SERVER_DOMAIN: "{{ app_domain }}"
+{% if letsencrypt_enabled|bool %}
+      GF_SERVER_ROOT_URL: "https://{{ app_domain }}"
+{% else %}
+      GF_SERVER_ROOT_URL: "http://{{ app_domain }}"
+{% endif %}
+      GF_SERVER_ENABLE_GZIP: "true"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
     networks: 
       - proxy
       - monitoring
     volumes: 
       - grafana-data:/var/lib/grafana
+      - "{{ app_dir }}/dashboards.yml:/etc/grafana/provisioning/dashboards.yml"
+      - "{{ app_dir }}/dashboards:/etc/grafana/provisioning/dashboards"
+      - "{{ app_dir }}/datasources:/etc/grafana/provisioning/datasources"
     healthcheck:
       test: "wget -q -Y off -O /dev/null http://localhost:3000/login > /dev/null 2>&1"
       interval: 25s
@@ -24,7 +37,7 @@ services:
       mode: replicated
       replicas: 1
       restart_policy:
-        condition: on-failure
+        condition: any
       placement:
         constraints: 
         - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
@@ -33,7 +46,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "3000"
-        traefik.frontend.rule: "Host:grafana.{{ platform_domain }}"
+        traefik.frontend.rule: "Host:{{ app_domain }}"
         traefik.backend: "zero-app-grafana"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
@@ -48,16 +61,7 @@ services:
     image: {{ images.trickster }}
     networks:
       - monitoring
-    # healthcheck:
-    #   test: "wget -q -Y off -O /dev/null http://localhost:9090/ping > /dev/null 2>&1"
-    #   interval: 25s
-    #   timeout: 3s
-    #   start_period: 120s
     deploy:
-      labels:
-        prometheus.enable: "true"
-        prometheus.port: "8082"
-        prometheus.path: "/metrics"
       mode: replicated
       replicas: 1
 
@@ -71,7 +75,7 @@ networks:
 
 volumes:
   grafana-data:
-# {% if zero_data == "storidge" %}
+# {% if apollo_data == "storidge" %}
 #     driver: cio
 #     driver_opts: 
 #       profile: "SNAPSHOT"

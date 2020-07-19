@@ -1,0 +1,6 @@
+- name: "@apollo-orchestrator"
+  hosts: all
+  gather_facts: true
+  become: true
+  roles:
+    - apollo-orchestrator

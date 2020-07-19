@@ -1,5 +1,9 @@
 ---
-# defaults file for zero-app-grafana
+app_name: "grafana"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_GRAFANA_APP_DOMAIN') | default(app_name+'.'+platform_domain, true) }}"
+
 images:
-  grafana: "{{ lookup('env','ZERO_APP_GRAFANA_IMAGES_GRAFANA') | default('registry.gitlab.com/peter.saarland/zero/grafana', true) }}"
-  trickster: "{{ lookup('env','ZERO_APP_GRAFANA_IMAGES_TRICKSTER') | default('tricksterio/trickster', true) }}"
+  #grafana: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_GRAFANA') | default('registry.gitlab.com/peter.saarland/zero/grafana', true) }}"
+  grafana: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_GRAFANA') | default('grafana/grafana', true) }}"
+  trickster: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_TRICKSTER') | default('tricksterio/trickster', true) }}"

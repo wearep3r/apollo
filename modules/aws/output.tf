@@ -1,27 +1,27 @@
-output "ZERO_NODES_MANAGER" {
+output "APOLLO_NODES_MANAGER" {
  value = "${join(",",aws_eip.manager_eip.*.public_ip)}"
 }
 
-output "ZERO_NODES_WORKER" {
+output "APOLLO_NODES_WORKER" {
  value = "${join(",",aws_eip.worker_eip.*.public_ip)}"
 }
 
-output "ZERO_PROVIDER" {
+output "APOLLO_PROVIDER" {
  value = "aws"
 }
 
-output "ZERO_CLUSTER_NETWORK" {
- value = aws_subnet.zero_subnet.cidr_block
+output "APOLLO_CLUSTER_NETWORK" {
+ value = aws_subnet.apollo_subnet.cidr_block
 }
 
-output "ZERO_INGRESS_IP" {
+output "APOLLO_INGRESS_IP" {
  value = aws_eip.manager_eip[0].public_ip
 }
 
-output "ZERO_PUBLIC_INTERFACE" {
+output "APOLLO_PUBLIC_INTERFACE" {
  value = "eth0"
 }
 
-output "ZERO_PRIVATE_INTERFACE" {
+output "APOLLO_PRIVATE_INTERFACE" {
  value = "eth0"
 }
