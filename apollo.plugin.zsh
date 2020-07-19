@@ -507,9 +507,9 @@ apollo::init() {
     SPACE_CONFIG+=("LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED}")
   fi
 
-  export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$APOLLO_SPACE
+  export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$APOLLO_SPACE.space
 
-  mkdir -p "$APOLLO_SPACE_DIR.space"
+  mkdir -p "$APOLLO_SPACE_DIR"
 
   cd $APOLLO_SPACE_DIR
 
@@ -519,7 +519,6 @@ apollo::init() {
     ssh-keygen -b 4096 -t rsa -q -N "" -f .ssh/id_rsa 
   fi
 
-  echo $SPACE_INFRASTRUCTURE
   if [ ! -f apollo.env ] && printf "%s\n" "${SPACE_CONFIG[@]}" > apollo.env  
   if [ ! -f infrastructure.apollo.env ] && printf "%s\n" "${SPACE_INFRASTRUCTURE[@]}" > infrastructure.apollo.env
 

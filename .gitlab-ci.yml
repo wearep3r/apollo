@@ -63,26 +63,6 @@ Build alertmanager:
   #     when: manual
   only:
     - master
-
-Build grafana:
-  stage: build
-  image: docker:19.03.5
-  variables:
-    DOCKER_BUILDKIT: 1 
-  services:
-    - docker:19.03.5-dind
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/grafana:latest || true
-    - cd docker/grafana
-    - docker build --cache-from $CI_REGISTRY_IMAGE/grafana:latest --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -t $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG/grafana:$CI_COMMIT_SHORT_SHA
-  # rules:
-  #   - changes: # Will include the job and set to when:manual if any of the follow paths match a modified file.
-  #     - docker/grafana/**
-  #     when: manual
-  only:
-    - master
     
 # # Lint Ansible files
 # test:ansible:
