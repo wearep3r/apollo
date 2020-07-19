@@ -66,7 +66,7 @@ COPY .zshrc /root/.zshrc
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-COPY roles/apollo-core/templates/motd.j2 /etc/motd
+COPY motd /etc/motd
 
 COPY . .
 

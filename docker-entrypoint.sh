@@ -1,27 +1,9 @@
-#!/bin/bash
+#!/bin/zsh
 set -e
-# If something is mounted to /.ssh, copy it to /root/.ssh
-# Why not mount SSH Keys directly to /root/.ssh?
-# On Windows, SSH Keys mounted as a Volume have wrong permission which can't be corrected on a Volume
-# This, the strategy is to mount them to /.ssh and copy them to /root/.ssh on each start of the container
-
-# if [ -d $ENVIRONMENT_DIR ];
-# then
-#   env_files=`find $ENVIRONMENT_DIR -type f -name "*.env"`
-
-#   for file in $env_files;
-#   do
-#     set -o allexport
-#     #source $file
-#     export $(grep -hv '^#' $file | xargs)
-#     set +o allexport
-#   done
-# fi
 
 if [ -f $HOME/.apollo/apollo.env ];
 then
   set -o allexport
-  #source $file
   export $(grep -hv '^#' $HOME/.apollo/apollo.env | xargs)
   set +o allexport
 fi
