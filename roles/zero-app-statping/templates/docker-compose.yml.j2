@@ -1,0 +1,95 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:10
+    restart: always
+    networks:
+      - statping
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: statup
+      POSTGRES_USER: statup
+      POSTGRES_DB: statup
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+          condition: on-failure
+      placement:
+          constraints: 
+          - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+
+  statping:
+    image: statping/statping
+    environment:
+      VIRTUAL_HOST: "statping.{{ platform_domain }}"
+      VIRTUAL_PORT: 8080
+      VERBOSE: 2
+      NAME: "{{ apollo_space }}"
+      DOMAIN: "statping.{{ platform_domain }}"
+      DB_CONN: postgres
+      DB_HOST: postgres
+      DB_USER: statup
+      DB_PASS: statup
+      DB_DATABASE: statup
+      ADMIN_USER: "{{ admin_user }}"
+      ADMIN_PASSWORD: "{{ admin_password }}"
+      API_SECRET: "{{ admin_password }}"
+      SAMPLE_DATA: "true"
+    networks:
+      - proxy
+      - monitoring
+      - statping
+    volumes: 
+      - statping-data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+          condition: on-failure
+      placement:
+          constraints: 
+          - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+      labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:statping.{{ platform_domain }}"
+          traefik.backend: "zero-app-statping"
+          traefik.protocol: "http"
+{% if letsencrypt_enabled|bool %}
+          traefik.frontend.entryPoints: "http,https"
+          traefik.frontend.headers.SSLRedirect: "true"
+{% else %}
+          traefik.frontend.entryPoints: "http"
+{%endif%}
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
+
+networks:
+  proxy:
+    driver: overlay
+    external: true
+    name: proxy
+  monitoring:
+    driver: overlay
+    external: true
+    name: monitoring
+  statping:
+
+volumes:
+  postgres-data:
+{% if apollo_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}
+  statping-data:
+{% if apollo_data == "storidge" %}
+    driver: cio
+    driver_opts: 
+      profile: "SNAPSHOT"
+{% endif %}

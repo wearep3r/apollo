@@ -15,7 +15,7 @@ services:
       --metrics.prometheus.addentrypointslabels=true
       --metrics.prometheus.addserviceslabels=true
       --ping
-{% if zero_orchestrator == "swarm" %}
+{% if apollo_orchestrator == "swarm" %}
       --providers.docker.swarmMode=true
 {% endif %}
       --providers.docker=true

@@ -1,4 +1,16 @@
 ---
+- name: Creating Apollo. remote directory
+  file:
+    path: "{{ apollo_remote_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Creating Apollo. apps directory
+  file:
+    path: "{{ apollo_app_dir }}"
+    state: directory
+    mode: '0755'
+
 - name: Setting Hostname
   hostname:
     name: "{{ inventory_hostname }}"
@@ -8,8 +20,10 @@
   shell: "chmod -x *"
   args:
     chdir: /etc/update-motd.d
+    warn: false
+  changed_when: false
   
-- name: Setting apollo motd
+- name: Setting Apollo. motd
   template:
     src: "motd.j2"
     dest: "/etc/motd"
@@ -216,35 +230,34 @@
   ignore_errors: yes
 
 
-- name: Installing bashtop
-  block:
-    - name: Clone bashtop Git repository
-      git:
-        repo: 'https://github.com/aristocratos/bashtop.git'
-        dest: /opt/bashtop
+# - name: Installing bashtop
+#   block:
+#     - name: Clone bashtop Git repository
+#       git:
+#         repo: 'https://github.com/aristocratos/bashtop.git'
+#         dest: /opt/bashtop
       
-    - name: Install bashtop
-      command: make install
-        chdir=/opt/bashtop
-      changed_when: False
-  ignore_errors: yes
+#     - name: Install bashtop
+#       command: make install
+#         chdir=/opt/bashtop
+#       changed_when: False
+#   ignore_errors: yes
 
 
-- name: Installing lazydocker
-  block:
-    - name: Download lazydocker
-      get_url:
-        url: "{{ lazydocker_url }}"
-        dest: /usr/local/src/lazydocker.tar.gz
-        mode: '0440'
+# - name: Installing lazydocker
+#   block:
+#     - name: Download lazydocker
+#       get_url:
+#         url: "{{ lazydocker_url }}"
+#         dest: /usr/local/src/lazydocker.tar.gz
+#         mode: '0440'
     
-    - name: Extract lazydocker
-      unarchive:
-        src: /usr/local/src/lazydocker.tar.gz
-        dest: /usr/local/bin/
-        remote_src: True
-  ignore_errors: yes
-
+#     - name: Extract lazydocker
+#       unarchive:
+#         src: /usr/local/src/lazydocker.tar.gz
+#         dest: /usr/local/bin/
+#         remote_src: True
+#   ignore_errors: yes
 
 - name: Setting up Kernel (Ubuntu)
   block:

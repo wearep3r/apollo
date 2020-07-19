@@ -6,7 +6,7 @@ services:
     command: > 
       traefik 
       --docker 
-{% if zero_orchestrator == "swarm" %}
+{% if apollo_orchestrator == "swarm" %}
       --docker.swarmmode 
 {% endif %}
       --docker.watch 

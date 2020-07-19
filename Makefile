@@ -21,7 +21,7 @@ APOLLO_VERSION ?= latest
 
 # Deprecated
 IF0_ENVIRONMENT ?= ${APOLLO_WHITELABEL_NAME}
-APOLLO_ENVIRONMENT ?= ${IF0_ENVIRONMENT}
+APOLLO_SPACE ?= ${IF0_ENVIRONMENT}
 
 # Deprecated
 ZERO_PROVIDER ?= generic
@@ -31,8 +31,10 @@ APOLLO_SPACE_DIR ?= ${HOME}/.${APOLLO_WHITELABEL_NAME}/.spaces
 ENVIRONMENT_DIR ?= ${APOLLO_SPACE_DIR}
 
 export HISTFILE="${ENVIRONMENT_DIR}/.history"
+export TF_IN_AUTOMATION=1
+export TF_VAR_environment=${APOLLO_SPACE}
 
-DOCKER_SHELLFLAGS ?= run --rm -it -e APOLLO_ENVIRONMENT=${APOLLO_ENVIRONMENT} --name ${APOLLO_WHITELABEL_NAME} -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
+DOCKER_SHELLFLAGS ?= run --rm -it -e APOLLO_SPACE=${APOLLO_SPACE} --name ${APOLLO_WHITELABEL_NAME} -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
 
 TF_STATE_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.tfstate
 TF_PLAN_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.plan
@@ -49,7 +51,7 @@ help:
 load: /tmp/.loaded.sentinel
 
 /tmp/.loaded.sentinel: $(shell find ${ENVIRONMENT_DIR} -type f -name '*.env') ## help
-> @if [ ! -z $$APOLLO_ENVIRONMENT ]; then echo "Loading Environment ${APOLLO_ENVIRONMENT}"; fi
+> @if [ ! -z $$APOLLO_SPACE ]; then echo "Loading Environment ${APOLLO_SPACE}"; fi
 > @touch /tmp/.loaded.sentinel
 
 # INFRASTRUCTURE
@@ -59,7 +61,7 @@ modules/${APOLLO_PROVIDER}/.terraform: /tmp/.loaded.sentinel
 
 /tmp/.validated.sentinel: modules/${APOLLO_PROVIDER}/.terraform
 >	@cd modules/${APOLLO_PROVIDER}
-> @export TF_VAR_environment=${APOLLO_ENVIRONMENT}
+> echo "ENV: ${TF_VAR_environment}"
 >	@terraform validate > /dev/null
 > @touch /tmp/.validated.sentinel
 

@@ -22,6 +22,8 @@ apollo::load() {
     if [ "$1" = "." ];
     then
       export APOLLO_SPACE_DIR=$PWD
+    else
+      export APOLLO_SPACE_DIR=$APOLLO_SPACE_DIR
     fi
   else
     local cmd opts space
@@ -89,6 +91,8 @@ apollo::load() {
     export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
     export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure!"}
     export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
+    export TF_IN_AUTOMATION=1
+    export TF_VAR_environment=${APOLLO_SPACE}
     export TF_VAR_ssh_public_key_file=${APOLLO_SPACE_DIR}/.ssh/id_rsa.pub
     export DOCKER_HOST=ssh://root@${APOLLO_INGRESS_IP}
     export LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
@@ -110,6 +114,89 @@ apollo::unload() {
   cd ${APOLLO_SPACES_DIR}
 }
 
+apollo::terraform_init() {
+  if [[ ! -z "$APOLLO_SPACE" ]];
+  then
+    apollo::echo "Terraform > Init"
+
+    exec 5>&1
+
+    if [ "$APOLLO_PROVIDER" != "generic" ];
+    then
+      if [ ! -d /apollo/modules/${APOLLO_PROVIDER}/.terraform ];
+      then
+        apollo_status=$(
+          cd /apollo/modules/$APOLLO_PROVIDER
+          terraform init -compact-warnings -input=false >&5
+        )
+      fi
+    fi
+    echo $apollo_status
+  else
+    apollo::echo "No Space selected. Use \`apollo load\`"
+  fi
+}
+
+apollo::terraform_plan() {
+  if [[ ! -z "$APOLLO_SPACE" ]];
+  then
+    apollo::echo "Terraform > Plan"
+
+    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
+    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
+
+    exec 5>&1
+
+    if [ "$APOLLO_PROVIDER" != "generic" ];
+    then
+      apollo::terraform_init
+      
+      if [ ! -f $TF_PLAN_PATH ];
+      then
+        apollo_status=$(
+          cd /apollo/modules/$APOLLO_PROVIDER
+          
+          terraform plan -lock=true -compact-warnings -input=false -out=${TF_PLAN_PATH} -state=${TF_STATE_PATH} >&5
+        )
+      fi
+    fi
+    echo $apollo_status
+  else
+    apollo::echo "No Space selected. Use \`apollo load\`"
+  fi
+}
+
+apollo::terraform_apply() {
+  if [[ ! -z "$APOLLO_SPACE" ]];
+  then
+    apollo::echo "Terraform > Apply"
+
+    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
+    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
+
+    exec 5>&1
+
+    if [ "$APOLLO_PROVIDER" != "generic" ];
+    then
+      apollo::terraform_plan
+      
+      if [ ! -f $TF_STATE_PATH ];
+      then
+        apollo_status=$(
+          cd /apollo/modules/$APOLLO_PROVIDER
+          
+          terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH} >&5
+          terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${APOLLO_SPACE_DIR}/nodes.apollo.env
+        )
+        apollo::load $APOLLO_SPACE_DIR
+      fi
+    fi
+    echo $apollo_status
+  else
+    apollo::echo "No Space selected. Use \`apollo load\`"
+  fi
+}
+
 apollo::up() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
@@ -118,23 +205,12 @@ apollo::up() {
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
 
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      apollo_status=$(
-        cd /apollo
-        make infrastructure >&5
-        set -o allexport
-        export $(grep -hv '^#' $APOLLO_SPACE_DIR/nodes.apollo.env | xargs) > /dev/null
-        set +o allexport
-        sleep 30
-        make platform >&5
-      )
-    else
-      apollo_status=$(
-        cd /apollo
-        make platform >&5
-      )
-    fi
+    apollo::terraform_apply
+
+    apollo_status=$(
+      cd /apollo
+      ansible-playbook provision.yml --flush-cache >&5
+    )
     echo $apollo_status
   else
     apollo::echo "No Space selected. Use \`apollo load\`"
@@ -144,7 +220,10 @@ apollo::up() {
 apollo::destroy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "Destroying Space '$APOLLO_SPACE'"
+    apollo::echo "Terraform > Destroy"
+
+    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
+    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
@@ -152,8 +231,10 @@ apollo::destroy() {
     if [ "$APOLLO_PROVIDER" != "generic" ];
     then
       apollo_status=$(
-        cd /apollo
-        make destroy >&5
+        cd /apollo/modules/$APOLLO_PROVIDER
+        terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
+        rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${APOLLO_SPACE_DIR}/nodes.apollo.env
+
       )
     else
       apollo_status=$(

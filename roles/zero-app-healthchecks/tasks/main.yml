@@ -1,0 +1,34 @@
+---
+# tasks file for zero-app-traefik
+- name: Provision Healthchecks
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-healthchecks.yml
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: Provision Healthchecks
+      docker_stack:
+        state: present
+        name: healthchecks
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-healthchecks.yml
+      register: healthchecks_provision
+
+    - name: "Wait for http://healthchecks.{{ platform_domain }} to become ready"
+      uri:
+        url: "http://healthchecks.{{ platform_domain }}"
+        method: GET
+        status_code: 200
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+        validate_certs: no
+      register: _result
+      until: _result.status == 200
+      retries: 30 # retry X times  
+      delay: 10 # pause for X sec b/w each call 

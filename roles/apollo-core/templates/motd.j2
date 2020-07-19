@@ -5,11 +5,10 @@ _____  ______   ____ |  | |  |   ____
 (____  /   __/ \____/|____/____/\____/ 
      \/|__|                            
 
+#######################################
 
 Space: {{ apollo_space }}
 Base Domain: {{ base_domain }}
 Hostname: {{ ansible_hostname }}
-IP: `hostname -I | awk '{print $1}'`
-Cluster IP: `ip a s wg0`
 
 #######################################

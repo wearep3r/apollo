@@ -1,6 +1,8 @@
 force_reboot: 0
 
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
+apollo_remote_dir: "{{ lookup('env','APOLLO_REMOTE_DIR') | default('/srv/.apollo', true) }}"
+apollo_app_dir: "{{ lookup('env','APOLLO_APP_DIR') | default(apollo_remote_dir+'/apps', true) }}"
 
 # Deprecated
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
@@ -129,6 +131,10 @@ backplane_apps:
     - zero-app-gc
     - zero-app-alertmanager
     - zero-app-smtp
+
+# Statping
+statping_domain: "{{ lookup('env','STATPING_DOMAIN') | default('statping.'+platform_domain, true) }}"
+
 
 # Space-Specific
 # Deprecated

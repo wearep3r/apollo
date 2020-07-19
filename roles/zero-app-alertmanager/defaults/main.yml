@@ -1,6 +1,6 @@
 ---
 images:
-  alertmanager: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_IMAGES_ALERTMANAGER') | default('registry.gitlab.com/peter.saarland/apollo/alertmanager', true) }}"
+  alertmanager: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_IMAGES_ALERTMANAGER') | default('registry.gitlab.com/peter.saarland/zero/alertmanager', true) }}"
 
 # Slack
 slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
