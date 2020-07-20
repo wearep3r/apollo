@@ -26,6 +26,12 @@ source /apollo/apollo.plugin.zsh
 # forgit - https://github.com/wfxr/forgit
 [ -f ~/.forgit/forgit.plugin.zsh ] && source ~/.forgit/forgit.plugin.zsh
 
+# Prompt
+if [ $APOLLO_DEVELOPMENT -eq 1 ];
+then
+  export PS1="[DEV] ${PS1}"
+fi
+
 # ALIASES
 
 # Generic commands

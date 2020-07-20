@@ -45,7 +45,7 @@
 Save this **alias** to your `.zshrc` or `.bashrc` file.
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r/apollo:latest"
+alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/peter.saarland/zero:latest"
 ```
 
 ### 2. Start Apollo and create your first space
