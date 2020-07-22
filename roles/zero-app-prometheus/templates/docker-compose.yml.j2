@@ -32,7 +32,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9090"
-        traefik.frontend.rule: "Host:prometheus.{{ platform_domain }}"
+        traefik.frontend.rule: "Host:{{ app_domain }}"
         traefik.backend: "zero-app-prometheus"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"

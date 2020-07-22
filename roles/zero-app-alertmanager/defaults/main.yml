@@ -1,4 +1,9 @@
 ---
+app_name: "alertmanager"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_APP_DOMAIN') | default(app_name+'.'+platform_domain, true) }}"
+  
+
 images:
   alertmanager: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_IMAGES_ALERTMANAGER') | default('prom/alertmanager:master', true) }}"
 
