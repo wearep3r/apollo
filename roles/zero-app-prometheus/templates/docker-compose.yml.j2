@@ -13,6 +13,7 @@ services:
       - monitoring
     volumes: 
       - prometheus-data:/prometheus
+      - "{{ app_dir }}:/etc/prometheus"
     healthcheck:
       test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
       interval: 25s
