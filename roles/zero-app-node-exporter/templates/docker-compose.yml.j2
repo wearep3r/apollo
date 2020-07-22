@@ -3,8 +3,7 @@ version: '3.7'
 services:
   node-exporter:
     image: prom/node-exporter:master
-    entrypoint: >
-      echo "node_meta{node_id=\"$NODE_ID\", container_label_com_docker_swarm_node_id=\"$NODE_ID\", node_name=\"$NODE_NAME\"} 1" > /etc/node-exporter/node-meta.prom
+    entrypoint: 'echo "node_meta{node_id=\"$NODE_ID\", container_label_com_docker_swarm_node_id=\"$NODE_ID\", node_name=\"$NODE_NAME\"} 1" > /etc/node-exporter/node-meta.prom'
     command: ["/bin/node_exporter", "--path.sysfs=/host/sys", "--path.procfs=/host/proc", "--collector.textfile.directory=/etc/node-exporter/", "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)", "--no-collector.ipvs"]
     environment:
       - NODE_ID={{ "{{.Node.ID}}" }}
@@ -23,10 +22,6 @@ services:
       placement:
         constraints: 
         - node.platform.os == linux
-      labels:
-        prometheus.enable: "true"
-        prometheus.port: "9100"
-        prometheus.path: "/metrics"
 
 networks:
   monitoring:

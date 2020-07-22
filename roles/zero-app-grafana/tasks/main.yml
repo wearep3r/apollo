@@ -69,3 +69,5 @@
       retries: "{{ app_healthcheck_retries }}"
       delay: "{{ app_healthcheck_delay }}"
       when: grafana_provision.changed
+  tags:
+    - "app_grafana"

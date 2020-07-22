@@ -12,6 +12,7 @@ services:
       GF_INSTALL_PLUGINS: "grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel"
       GF_DEFAULT_INSTANCE_NAME: "{{ apollo_space }}"
       GF_SERVER_DOMAIN: "{{ app_domain }}"
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
 {% if letsencrypt_enabled|bool %}
       GF_SERVER_ROOT_URL: "https://{{ app_domain }}"
 {% else %}
@@ -25,9 +26,7 @@ services:
       - monitoring
     volumes: 
       - grafana-data:/var/lib/grafana
-      - "{{ app_dir }}/dashboards.yml:/etc/grafana/provisioning/dashboards.yml"
-      - "{{ app_dir }}/dashboards:/etc/grafana/provisioning/dashboards"
-      - "{{ app_dir }}/datasources:/etc/grafana/provisioning/datasources"
+      - "{{ app_dir }}:/etc/grafana/provisioning/"
     healthcheck:
       test: "wget -q -Y off -O /dev/null http://localhost:3000/login > /dev/null 2>&1"
       interval: 25s

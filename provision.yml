@@ -26,10 +26,14 @@
 - name: "@apollo-backplane"
   import_playbook: playbooks/apollo-backplane.yml
   when: apollo_backplane_enabled|bool
+  tags:
+    - "provision_backplane"
   
 - name: "@apollo-apps"
   import_playbook: playbooks/apollo-apps.yml
   when: apollo_apps|length > 0
+  tags:
+    - "provision_apps"
 
 - name: "@apollo-runner"
   import_playbook: playbooks/provision-runner.yml

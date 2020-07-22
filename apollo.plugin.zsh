@@ -195,21 +195,57 @@ apollo::terraform_apply() {
   fi
 }
 
-apollo::up() {
+apollo::deploy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "Starting Space '$APOLLO_SPACE'"
+    apollo::echo "Deploying Space '$APOLLO_SPACE'"
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
 
-    apollo::terraform_apply
+    if [ "$1" = "apps" ];
+    then
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Deploying App $2"
+      else
+        apollo::echo "Deploying Apps"
 
-    apollo_status=$(
-      cd /apollo
-      ansible-playbook provision.yml --flush-cache >&5
-    )
-    echo $apollo_status
+        apollo_status=$(
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "provision_apps,always" >&5
+        )
+        echo $apollo_status
+      fi
+    elif [ "$1" = "backplane" ];
+    then
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Deploying Backplane App $2"
+
+        apollo_status=$(
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
+        )
+        echo $apollo_status
+      else
+        apollo::echo "Deploying Backplane"
+
+        apollo_status=$(
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "provision_backplane,always" >&5
+        )
+        echo $apollo_status
+      fi
+    else
+      apollo::terraform_apply
+
+      apollo_status=$(
+        cd /apollo
+        ansible-playbook provision.yml --flush-cache >&5
+      )
+      echo $apollo_status
+    fi
   else
     apollo::echo "No Space selected. Use \`apollo load\`"
   fi
@@ -565,6 +601,7 @@ apollo::destroy() {
 export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
 export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
+export APOLLO_REMOTE_DIR=${APOLLO_REMOTE_DIR:-/srv/.apollo}
 
 export APOLLO_FZF_DEFAULT_OPTS="
 $FZF_DEFAULT_OPTS
@@ -587,7 +624,7 @@ $APOLLO_FZF_DEFAULT_OPTS
 if [[ -z "$APOLLO_NO_ALIASES" ]]; then
     alias "${apollo_load:-load}"='apollo::load'
     alias "${apollo_inspect:-inspect}"='apollo::inspect'
-    alias "${apollo_up:-up}"='apollo::up'
+    alias "${apollo_deploy:-deploy}"='apollo::deploy'
     alias "${apollo_destroy:-destroy}"='apollo::destroy'
     alias "${apollo_enter:-enter}"='apollo::enter'
     alias "${apollo_plan:-plan}"='apollo::plan'
