@@ -3,15 +3,12 @@ version: '3.7'
 services:
   alertmanager:
     image: {{ images.alertmanager }}
-    environment:
-      SLACK_URL: "{{ slack_webhook }}"
-      SLACK_CHANNEL: "{{ slack_channel }}"
-      SLACK_USER: "{{ slack_user }}"
     command: "--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --web.external-url=http://prometheus.{{ platform_domain }}"
     networks: 
       - monitoring
     volumes: 
       - alertmanager-data:/alertmanager
+      - "{{ app_dir }}:/etc/alertmanager"
     healthcheck:
       test: "/bin/wget -q -Y off http://localhost:9093/metrics -O /dev/null > /dev/null 2>&1"
       interval: 25s
