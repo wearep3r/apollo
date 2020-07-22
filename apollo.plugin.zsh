@@ -2,8 +2,6 @@
 #export APOLLO_EMOJI="🚀"
 #export PROMPT="${PROMPT} ${APOLLO_EMOJI} "
 
-
-
 # Text formatting
 # https://stackoverflow.com/questions/2924697/how-does-one-output-bold-text-in-bash
 bold=$(tput bold)
@@ -566,6 +564,7 @@ apollo::destroy() {
 
 export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
 export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
+export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
 
 export APOLLO_FZF_DEFAULT_OPTS="
 $FZF_DEFAULT_OPTS

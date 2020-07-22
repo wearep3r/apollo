@@ -45,7 +45,7 @@
 Save this **alias** to your `.zshrc` or `.bashrc` file.
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r/apollo:latest"
+alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/peter.saarland/zero:latest"
 ```
 
 ### 2. Start Apollo and create your first space
@@ -161,8 +161,8 @@ PROVIDER_API_KEY=
 
 This would spin up **1 small Ubuntu 18.04 VM** at your cloud provider of choice. It will add 3 files to your **VPC** config:
 
-- `apollo.plan` is a [Terraform Planfile](https://www.terraform.io/docs/commands/plan.html)
-- `apollo.tfstate` is a [Terraform Statefile](https://www.terraform.io/docs/state/index.html)
+- `infrastructure.apollo.plan` is a [Terraform Planfile](https://www.terraform.io/docs/commands/plan.html)
+- `infrastructure.apollo.tfstate` is a [Terraform Statefile](https://www.terraform.io/docs/state/index.html)
 - `nodes.apollo.env` contains configuration necessary for Zero to deploy the PaaS component to the VM
 
 #### PaaS
@@ -175,7 +175,7 @@ Assuming we use IaaS to provide infrastructure, the **minimum viable config** to
 APOLLO_SPACE=$SPACE_NAME
 ```
 
-**ATTENTION**: You need to replace `$SPACE_NAME` with the name of the VPC this Apollo-Deployment is part of. It's the name you picked during `apollo add`.
+**ATTENTION**: You need to replace `$SPACE_NAME` with the name of the VPC this Apollo-Deployment is part of. It's the name you picked during `apollo init`.
 
 This configuration would deploy the platform with a `$APOLLO_BASE_DOMAIN` of `$APOLLO_INGRESS_IP.xip.io` (`$APOLLO_INGRESS_IP` will be provided by IaaS), Docker Swarm as orchestrator and a few backend services. Assuming `APOLLO_INGRESS_IP=213.45.74.3` and `APOLLO_ENVIRONMENT=draconic-envelope-galore`, you would have access to the following services:
 
