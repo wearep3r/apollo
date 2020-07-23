@@ -22,7 +22,7 @@
 ## Feature Matrix
 
 |            | [Swarm](features.md#-docker-swarm) | [k3s](features.md#-k3s) | [k8s](features.md#k8s)  |
-|------------|-------|-----|---|---|
+|------------|-------|-----|---|
 | [Wireguard](features.md#-wireguard)    | ✅    | ✅    | ✅  |
 | [Docker](features.md#-docker)    | ✅    | ✅    | ✅  |
 | [Distributed Storage](features.md#-distributed-storage)    | ✅    | ✅    | ❌  |
