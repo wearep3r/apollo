@@ -172,11 +172,11 @@ Automated backups to S3 are possible through [lake0](https://gitlab.com/peter.sa
 |------------|-------|-------|
 | RESTIC_REPOSITORY    | s3:https://$S3_ENDPOINT/$BUCKET | - |
 | RESTIC_PASSWORD    | 12345678 | - |
-| RESTIC_BACKUP_CRON    | - | '30 * * * *' |
-| RESTIC_FORGET_ARGS    | - | '--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1' |
-| RESTIC_JOB_ARGS    | - | '--exclude minio_minio-data' |
+| RESTIC_BACKUP_CRON    | - | `30 * * * *` |
+| RESTIC_FORGET_ARGS    | - | `--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1` |
+| RESTIC_JOB_ARGS    | - | `--exclude minio_minio-data` |
 
-`S3_ENDPOINT` might be a [Minio](#-minio) app inside the same or an external Apollo. cluster or an endpoint at AWS, Wasabi, whatever.
+`$S3_ENDPOINT` might be a [Minio](#-minio) app inside the same or an external Apollo. cluster or an endpoint at AWS, Wasabi, whatever.
 
 Please refere to the [restic docs](https://restic.readthedocs.io/en/latest/) for further information.
 

@@ -1,8 +1,8 @@
-![Apollo. - Platform as a Service](../wallpaper.png)
+# Get Started
+
+![Apollo. - Platform as a Service](../../wallpaper.png)
 
 [[_TOC_]]
-
-# Get Started
 
 ## 🚀 Apollo. - Platform as a Service
 
@@ -57,10 +57,9 @@
 
 **Apollo.** comes with a CLI tool that controls all of **Apollo.**'s features. The idea behind this is to better blend the differences between local, production, staging and CI environments and give Developers a transparent way to interact with the applications they develop or use to assist their development (like Sentry).
 
-
 ## Quick-Start
 
-### 1. Get Apollo.
+### 1. Get Apollo
 
 Save this **alias** to your `.zshrc` or `.bashrc` file:
 
@@ -75,35 +74,35 @@ alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOM
 
 ```bash
 ~ apollo
-                     .__  .__          
+                     .__  .__
 _____  ______   ____ |  | |  |   ____  
-\__  \ \____ \ /  _ \|  | |  |  /  _ \ 
+\__  \ \____ \ /  _ \|  | |  |  /  _ \
  / __ \|  |_> >  <_> )  |_|  |_(  <_> )
-(____  /   __/ \____/|____/____/\____/ 
-     \/|__|                            
+(____  /   __/ \____/|____/____/\____/
+     \/|__|
 
 🚀 .spaces init
 [apollo] Initializing new Space
 [apollo] Name: apollo-demo
-[apollo-demo] Do you want to sync this Space with a remote repository? [y/N] 
+[apollo-demo] Do you want to sync this Space with a remote repository? [y/N]
 [apollo-demo] Cloud Provider (generic,hcloud,digitalocean,aws): hcloud
-[apollo-demo] HCLOUD Token: 
+[apollo-demo] HCLOUD Token:
 [apollo-demo] Manager instances: 1
 [apollo-demo] Worker instances: 0
-[apollo-demo] Base domain: 
-[apollo-demo] Enable LetsEncrypt? [y/N] 
-                   _ _                 _                      
+[apollo-demo] Base domain:
+[apollo-demo] Enable LetsEncrypt? [y/N]
+                   _ _                 _
   __ _ _ __   ___ | | | ___         __| | ___ _ __ ___   ___  
- / _` | '_ \ / _ \| | |/ _ \ _____ / _` |/ _ \ '_ ` _ \ / _ \ 
+ / _` | '_ \ / _ \| | |/ _ \ _____ / _` |/ _ \ '_ ` _ \ / _ \
 | (_| | |_) | (_) | | | (_) |_____| (_| |  __/ | | | | | (_) |
- \__,_| .__/ \___/|_|_|\___/       \__,_|\___|_| |_| |_|\___/ 
-      |_|                                                     
+ \__,_| .__/ \___/|_|_|\___/       \__,_|\___|_| |_| |_|\___/
+      |_|
 
 [apollo-demo] 🚀 Space: apollo-demo
 [apollo-demo]  ∟ 🌐 Base Domain: 127.0.0.1.xip.io
 [apollo-demo]  ∟ 🤖 User: admin
 [apollo-demo]  ∟ 🙊 Password: insecure!
-[apollo-demo] 🟢 Nodes: 
+[apollo-demo] 🟢 Nodes:
 [apollo-demo] 🟢 Backplane: Enabled
 [apollo-demo]  ∟ 🟢 Portainer: http://admin:insecure!@portainer.apollo-demo.127.0.0.1.xip.io
 [apollo-demo]  ∟ 🟢 Traefik: http://admin:insecure!@proxy.apollo-demo.127.0.0.1.xip.io
@@ -201,10 +200,10 @@ APOLLO_SPACE=$SPACE_NAME
 
 This configuration would deploy the platform with a `$APOLLO_BASE_DOMAIN` of `$APOLLO_INGRESS_IP.xip.io` (`$APOLLO_INGRESS_IP` will be deducted from the Terraform output), Docker Swarm as orchestrator and a few backend services (see [Backplane](backplane.md)). Assuming `APOLLO_INGRESS_IP=213.45.74.3` and `APOLLO_ENVIRONMENT=apollo-demo`, you would have access to the following services:
 
-- Portainer: http://portainer.apollo-demo.213.45.74.3.xip.io
-- Traefik: http://proxy.apollo-demo.213.45.74.3.xip.io
-- Prometheus: http://prometheus.apollo-demo.213.45.74.3.xip.io
-- Grafana: http://grafana.apollo-demo.213.45.74.3.xip.io
+- Portainer: [http://portainer.apollo-demo.213.45.74.3.xip.io](http://portainer.apollo-demo.213.45.74.3.xip.io)
+- Traefik: [http://proxy.apollo-demo.213.45.74.3.xip.io](http://proxy.apollo-demo.213.45.74.3.xip.io)
+- Prometheus: [http://prometheus.apollo-demo.213.45.74.3.xip.io](http://prometheus.apollo-demo.213.45.74.3.xip.io)
+- Grafana: [http://grafana.apollo-demo.213.45.74.3.xip.io](http://grafana.apollo-demo.213.45.74.3.xip.io)
 
 Username is `admin` and password is `insecure!`.
 
@@ -217,7 +216,7 @@ Username is `admin` and password is `insecure!`.
 
 This would give you access to the following endpoints automagically:
 
-- Portainer: http://portainer.apollo-demo.beingyou.rocks
-- Traefik: http://proxy.apollo-demo.beingyou.rocks
-- Prometheus: http://prometheus.apollo-demo.beingyou.rocks
-- Grafana: http://grafana.apollo-demo.beingyou.rocks
+- Portainer: [http://portainer.apollo-demo.beingyou.rocks](http://portainer.apollo-demo.beingyou.rocks)
+- Traefik: [http://proxy.apollo-demo.beingyou.rocks](http://proxy.apollo-demo.beingyou.rocks)
+- Prometheus: [http://prometheus.apollo-demo.beingyou.rocks](http://prometheus.apollo-demo.beingyou.rocks)
+- Grafana: [http://grafana.apollo-demo.beingyou.rocks](http://grafana.apollo-demo.beingyou.rocks)
