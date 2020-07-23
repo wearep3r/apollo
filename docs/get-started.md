@@ -1,6 +1,6 @@
 # Get Started
 
-![Apollo. - Platform as a Service](../../wallpaper.png)
+![Apollo. - Platform as a Service](../../wallpaper.jpg)
 
 [[_TOC_]]
 
