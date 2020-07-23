@@ -9,18 +9,35 @@
 **Apollo.** is a **Platform as a Service** toolkit. You can use it to build and run applications in a batteries-included and git-versioned environment with the following features:
 
 - **Docker** as container runtime
-- **Docker Swarm**, **vanilla Kubernetes** or **k3s** as orchestrator
-- Scales from 1 to infinite nodes
-- Support for stateless & stateful workloads
-- Automatically integrated with [Storidge](https://storidge.com/) container IO (minimum cluster size: 4) for **Docker Swarm**
-- Can be deployed to any cluster of Ubuntu/Debian nodes
-- Supports **Windows Workers** in **Docker Swarm** and **Kubernetes** (currently AWS only)
-- Comes with integrations for AWS, DigitalOcean, HETZNER Cloud and VMware
+- **Docker Swarm**, **k8s** or **k3s** as orchestrator
+- Automated Distributed Storage with [Storidge](https://storidge.com/) for **Docker Swarm** and [Longhorn](https://rancher.com/docs/k3s/latest/en/storage/) for **k3s**
+- Start with 1 Ubuntu 18.04 node, scale infinitely
+- Supports **Windows Workers** in **Docker Swarm** and **k8s** (**ATTENTION**: Limited Support, WIP & alpha!)
+- Infrastruture-as-Code modules for AWS, DigitalOcean and HETZNER Cloud
 - **Swarm only**: cool backplane (reverse-proxy, auto-ssl, monitoring, auto-backups, dashboards)!
 - **Apps**: turn-key GitLab, Minio, GitLab Runner, Rancher, more to come ...
-- Management CLI
 
 > The goal for **Apollo.** is to get teams up and running fast, with a turn-key platform to accelerate development and innovation
+
+## Feature Matrix
+
+|            | Swarm | k3s | k8s  |
+|------------|-------|-----|---|---|
+| Docker    | ✅    | ✅    | ✅  |
+| Distributed Storage    | ✅    | ✅    | ❌  |
+| Traefik    | ✅    | ❌    | ❌  |
+| Monitoring    | ✅    | ❌    | ❌  |
+| Alerting    | ✅    | ❌    | ❌  |
+| Portainer  | ✅    | ❌    | ❌  |
+| Rancher  | ❌    | ✅    | ✅  |
+| Garbage Collection  | ✅    | ❌    | ❌  |
+| Prometheus | ✅    | ❌    | ❌  |
+| Grafana    | ✅    | ❌    | ❌  |
+| Backups    | ✅    | ❌    | ❌  |
+| Backups    | ✅    | ❌    | ❌  |
+| GitLab    | ✅    | ❌    | ❌  |
+| Minio    | ✅    | ❌    | ❌  |
+| Statping    | ✅    | ❌    | ❌  |
 
 **Apollo.** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 
@@ -38,11 +55,12 @@
 
 **Apollo.** comes with a CLI tool that controls all of **Apollo.**'s features. The idea behind this is to better blend the differences between local, production, staging and CI environments and give Developers a transparent way to interact with the applications they develop or use to assist their development (like Sentry).
 
+
 ## Quick-Start
 
 ### 1. Get Apollo.
 
-Save this **alias** to your `.zshrc` or `.bashrc` file.
+Save this **alias** to your `.zshrc` or `.bashrc` file:
 
 ```bash
 alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/peter.saarland/zero:latest"
@@ -110,10 +128,10 @@ APOLLO_PUBLIC_INTERFACE=eth0
 
 ### 3. Ship your Apollo Space
 
-Using `up`, you can provision your Space. Please note that for a successful deployment `INGRESS_IP` needs to have a useful value and needs to be accessible through SSH with the SSH-Keys generated during the init process.
+Using `deploy`, you can deploy your Space. Please note that for a successful deployment `INGRESS_IP` needs to have a useful value and needs to be accessible through SSH with the SSH-Keys generated during the init process.
 
 ```bash
-🚀 apollo-demo.space up
+🚀 apollo-demo.space deploy
 ```
 
 ## Advanced usage
