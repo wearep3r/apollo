@@ -1,14 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -23,7 +13,7 @@
     ]
   },
   "description": "Statping Grafana Dashboard",
-  "editable": true,
+  "editable": false,
   "gnetId": 6950,
   "graphTooltip": 1,
   "id": null,
@@ -41,43 +31,6 @@
     }
   ],
   "panels": [
-    {
-      "collapsed": false,
-      "datasource": "Prometheus",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 70,
-      "panels": [],
-      "title": "Main",
-      "type": "row"
-    },
-    {
-      "content": "<center style=\"margin-top:5vh\">\n<h1>In Dev</h1>\nYeee, would love to hear some ideas on <a href=\"slack.statping.com\">slack.statping.com</a>.\n</center>\n",
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 24,
-        "x": 0,
-        "y": 1
-      },
-      "id": 66,
-      "mode": "html",
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "",
-      "transparent": true,
-      "type": "text"
-    },
     {
       "datasource": "Prometheus",
       "fieldConfig": {
@@ -2762,7 +2715,7 @@
     ]
   },
   "timezone": "",
-  "title": "Statping on Grafana",
+  "title": "Statping",
   "uid": "statping-grafana",
   "version": 5
 }

@@ -598,6 +598,7 @@ apollo::destroy() {
   fi
 }
 
+# Defaults
 export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
 export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
