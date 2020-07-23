@@ -74,7 +74,7 @@ apollo_data: "{{ lookup('env','APOLLO_DATA') | default(zero_data, true) }}"
 
 # Apollo. > PaaS > Security
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(1, true) }}"
-letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL')  | default("le@"+space_domain, true) }}"
+letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL')  | default('le@'+space_domain, true) }}"
 
 # Apollo. > PaaS > Network
 wireguard_port: "5888"
@@ -94,6 +94,10 @@ apollo_backups_enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(1, 
 # Apollo. > PaaS > Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
 apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(backplane_enabled, true) }}"
+
+# Apollo. > PaaS > Backplane > Prometheus
+prometheus_federation_enabled: "{{ lookup('env','PROMETHEUS_FEDERATION_ENABLED') | default(0, true) }}"
+prometheus_federation_spaces: "{{ lookup('env','PROMETHEUS_FEDERATION_SPACES') | default('', true) }}"
 
 # Apollo. > PaaS > Apps
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"

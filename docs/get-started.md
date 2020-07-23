@@ -41,6 +41,19 @@
 | [Statping](features.md#-statping)    | ✅    | ❌    | ❌  |
 | [GitLab Runner](features.md#-gitlab-runner)    | ✅    | ❌    | ❌  |
 
+## Typical problems Apollo. solves
+
+1. I need a single-node Docker-Host
+2. I need a multi-node Docker-Cluster
+3. I need to run Kubernetes
+4. I need hyperconverged storage for my applications
+5. I need GitLab Runners. Lots of them. Cheap
+6. I need a S3 endpoint for my backups
+7. I need multiple compute environments (staging, production)
+8. I need a stable solution to self-host apps
+9. I need to spin up ephemeral clusters in CI/CD
+10. I need a platform to run my apps on
+
 **Apollo.** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 
 **Apollo.** comes with a pre-configured set of apps that integrate with each other - such as **GitLab, Sentry, Prometheus, Grafana, Loki, a user backend** and more. You simply enable them and start working!

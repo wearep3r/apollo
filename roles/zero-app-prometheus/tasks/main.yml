@@ -41,6 +41,24 @@
         label: "{{ config_file.path }}"
         loop_var: config_file
 
+    - name: Setup federation
+      block:
+        - name: Access federated Spaces
+          git:
+            repo: "{{ space }}"
+            dest: "/tmp/prometheus-federation-space-{{ space_index }}"
+          with_items:
+            - "{{ prometheus_federation_spaces }}"
+          register: prometheus_federation_directories
+          loop_control:
+            loop_var: space
+            index_var: space_index
+
+        - name: Debug federated Spaces
+          debug:
+            msg: "{{ prometheus_federation_directories }}"
+      when: prometheus_federation_enabled|bool
+
     - name: Copy Prometheus config
       template:
         src: templates/prometheus.yml.j2
