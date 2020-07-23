@@ -1,18 +1,17 @@
 !["Wallpaper"](wallpaper.jpg)
 
-# apollo - Platform as a Service toolkit
+# Apollo. - Platform as a Service toolkit
 
 ## 🚀 Documentation
 
 - [Get Started](docs/get-started.md)
 - [FAQ](docs/faq.md)
 
-This software is maintained and commercially supported by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland) - helping companies to develop software with startup speed and enterprise quality.
+This software is maintained and commercially supported by [Peter.SAARLAND | DevOps Consultants](https://www.peter.saarland).
 
 ## 🚀 Related Links
 
 - [apollo](https://gitlab.com/peter.saarland/apollo/) - Platform as a Service toolkit
-- [apollo-cli](https://gitlab.com/peter.saarland/apollo-cli/) - The **apollo** CLI
 - [lake0](https://gitlab.com/peter.saarland/lake0/) - Container-native Backups
 - [ns0](https://gitlab.com/peter.saarland/ns0/) - Container-native DNS Proxy
 - [shipmate](https://gitlab.com/peter.saarland/shipmate/) - Advanced Software Logistics
