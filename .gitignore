@@ -1,4 +1,5 @@
 .ssh
+**/_*
 tmp
 inventory/enventory.py
 _deprecated/
