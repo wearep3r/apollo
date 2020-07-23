@@ -21,23 +21,25 @@
 
 ## Feature Matrix
 
-|            | Swarm | k3s | k8s  |
+|            | [Swarm](features.md#-docker-swarm) | [k3s](features.md#-k3s) | [k8s](features.md#k8s)  |
 |------------|-------|-----|---|---|
-| Docker    | ✅    | ✅    | ✅  |
-| Distributed Storage    | ✅    | ✅    | ❌  |
-| Traefik    | ✅    | ❌    | ❌  |
-| Monitoring    | ✅    | ❌    | ❌  |
-| Alerting    | ✅    | ❌    | ❌  |
-| Portainer  | ✅    | ❌    | ❌  |
-| Rancher  | ❌    | ✅    | ✅  |
-| Garbage Collection  | ✅    | ❌    | ❌  |
-| Prometheus | ✅    | ❌    | ❌  |
-| Grafana    | ✅    | ❌    | ❌  |
-| Backups    | ✅    | ❌    | ❌  |
-| Backups    | ✅    | ❌    | ❌  |
-| GitLab    | ✅    | ❌    | ❌  |
-| Minio    | ✅    | ❌    | ❌  |
-| Statping    | ✅    | ❌    | ❌  |
+| [Wireguard](features.md#-wireguard)    | ✅    | ✅    | ✅  |
+| [Docker](features.md#-docker)    | ✅    | ✅    | ✅  |
+| [Distributed Storage](features.md#-distributed-storage)    | ✅    | ✅    | ❌  |
+| [Traefik](features.md#-traefik)    | ✅    | ❌    | ❌  |
+| [Letsencrypt](features.md#-letsencrypt)    | ✅    | ❌    | ❌  |
+| [Monitoring](features.md#-monitoring)    | ✅    | ❌    | ❌  |
+| [Alerting](features.md#-alerting)    | ✅    | ❌    | ❌  |
+| [Portainer](features.md#-portainer)  | ✅    | ❌    | ❌  |
+| [Rancher](features.md#-rancher)  | ❌    | ✅    | ✅  |
+| [Garbage Collection](features.md#-garbage-collection)  | ✅    | ❌    | ❌  |
+| [Prometheus](features.md#-prometheus) | ✅    | ❌    | ❌  |
+| [Grafana](features.md#-grafana)    | ✅    | ❌    | ❌  |
+| [Backups](features.md#-backups)    | ✅    | ❌    | ❌  |
+| [GitLab](features.md#-gitlab)    | ✅    | ❌    | ❌  |
+| [Minio](features.md#-minio)    | ✅    | ❌    | ❌  |
+| [Statping](features.md#-statping)    | ✅    | ❌    | ❌  |
+| [GitLab Runner](features.md#-gitlab-runner)    | ✅    | ❌    | ❌  |
 
 **Apollo.** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 
