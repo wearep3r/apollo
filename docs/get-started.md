@@ -9,18 +9,35 @@
 **Apollo.** is a **Platform as a Service** toolkit. You can use it to build and run applications in a batteries-included and git-versioned environment with the following features:
 
 - **Docker** as container runtime
-- **Docker Swarm**, **vanilla Kubernetes** or **k3s** as orchestrator
-- Scales from 1 to infinite nodes
-- Support for stateless & stateful workloads
-- Automatically integrated with [Storidge](https://storidge.com/) container IO (minimum cluster size: 4) for **Docker Swarm**
-- Can be deployed to any cluster of Ubuntu/Debian nodes
-- Supports **Windows Workers** in **Docker Swarm** and **Kubernetes** (currently AWS only)
-- Comes with integrations for AWS, DigitalOcean, HETZNER Cloud and VMware
+- **Docker Swarm**, **k8s** or **k3s** as orchestrator
+- Automated Distributed Storage with [Storidge](https://storidge.com/) for **Docker Swarm** and [Longhorn](https://rancher.com/docs/k3s/latest/en/storage/) for **k3s**
+- Start with 1 Ubuntu 18.04 node, scale infinitely
+- Supports **Windows Workers** in **Docker Swarm** and **k8s** (**ATTENTION**: Limited Support, WIP & alpha!)
+- Infrastruture-as-Code modules for AWS, DigitalOcean and HETZNER Cloud
 - **Swarm only**: cool backplane (reverse-proxy, auto-ssl, monitoring, auto-backups, dashboards)!
 - **Apps**: turn-key GitLab, Minio, GitLab Runner, Rancher, more to come ...
-- Management CLI
 
 > The goal for **Apollo.** is to get teams up and running fast, with a turn-key platform to accelerate development and innovation
+
+## Feature Matrix
+
+|            | Swarm | k3s | k8s  |
+|------------|-------|-----|---|---|
+| Docker    | ✅    | ✅    | ✅  |
+| Distributed Storage    | ✅    | ✅    | ❌  |
+| Traefik    | ✅    | ❌    | ❌  |
+| Monitoring    | ✅    | ❌    | ❌  |
+| Alerting    | ✅    | ❌    | ❌  |
+| Portainer  | ✅    | ❌    | ❌  |
+| Rancher  | ❌    | ✅    | ✅  |
+| Garbage Collection  | ✅    | ❌    | ❌  |
+| Prometheus | ✅    | ❌    | ❌  |
+| Grafana    | ✅    | ❌    | ❌  |
+| Backups    | ✅    | ❌    | ❌  |
+| Backups    | ✅    | ❌    | ❌  |
+| GitLab    | ✅    | ❌    | ❌  |
+| Minio    | ✅    | ❌    | ❌  |
+| Statping    | ✅    | ❌    | ❌  |
 
 **Apollo.** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 
@@ -38,11 +55,12 @@
 
 **Apollo.** comes with a CLI tool that controls all of **Apollo.**'s features. The idea behind this is to better blend the differences between local, production, staging and CI environments and give Developers a transparent way to interact with the applications they develop or use to assist their development (like Sentry).
 
+
 ## Quick-Start
 
 ### 1. Get Apollo.
 
-Save this **alias** to your `.zshrc` or `.bashrc` file.
+Save this **alias** to your `.zshrc` or `.bashrc` file:
 
 ```bash
 alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/peter.saarland/zero:latest"
@@ -110,10 +128,10 @@ APOLLO_PUBLIC_INTERFACE=eth0
 
 ### 3. Ship your Apollo Space
 
-Using `up`, you can provision your Space. Please note that for a successful deployment `INGRESS_IP` needs to have a useful value and needs to be accessible through SSH with the SSH-Keys generated during the init process.
+Using `deploy`, you can deploy your Space. Please note that for a successful deployment `INGRESS_IP` needs to have a useful value and needs to be accessible through SSH with the SSH-Keys generated during the init process.
 
 ```bash
-🚀 apollo-demo.space up
+🚀 apollo-demo.space deploy
 ```
 
 ## Advanced usage
@@ -130,9 +148,9 @@ You can [use GitLab to store and collaborate on **Spaces**](manage-spaces.md).
 
 #### Default configuration
 
-For the following, we assume to handle a **Space** called `apollo-demo`. A Space has sane defaults so it can be started with minimum requirements. 
+For the following, we assume to handle a **Space** called `apollo-demo`. A Space has sane defaults so it can be started with minimum configuration.
 
-Each Space has a so called `INGRESS_IP` which refers to the node handling all incoming traffic. Thus, the `INGRESS_IP` will be used for all things DNS and more. It's a vital part of how **Apollo.** works and defaults to `127.0.0.1`.
+Each Space has a so called `INGRESS_IP` which refers to the node (a VM/Server in the cluster) handling all incoming traffic. Thus, the `INGRESS_IP` will be used for all things DNS and more. It's a vital part of how **Apollo.** works and defaults to `127.0.0.1` or the IP address of the first manager node.
 
 ```bash
 APOLLO_SPACE=apollo-demo
@@ -159,15 +177,17 @@ APOLLO_PROVIDER=[hcloud|aws|digitalocean]
 PROVIDER_API_KEY=
 ```
 
-This would spin up **1 small Ubuntu 18.04 VM** at your cloud provider of choice. It will add 3 files to your **VPC** config:
+Where `PROVIDER_API_KEY` is actually `HCLOUD_TOKEN` or something similar, depending on your provider.
+
+This would spin up **1 small Ubuntu 18.04 VM** at your cloud provider of choice. It will add 3 files to your **Space**:
 
 - `infrastructure.apollo.plan` is a [Terraform Planfile](https://www.terraform.io/docs/commands/plan.html)
 - `infrastructure.apollo.tfstate` is a [Terraform Statefile](https://www.terraform.io/docs/state/index.html)
-- `nodes.apollo.env` contains configuration necessary for Zero to deploy the PaaS component to the VM
+- `nodes.apollo.env` contains configuration necessary for Apollo to deploy the PaaS component to the VM
 
 #### PaaS
 
-**Apollo.** reads its configuration from the **Environment**. It's designed to run in a container and export configuration found in the **Space** directory to the container's environment. This includes the aforementioned `nodes.apollo.env` that only exists if IaaS has been provisioned successfully.
+**Apollo.** reads its configuration from the **Environment**. It's designed to run in a container and export configuration found in the **Space** directory to the container's environment. This includes the aforementioned `nodes.apollo.env` that only exists if IaaS has been provisioned successfully or if you created it manually with information about your own hosts.
 
 Assuming we use IaaS to provide infrastructure, the **minimum viable config** to deploy a platform with **Apollo.** would be:
 
@@ -175,27 +195,27 @@ Assuming we use IaaS to provide infrastructure, the **minimum viable config** to
 APOLLO_SPACE=$SPACE_NAME
 ```
 
-**ATTENTION**: You need to replace `$SPACE_NAME` with the name of the VPC this Apollo-Deployment is part of. It's the name you picked during `apollo init`.
+**ATTENTION**: You need to replace `$SPACE_NAME` with the name of the VPC this Apollo-Deployment is part of. It's the name you picked during `init`.
 
-This configuration would deploy the platform with a `$APOLLO_BASE_DOMAIN` of `$APOLLO_INGRESS_IP.xip.io` (`$APOLLO_INGRESS_IP` will be provided by IaaS), Docker Swarm as orchestrator and a few backend services. Assuming `APOLLO_INGRESS_IP=213.45.74.3` and `APOLLO_ENVIRONMENT=draconic-envelope-galore`, you would have access to the following services:
+This configuration would deploy the platform with a `$APOLLO_BASE_DOMAIN` of `$APOLLO_INGRESS_IP.xip.io` (`$APOLLO_INGRESS_IP` will be deducted from the Terraform output), Docker Swarm as orchestrator and a few backend services (see [Backplane](backplane.md)). Assuming `APOLLO_INGRESS_IP=213.45.74.3` and `APOLLO_ENVIRONMENT=apollo-demo`, you would have access to the following services:
 
-- Portainer: http://portainer.draconic-envelope-galore.213.45.74.3.xip.io
-- Traefik: http://proxy.draconic-envelope-galore.213.45.74.3.xip.io
-- Prometheus: http://prometheus.draconic-envelope-galore.213.45.74.3.xip.io
-- Grafana: http://grafana.draconic-envelope-galore.213.45.74.3.xip.io
+- Portainer: http://portainer.apollo-demo.213.45.74.3.xip.io
+- Traefik: http://proxy.apollo-demo.213.45.74.3.xip.io
+- Prometheus: http://prometheus.apollo-demo.213.45.74.3.xip.io
+- Grafana: http://grafana.apollo-demo.213.45.74.3.xip.io
 
 Username is `admin` and password is `insecure!`.
 
-**Pro-Tipp**: if you want to use your own domain - beingyou.rocks - add the following records to your DNS and set `APOLLO_BASE_DOMAIN=beingyou.rocks` in `apollo.env`:
+**Pro-Tipp**: if you want to use your own domain - `beingyou.rocks` - add the following records to your DNS and set `APOLLO_BASE_DOMAIN=beingyou.rocks` in `apollo.env`:
 
 ```bash
-@ draconic-envelope-galore.beingyou.rocks 213.45.74.3
-* draconic-envelope-galore.beingyou.rocks 213.45.74.3
+@ apollo-demo.beingyou.rocks 213.45.74.3
+* apollo-demo.beingyou.rocks 213.45.74.3
 ```
 
 This would give you access to the following endpoints automagically:
 
-- Portainer: http://portainer.draconic-envelope-galore.beingyou.rocks
-- Traefik: http://proxy.draconic-envelope-galore.beingyou.rocks
-- Prometheus: http://prometheus.draconic-envelope-galore.beingyou.rocks
-- Grafana: http://grafana.draconic-envelope-galore.beingyou.rocks
+- Portainer: http://portainer.apollo-demo.beingyou.rocks
+- Traefik: http://proxy.apollo-demo.beingyou.rocks
+- Prometheus: http://prometheus.apollo-demo.beingyou.rocks
+- Grafana: http://grafana.apollo-demo.beingyou.rocks

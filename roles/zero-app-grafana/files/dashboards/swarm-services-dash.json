@@ -14,7 +14,7 @@
       ]
     },
     "description": "Swarm stacks and services metrics",
-    "editable": true,
+    "editable": false,
     "gnetId": null,
     "graphTooltip": 0,
     "iteration": 1520585594614,

@@ -13,7 +13,7 @@
     ]
   },
   "description": "Dashboard that shows basic usage of the CIO Prometheus integrations.",
-  "editable": true,
+  "editable": false,
   "gnetId": 11359,
   "graphTooltip": 0,
   "id": 4,

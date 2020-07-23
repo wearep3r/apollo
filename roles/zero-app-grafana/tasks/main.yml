@@ -40,19 +40,6 @@
         label: "{{ config_file.path }}"
         loop_var: config_file
 
-    # - name: Copy Config Files
-    #   template:
-    #     src: "files/{{ config }}"
-    #     dest: "{{ app_dir }}/{{ config }}"
-    #     owner: root
-    #     group: root
-    #   with_items:
-    #     - dashboards
-    #     - datasources
-    #     - dashboards.yml
-    #   loop_control:
-    #     loop_var: config
-
     - name: Pull images
       docker_image:
         name: "{{ image.value }}"
@@ -71,9 +58,9 @@
           - "{{ app_dir }}/docker-compose.yml"
       register: grafana_provision
 
-    - name: "Wait for http://grafana.{{ platform_domain }} to become ready"
+    - name: "Wait for http://{{ app_domain }} to become ready"
       uri:
-        url: "http://grafana.{{ platform_domain }}/login"
+        url: "http://{{ app_domain }}/login"
         method: GET
         status_code: 200
         validate_certs: no
@@ -82,3 +69,5 @@
       retries: "{{ app_healthcheck_retries }}"
       delay: "{{ app_healthcheck_delay }}"
       when: grafana_provision.changed
+  tags:
+    - "app_grafana"

@@ -105,9 +105,9 @@ scrape_configs:
       port: 9080
 
   - job_name: 'statping'
+    bearer_token: {{ admin_password }}
     dns_sd_configs:
     - names:
-      # This A-Record is managed by Docker Swarm
       - 'tasks.statping'
       type: 'A'
       port: 8080

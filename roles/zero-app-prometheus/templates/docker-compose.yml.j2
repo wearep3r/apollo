@@ -13,6 +13,7 @@ services:
       - monitoring
     volumes: 
       - prometheus-data:/prometheus
+      - "{{ app_dir }}:/etc/prometheus"
     healthcheck:
       test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
       interval: 25s
@@ -31,7 +32,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9090"
-        traefik.frontend.rule: "Host:prometheus.{{ platform_domain }}"
+        traefik.frontend.rule: "Host:{{ app_domain }}"
         traefik.backend: "zero-app-prometheus"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
