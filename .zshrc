@@ -42,4 +42,4 @@ alias zshrc="nano ~/.zshrc"
 alias -g Z='| fzf'
 
 # MOTD
-cat /etc/motd  | /usr/local/bin/lolcat
+#cat /etc/motd

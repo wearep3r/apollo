@@ -106,6 +106,10 @@ SSL via **LetsEncrypt** is **enabled** by default.
 
 Monitoring is handled by [Prometheus](#-prometheus). A suite of metric-collectors (namely **node-exporter** and **dockerd-exporter**) will be deployed as part of the backplane. Additionally, Prometheus is configured to automatically scrape metrics from any compatible service inside an Apollo. cluster.
 
+### Logging
+
+Logging is handled by [Loki](#-loki).
+
 ### Alerting
 
 Alerting is handled by **alertmanager**. You can provide a Slack-Channel to be alerted.

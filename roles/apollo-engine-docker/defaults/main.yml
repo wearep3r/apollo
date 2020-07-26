@@ -1,6 +1,6 @@
 ---
 docker_edition: 'ce'
-docker_package: "docker-{{ docker_edition }}=5:19.03.8~3-0~{{ ansible_distribution | lower }}-{{ ansible_distribution_release }}"
+docker_package: "docker-{{ docker_edition }}=5:19.03.12~3-0~{{ ansible_distribution | lower }}-{{ ansible_distribution_release }}"
 docker_package_state: present
 docker_service_state: started
 docker_service_enabled: true

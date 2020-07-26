@@ -9,7 +9,6 @@ normal=$(tput sgr0)
 
 apollo::warn() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
 apollo::info() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
-#apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" | /usr/local/bin/lolcat >&2; }
 apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
 apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s" '\e[0;32m' '\e[0m' "$@" }
 
@@ -32,7 +31,6 @@ apollo::load() {
       --bind=\"enter:execute(cd $APOLLO_SPACES_DIR/{})\"
     "
     space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
-    #space=$(ag --noheading --nonumbers --nobreak IF0_ENVIRONMENT $APOLLO_SPACES_DIR/**/*.env | cut -d ':' -f1 - | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
     export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$space
   fi
 
@@ -81,7 +79,7 @@ apollo::load() {
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1
     
     export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
-    export APOLLO_SPACE=${APOLLO_SPACE:-$IF0_ENVIRONMENT}
+    export APOLLO_SPACE=${APOLLO_SPACE}
     export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
     PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
     export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
@@ -282,7 +280,7 @@ apollo::destroy() {
 }
 
 apollo::inspect() {
-  echo "$APOLLO_SPACE" | figlet | /usr/local/bin/lolcat
+  echo "$APOLLO_SPACE" | figlet
   echo ""
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
@@ -603,6 +601,7 @@ export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
 export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
 export APOLLO_REMOTE_DIR=${APOLLO_REMOTE_DIR:-/srv/.apollo}
+export ANSIBLE_VERBOSITY=${VERBOSITY:-${ANSIBLE_VERBOSITY:-0}}
 
 export APOLLO_FZF_DEFAULT_OPTS="
 $FZF_DEFAULT_OPTS

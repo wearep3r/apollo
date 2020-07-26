@@ -10,4 +10,4 @@ images:
 # Slack
 slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
 slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
-slack_user: "{{ lookup('env','SLACK_USER') | default('apollo', true) }}"
+slack_user: "{{ lookup('env','SLACK_USER') | default(apollo_space, true) }}"

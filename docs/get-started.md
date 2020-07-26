@@ -11,7 +11,7 @@
 - **Docker** as container runtime
 - **Docker Swarm**, **k8s** or **k3s** as orchestrator
 - Automated Distributed Storage with [Storidge](https://storidge.com/) for **Docker Swarm** and [Longhorn](https://rancher.com/docs/k3s/latest/en/storage/) for **k3s**
-- Start with 1 Ubuntu 18.04 node, scale infinitely
+- Start with 1 Ubuntu 18.04+ node, scale infinitely
 - Supports **Windows Workers** in **Docker Swarm** and **k8s** (**ATTENTION**: Limited Support, WIP & alpha!)
 - Infrastruture-as-Code modules for AWS, DigitalOcean and HETZNER Cloud
 - **Swarm only**: cool backplane (reverse-proxy, auto-ssl, monitoring, auto-backups, dashboards)!
@@ -29,6 +29,7 @@
 | [Traefik](features.md#-traefik)    | ✅    | ❌    | ❌  |
 | [Letsencrypt](features.md#-letsencrypt)    | ✅    | ❌    | ❌  |
 | [Monitoring](features.md#-monitoring)    | ✅    | ❌    | ❌  |
+| [Logging](features.md#-logging)    | ✅    | ❌    | ❌  |
 | [Alerting](features.md#-alerting)    | ✅    | ❌    | ❌  |
 | [Portainer](features.md#-portainer)  | ✅    | ❌    | ❌  |
 | [Rancher](features.md#-rancher)  | ❌    | ✅    | ✅  |

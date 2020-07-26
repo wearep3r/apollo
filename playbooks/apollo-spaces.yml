@@ -1,0 +1,44 @@
+- name: "@apollo-spaces"
+  hosts: localhost
+  become: True
+  gather_facts: False
+  tasks:
+    - name: SSH Configs
+      block:
+        - name: Create SSH config for space
+          template:
+            src: "ssh-config.j2"
+            dest: "{{ apollo_space_dir }}/.ssh/config"
+            owner: root
+            group: root
+            mode: 0755
+
+        - name: Include Space in ssh config
+          lineinfile: 
+            dest: /root/.ssh/config
+            #regexp=".*Include$" 
+            line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
+            state: present
+
+    - name: Docker Contexts
+      block:
+        - name: Creating Docker contexts directory
+          file:
+            path: "/root/.docker/contexts"
+            state: directory
+            mode: '0755'
+
+        - name: Create Docker context for space
+          template:
+            src: "docker-context.j2"
+            dest: "/root/.docker/contexts/{{ space_domain }}"
+            owner: root
+            group: root
+            mode: 0755
+
+        - name: Include Space in ssh config
+          lineinfile: 
+            dest: /root/.ssh/config
+            #regexp=".*Include$" 
+            line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
+            state: present

@@ -90,6 +90,8 @@ wireguard_post_down: false
 
 # Apollo. > PaaS > Backups
 apollo_backups_enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(1, true) }}"
+aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default(admin_user, true) }}"
+aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default(admin_password, true) }}"
 
 # Apollo. > PaaS > Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
