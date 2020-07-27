@@ -61,7 +61,7 @@
       }
     ]
   },
-  "description": "Minio dashboard - https://min.io/",
+  "description": "Minio",
   "editable": true,
   "gnetId": 10946,
   "graphTooltip": 0,
@@ -81,7 +81,7 @@
   "panels": [
     {
       "cacheTimeout": null,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Uptime of the MinIO Cluster",
       "fieldConfig": {
         "defaults": {
@@ -159,7 +159,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total online disks in MinIO Cluster",
       "fieldConfig": {
         "defaults": {
@@ -246,7 +246,7 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(245, 54, 54, 0.9)"
       ],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": null,
       "description": "Total offline disks in MinIO Cluster",
       "fieldConfig": {
@@ -332,7 +332,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total Raw Used Capacity in this MinIO Cluster",
       "fieldConfig": {
         "defaults": {
@@ -411,7 +411,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total Raw Capacity Available in this MinIO Cluster",
       "fieldConfig": {
         "defaults": {
@@ -497,7 +497,7 @@
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Number of online disks per MinIO Server",
       "fieldConfig": {
         "defaults": {
@@ -605,7 +605,7 @@
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Disk capacity used per MinIO Server",
       "fieldConfig": {
         "defaults": {
@@ -701,7 +701,7 @@
       }
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Storage capacity used per bucket in MinIO Cluster",
       "fieldConfig": {
         "defaults": {
@@ -763,7 +763,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Count of objects per bucket in MinIO Cluster",
       "fieldConfig": {
         "defaults": {
@@ -833,7 +833,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total number of s3 bytes received and sent per MinIO server instance",
       "fieldConfig": {
         "defaults": {
@@ -946,7 +946,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "Total number of bytes received and sent among all MinIO server instances",
       "fieldConfig": {
         "defaults": {
@@ -1057,7 +1057,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "decimals": null,
       "description": "Total number of active s3 requests in current MinIO instance",
       "fieldConfig": {
@@ -1187,7 +1187,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "Prometheus",
         "definition": "label_values(minio_version_info,instance)",
         "hide": 0,
         "includeAll": true,
@@ -1209,7 +1209,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "Prometheus",
         "definition": "label_values(disk_storage_total,disk)",
         "hide": 0,
         "includeAll": true,
@@ -1231,7 +1231,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "Prometheus",
         "definition": "label_values(minio_version_info,version)",
         "hide": 0,
         "includeAll": false,
@@ -1356,7 +1356,7 @@
     ]
   },
   "timezone": "",
-  "title": "Minio Overview",
+  "title": "Minio",
   "uid": "pJnnS4hZz",
   "version": 62
 }

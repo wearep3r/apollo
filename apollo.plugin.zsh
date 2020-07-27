@@ -84,6 +84,7 @@ apollo::load() {
     PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
     export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
     export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
+    export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
     export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
     export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure!"}
     export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
@@ -303,7 +304,17 @@ apollo::inspect() {
       apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-worker-$wrkr_cnt - ${worker}${normal}"
     done
 
-    
+    if [ "$APOLLO_FEDERATION_ENABLED" != "0" ];
+    then
+      apollo::echo "🟢 ${bold}Federation: ${normal}Enabled"
+      
+      for space in $(echo $APOLLO_FEDERATION_SPACES | sed "s/,/ /g")
+      do
+        apollo::echo " ∟ 🟢 ${bold}${space}${normal}"
+      done
+    else
+      apollo::warn "❌ ${bold}Federation: ${normal}Disabled"
+    fi
 
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
@@ -602,6 +613,7 @@ export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
 export APOLLO_REMOTE_DIR=${APOLLO_REMOTE_DIR:-/srv/.apollo}
 export ANSIBLE_VERBOSITY=${VERBOSITY:-${ANSIBLE_VERBOSITY:-0}}
+export APOLLO_PROVIDER=${APOLLO_PROVIDER:-generic}
 
 export APOLLO_FZF_DEFAULT_OPTS="
 $FZF_DEFAULT_OPTS

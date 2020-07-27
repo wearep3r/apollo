@@ -9,6 +9,12 @@
         owner: root
         group: root
         mode: '0644'
+    
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
 
     - name: Provision Portainer
       docker_stack:
@@ -18,6 +24,7 @@
         with_registry_auth: yes
         compose:
           - /tmp/zero-app-portainer.yml
+
       register: portainer_provision
       tags:
           - portainer

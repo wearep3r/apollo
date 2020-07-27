@@ -76,7 +76,7 @@
     # https://github.com/prometheus/prometheus/issues/5976
     - name: Correct volume permissions
       file:
-        path: /var/lib/docker/volumes/prometheus_prometheus/_data
+        path: /var/lib/docker/volumes/prometheus_prometheus/
         state: directory
         recurse: yes
         owner: "65534"

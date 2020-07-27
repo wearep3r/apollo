@@ -4,6 +4,7 @@ force_reboot: 0
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
 apollo_remote_dir: "{{ lookup('env','APOLLO_REMOTE_DIR') | default('/srv/.apollo', true) }}"
 apollo_app_dir: "{{ lookup('env','APOLLO_APP_DIR') | default(apollo_remote_dir+'/apps', true) }}"
+apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://assets.gitlab-static.net/uploads/-/system/project/avatar/17046783/logo.png', true) }}"
 
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
@@ -11,6 +12,12 @@ apollo_space: "{{ lookup('env','APOLLO_SPACE') | default(apollo_environment, tru
 
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whitelabel_name+'/.spaces/'+apollo_whitelabel_name, true) }}"
 apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default(environment_dir, true) }}"
+
+# Apollo. > Federation
+federation_enabled: "{{ lookup('env','APOLLO_FEDERATION_ENABLED') | default(0, true) }}"
+federation_username: "{{ lookup('env','APOLLO_FEDERATION_USERNAME') | default('apollo-federation', true) }}"
+federation_password: "{{ lookup('env','APOLLO_FEDERATION_PASSWORD') | default('', true) }}"
+federation_spaces: "{{ lookup('env','APOLLO_FEDERATION_SPACES').split(',') | default([''], true) }}"
 
 # Apollo. > SMTP
 zero_smtp_server: "{{ lookup('env','ZERO_SMTP_SERVER') | default('', true) }}"
@@ -98,8 +105,8 @@ backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
 apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(backplane_enabled, true) }}"
 
 # Apollo. > PaaS > Backplane > Prometheus
-prometheus_federation_enabled: "{{ lookup('env','PROMETHEUS_FEDERATION_ENABLED') | default(0, true) }}"
-prometheus_federation_spaces: "{{ lookup('env','PROMETHEUS_FEDERATION_SPACES') | default('', true) }}"
+prometheus_federation_enabled: "{{ lookup('env','PROMETHEUS_FEDERATION_ENABLED') | default(federation_enabled, true) }}"
+prometheus_federation_spaces: "{{ lookup('env','PROMETHEUS_FEDERATION_SPACES') | default(federation_spaces, true) }}"
 
 # Apollo. > PaaS > Apps
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"

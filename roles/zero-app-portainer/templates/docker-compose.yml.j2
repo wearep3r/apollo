@@ -21,7 +21,7 @@ services:
 
   portainer:
     image: "{{ images.portainer }}"
-    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo 'https://www.peter.saarland/wp-content/uploads/2020/02/peter-saarland-devops-amp-ios.png' --no-analytics"
+    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo '{{ apollo_logo }}' --no-analytics"
     environment:
       - AGENT_CLUSTER_ADDR=tasks.portainer-agent
       - CAP_HOST_MANAGEMENT=1
