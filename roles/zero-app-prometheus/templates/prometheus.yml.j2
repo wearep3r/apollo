@@ -128,6 +128,9 @@ scrape_configs:
     scrape_timeout: 7s
     honor_labels: true
     metrics_path: '/federate'
+    basic_auth:
+      username: munfred
+      password: D7psPWqVVT7toJf
     params:
       'match[]':
         - '{job="prometheus"}'

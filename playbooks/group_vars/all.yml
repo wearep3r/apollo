@@ -14,10 +14,11 @@ environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whit
 apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default(environment_dir, true) }}"
 
 # Apollo. > Federation
-federation_enabled: "{{ lookup('env','APOLLO_FEDERATION_ENABLED') | default(0, true) }}"
-federation_username: "{{ lookup('env','APOLLO_FEDERATION_USERNAME') | default('apollo-federation', true) }}"
-federation_password: "{{ lookup('env','APOLLO_FEDERATION_PASSWORD') | default('', true) }}"
-federation_spaces: "{{ lookup('env','APOLLO_FEDERATION_SPACES').split(',') | default([''], true) }}"
+apollo_federation_dir: "{{ lookup('env','APOLLO_FEDERATION_DIR') | default('/tmp/federation', true) }}"
+apollo_federation_enabled: "{{ lookup('env','APOLLO_FEDERATION_ENABLED') | default(0, true) }}"
+apollo_federation_username: "{{ lookup('env','APOLLO_FEDERATION_USERNAME') | default('apollo-federation', true) }}"
+apollo_federation_password: "{{ lookup('env','APOLLO_FEDERATION_PASSWORD') | default('', true) }}"
+apollo_federation_spaces: "{{ lookup('env','APOLLO_FEDERATION_SPACES').split(',') | default([''], true) }}"
 
 # Apollo. > SMTP
 zero_smtp_server: "{{ lookup('env','ZERO_SMTP_SERVER') | default('', true) }}"

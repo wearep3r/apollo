@@ -198,6 +198,7 @@ apollo::deploy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
     apollo::echo "Deploying Space '$APOLLO_SPACE'"
+    apollo::echo "VERBOSITY: '$ANSIBLE_VERBOSITY'"
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
@@ -211,6 +212,7 @@ apollo::deploy() {
         apollo::echo "Deploying Apps"
 
         apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
           cd /apollo
           ansible-playbook provision.yml --flush-cache --tags "provision_apps,always" >&5
         )
@@ -223,6 +225,7 @@ apollo::deploy() {
         apollo::echo "Deploying Backplane App $2"
 
         apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
           cd /apollo
           ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
         )
@@ -231,6 +234,7 @@ apollo::deploy() {
         apollo::echo "Deploying Backplane"
 
         apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
           cd /apollo
           ansible-playbook provision.yml --flush-cache --tags "provision_backplane,always" >&5
         )
@@ -240,6 +244,7 @@ apollo::deploy() {
       apollo::terraform_apply
 
       apollo_status=$(
+        export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
         cd /apollo
         ansible-playbook provision.yml --flush-cache >&5
       )
