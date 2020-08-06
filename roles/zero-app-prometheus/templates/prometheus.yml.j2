@@ -122,7 +122,7 @@ scrape_configs:
       port: 9252
 
 {% if prometheus_federation_enabled|bool %}
-{% for space in prometheus_federation_spaces %}
+{% for space in apollo_federation_spaces %}
   - job_name: 'federate-{{ space.apollo_space }}'
     scrape_interval: 15s
     scrape_timeout: 7s
