@@ -12,6 +12,7 @@
 - name: Creating storidge_nodes Group
   group_by:
     key: storidge_nodes
+  changed_when: False
 
 - name: Checking if iscsi-initiatorname backup exists
   stat:

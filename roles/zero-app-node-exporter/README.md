@@ -6,7 +6,7 @@ A brief description of the role goes here.
 Requirements
 ------------
 
-A working installation of [zero](https://gitlab.com/peter.saarland/zero)
+A working installation of [zero](https://gitlab.com/p3r.one/apollo)
 
 Role Variables
 --------------

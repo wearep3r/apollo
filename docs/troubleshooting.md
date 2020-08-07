@@ -1,5 +1,31 @@
 # Troubleshooting
 
+## Storidge / CIO Cluster migration / restore
+
+To properly restore or migrate a Storidge cluster from old data, follow these steps:
+
+- make sure you have an empty new cluster
+- create necessary docker volumes with `cio volume create $NAME -p SNAPSHOT`
+- copy the backup-data to the new `/cio/volumes/...` directories
+
+```bash
+cio volume create traefik_traefik-data -p SNAPSHOT 
+cio volume create loki_loki-data -p SNAPSHOT 
+cio volume create prometheus_victoria-data -p SNAPSHOT 
+cio volume create prometheus_prometheus-data -p SNAPSHOT 
+cio volume create portainer_portainer-data -p SNAPSHOT 
+```
+
+### Reset a cluster
+
+run `cioctl node clean --force` on each node. If that fails for some reason, try:
+
+```bash
+systemctl disable cio
+rm /etc/storidge/config/default.cfg
+reboot
+```
+
 ## Docker Upgrades
 
 Updating active Swarm clusters can lead to problems during deployment where the Swarm seems to be broken. A possible indicator is a log-message like this:

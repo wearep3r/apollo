@@ -5,7 +5,7 @@ galaxy_info:
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
-  issue_tracker_url: https://gitlab.com/peter.saarland/zero/-/issues
+  issue_tracker_url: https://gitlab.com/p3r.one/apollo/-/issues
 
   # Choose a valid license ID from https://spdx.org - some suggested licenses:
   # - BSD-3-Clause (default)

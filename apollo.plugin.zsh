@@ -272,7 +272,6 @@ apollo::destroy() {
         cd /apollo/modules/$APOLLO_PROVIDER
         terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
         rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${APOLLO_SPACE_DIR}/nodes.apollo.env
-
       )
     else
       apollo_status=$(
