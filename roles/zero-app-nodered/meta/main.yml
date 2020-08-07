@@ -1,11 +1,11 @@
 galaxy_info:
   author: Fabian Peter
-  description: Installs Traefik on a Zero Cluster
-  company: Peter.SAARLAND
+  description: apollo. Node-Red
+  company: your company (optional)
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
-  issue_tracker_url: https://gitlab.com/p3r.one/apollo/-/issues
+  # issue_tracker_url: http://example.com/issue/tracker
 
   # Choose a valid license ID from https://spdx.org - some suggested licenses:
   # - BSD-3-Clause (default)
@@ -14,9 +14,9 @@ galaxy_info:
   # - GPL-3.0-only
   # - Apache-2.0
   # - CC-BY-4.0
-  license: MIT
+  license: license (GPL-2.0-or-later, MIT, etc)
 
-  min_ansible_version: 2.9
+  min_ansible_version: 2.1
 
   # If this a Container Enabled role, provide the minimum Ansible Container version.
   # min_ansible_container_version:

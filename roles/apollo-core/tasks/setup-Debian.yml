@@ -1,11 +1,11 @@
 ---
-- name: Creating Apollo. remote directory
+- name: Creating apollo. remote directory
   file:
     path: "{{ apollo_remote_dir }}"
     state: directory
     mode: '0755'
 
-- name: Creating Apollo. apps directory
+- name: Creating apollo. apps directory
   file:
     path: "{{ apollo_app_dir }}"
     state: directory
@@ -23,7 +23,7 @@
     warn: false
   changed_when: false
   
-- name: Setting Apollo. motd
+- name: Setting apollo. motd
   template:
     src: "motd.j2"
     dest: "/etc/motd"
@@ -33,19 +33,22 @@
   lineinfile: 
     dest=/etc/hosts 
     regexp='.*{{ item }}$' 
-    line="{{ hostvars[item]['vpn_ip'] }} {{ hostvars[item]['ansible_hostname']}}" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname'] }}" 
     state=present
-  when: hostvars[item]['vpn_ip']['ipv4']['address'] is defined
+  #when: hostvars[item]['vpn_ip']['ipv4']['address'] is defined
+  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
 
 - name: nodes.* A-Record
   lineinfile: 
     dest=/etc/hosts 
     regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['vpn_ip'] }} nodes.{{ platform_domain }}" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.{{ platform_domain }}" 
     state=present
-  when: hostvars[item]['vpn_ip'] is defined
+  #when: hostvars[item]['vpn_ip'] is defined
+  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
+  #line="{{ hostvars[item]['vpn_ip'] }} {{ hostvars[item]['ansible_hostname']}}" 
 
 # Deprecated
 - name: zero.nodes A-Record
@@ -54,17 +57,20 @@
     regexp=".*logs.{{ platform_domain }}$" 
     line="{{ hostvars[item]['vpn_ip'] }} zero.nodes" 
     state=present
-  when: hostvars[item]['vpn_ip'] is defined
+  #when: hostvars[item]['vpn_ip'] is defined
+  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
 
 - name: nodes.apollo A-Record
   lineinfile: 
     dest=/etc/hosts 
     regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['vpn_ip'] }} nodes.apollo" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.apollo" 
     state=present
-  when: hostvars[item]['vpn_ip'] is defined
+  #when: hostvars[item]['vpn_ip'] is defined
+  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
   with_items: "{{ groups['all'] }}"
+  #line="{{ hostvars[item]['vpn_ip'] }} nodes.apollo" 
 
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
@@ -110,22 +116,6 @@
 #     dest: /etc/sudoers 
 #     #state: absent
 #     backrefs: yes
-
-# https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
-- name: Fixing IBM Issue 1
-  lineinfile:
-    path: /boot/grub/menu.lst
-    regexp: '# groot=LABEL=cloudimg-rootfs'
-    line: '# groot=(hd0)'
-    owner: root
-    group: root
-    mode: '0644'
-  when: ibm_enabled|bool
-  register: ibm_fix
-
-- name: Fixing IBM Issue 2
-  command: update-grub-legacy-ec2
-  when: ibm_enabled|bool and ibm_fix.changed
 
 - name: Unlocking apt
   command: apt update

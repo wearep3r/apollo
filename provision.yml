@@ -3,6 +3,17 @@
   import_playbook: playbooks/aws.yml
   when: apollo_provider == "aws"
 
+- name: "@apollo-spaces"
+  import_playbook: playbooks/apollo-spaces.yml
+  tags:
+    - print_action
+
+- name: "@apollo-federation"
+  import_playbook: playbooks/apollo-federation.yml
+  tags:
+    - print_action
+  when: apollo_federation_enabled|bool
+
 - name: "@apollo-network"
   import_playbook: playbooks/apollo-network.yml
   tags:

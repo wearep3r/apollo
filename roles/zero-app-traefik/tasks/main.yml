@@ -32,37 +32,3 @@
       until: _result.status == 200
       retries: 30 # retry X times  
       delay: 10 # pause for X sec b/w each call 
-
-    # - name: Get Container ID
-    #   shell: docker ps -f name=traefik_traefik --format "{{ '{{' }}.ID{{ '}}'}}"
-    #   register: traefik_app
-
-    # - name: Debug
-    #   debug:
-    #     var: traefik_app
-
-    # - name: add container to inventory
-    #   add_host:
-    #     name: "{{ traefik_app.stdout }}"
-    #     ansible_connection: docker
-    #   changed_when: false
-    #   failed_when: traefik_app.stdout == ""        
-
-    # - name: Remove Stack File
-    #   file:
-    #     path: /tmp/zero-app-traefik.yml
-    #     state: absent
-  rescue:
-    - name: Teardown Traefik
-      docker_stack:
-          absent_retries: 5
-          absent_retries_interval: 10
-          state: absent
-          name: traefik
-      register: traefik_traefik
-      tags:
-          - traefik 
-    # - name: Remove Stack File
-    #   file:
-    #     path: /tmp/zero-app-traefik.yml
-    #     state: absent

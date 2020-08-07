@@ -34,12 +34,6 @@ services:
       --rest 
       --retry 
       --configFile=/config/traefik.toml
-    environment:
-      - APOLLO_VERSION=1
-{% if cloudflare_enabled|bool and traefik_dnschallenge_provider == "cloudflare" %}
-      - CF_API_EMAIL="{{ cloudflare_api_email }}"
-      - CF_API_KEY="{{ cloudflare_api_key }}"
-{% endif %}
     networks:
       - proxy
 {% for network in traefik_extra_networks %}

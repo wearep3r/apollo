@@ -2,7 +2,7 @@
 
 ## Network
 
-Apollo. handles networking and ingress by spanning a peer-to-peer Wireguard network between nodes and limiting access to the cluster through custom firewalling.
+apollo. handles networking and ingress by spanning a peer-to-peer Wireguard network between nodes and limiting access to the cluster through custom firewalling.
 
 | Port | Description | Access | Condition |
 |------------|-------|----------|-----|
@@ -17,7 +17,7 @@ Apollo. handles networking and ingress by spanning a peer-to-peer Wireguard netw
 
 ### Wireguard
 
-Apollo. uses [Wireguard](https://www.wireguard.com/) to establish secure networking between nodes in a cluster.
+apollo. uses [Wireguard](https://www.wireguard.com/) to establish secure networking between nodes in a cluster.
 
 ## Engine
 
@@ -27,11 +27,11 @@ Apollo. uses [Wireguard](https://www.wireguard.com/) to establish secure network
 
 ### Docker
 
-[Docker](https://www.docker.com/) is the default **Container Engine** in Apollo.
+[Docker](https://www.docker.com/) is the default **Container Engine** in apollo.
 
 ## Orchestrator
 
-Apollo. uses a container orchestrator to run apps and workloads. Apollo. supports **Docker Swarm**, **k3s** and **k8s**.
+apollo. uses a container orchestrator to run apps and workloads. apollo. supports **Docker Swarm**, **k3s** and **k8s**.
 
 | Configuration Variables | Options | Default |
 |------------|-------|-------|
@@ -39,7 +39,7 @@ Apollo. uses a container orchestrator to run apps and workloads. Apollo. support
 
 ### Docker Swarm
 
-[Docker Swarm](https://docs.docker.com/engine/swarm/) is the default **Container Orchestrator** in Apollo.
+[Docker Swarm](https://docs.docker.com/engine/swarm/) is the default **Container Orchestrator** in apollo.
 
 ### k3s
 
@@ -53,11 +53,11 @@ Apollo. uses a container orchestrator to run apps and workloads. Apollo. support
 
 ### Generic
 
-By default, Apollo. uses **local storage** (i.e. the default [Docker Storage Driver](https://docs.docker.com/storage/storagedriver/select-storage-driver/) which is **Overlay 2**). This is suitable for single-node clusters, but might not be sufficient for high-available stateful workloads on multi-node clusters.
+By default, apollo. uses **local storage** (i.e. the default [Docker Storage Driver](https://docs.docker.com/storage/storagedriver/select-storage-driver/) which is **Overlay 2**). This is suitable for single-node clusters, but might not be sufficient for high-available stateful workloads on multi-node clusters.
 
 ### Storidge
 
-Apollo. can be used to deploy Storidge clusters with ease. By default, Apollo. uses the **Community Edition** of Storidge which is limited to **5 Nodes** and **1 TB** of provisioned storage.
+apollo. can be used to deploy Storidge clusters with ease. By default, apollo. uses the **Community Edition** of Storidge which is limited to **5 Nodes** and **1 TB** of provisioned storage.
 
 Read more on Storidge's [official docs](https://docs.storidge.com/introduction/how_it_works.html)
 
@@ -75,7 +75,7 @@ Read more on Storidge's [official docs](https://docs.storidge.com/introduction/h
 
 ## Backplane
 
-Apollo. features a pre-configured **Backplane** composed of various services that help with day-to-day operations, monitoring, visibility and alerting.
+apollo. features a pre-configured **Backplane** composed of various services that help with day-to-day operations, monitoring, visibility and alerting.
 
 As outlined in the [Feature Matrix](getting-started.md#-feature-matrix), backplane services are not compatible with every orchestrator.
 
@@ -85,7 +85,7 @@ As outlined in the [Feature Matrix](getting-started.md#-feature-matrix), backpla
 
 ### Traefik
 
-[Traefik](https://docs.traefik.io/v1.7/) is the **reverse proxy** of choice in Apollo. and handles all HTTP/HTTPS ingress traffic.
+[Traefik](https://docs.traefik.io/v1.7/) is the **reverse proxy** of choice in apollo. and handles all HTTP/HTTPS ingress traffic.
 
 | Requirement | Value  |
 |------------|-------|
@@ -98,13 +98,17 @@ As outlined in the [Feature Matrix](getting-started.md#-feature-matrix), backpla
 | LETSENCRYPT_ENABLED    | 1,0 | 1 |
 | LETSENCRYPT_MAIL    | you@example.com | le@$APOLLO_SPACE_DOMAIN |
 
-[Traefik](#-traefik) can automatically obtain SSL certificates for services and apps in your Apollo. cluster. Enable LetsEncrypt and provide a valid e-mail address (this is a requirement by Traefik) for registration with LetsEncrypt. That's it.
+[Traefik](#-traefik) can automatically obtain SSL certificates for services and apps in your apollo. cluster. Enable LetsEncrypt and provide a valid e-mail address (this is a requirement by Traefik) for registration with LetsEncrypt. That's it.
 
 SSL via **LetsEncrypt** is **enabled** by default.
 
 ### Monitoring
 
-Monitoring is handled by [Prometheus](#-prometheus). A suite of metric-collectors (namely **node-exporter** and **dockerd-exporter**) will be deployed as part of the backplane. Additionally, Prometheus is configured to automatically scrape metrics from any compatible service inside an Apollo. cluster.
+Monitoring is handled by [Prometheus](#-prometheus). A suite of metric-collectors (namely **node-exporter** and **dockerd-exporter**) will be deployed as part of the backplane. Additionally, Prometheus is configured to automatically scrape metrics from any compatible service inside an apollo. cluster.
+
+### Logging
+
+Logging is handled by [Loki](#-loki).
 
 ### Alerting
 
@@ -138,17 +142,17 @@ Alerting is handled by **alertmanager**. You can provide a Slack-Channel to be a
 
 ### Garbage Collection
 
-To keep the Container Engine clean, Apollo. features a garbage-collection mechanism that cleans unused containers, networks and volumes on all nodes every 24h.
+To keep the Container Engine clean, apollo. features a garbage-collection mechanism that cleans unused containers, networks and volumes on all nodes every 24h.
 
 ### Loki
 
-[Loki](https://grafana.com/oss/loki/) is used to gather logs from all nodes and Docker-based services inside the Apollo. cluster.
+[Loki](https://grafana.com/oss/loki/) is used to gather logs from all nodes and Docker-based services inside the apollo. cluster.
 
 Logs can be queried from within [Grafana](#-grafana).
 
 ### Prometheus
 
-[Prometheus](https://prometheus.io/) is used to gather metrics inside the Apollo. cluster.
+[Prometheus](https://prometheus.io/) is used to gather metrics inside the apollo. cluster.
 
 Prometheus gathers lots of metrics by default but can also be used to push own metrics.
 
@@ -162,7 +166,7 @@ Prometheus gathers lots of metrics by default but can also be used to push own m
 | User    | $APOLLO_ADMIN_USER |
 | Password    | $APOLLO_ADMIN_PASSWORD |
 
-[Grafana](https://grafana.com/grafana/) is the central analytics platform on an Apollo. cluster. It comes with pre-configured dashboards for all default-metrics as well as an interface to stream logs (syslogs, container-logs, service-logs, custom logs, ...) inside the **Explore** section - powered by [Loki](#-loki)
+[Grafana](https://grafana.com/grafana/) is the central analytics platform on an apollo. cluster. It comes with pre-configured dashboards for all default-metrics as well as an interface to stream logs (syslogs, container-logs, service-logs, custom logs, ...) inside the **Explore** section - powered by [Loki](#-loki)
 
 ### Backups
 
@@ -176,7 +180,7 @@ Automated backups to S3 are possible through [lake0](https://gitlab.com/peter.sa
 | RESTIC_FORGET_ARGS    | - | `--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1` |
 | RESTIC_JOB_ARGS    | - | `--exclude minio_minio-data` |
 
-`$S3_ENDPOINT` might be a [Minio](#-minio) app inside the same or an external Apollo. cluster or an endpoint at AWS, Wasabi, whatever.
+`$S3_ENDPOINT` might be a [Minio](#-minio) app inside the same or an external apollo. cluster or an endpoint at AWS, Wasabi, whatever.
 
 Please refere to the [restic docs](https://restic.readthedocs.io/en/latest/) for further information.
 

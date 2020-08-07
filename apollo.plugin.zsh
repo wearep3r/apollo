@@ -9,7 +9,6 @@ normal=$(tput sgr0)
 
 apollo::warn() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
 apollo::info() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
-#apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" | /usr/local/bin/lolcat >&2; }
 apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
 apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s" '\e[0;32m' '\e[0m' "$@" }
 
@@ -32,7 +31,6 @@ apollo::load() {
       --bind=\"enter:execute(cd $APOLLO_SPACES_DIR/{})\"
     "
     space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
-    #space=$(ag --noheading --nonumbers --nobreak IF0_ENVIRONMENT $APOLLO_SPACES_DIR/**/*.env | cut -d ':' -f1 - | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
     export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$space
   fi
 
@@ -81,11 +79,12 @@ apollo::load() {
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1
     
     export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
-    export APOLLO_SPACE=${APOLLO_SPACE:-$IF0_ENVIRONMENT}
+    export APOLLO_SPACE=${APOLLO_SPACE}
     export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
     PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
     export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
     export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
+    export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
     export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
     export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure!"}
     export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
@@ -199,6 +198,7 @@ apollo::deploy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
     apollo::echo "Deploying Space '$APOLLO_SPACE'"
+    apollo::echo "VERBOSITY: '$ANSIBLE_VERBOSITY'"
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
@@ -212,6 +212,7 @@ apollo::deploy() {
         apollo::echo "Deploying Apps"
 
         apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
           cd /apollo
           ansible-playbook provision.yml --flush-cache --tags "provision_apps,always" >&5
         )
@@ -224,6 +225,7 @@ apollo::deploy() {
         apollo::echo "Deploying Backplane App $2"
 
         apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
           cd /apollo
           ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
         )
@@ -232,6 +234,7 @@ apollo::deploy() {
         apollo::echo "Deploying Backplane"
 
         apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
           cd /apollo
           ansible-playbook provision.yml --flush-cache --tags "provision_backplane,always" >&5
         )
@@ -241,6 +244,7 @@ apollo::deploy() {
       apollo::terraform_apply
 
       apollo_status=$(
+        export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
         cd /apollo
         ansible-playbook provision.yml --flush-cache >&5
       )
@@ -268,7 +272,6 @@ apollo::destroy() {
         cd /apollo/modules/$APOLLO_PROVIDER
         terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
         rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${APOLLO_SPACE_DIR}/nodes.apollo.env
-
       )
     else
       apollo_status=$(
@@ -282,7 +285,7 @@ apollo::destroy() {
 }
 
 apollo::inspect() {
-  echo "$APOLLO_SPACE" | figlet | /usr/local/bin/lolcat
+  echo "$APOLLO_SPACE" | figlet
   echo ""
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
@@ -305,7 +308,17 @@ apollo::inspect() {
       apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-worker-$wrkr_cnt - ${worker}${normal}"
     done
 
-    
+    if [ "$APOLLO_FEDERATION_ENABLED" != "0" ];
+    then
+      apollo::echo "🟢 ${bold}Federation: ${normal}Enabled"
+      
+      for space in $(echo $APOLLO_FEDERATION_SPACES | sed "s/,/ /g")
+      do
+        apollo::echo " ∟ 🟢 ${bold}${space}${normal}"
+      done
+    else
+      apollo::warn "❌ ${bold}Federation: ${normal}Disabled"
+    fi
 
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
@@ -603,6 +616,8 @@ export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
 export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
 export APOLLO_REMOTE_DIR=${APOLLO_REMOTE_DIR:-/srv/.apollo}
+export ANSIBLE_VERBOSITY=${VERBOSITY:-${ANSIBLE_VERBOSITY:-0}}
+export APOLLO_PROVIDER=${APOLLO_PROVIDER:-generic}
 
 export APOLLO_FZF_DEFAULT_OPTS="
 $FZF_DEFAULT_OPTS

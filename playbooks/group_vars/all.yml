@@ -1,9 +1,10 @@
 force_reboot: 0
 
-# Apollo.
+# apollo.
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
 apollo_remote_dir: "{{ lookup('env','APOLLO_REMOTE_DIR') | default('/srv/.apollo', true) }}"
 apollo_app_dir: "{{ lookup('env','APOLLO_APP_DIR') | default(apollo_remote_dir+'/apps', true) }}"
+apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://assets.gitlab-static.net/uploads/-/system/project/avatar/17046783/logo.png', true) }}"
 
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
@@ -12,7 +13,14 @@ apollo_space: "{{ lookup('env','APOLLO_SPACE') | default(apollo_environment, tru
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whitelabel_name+'/.spaces/'+apollo_whitelabel_name, true) }}"
 apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default(environment_dir, true) }}"
 
-# Apollo. > SMTP
+# apollo. > Federation
+apollo_federation_dir: "{{ lookup('env','APOLLO_FEDERATION_DIR') | default('/tmp/federation', true) }}"
+apollo_federation_enabled: "{{ lookup('env','APOLLO_FEDERATION_ENABLED') | default(0, true) }}"
+apollo_federation_username: "{{ lookup('env','APOLLO_FEDERATION_USERNAME') | default('apollo-federation', true) }}"
+apollo_federation_password: "{{ lookup('env','APOLLO_FEDERATION_PASSWORD') | default('', true) }}"
+apollo_federation_spaces: "{{ lookup('env','APOLLO_FEDERATION_SPACES').split(',') | default([''], true) }}"
+
+# apollo. > SMTP
 zero_smtp_server: "{{ lookup('env','ZERO_SMTP_SERVER') | default('', true) }}"
 apollo_smtp_server: "{{ lookup('env','APOLLO_SMTP_SERVER') | default(zero_smtp_server, true) }}"
 zero_smtp_username: "{{ lookup('env','ZERO_SMTP_USERNAME') | default('', true) }}"
@@ -22,7 +30,7 @@ apollo_smtp_password: "{{ lookup('env','APOLLO_SMTP_PASSWORD') | default(zero_sm
 zero_smtp_port: "{{ lookup('env','ZERO_SMTP_PORT') | default('587', true) }}"
 apollo_smtp_port: "{{ lookup('env','APOLLO_SMTP_PORT') | default(zero_smtp_port, true) }}"
 
-# Apollo. > DNS
+# apollo. > DNS
 # REASONING
 # June 22nd, 2020: Digitalocean VMs can't resolve github.com
 # curl github.com
@@ -30,7 +38,7 @@ apollo_smtp_port: "{{ lookup('env','APOLLO_SMTP_PORT') | default(zero_smtp_port,
 appollo_custom_resolvers: "{{ lookup('env','APPOLLO_CUSTOM_RESOLVERS').split(',') | default([], true) }}"
 apollo_custom_resolvers: "{{ lookup('env','APOLLO_CUSTOM_RESOLVERS').split(',') | default(appollo_custom_resolvers, true) }}"
 
-# Apollo. > IaaS
+# apollo. > IaaS
 worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
 zero_private_iface: "{{ lookup('env','ZERO_PRIVATE_INTERFACE') | default('eth0', true) }}"
 private_iface: "{{ lookup('env','APOLLO_PRIVATE_INTERFACE') | default(zero_private_iface, true) }}"
@@ -39,7 +47,7 @@ public_iface: "{{ lookup('env','APOLLO_PUBLIC_INTERFACE') | default(zero_public_
 zero_provider: "{{ lookup('env','ZERO_PROVIDER') | default('generic', true) }}"
 apollo_provider: "{{ lookup('env','APOLLO_PROVIDER') | default(zero_provider, true) }}"
 
-# Apollo. > PaaS
+# apollo. > PaaS
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
 become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
 ansible_python_interpreter: '/usr/bin/python3'
@@ -60,23 +68,24 @@ admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(zero_admin_p
 zero_admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$KjJMrwd7ZQbn/6p0uQvXYusZoR6uGNgEgvPfAzhmJ12T4bPFal/se', true) }}"
 admin_password_hash: "{{ lookup('env','APOLLO_ADMIN_PASSWORD_HASH') | default(zero_admin_password_hash, true) }}"
 
-# Apollo. > PaaS > Engine
+# apollo. > PaaS > Engine
 zero_engine: "{{ lookup('env','ZERO_ENGINE') | default('docker', true) }}"
 apollo_engine: "{{ lookup('env','APOLLO_ENGINE') | default(zero_engine, true) }}"
 
-# Apollo. > PaaS > Orchestrator
+# apollo. > PaaS > Orchestrator
 zero_orchestrator: "{{ lookup('env','ZERO_ORCHESTRATOR') | default('swarm', true) }}"
 apollo_orchestrator: "{{ lookup('env','APOLLO_ORCHESTRATOR') | default(zero_orchestrator, true) }}"
 
-# Apollo. > PaaS > Data
+# apollo. > PaaS > Data
 zero_data: "{{ lookup('env','ZERO_DATA') | default('generic', true) }}"
 apollo_data: "{{ lookup('env','APOLLO_DATA') | default(zero_data, true) }}"
 
-# Apollo. > PaaS > Security
+# apollo. > PaaS > Security
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(1, true) }}"
-letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL')  | default("le@"+space_domain, true) }}"
+letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL')  | default('le@'+space_domain, true) }}"
 
-# Apollo. > PaaS > Network
+# apollo. > PaaS > Network > Wireguard
+apollo_wireguard_enabled: "{{ lookup('env','APOLLO_WIREGUARD_ENABLED') | default(0, true) }}"
 wireguard_port: "5888"
 wireguard_path: "/etc/wireguard"
 wireguard_network_name: "private"
@@ -88,23 +97,28 @@ wireguard_additional_peers: false
 wireguard_post_up: false
 wireguard_post_down: false
 
-# Apollo. > PaaS > Backups
+# apollo. > PaaS > Backups
 apollo_backups_enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(1, true) }}"
+aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default(admin_user, true) }}"
+aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default(admin_password, true) }}"
 
-# Apollo. > PaaS > Backplane
+# apollo. > PaaS > Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
 apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(backplane_enabled, true) }}"
 
-# Apollo. > PaaS > Apps
+# apollo. > PaaS > Backplane > Prometheus
+
+
+# apollo. > PaaS > Apps
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
 apollo_apps: "{{ lookup('env','APOLLO_APPS').split(',') | default(zero_apps, true) }}"
 app_healthcheck_retries: "{{ lookup('env','APOLLO_APP_HEALTHCHECK_RETRIES') | default(30, true) }}"
 app_healthcheck_delay: "{{ lookup('env','APOLLO_APP_HEALTHCHECK_DELAY') | default(30, true) }}"
 
-# Apollo. > PaaS > Apps > Statping
+# apollo. > PaaS > Apps > Statping
 statping_domain: "{{ lookup('env','STATPING_DOMAIN') | default('statping.'+platform_domain, true) }}"
 
-# Apollo. > PaaS > Apps > GitLab Runner
+# apollo. > PaaS > Apps > GitLab Runner
 runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(0, true) }}"
 apollo_runner_enabled: "{{ lookup('env','APOLLO_RUNNER_ENABLED') | default(runner_enabled, true) }}"
 runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(1, true) }}"
@@ -121,10 +135,10 @@ gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
 gitlab_runner_coordinator_url: "{{ lookup('env','GITLAB_RUNNER_COORDINATOR_URL') | default('https://gitlab.com', true) }}"
     
-# Apollo. > PaaS > Apps > GitLab
+# apollo. > PaaS > Apps > GitLab
 gitlab_shared_runners_token: "{{ lookup('env','GITLAB_SHARED_RUNNERS_TOKEN') | default('z7e3r2o0', true) }}"
 
-# Apollo. > PaaS > Integrations > GitLab
+# apollo. > PaaS > Integrations > GitLab
 gl_token: "{{ lookup('env','GL_TOKEN') }}"
 registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
 registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
@@ -153,7 +167,7 @@ apollo_deprecated_vars:
     - zero_admin_user
     - zero_admin_password_hash
 
-# Apollo. > Misc
+# apollo. > Misc
 lazydocker_url: "https://github.com/jesseduffield/lazydocker/releases/download/v0.8/lazydocker_0.8_{{ ansible_system }}_{{ ansible_architecture }}.tar.gz"
 # # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
 kernel_version: 0

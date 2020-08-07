@@ -120,3 +120,26 @@ scrape_configs:
       - 'nodes.apollo'
       type: 'A'
       port: 9252
+
+{% if prometheus_federation_enabled|bool %}
+{% for space in apollo_federation_spaces %}
+  - job_name: 'federate-{{ space.apollo_space }}'
+    scrape_interval: 15s
+    scrape_timeout: 7s
+    honor_labels: true
+    metrics_path: '/federate'
+    basic_auth:
+      username: munfred
+      password: D7psPWqVVT7toJf
+    params:
+      'match[]':
+        - '{job="prometheus"}'
+        - '{__name__=~"job:.*"}'
+    static_configs:
+      - targets:
+      - '{{ space.prometheus_domain }}'
+        labels:
+          apollo_space: {{ space.apollo_space }}
+{% endfor %}
+
+{% endif %}
