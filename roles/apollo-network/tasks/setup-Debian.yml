@@ -194,3 +194,14 @@
         state: restarted
       when: config.changed
   when: apollo_wireguard_enabled|bool
+
+- name: Configure hcloud networking
+  block:
+    - name: Set network config
+      copy:
+        src: templates/hcloud-network.cfg.j2
+        dest: /etc/network/interfaces.d/61-apollo-hcloud-network.cfg
+      register: hcloud_network_config
+      notify: restart network
+  when: apollo_provider == "hcloud"
+

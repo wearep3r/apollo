@@ -255,6 +255,65 @@ apollo::deploy() {
   fi
 }
 
+apollo::maintenance() {
+  if [[ ! -z "$APOLLO_SPACE" ]];
+  then
+    apollo::echo "Starting Maintenance"
+    apollo::echo "VERBOSITY: '$ANSIBLE_VERBOSITY'"
+
+    # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
+    exec 5>&1
+
+    if [ "$1" = "apps" ];
+    then
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Deploying App $2"
+      else
+        apollo::echo "Deploying Apps"
+
+        apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "provision_apps,always" >&5
+        )
+        echo $apollo_status
+      fi
+    elif [ "$1" = "backplane" ];
+    then
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Deploying Backplane App $2"
+
+        apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
+        )
+        echo $apollo_status
+      else
+        apollo::echo "Deploying Backplane"
+
+        apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "provision_backplane,always" >&5
+        )
+        echo $apollo_status
+      fi
+    else
+      apollo_status=$(
+        export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+        cd /apollo
+        ansible-playbook playbooks/maintenance.yml --flush-cache >&5
+      )
+      echo $apollo_status
+    fi
+  else
+    apollo::echo "No Space selected. Use \`load\`"
+  fi
+}
+
 apollo::destroy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
@@ -285,8 +344,6 @@ apollo::destroy() {
 }
 
 apollo::inspect() {
-  echo "$APOLLO_SPACE" | figlet
-  echo ""
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
     apollo::echo "🚀 ${bold}Space: ${normal}$APOLLO_SPACE"
@@ -300,12 +357,14 @@ apollo::inspect() {
     for manager in $(echo $APOLLO_NODES_MANAGER | sed "s/,/ /g")
     do
       apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-manager-$mngr_cnt - ${manager}${normal}"
+      mngr_cnt=$((mngr_cnt+1))
     done
 
     wrkr_cnt=0
     for worker in $(echo $APOLLO_NODES_WORKER | sed "s/,/ /g")
     do
       apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-worker-$wrkr_cnt - ${worker}${normal}"
+      wrkr_cnt=$((wrkr_cnt+1))
     done
 
     if [ "$APOLLO_FEDERATION_ENABLED" != "0" ];
@@ -531,7 +590,7 @@ apollo::init() {
 
     read APOLLO_BASE_DOMAIN
   fi 
-  SPACE_INFRASTRUCTURE+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
+  SPACE_CONFIG+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
 
   # LetsEncrypt
   apollo::echo_n "${bold}Enable LetsEncrypt? ${normal}[y/N] "
@@ -572,14 +631,40 @@ apollo::init() {
   apollo::load .
 }
 
-
 apollo::enter() {
+  IFS=',' read -ra apollo_nodes_manager <<< "$APOLLO_NODES_MANAGER"
+  IFS=',' read -ra apollo_nodes_worker <<< "$APOLLO_NODES_WORKER"
+  
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "Entering Space '$APOLLO_SPACE'"
-    ssh -l root -i $PWD/.ssh/id_rsa ${APOLLO_INGRESS_IP}
+    if [ "$1" = "m" ];
+    then
+      IFS=',' read -ra apollo_nodes_manager <<< "$APOLLO_NODES_MANAGER"
+      apollo::echo "Managers ${apollo_nodes_manager[@]}"
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Entering Manager $2"
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[$2]}
+      else
+        apollo::echo "Entering Ingress"
+        ssh -l root -i $PWD/.ssh/id_rsa ${APOLLO_INGRESS_IP}
+      fi
+    elif [ "$1" = "w" ];
+    then
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Entering Worker $2"
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[$2]}
+      else
+        apollo::echo "Entering Worker 0"
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[0]}
+      fi
+    else
+      apollo::echo "Entering Ingress"
+      ssh -l root -i $PWD/.ssh/id_rsa ${APOLLO_INGRESS_IP}
+    fi
   else
-    apollo::echo "No Space selected. Use \`apollo load\`"
+    apollo::echo "No Space selected. Use \`load\`"
   fi
 }
 
@@ -641,6 +726,7 @@ if [[ -z "$APOLLO_NO_ALIASES" ]]; then
     alias "${apollo_load:-load}"='apollo::load'
     alias "${apollo_inspect:-inspect}"='apollo::inspect'
     alias "${apollo_deploy:-deploy}"='apollo::deploy'
+    alias "${apollo_maintenance:-maintenance}"='apollo::maintenance'
     alias "${apollo_destroy:-destroy}"='apollo::destroy'
     alias "${apollo_enter:-enter}"='apollo::enter'
     alias "${apollo_plan:-plan}"='apollo::plan'

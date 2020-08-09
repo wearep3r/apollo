@@ -24,7 +24,7 @@ RUN apt-get update \
     # && unzip "logcli-linux-amd64.zip" \
     # && mv logcli-linux-amd64 /usr/local/bin/logcli \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
-    && curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash \
+    # && curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash \
     && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
     && ~/.fzf/install --all --key-bindings --completion \
     && git clone https://github.com/wfxr/forgit ~/.forgit \

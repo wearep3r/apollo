@@ -1,13 +1,13 @@
-# - name: Fail if not on Ubuntu
-#   fail:
-#     msg: "Storidge can only be installed on Ubuntu"
-#   when: ansible_distribution != 'Ubuntu'
-# - name: Installing apt dependencies
-#   apt:
-#     name:
-#       - linux-headers-{{ ansible_kernel }}
-#     state: present
-#     update_cache: False
+- name: Fail if not on Ubuntu
+  fail:
+    msg: "Storidge can only be installed on Ubuntu"
+  when: ansible_distribution != 'Ubuntu'
+- name: Installing apt dependencies
+  apt:
+    name:
+      - linux-headers-{{ ansible_kernel }}
+    state: present
+    update_cache: False
   
 - name: Creating storidge_nodes Group
   group_by:
