@@ -81,6 +81,17 @@
         recurse: yes
         owner: "65534"
         group: "65534"
+      when: apollo_data == "generic"
+
+    # TODO: find volume node + id via  cio volume inspect prometheus_prometheus-data
+    # - name: Correct volume permissions
+    #   file:
+    #     path: /cio/volumes/prometheus_prometheus/
+    #     state: directory
+    #     recurse: yes
+    #     owner: "65534"
+    #     group: "65534"
+    #   when: apollo_data == "storidge"
 
     - name: Provision prometheus
       docker_stack:
