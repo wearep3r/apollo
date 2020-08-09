@@ -42,6 +42,7 @@ TF_PLAN_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.plan
 VERBOSITY ?= 0
 export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 export DOCKER_BUILDKIT=1
+SHIPMATE_CARGO_VERSION = $(shell git rev-parse --short HEAD)
 
 .PHONY: help
 help:
@@ -116,7 +117,7 @@ check: /tmp/.loaded.sentinel
 # Development
 .PHONY: build
 build:
-> @docker build --pull -t ${APOLLO_WHITELABEL_NAME} .
+> @docker build --pull --build-arg SHIPMATE_CARGO_VERSION="${SHIPMATE_CARGO_VERSION}" -t ${APOLLO_WHITELABEL_NAME} .
 
 .PHONY: dev
 dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
