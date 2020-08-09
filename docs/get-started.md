@@ -128,7 +128,7 @@ _____  ______   ____ |  | |  |   ____
 
 **ATTENTION:** `Name` must be a URL/DNS-conform string, like `apollo-demo`. This name will be used as a subdomain, so choose carefully.
 
-Your Space is now created. If you're using a cloud provider, certain necessary values **apollo.** needs to operate will be automatically saved to `nodes.apollo.env` - amongst them `INGRESS_IP`. **apollo.** generates SSH-Keys for you in `$APOLLO_SPACE_DIR/.ssh` which will be used to connect to the provisioned infrastructure.
+Your Space is now created. If you're using a cloud provider, certain necessary values **apollo.** needs to operate will be automatically saved to `nodes.apollo.env` - amongst them `APOLLO_INGRESS_IP`. **apollo.** generates SSH-Keys for you in `$APOLLO_SPACE_DIR/.ssh` which will be used to connect to the provisioned infrastructure.
 
 In case you're using your own infrastructure, please add the following values (adjusted to your infrastructure) to `infrastructure.apollo.env` manually before proceeding.
 

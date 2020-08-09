@@ -6,10 +6,6 @@ output "APOLLO_NODES_WORKER" {
  value = "${join(",",hcloud_server.worker.*.ipv4_address)}"
 }
 
-output "APOLLO_PROVIDER" {
- value = "hcloud"
-}
-
 output "APOLLO_CLUSTER_NETWORK" {
  value = hcloud_network.cluster_network.ip_range
 }

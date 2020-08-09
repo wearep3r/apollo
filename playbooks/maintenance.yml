@@ -51,11 +51,27 @@
         - upgrade
         - drain
 
+    - name: Check Storidge Cluster Status
+      shell: cio info
+      register: cio_cluster_status
+      ignore_errors: True
+      tags:
+        - upgrade
+        - drain
+      when: cio_installed.rc == 0
+    
+    - name: Show me
+      debug:
+        msg: "{{ cio_installed }}"
+        verbosity: 1
+      tags:
+        - upgrade
+
     - name: Drain CIO Node
       shell: cioctl node cordon '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
       delegate_to: "{{groups['manager'][0]}}"
       register: drain_status
-      when: upgradeable.changed and cio_installed.rc == 0
+      when: upgradeable.changed and cio_cluster_status.stdout != "System is not initialized"
       #when: cio_installed.rc == 0
       tags:
         - upgrade
@@ -218,11 +234,27 @@
         - upgrade
         - drain
 
+    - name: Check Storidge Cluster Status
+      shell: cio info
+      register: cio_cluster_status
+      ignore_errors: True
+      tags:
+        - upgrade
+        - drain
+      when: cio_installed.rc == 0
+    
+    - name: Show me
+      debug:
+        msg: "{{ cio_installed }}"
+        verbosity: 1
+      tags:
+        - upgrade
+
     - name: Drain CIO Node
       shell: cioctl node cordon '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
       delegate_to: "{{groups['manager'][0]}}"
       register: drain_status
-      when: upgradeable.changed and cio_installed.rc == 0
+      when: upgradeable.changed and cio_cluster_status.stdout != "System is not initialized"
       #when: cio_installed.rc == 0
       tags:
         - upgrade

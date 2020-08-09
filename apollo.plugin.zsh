@@ -285,8 +285,6 @@ apollo::destroy() {
 }
 
 apollo::inspect() {
-  echo "$APOLLO_SPACE" | figlet
-  echo ""
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
     apollo::echo "🚀 ${bold}Space: ${normal}$APOLLO_SPACE"
@@ -300,12 +298,14 @@ apollo::inspect() {
     for manager in $(echo $APOLLO_NODES_MANAGER | sed "s/,/ /g")
     do
       apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-manager-$mngr_cnt - ${manager}${normal}"
+      mngr_cnt=$((mngr_cnt+1))
     done
 
     wrkr_cnt=0
     for worker in $(echo $APOLLO_NODES_WORKER | sed "s/,/ /g")
     do
       apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-worker-$wrkr_cnt - ${worker}${normal}"
+      wrkr_cnt=$((wrkr_cnt+1))
     done
 
     if [ "$APOLLO_FEDERATION_ENABLED" != "0" ];
@@ -531,7 +531,7 @@ apollo::init() {
 
     read APOLLO_BASE_DOMAIN
   fi 
-  SPACE_INFRASTRUCTURE+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
+  SPACE_CONFIG+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
 
   # LetsEncrypt
   apollo::echo_n "${bold}Enable LetsEncrypt? ${normal}[y/N] "
