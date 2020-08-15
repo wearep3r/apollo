@@ -5,17 +5,14 @@
 
 You can use this repository as boilerplate for your own platform or manage **apollo** [spaces](#-) using our Docker Image.
 
-[!["Maintained"](https://img.shields.io/maintenance/yes/2020)](https://github.com/wearep3r/apollo)
-[!["p3r. Website"](https://img.shields.io/website?down_color=lightgrey&down_message=down&label=www.p3r.one&up_color=green&up_message=up&url=https%3A%2F%2Fwww.p3r.one)](https://www.p3r.one)
-[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
-[!["License"](https://img.shields.io/github/license/wearep3r/apollo)](https://github.com/wearep3r/apollo)
-[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
-[!["Commits"](https://img.shields.io/github/commit-activity/y/wearep3r/apollo)](https://github.com/wearep3r/apollo)
-[!["Repository Size"](https://img.shields.io/github/repo-size/wearep3r/apollo)](https://github.com/wearep3r/apollo)
-[!["Semantic Release"](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[!["Maintained"](https://img.shields.io/maintenance/yes/2020?color=green)](https://github.com/wearep3r/apollo)
 [!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
+[!["License"](https://img.shields.io/github/license/wearep3r/apollo)](https://github.com/wearep3r/apollo)
+[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
+
+[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
 [!["Docker Hub Downloads"](https://img.shields.io/docker/pulls/wearep3r/apollo?label=Downloads&logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
-[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
+[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
 
 The goal for **apollo** is to get teams up and running fast, with a turn-key platform to accelerate development and innovation
 
