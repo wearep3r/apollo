@@ -567,6 +567,9 @@ apollo::init() {
     fi
     SPACE_INFRASTRUCTURE+=("APOLLO_NODES_MANAGER=${APOLLO_NODES_MANAGER}")
 
+    arr=($APOLLO_NODES_MANAGER)
+    SPACE_INFRASTRUCTURE+=("APOLLO_INGRESS_IP=${arr[0]}")
+
     # Worker Nodes
     if [ ! -z "$5" ];
     then

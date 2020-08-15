@@ -1,6 +1,7 @@
 force_reboot: 0
 
 # apollo.
+apollo_version: "{{ lookup('env','APOLLO_VERSION') | default('', true) }}"
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
 apollo_remote_dir: "{{ lookup('env','APOLLO_REMOTE_DIR') | default('/srv/.apollo', true) }}"
 apollo_app_dir: "{{ lookup('env','APOLLO_APP_DIR') | default(apollo_remote_dir+'/apps', true) }}"
@@ -9,6 +10,8 @@ apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://assets.gitlab-s
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
 apollo_space: "{{ lookup('env','APOLLO_SPACE') | default(apollo_environment, true) }}"
+
+apollo_space_version: "{{ lookup('env','APOLLO_SPACE_VERSION') | default('', true) }}"
 
 environment_dir: "{{ lookup('env','ENVIRONMENT_DIR') | default('~/.'+apollo_whitelabel_name+'/.spaces/'+apollo_whitelabel_name, true) }}"
 apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default(environment_dir, true) }}"
