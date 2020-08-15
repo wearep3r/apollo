@@ -279,9 +279,42 @@ This would give you access to the following endpoints automagically:
 - Prometheus: [http://prometheus.apollo-demo.beingyou.rocks](http://prometheus.apollo-demo.beingyou.rocks)
 - Grafana: [http://grafana.apollo-demo.beingyou.rocks](http://grafana.apollo-demo.beingyou.rocks)
 
+## Built With
+
+- Ansible
+- Terraform
+- bash/zsh
+- GitLab
+- Docker
+- make
+- python
+- docker-compose
+
+## Contributing
+
+Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull/merge requests to us. This software is primarily developed and maintained on [GitLab](https://gitlab.com/p3r.one/apollo).
+
+## Versioning
+
+We use SemVer for versioning, automated by [shipmate](https://gitlab.com/peter.saarland/shipmate). For the versions available, see the tags on this repository.
+
+## Authors
+
+- Fabian Peter
+
+See also the list of contributors who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+There's so many people to thank for being awesome and providing open source software and support for it.
+
 ## 🚀 Disclaimer
 
-This software is maintained and commercially supported by [p3r.](https://www.p3r.one). You can reach us
+This software is maintained and commercially supported by [p3r.](https://www.p3r.one). You can reach us here:
 
 - [Slack](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
 - [GitLab](https://gitlab.com/p3r.one)
