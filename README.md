@@ -49,16 +49,16 @@ The goal for **apollo** is to get teams up and running fast, with a turn-key pla
 
 ## Typical problems apollo solves
 
-1. I need a single-node Docker-Host
-2. I need a multi-node Docker-Cluster
-3. I need to run Kubernetes
-4. I need hyperconverged storage for my applications
-5. I need GitLab Runners. Lots of them. Cheap
-6. I need a stable backup solution based on S3
-7. I need multiple compute environments (staging, production)
-8. I need a stable solution to self-host apps
-9. I need to spin up ephemeral clusters in CI/CD
-10. I need a stable solution for federated monitoring with Prometheus
+1. We need a single-node Docker-Host
+2. We need a multi-node Docker-Cluster
+3. We need to run Kubernetes
+4. We need hyperconverged storage for my applications
+5. We need GitLab Runners. Lots of them. Cheap
+6. We need a stable backup solution based on S3
+7. We need multiple compute environments (staging, production)
+8. We need a stable solution to self-host apps
+9. We need to spin up ephemeral clusters in CI/CD
+10. We need a stable solution for federated monitoring with Prometheus
 
 **apollo** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 
