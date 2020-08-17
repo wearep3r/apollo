@@ -47,7 +47,35 @@
       state: present
       update_cache: true
 
-  - name: Installing Docker.
+  - name: "Get package info"
+    package_facts:
+      manager: "auto"
+
+  - name: Check whether a package called docker is installed
+    debug:
+      msg: "{{ ansible_facts.packages['docker-'+docker_edition] }}"
+    #when: "'docker' in ansible_facts.packages"
+
+  - name: Docker upgrade needed
+    debug:
+      msg: 
+        - "Current Version: {{ ansible_facts.packages['docker-'+docker_edition][0]['version'] }}"
+        - "Target Version: {{ docker_version }}"
+    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+
+  - name: Drain Swarm Node
+    shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
+    delegate_to: "{{groups['manager'][0]}}"
+    register: drain_status
+    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+
+  - name: Wait for Drain to finish
+    pause: 
+      prompt: "Make sure Drain operation finishes"
+      seconds: 180
+    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+
+  - name: Installing Docker
     package:
       name: "{{ docker_package }}"
       state: "{{ docker_package_state }}"
@@ -55,7 +83,7 @@
     # poll: 0
     register: docker_install
     notify: restart docker
-    changed_when: False
+    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
 
   # - name: Checking on Docker Installation
   #   async_status:
@@ -63,6 +91,12 @@
   #   until: check_result.finished
   #   register: check_result
   #   retries: 300
+  
+  - name: Activate Swarm Node
+    shell: docker node update --availability active '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
+    delegate_to: "{{groups['manager'][0]}}"
+    register: activate_status
+    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
 
   - name: Ensure Docker is started and enabled at boot.
     service:

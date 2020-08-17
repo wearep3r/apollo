@@ -66,8 +66,3 @@ networks:
 
 volumes:
   portainer-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}

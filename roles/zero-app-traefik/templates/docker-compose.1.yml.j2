@@ -88,8 +88,3 @@ networks:
 
 volumes:
   traefik-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}

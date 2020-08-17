@@ -58,7 +58,7 @@ class ZeroInventory(object):
                 if apollo_space == "platform":
                     i = 1
                 for node in apollo_nodes_manager.split(","):
-                    hostname = "{}-manager-{}".format(apollo_space,i)
+                    hostname = "manager-{}".format(i)
                     inventory['all']['hosts'].append(hostname)
                     inventory["manager"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
@@ -77,7 +77,7 @@ class ZeroInventory(object):
                 if apollo_space == "platform":
                     i = 1
                 for node in apollo_nodes_worker.split(","):
-                    hostname = "{}-worker-{}".format(apollo_space,i)
+                    hostname = "worker-{}".format(i)
                     inventory['all']['hosts'].append(hostname)
                     inventory["worker"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {

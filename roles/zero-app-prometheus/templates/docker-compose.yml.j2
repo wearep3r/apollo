@@ -72,14 +72,4 @@ networks:
 
 volumes:
   prometheus-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   victoria-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}

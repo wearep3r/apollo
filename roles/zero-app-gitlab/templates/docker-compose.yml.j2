@@ -207,11 +207,6 @@ networks:
 
 volumes:
   gitlab-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
 {% if apollo_data == "nfs" %}
     driver_opts:
       type: "nfs"
@@ -219,26 +214,6 @@ volumes:
       device: ":/{{ apollo_space }}/gitlab-data"
 {% endif %}
   gitlab-config:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   gitlab-logs:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   redis-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   postgres-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}

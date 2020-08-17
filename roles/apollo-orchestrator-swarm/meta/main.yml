@@ -6,5 +6,4 @@ galaxy_info:
   license: MIT
   min_ansible_version: 2.9
   galaxy_tags: []
-dependencies: 
-  - apollo-engine-docker
+dependencies: []
