@@ -52,28 +52,44 @@
       manager: "auto"
 
   - name: Check whether a package called docker is installed
-    debug:
-      msg: "{{ ansible_facts.packages['docker-'+docker_edition] }}"
-    #when: "'docker' in ansible_facts.packages"
+    set_fact:
+      docker_installed: True
+    when: "'docker-'+docker_edition in ansible_facts.packages"
+
+  - name: Check whether a package called docker is installed
+    set_fact:
+      docker_installed: False
+    when: "'docker-'+docker_edition not in ansible_facts.packages"
 
   - name: Docker upgrade needed
-    debug:
-      msg: 
-        - "Current Version: {{ ansible_facts.packages['docker-'+docker_edition][0]['version'] }}"
-        - "Target Version: {{ docker_version }}"
-    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    set_fact:
+      docker_upgrade_needed: True
+    when:
+      - docker_installed 
+      - ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+
+  - name: Docker upgrade needed
+    set_fact:
+      docker_upgrade_needed: False
+    when: not docker_installed or ansible_facts.packages['docker-'+docker_edition][0]['version'] == docker_version
 
   - name: Drain Swarm Node
     shell: docker node update --availability drain '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
     delegate_to: "{{groups['manager'][0]}}"
     register: drain_status
-    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    when: 
+      - docker_installed
+      - docker_upgrade_needed 
+      - apollo_orchestrator == "swarm"
 
   - name: Wait for Drain to finish
     pause: 
       prompt: "Make sure Drain operation finishes"
       seconds: 180
-    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    when: 
+      - docker_installed
+      - docker_upgrade_needed 
+      - apollo_orchestrator == "swarm"
 
   - name: Installing Docker
     package:
@@ -83,7 +99,9 @@
     # poll: 0
     register: docker_install
     notify: restart docker
-    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    #when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    when: 
+      - docker_upgrade_needed or not docker_installed 
 
   # - name: Checking on Docker Installation
   #   async_status:
@@ -91,12 +109,16 @@
   #   until: check_result.finished
   #   register: check_result
   #   retries: 300
-  
+
   - name: Activate Swarm Node
     shell: docker node update --availability active '{{ hostvars[inventory_hostname]['ansible_hostname'] }}'
     delegate_to: "{{groups['manager'][0]}}"
     register: activate_status
-    when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    #when: ansible_facts.packages['docker-'+docker_edition][0]['version'] != docker_version
+    when: 
+      - docker_installed
+      - docker_upgrade_needed 
+      - apollo_orchestrator == "swarm"
 
   - name: Ensure Docker is started and enabled at boot.
     service:

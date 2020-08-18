@@ -202,6 +202,6 @@
         src: templates/hcloud-network.cfg.j2
         dest: /etc/network/interfaces.d/61-apollo-hcloud-network.cfg
       register: hcloud_network_config
-      notify: restart network
+      notify: restart networking
   when: apollo_provider == "hcloud"
 

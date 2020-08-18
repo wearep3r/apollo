@@ -2,12 +2,19 @@
   fail:
     msg: "Storidge can only be installed on Ubuntu"
   when: ansible_distribution != 'Ubuntu'
+
 - name: Installing apt dependencies
   apt:
     name:
       - linux-headers-{{ ansible_kernel }}
     state: present
     update_cache: False
+  register: storidge_dependencies_installed
+
+- name: Rebooting Nodes
+  reboot:
+    reboot_timeout: 180
+  when: storidge_dependencies_installed.changed
   
 - name: Creating storidge_nodes Group
   group_by:
@@ -45,8 +52,6 @@
     dest: /etc/iscsi/initiatorname.iscsi
   #when: initiatorname_bak and initiatorname_bak.stat.exists == False and storidge_fix_iscsi|bool
   when: storidge_fix_iscsi|bool
-  tags:
-    - storidge
 
 # Install Storidge
 - name: Getting Install Status
@@ -54,8 +59,6 @@
     path: /usr/bin/cio
   register: cio_installed
   changed_when: False
-  tags:
-    - storidge
 
 - name: DEBUG | Install Status
   debug:
@@ -68,15 +71,11 @@
   register: cio_version
   changed_when: False
   when: cio_installed.stat is succeeded and cio_installed.stat.exists
-  tags:
-    - storidge
 
 - name: DEBUG | CIO Version
   debug:
     msg: "Storidge Version: {{  cio_version.stdout.split('-')[1] | lower }}"
     verbosity: 1
-  tags:
-    - storidge
   when: cio_installed.stat is succeeded and cio_installed.stat.exists
 
 - name: Sysctl Tuning
