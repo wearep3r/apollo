@@ -41,6 +41,9 @@ services:
 {% if letsencrypt_enabled|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"
+        traefik.frontend.headers.STSSeconds: "31536000"
+        traefik.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.frontend.headers.STSPreload: "true"
 {% else %}
         traefik.frontend.entryPoints: "http"
 {%endif%}
@@ -59,8 +62,3 @@ networks:
 
 volumes:
   minio-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}

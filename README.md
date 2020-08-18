@@ -1,26 +1,22 @@
 # 🚀 apollo - Platform as a Service toolkit
 
+**apollo** accelerates your digital transformation and development process. It helps you to prototype rapidly, but also to deploy to production safely. **apollo** gets you up & running quickly with the tech-stack you need, yet provides operational stability even in highly regulated and heterogeneous environments. You can use it to build and run applications in a batteries-included and git-versioned environment.
 
-**apollo** accelerates your digital transformation and development process. It helps you to prototype rapidly, but also to deploy to production safely. **apollo** gets you up & running quickly with the tech-stack you need, yet provides operational stability even in highly regulated and heterogeneous environments. You can use it to build and run applications in a batteries-included and git-versioned environment. 
+You can use this repository as a boilerplate for your own platform or manage **apollo** [spaces](#-) using our Docker Image.
 
-You can use this repository as boilerplate for your own platform or manage **apollo** [spaces](#-) using our Docker Image.
-
-[!["Maintained"](https://img.shields.io/maintenance/yes/2020)](https://github.com/wearep3r/apollo)
-[!["p3r. Website"](https://img.shields.io/website?down_color=lightgrey&down_message=down&label=www.p3r.one&up_color=green&up_message=up&url=https%3A%2F%2Fwww.p3r.one)](https://www.p3r.one)
-[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
-[!["License"](https://img.shields.io/github/license/wearep3r/apollo)](https://github.com/wearep3r/apollo)
-[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
-[!["Commits"](https://img.shields.io/github/commit-activity/y/wearep3r/apollo)](https://github.com/wearep3r/apollo)
-[!["Repository Size"](https://img.shields.io/github/repo-size/wearep3r/apollo)](https://github.com/wearep3r/apollo)
-[!["Semantic Release"](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[!["Maintained"](https://img.shields.io/maintenance/yes/2020?color=green)](https://github.com/wearep3r/apollo)
 [!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
+[!["License"](https://img.shields.io/github/license/wearep3r/apollo)](https://github.com/wearep3r/apollo)
+[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
+[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
 [!["Docker Hub Downloads"](https://img.shields.io/docker/pulls/wearep3r/apollo?label=Downloads&logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
-[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
+[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
 
 The goal for **apollo** is to get teams up and running fast, with a turn-key platform to accelerate development and innovation
 
 ## Feature Overview
 
+- Configured almost entirely by **environment variables**
 - **Docker** as container runtime
 - **Docker Swarm**, **k8s** or **k3s** as orchestrator
 - Automated Distributed Storage with [Storidge](https://storidge.com/) for **Docker Swarm** and [Longhorn](https://rancher.com/docs/k3s/latest/en/storage/) for **k3s**
@@ -30,39 +26,39 @@ The goal for **apollo** is to get teams up and running fast, with a turn-key pla
 - **Apps**: turn-key GitLab, Minio, GitLab Runner, Rancher, more to come ...
 - Supports **Windows Workers** in **Docker Swarm** and **k8s** (**ATTENTION**: Limited Support, WIP & alpha!)
 
-|            | [Swarm](features.md#-docker-swarm) | [k3s](features.md#-k3s) | [k8s](features.md#k8s)  |
+|            | [Swarm](docs/features.md#-docker-swarm) | [k3s](docs/features.md#-k3s) | [k8s](docs/features.md#k8s)  |
 |------------|-------|-----|---|
-| [Wireguard](features.md#-wireguard)    | ✅    | ✅    | ✅  |
-| [Docker](features.md#-docker)    | ✅    | ✅    | ✅  |
-| [Distributed Storage](features.md#-distributed-storage)    | ✅    | ✅    | ❌  |
-| [Traefik](features.md#-traefik)    | ✅    | ❌    | ❌  |
-| [Letsencrypt](features.md#-letsencrypt)    | ✅    | ❌    | ❌  |
-| [Monitoring](features.md#-monitoring)    | ✅    | ❌    | ❌  |
-| [Logging](features.md#-logging)    | ✅    | ❌    | ❌  |
-| [Alerting](features.md#-alerting)    | ✅    | ❌    | ❌  |
-| [Portainer](features.md#-portainer)  | ✅    | ❌    | ❌  |
-| [Rancher](features.md#-rancher)  | ❌    | ✅    | ✅  |
-| [Garbage Collection](features.md#-garbage-collection)  | ✅    | ❌    | ❌  |
-| [Prometheus](features.md#-prometheus) | ✅    | ❌    | ❌  |
-| [Grafana](features.md#-grafana)    | ✅    | ❌    | ❌  |
-| [Backups](features.md#-backups)    | ✅    | ❌    | ❌  |
-| [GitLab](features.md#-gitlab)    | ✅    | ❌    | ❌  |
-| [Minio](features.md#-minio)    | ✅    | ❌    | ❌  |
-| [Statping](features.md#-statping)    | ✅    | ❌    | ❌  |
-| [GitLab Runner](features.md#-gitlab-runner)    | ✅    | ❌    | ❌  |
+| [Wireguard](docs/features.md#-wireguard)    | ✅    | ✅    | ✅  |
+| [Docker](docs/features.md#-docker)    | ✅    | ✅    | ✅  |
+| [Distributed Storage](docs/features.md#-distributed-storage)    | ✅    | ✅    | ❌  |
+| [Traefik](docs/features.md#-traefik)    | ✅    | ❌    | ❌  |
+| [Letsencrypt](docs/features.md#-letsencrypt)    | ✅    | ❌    | ❌  |
+| [Monitoring](docs/features.md#-monitoring)    | ✅    | ❌    | ❌  |
+| [Logging](docs/features.md#-logging)    | ✅    | ❌    | ❌  |
+| [Alerting](docs/features.md#-alerting)    | ✅    | ❌    | ❌  |
+| [Portainer](docs/features.md#-portainer)  | ✅    | ❌    | ❌  |
+| [Rancher](docs/features.md#-rancher)  | ❌    | ✅    | ✅  |
+| [Garbage Collection](docs/features.md#-garbage-collection)  | ✅    | ❌    | ❌  |
+| [Prometheus](docs/features.md#-prometheus) | ✅    | ❌    | ❌  |
+| [Grafana](docs/features.md#-grafana)    | ✅    | ❌    | ❌  |
+| [Backups](docs/features.md#-backups)    | ✅    | ❌    | ❌  |
+| [GitLab](docs/features.md#-gitlab)    | ✅    | ❌    | ❌  |
+| [Minio](docs/features.md#-minio)    | ✅    | ❌    | ❌  |
+| [Statping](docs/features.md#-statping)    | ✅    | ❌    | ❌  |
+| [GitLab Runner](docs/features.md#-gitlab-runner)    | ✅    | ❌    | ❌  |
 
 ## Typical problems apollo solves
 
-1. I need a single-node Docker-Host
-2. I need a multi-node Docker-Cluster
-3. I need to run Kubernetes
-4. I need hyperconverged storage for my applications
-5. I need GitLab Runners. Lots of them. Cheap
-6. I need a stable backup solution based on S3
-7. I need multiple compute environments (staging, production)
-8. I need a stable solution to self-host apps
-9. I need to spin up ephemeral clusters in CI/CD
-10. I need a stable solution for federated monitoring with Prometheus
+1. We need a single-node Docker-Host
+2. We need a multi-node Docker-Cluster
+3. We need to run Kubernetes
+4. We need hyperconverged storage for my applications
+5. We need GitLab Runners. Lots of them. Cheap
+6. We need a stable backup solution based on S3
+7. We need multiple compute environments (staging, production)
+8. We need a stable solution to self-host apps
+9. We need to spin up ephemeral clusters in CI/CD
+10. We need a stable solution for federated monitoring with Prometheus
 
 **apollo** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 
@@ -141,17 +137,17 @@ You will be guided through the creation of a new space.
 [DEV] 🚀 .spaces init
 [apollo] Initializing new Space
 [apollo] Name: apollo-demo-1
-[apollo-demo-1] Do you want to sync this Space with a remote repository? [y/N] 
-[apollo-demo-1] Cloud Provider (generic,hcloud,digitalocean,aws): 
+[apollo-demo-1] Do you want to sync this Space with a remote repository? [y/N]
+[apollo-demo-1] Cloud Provider (generic,hcloud,digitalocean,aws):
 [apollo-demo-1] Manager IPs (comma separated): 192.168.178.187
-[apollo-demo-1] Worker IPs (comma separated): 
-[apollo-demo-1] Base domain: 
-[apollo-demo-1] Enable LetsEncrypt? [y/N] 
+[apollo-demo-1] Worker IPs (comma separated):
+[apollo-demo-1] Base domain:
+[apollo-demo-1] Enable LetsEncrypt? [y/N]
 [apollo-demo-1] 🚀 Space: apollo-demo-1
 [apollo-demo-1]  ∟ 🌐 Base Domain: 192.168.178.187.xip.io
 [apollo-demo-1]  ∟ 🤖 User: admin
 [apollo-demo-1]  ∟ 🙊 Password: insecure!
-[apollo-demo-1] 🟢 Nodes: 
+[apollo-demo-1] 🟢 Nodes:
 [apollo-demo-1]  ∟ 🟢 apollo-demo-1-manager-0 - 192.168.178.187
 [apollo-demo-1] ❌ Federation: Disabled
 [apollo-demo-1] 🟢 Backplane: Enabled
@@ -190,7 +186,7 @@ APOLLO_PUBLIC_INTERFACE=eth0
 Using `deploy`, you can deploy your Ssace. Please note that for a successful deployment `APOLLO_INGRESS_IP` needs to have a useful value and needs to be accessible through SSH with the SSH-Keys generated during the init process.
 
 ```bash
-🚀 apollo-demo.space deploy
+🚀 apollo-demo-1.space deploy
 ```
 
 ## Advanced usage

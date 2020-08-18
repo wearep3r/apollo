@@ -24,6 +24,11 @@
   tags:
     - print_action
 
+- name: "@apollo-engine"
+  import_playbook: playbooks/apollo-engine.yml
+  tags:
+    - print_action
+
 - name: "@apollo-orchestrator"
   import_playbook: playbooks/apollo-orchestrator.yml
   tags:

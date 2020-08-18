@@ -80,6 +80,12 @@ services:
         traefik.gitlab.frontend.headers.SSLRedirect: "true"
         traefik.registry.frontend.entryPoints: "http,https"
         traefik.registry.frontend.headers.SSLRedirect: "true"
+        traefik.gitlab.frontend.headers.STSSeconds: "31536000"
+        traefik.gitlab.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.gitlab.frontend.headers.STSPreload: "true"
+        traefik.registry.frontend.headers.STSSeconds: "31536000"
+        traefik.registry.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.registry.frontend.headers.STSPreload: "true"
 {% else %}
         traefik.gitlab.frontend.entryPoints: "http"
         traefik.registry.frontend.entryPoints: "http"
@@ -207,11 +213,6 @@ networks:
 
 volumes:
   gitlab-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
 {% if apollo_data == "nfs" %}
     driver_opts:
       type: "nfs"
@@ -219,26 +220,6 @@ volumes:
       device: ":/{{ apollo_space }}/gitlab-data"
 {% endif %}
   gitlab-config:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   gitlab-logs:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   redis-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}
   postgres-data:
-{% if apollo_data == "storidge" %}
-    driver: cio
-    driver_opts: 
-      profile: "SNAPSHOT"
-{% endif %}

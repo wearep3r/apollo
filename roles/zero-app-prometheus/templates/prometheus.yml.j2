@@ -22,24 +22,8 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-
-  - job_name: 'minio'
-    dns_sd_configs:
-      - names:
-        # This A-Record is managed by Docker Swarm
-        - 'tasks.minio'
-        type: 'A'
-        port: 9000
-    metrics_path: /minio/prometheus/metrics
     
-  # - job_name: 'dockerd-exporter'
-  #   dns_sd_configs:
-  #   - names:
-  #     # This A-Record is managed by Docker Swarm
-  #     - 'tasks.dockerd-exporter'
-  #     type: 'A'
-  #     port: 9323
-
+{% if backplane_enabled|bool %}
   - job_name: 'cadvisor'
     dns_sd_configs:
     - names:
@@ -72,14 +56,6 @@ scrape_configs:
       type: 'A'
       port: 9100
 
-  - job_name: 'cio-exporter'
-    dns_sd_configs:
-    - names:
-      # This A-Record is managed by Docker Swarm
-      - 'tasks.cio-exporter'
-      type: 'A'
-      port: 16995
-
   - job_name: 'traefik'
     dns_sd_configs:
     - names:
@@ -103,7 +79,20 @@ scrape_configs:
       - 'tasks.promtail'
       type: 'A'
       port: 9080
+{% endif %}
 
+{% if 'minio' in apollo_apps %}
+  - job_name: 'minio'
+    dns_sd_configs:
+      - names:
+        # This A-Record is managed by Docker Swarm
+        - 'tasks.minio'
+        type: 'A'
+        port: 9000
+    metrics_path: /minio/prometheus/metrics
+{% endif %}
+
+{% if 'statping' in apollo_apps %}
   - job_name: 'statping'
     bearer_token: {{ admin_password }}
     dns_sd_configs:
@@ -111,15 +100,27 @@ scrape_configs:
       - 'tasks.statping'
       type: 'A'
       port: 8080
+{% endif %}
 
+{% if runner_enabled|bool %}
   - job_name: 'giltlab-runner'
     dns_sd_configs:
     - names:
       # This A-Record is managed by Ansible in `playbooks/provision-node.yml`
-      - 'zero.nodes'
       - 'nodes.apollo'
       type: 'A'
       port: 9252
+{% endif %}
+
+{% if apollo_data == "storidge" %}
+  - job_name: 'cio-exporter'
+    dns_sd_configs:
+    - names:
+      # This A-Record is managed by Docker Swarm
+      - 'tasks.cio-exporter'
+      type: 'A'
+      port: 16995
+{% endif %}
 
 {% if prometheus_federation_enabled|bool %}
 {% for space in apollo_federation_spaces %}
