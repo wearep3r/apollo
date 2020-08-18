@@ -11,7 +11,8 @@ output "APOLLO_CLUSTER_NETWORK" {
 }
 
 output "APOLLO_INGRESS_IP" {
- value = hcloud_server.manager[0].ipv4_address 
+ #value = hcloud_server.manager[0].ipv4_address 
+ value = length(hcloud_server.worker) > 0 ? hcloud_server.worker[0].ipv4_address : hcloud_server.manager[0].ipv4_address 
 }
 
 output "APOLLO_PUBLIC_INTERFACE" {

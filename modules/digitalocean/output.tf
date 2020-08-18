@@ -15,7 +15,8 @@ output "APOLLO_CLUSTER_NETWORK" {
 }
 
 output "APOLLO_INGRESS_IP" {
- value = digitalocean_droplet.manager[0].ipv4_address 
+ #value = digitalocean_droplet.manager[0].ipv4_address 
+ value = length(digitalocean_droplet.worker) > 0 ? digitalocean_droplet.worker[0].ipv4_address : digitalocean_droplet.manager[0].ipv4_address 
 }
 
 output "APOLLO_PUBLIC_INTERFACE" {
