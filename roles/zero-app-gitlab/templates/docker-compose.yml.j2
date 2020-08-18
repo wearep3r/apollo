@@ -80,6 +80,12 @@ services:
         traefik.gitlab.frontend.headers.SSLRedirect: "true"
         traefik.registry.frontend.entryPoints: "http,https"
         traefik.registry.frontend.headers.SSLRedirect: "true"
+        traefik.gitlab.frontend.headers.STSSeconds: "31536000"
+        traefik.gitlab.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.gitlab.frontend.headers.STSPreload: "true"
+        traefik.registry.frontend.headers.STSSeconds: "31536000"
+        traefik.registry.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.registry.frontend.headers.STSPreload: "true"
 {% else %}
         traefik.gitlab.frontend.entryPoints: "http"
         traefik.registry.frontend.entryPoints: "http"

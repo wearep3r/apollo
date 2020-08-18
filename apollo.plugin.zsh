@@ -635,32 +635,35 @@ apollo::init() {
 }
 
 apollo::enter() {
-  IFS=',' read -ra apollo_nodes_manager <<< "$APOLLO_NODES_MANAGER"
-  IFS=',' read -ra apollo_nodes_worker <<< "$APOLLO_NODES_WORKER"
+  #IFS=',' read -r -a apollo_nodes_manager <<< "$APOLLO_NODES_MANAGER"
+  #IFS=',' read -r -a apollo_nodes_worker <<< "$APOLLO_NODES_WORKER"
   
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
     if [ "$1" = "m" ];
     then
-      IFS=',' read -ra apollo_nodes_manager <<< "$APOLLO_NODES_MANAGER"
-      apollo::echo "Managers ${apollo_nodes_manager[@]}"
+      IFS=$',' apollo_nodes_manager=($(echo $APOLLO_NODES_MANAGER))
+      #apollo_nodes_manager=("${(@f)$(echo $APOLLO_NODES_MANAGER)}")
+      #IFS=',' read -r apollo_nodes_manager <<< "$APOLLO_NODES_MANAGER"
+      #apollo::echo "Managers ${apollo_nodes_manager[@]}"
       if [ "$2" != "" ];
       then
         apollo::echo "Entering Manager $2"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[$2]}
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[$2+1]}
       else
-        apollo::echo "Entering Ingress"
-        ssh -l root -i $PWD/.ssh/id_rsa ${APOLLO_INGRESS_IP}
+        apollo::echo "Entering Manager 0"
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[1]}
       fi
     elif [ "$1" = "w" ];
     then
+      IFS=$',' apollo_nodes_worker=($(echo $APOLLO_NODESWORKER))
       if [ "$2" != "" ];
       then
         apollo::echo "Entering Worker $2"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[$2]}
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[$2+1]}
       else
         apollo::echo "Entering Worker 0"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[0]}
+        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[1]}
       fi
     else
       apollo::echo "Entering Ingress"
