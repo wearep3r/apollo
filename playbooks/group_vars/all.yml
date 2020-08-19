@@ -109,6 +109,9 @@ aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default(admin
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
 apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(backplane_enabled, true) }}"
 
+# apollo. > PaaS > Backplane > Garbage Collection
+apollo_gc_cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | default(0, true) }}"
+
 # apollo. > PaaS > Backplane > Prometheus
 
 
