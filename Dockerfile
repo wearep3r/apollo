@@ -35,7 +35,8 @@ RUN apt-get update \
     && git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/plugins/zsh-completions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/plugins/zsh-syntax-highlighting \
     && git clone https://github.com/lincheney/fzf-tab-completion.git ~/.oh-my-zsh/plugins/fzf-tab-completion \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/* \
+    && chsh -s /bin/zsh
 
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
@@ -72,6 +73,8 @@ COPY . .
 WORKDIR ${APOLLO_SPACES_DIR}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
+
+SHELL ["/bin/zsh", "-c"]
 
 CMD ["/bin/zsh"]
 
