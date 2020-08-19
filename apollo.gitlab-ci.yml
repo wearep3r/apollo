@@ -13,6 +13,7 @@ variables:
   DOCKER_BUILDKIT: 1
   DOCKER_HOST: tcp://docker:2375
   IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  APOLLO_VERSION: latest
 
 .branch-master: &branch-master
   if: '$CI_BUILD_REF_NAME == "master"'
