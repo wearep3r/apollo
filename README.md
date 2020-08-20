@@ -236,8 +236,8 @@ Where `PROVIDER_API_KEY` is actually `HCLOUD_TOKEN` or something similar, depend
 
 This would spin up **1 small Ubuntu 18.04 VM** at your cloud provider of choice. It will add 3 files to your **Space**:
 
-- `infrastructure.apolloplan` is a [Terraform Planfile](https://www.terraform.io/docs/commands/plan.html)
-- `infrastructure.apollotfstate` is a [Terraform Statefile](https://www.terraform.io/docs/state/index.html)
+- `infrastructure.apollo.plan` is a [Terraform Planfile](https://www.terraform.io/docs/commands/plan.html)
+- `infrastructure.apollo.tfstate` is a [Terraform Statefile](https://www.terraform.io/docs/state/index.html)
 - `nodes.apolloenv` contains configuration necessary for Apollo to deploy the PaaS component to the VM
 
 #### PaaS
