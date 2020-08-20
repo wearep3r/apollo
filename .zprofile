@@ -1,4 +1,5 @@
 # If you come from bash you might have to change your $PATH.
+setopt aliases
 export GOPATH=$HOME/go
 export PATH=$HOME/bin:/usr/local/bin:$GOPATH/bin:/usr/local/opt/make/libexec/gnubin:$PATH
 export ZSH="/root/.oh-my-zsh"
