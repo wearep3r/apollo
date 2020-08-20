@@ -1,5 +1,8 @@
 #!/bin/zsh
 set -e
+setopt aliases
+
+source /apollo/apollo.plugin.zsh
 
 if [ -f $HOME/.apollo/apollo.env ];
 then

@@ -12,6 +12,8 @@ ENV APOLLO_CONFIG_DIR=/root/.${APOLLO_WHITELABEL_NAME}
 
 ENV APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 
+ENV TERM=xterm-256color 
+
 RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh
 # silversearcher-ag
 RUN apt-get update \
@@ -43,18 +45,6 @@ RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/te
     && rm terraform.zip \
     && chmod +x terraform \
     && mv terraform /usr/local/bin/
-    # # terraform-invenvory
-    # && curl -fsSL "https://github.com/adammck/terraform-inventory/releases/download/v${TERRAFORM_INVENTORY_VERSION}/terraform-inventory_${TERRAFORM_INVENTORY_VERSION}_linux_amd64.zip" -o terraform-inventory.zip \
-    # && unzip terraform-inventory.zip \
-    # && rm terraform-inventory.zip \
-    # && chmod +x terraform-inventory \
-    # && mv terraform-inventory /usr/local/bin/ \
-    # # IBM Cloud TF Provider
-    # && mkdir -p $HOME/.terraform.d/plugins \
-    # && cd $HOME/.terraform.d/plugins \
-    # && curl -fsSL "https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v1.3.0/linux_amd64.zip" -o ./terraform-provider-ibm.zip \
-    # && unzip terraform-provider-ibm.zip \
-    # && rm terraform-provider-ibm.zip
 
 WORKDIR /${APOLLO_WHITELABEL_NAME}
 
@@ -62,7 +52,10 @@ COPY requirements.yml requirements.yml
 
 RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
-COPY .zshrc /root/.zshrc
+COPY .zprofile /root/.zprofile
+
+RUN rm /root/.zshrc \
+    && ln -s /root/.zprofile /root/.zshrc
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
