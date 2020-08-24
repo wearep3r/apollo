@@ -1,4 +1,5 @@
 force_reboot: 0
+in_ci: "{{ lookup('env','CI') | default(0, true) }}"
 
 # apollo.
 apollo_version: "{{ lookup('env','APOLLO_VERSION') | default('', true) }}"

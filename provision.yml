@@ -7,6 +7,7 @@
   import_playbook: playbooks/apollo-spaces.yml
   tags:
     - print_action
+  when: not in_ci|bool
 
 - name: "@apollo-federation"
   import_playbook: playbooks/apollo-federation.yml

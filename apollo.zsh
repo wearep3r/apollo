@@ -1,15 +1,18 @@
 #!/bin/zsh
 
-apollo::reset() {
-  # Source defaults file to reset everything
-  # set -o allexport
-  # export $(grep -hv '^#' /apollo/defaults.env | xargs) > /dev/null
-  # set +o allexport
-  source /apollo/defaults.env
-} 
-
 apollo::populate() {
-  apollo::reset > /dev/null
+  source /apollo/defaults.env
+
+  # Load Defaults
+  if ! [ "$CI" = "1" ];
+  then
+    if [ -f $APOLLO_CONFIG_DIR/apollo.env ];
+    then
+      set -o allexport
+      export $(grep -hv '^#' $APOLLO_CONFIG_DIR/apollo.env | xargs) > /dev/null
+      set +o allexport
+    fi
+  fi
 
   export APOLLO_SPACE_DIR="${PWD:-$CI_BUILDS_DIR}"
   
@@ -20,6 +23,10 @@ apollo::populate() {
     export $(grep -hv '^#' $file | xargs) > /dev/null
     set +o allexport
   done
+
+  # re-source defaults to build
+  # space-related dynamic config
+  source /apollo/defaults.env
 
   if [ "$ANSIBLE_VERBOSITY" -gt 0 ];
   then
@@ -32,6 +39,12 @@ apollo::populate() {
 # with apollo::populate
 apollo::test() {
   severity=0
+
+  mandatory=(
+    APOLLO_SPACE
+    APOLLO_NODES_MANAGER
+    APOLLO_INGRESS_IP
+  )
 
   # Test for no space
   if [ "$APOLLO_SPACE" = "" ];
@@ -62,6 +75,17 @@ apollo::test() {
     echo "+$sev Using default password '$APOLLO_ADMIN_PASSWORD'"
     severity=$((severity+$sev))
   fi
+
+  # Test for mandatory
+  for option in ${mandatory[@]};
+  do
+    if ! [[ -v "$option" ]];
+    then
+      sev=100
+      echo "+$sev Missing mandatory option '$option'"
+      severity=$((severity+$sev))
+    fi
+  done
 
   echo "Tests finished. Severity is $severity"
 
