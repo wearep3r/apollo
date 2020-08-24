@@ -52,11 +52,9 @@ COPY requirements.yml requirements.yml
 
 RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
-COPY .zprofile /root/.zprofile
+COPY .zshrc /root/.zshrc
 
-RUN rm /root/.zshrc \
-    && ln -s /root/.zprofile /root/.zshrc \
-    && ln -s /apollo/apollo.zsh /usr/local/bin/apollo
+COPY apollo.zsh /usr/local/bin/apollo
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
