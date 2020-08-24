@@ -55,8 +55,7 @@ test:
   stage: test
   image: "registry.gitlab.com/p3r.one/apollo:v$APOLLO_VERSION"
   script:
-    - load .
-    - inspect
+    - apollo test
   extends:
     - .apollo:rules:test
 
