@@ -165,7 +165,8 @@ apollo::deploy() {
 
   apollo_status=$(
     cd /apollo
-    ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY} ansible-playbook provision.yml --flush-cache
+    env
+    ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY:-2} ansible-playbook provision.yml --flush-cache
   )
   echo $apollo_status
 }
@@ -192,6 +193,8 @@ then
     apollo::plan
     apollo::apply
   fi
+
+  env
 
   apollo::deploy
 fi
