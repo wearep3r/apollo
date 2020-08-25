@@ -19,6 +19,10 @@ services:
       interval: 25s
       timeout: 3s
       start_period: 120s
+    extra_hosts:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ platform_domain }}:{{ hostvars[host]['ansible_'+private_iface]['ipv4']['address'] }}"
+{% endfor %}
     deploy:
       mode: replicated
       replicas: 1
