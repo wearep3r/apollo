@@ -10,6 +10,17 @@
 - name: Save Swarm Status
   set_fact:
     swarm: "{{ swarm_status }}"
+ 
+- name: Set Swarm Facts
+  set_fact:  
+    advertise_address: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377"
+    manager_address: "{{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377"
+
+- name: Set Swarm Facts (Wireguard)
+  set_fact:  
+    advertise_address: "{{ hostvars[inventory_hostname]['vpn_ip'] }}:2377"
+    manager_address: "{{ hostvars[groups['manager'][0]]['vpn_ip'] }}:2377"
+  when: apollo_wireguard_enabled|bool
 
 # Create dynamic in-memory groups "swarm_manager_active"
 # and "swarm_manager_inactive" depending on the output of `docker info`
@@ -43,7 +54,7 @@
 
 - name: Set Node Labels # noqa 403 503
   shell: >
-    docker node update --label-add role=manager --label-add environment={{ apollo_space }} --label-add provider={{ apollo_provider }} {{ ansible_hostname }}
+    docker node update --label-add role=manager --label-add environment={{ apollo_space }} --label-add space={{ apollo_space }} --label-add provider={{ apollo_provider }} {{ ansible_hostname }}
   when: swarm_manager_active is defined and swarm_manager_active.changed and inventory_hostname == groups['manager'][0]
 
 - name: Retrieve Swarm Manager Token
@@ -62,28 +73,28 @@
   # hostvars[ansible_hostname]['ansible_default_ipv4']['address']
   shell: >
     docker swarm join
-    --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+    --advertise-addr={{ advertise_address }}
     --token={{ hostvars[groups['manager'][0]]['swarm_manager_token']['stdout'] }}
-    {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+    {{ manager_address }}
   when: "'swarm_manager_inactive' in group_names and 'swarm_manager_active' not in group_names and inventory_hostname != groups['manager'][0]"
   register: swarm_manager_joined
 
 - name: Set Node Labels # noqa 301
   shell: >
-    docker node update --label-add role=manager --label-add environment={{ apollo_space }} --label-add provider={{ apollo_provider }} {{ ansible_hostname }}
+    docker node update --label-add role=manager --label-add environment={{ apollo_space }} --label-add space={{ apollo_space }} --label-add provider={{ apollo_provider }} {{ ansible_hostname }}
   when: swarm_manager_joined.changed and inventory_hostname != groups['manager'][0]
 
 - name: Join Worker Nodes to Cluster # noqa 301
   shell: >
     docker swarm join
-    --advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+    --advertise-addr={{ advertise_address }}
     --token={{ hostvars[groups['manager'][0]]['swarm_worker_token']['stdout'] }}
-    {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+    {{ manager_address }}
   when: "'swarm_worker_inactive' in group_names and 'swarm_worker_active' not in group_names and inventory_hostname != groups['manager'][0]"
   register: swarm_worker_joined
 
 - name: Set Node Labels # noqa 301
   shell: >
-    docker node update --label-add role=worker --label-add environment={{ apollo_space }} --label-add provider={{ apollo_provider }} {{ ansible_hostname }}
+    docker node update --label-add role=worker --label-add environment={{ apollo_space }} --label-add space={{ apollo_space }} --label-add provider={{ apollo_provider }} {{ ansible_hostname }}
   when: swarm_worker_joined.changed and inventory_hostname != groups['manager'][0]
   delegate_to: "{{ groups['manager'][0] }}"
