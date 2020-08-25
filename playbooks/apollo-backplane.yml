@@ -1,3 +1,10 @@
+- name: "@apollo-monitoring"
+  become: True
+  hosts: all
+  gather_facts: True
+  roles:
+    - apollo-app-node-exporter
+
 - name: "@apollo-backplane"
   hosts: manager[0]
   become: True

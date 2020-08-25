@@ -33,7 +33,7 @@
   lineinfile: 
     dest=/etc/hosts 
     regexp='.*{{ item }}$' 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname'] }}" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname'] }} {{ hostvars[item]['ansible_hostname'] }}.{{ platform_domain }}" 
     state=present
   #when: hostvars[item]['vpn_ip']['ipv4']['address'] is defined
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined

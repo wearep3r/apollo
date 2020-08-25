@@ -49,12 +49,19 @@ scrape_configs:
       port: 8481
 
   - job_name: 'node-exporter'
-    dns_sd_configs:
-    - names:
-      # This A-Record is managed by Docker Swarm
-      - 'tasks.node-exporter'
-      type: 'A'
-      port: 9100
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ platform_domain }}:9100"
+{% endfor %}
+    metrics_path: /metrics
+
+    # dns_sd_configs:
+    # - names:
+    #   # This A-Record is managed by Docker Swarm
+    #   - 'tasks.node-exporter'
+    #   type: 'A'
+    #   port: 9100
 
   - job_name: 'traefik'
     dns_sd_configs:

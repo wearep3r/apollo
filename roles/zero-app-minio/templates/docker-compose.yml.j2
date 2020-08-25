@@ -27,7 +27,11 @@ services:
         condition: any
       placement:
         constraints: 
+{% if hostvars[groups['worker'][0]] %}
+        - "node.hostname == {{ hostvars[groups['worker'][0]]['ansible_hostname'] }}"
+{% else %}
         - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+{% endif %}
       labels:
         traefik.enable: "true"
         traefik.tags: "proxy"
