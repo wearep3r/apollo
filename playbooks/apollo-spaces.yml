@@ -1,6 +1,7 @@
 - name: "@apollo-spaces"
   hosts: localhost
   become: True
+  strategy: linear
   gather_facts: False
   tasks:
     - name: SSH Configs
@@ -19,6 +20,11 @@
             #regexp=".*Include$" 
             line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
             state: present
+
+    - name: Probe for Docker directory
+      stat:
+        path: /root/.docker
+      register: docker_directory
 
     - name: Docker Contexts
       block:
@@ -42,3 +48,4 @@
             #regexp=".*Include$" 
             line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
             state: present
+      when: docker_directory.stat.exists

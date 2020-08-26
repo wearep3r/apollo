@@ -1,0 +1,56 @@
+# Include variables and define needed variables.
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Include overrides specific to RHEL 6 and below
+  include_vars: RedHat-6.yml
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version < "7"
+
+- name: Include overrides specific to Fedora.
+  include_vars: Fedora.yml
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution == "Fedora"
+
+- name: Debug
+  debug:
+    msg: 
+      - "ansible_hostname: {{ ansible_hostname }}"
+      - "inventory_hostname: {{ inventory_hostname }}"
+      - "apollo_data_nfs_source: {{ apollo_data_nfs_source }}"
+
+- include_tasks: "setup-{{ ansible_os_family }}.yml"
+
+- name: Ensure directories to export exist
+  file:
+    path: "{{ item.strip().split()[0] }}"
+    state: directory
+    mode: 0755
+  with_items: "{{ nfs_exports }}"
+
+- name: Copy exports file.
+  template:
+    src: templates/exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload nfs
+  when: ansible_hostname == apollo_data_nfs_source.ansible_hostname
+
+- name: Ensure nfs is running.
+  service: "name={{ nfs_server_daemon }} state=started enabled=yes"
+  when: nfs_exports|length and ansible_hostname == apollo_data_nfs_source.ansible_hostname
+
+- name: Ensure nfs is mounted on all nodes
+  mount:
+    fstype: nfs
+    opts: defaults
+    dump: 0
+    passno: 0
+    state: mounted
+    src: "{{ apollo_data_nfs_source.ansible_hostname }}:{{ apollo_data_nfs_directory }}"
+    path: "{{ apollo_data_nfs_directory }}"
+  when: ansible_hostname != apollo_data_nfs_source.ansible_hostname

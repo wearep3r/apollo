@@ -84,6 +84,8 @@ apollo_orchestrator: "{{ lookup('env','APOLLO_ORCHESTRATOR') | default(zero_orch
 # apollo. > PaaS > Data
 zero_data: "{{ lookup('env','ZERO_DATA') | default('generic', true) }}"
 apollo_data: "{{ lookup('env','APOLLO_DATA') | default(zero_data, true) }}"
+apollo_data_nfs_source: "{{ lookup('env','APOLLO_DATA_NFS_SOURCE') | default(hostvars[groups['manager'][0]], true) }}"
+apollo_data_nfs_directory: "{{ lookup('env','APOLLO_DATA_NFS_DIRECTORY') | default('/srv/.apollo/volumes', true) }}"
 
 # apollo. > PaaS > Security
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(1, true) }}"
