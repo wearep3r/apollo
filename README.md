@@ -1,8 +1,8 @@
 # 🚀 apollo - Platform as a Service toolkit
 
-**apollo** accelerates your digital transformation and development process. It helps you to prototype rapidly, but also to deploy to production safely. **apollo** gets you up & running quickly with the tech-stack you need, yet provides operational stability even in highly regulated and heterogeneous environments. You can use it to build and run applications in a batteries-included and git-versioned environment.
+**apollo** helps you to get from idea to production fast and safe - you'll be up & running quickly with a cloud-native tech-stack and great operational stability.
 
-You can use this repository as a boilerplate for your own platform or manage **apollo** [spaces](#-) using our Docker Image.
+Use this repository as a boilerplate for your own platform or manage your [apollo spaces](#-) using our batteries-included [Docker image](#-).
 
 [!["Maintained"](https://img.shields.io/maintenance/yes/2020?color=green)](https://github.com/wearep3r/apollo)
 [!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
@@ -12,19 +12,36 @@ You can use this repository as a boilerplate for your own platform or manage **a
 [!["Docker Hub Downloads"](https://img.shields.io/docker/pulls/wearep3r/apollo?label=Downloads&logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
 [!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
 
-The goal for **apollo** is to get teams up and running fast, with a turn-key platform to accelerate development and innovation
+## What's inside
 
-## Feature Overview
+apollo manages the full life-cycle of a container-platform:
 
+- creation of infrastructure
+- provisioning of configuration
+- deployment of applications
+- monitoring of resources
+- logging of events
+- management of operations
+- elemination of waste
+
+### Featured features
+
+- Git-versioned configuration method tailored to CI/CD
+- Infrastructure as a Service with [Terraform](#)
+- Platform as a Service with [Ansible](#)
 - Configured almost entirely by **environment variables**
-- **Docker** as container runtime
-- **Docker Swarm**, **k8s** or **k3s** as orchestrator
+- **Docker** as container-runtime
+- **Docker Swarm**, **k8s** or **k3s** as container-orchestrator
 - Automated Distributed Storage with [Storidge](https://storidge.com/) for **Docker Swarm** and [Longhorn](https://rancher.com/docs/k3s/latest/en/storage/) for **k3s**
-- Start with 1 Ubuntu 18.04 node, scale infinitely
-- Infrastruture-as-Code modules for AWS, DigitalOcean and HETZNER Cloud
-- **Swarm only**: cool backplane (reverse-proxy, auto-ssl, monitoring, auto-backups, dashboards)!
-- **Apps**: turn-key GitLab, Minio, GitLab Runner, Rancher, more to come ...
+- Single-node clusters are possible and can be scaled up
+- Integrated with AWS, DigitalOcean and HETZNER Cloud
+- **Backplane (Docker Swarm only)**: pre-installed ingress-proxy, auto-ssl, monitoring, auto-backups, dashboards, automatic backups
+- **Turn-Key Apps (Docker Swarm only)**: GitLab, Minio, GitLab Runner, Rancher, more to come ...
 - Supports **Windows Workers** in **Docker Swarm** and **k8s** (**ATTENTION**: Limited Support, WIP & alpha!)
+- Integrated with [GitLab](https://gitlab.com) (CI/CD, Registry, Environments, Metrics, ...)
+- Support for configuration encryption
+
+### Feature Matrix
 
 |            | [Swarm](docs/features.md#-docker-swarm) | [k3s](docs/features.md#-k3s) | [k8s](docs/features.md#k8s)  |
 |------------|-------|-----|---|
@@ -47,18 +64,20 @@ The goal for **apollo** is to get teams up and running fast, with a turn-key pla
 | [Statping](docs/features.md#-statping)    | ✅    | ❌    | ❌  |
 | [GitLab Runner](docs/features.md#-gitlab-runner)    | ✅    | ❌    | ❌  |
 
-## Typical problems apollo solves
+## What you can do with it
 
-1. We need a single-node Docker-Host
-2. We need a multi-node Docker-Cluster
-3. We need to run Kubernetes
-4. We need hyperconverged storage for my applications
-5. We need GitLab Runners. Lots of them. Cheap
-6. We need a stable backup solution based on S3
-7. We need multiple compute environments (staging, production)
-8. We need a stable solution to self-host apps
-9. We need to spin up ephemeral clusters in CI/CD
-10. We need a stable solution for federated monitoring with Prometheus
+1. Single-node Docker-Hosts for [Remote Development with VSCode](https://code.visualstudio.com/docs/remote/remote-overview)
+2. Multi-node Docker-Clusters for [SaaS apps](https://dockerswarm.rocks/)
+3. Single- or Multi-Node [Kubernetes clusters](https://k3s.io/)
+4. Auto-Managed [distributed storage](https://storidge.com/) for stateful applications
+5. Auto-Managed [GitLab Runners](https://docs.gitlab.com/runner/) on trusted hardware
+6. Stable and secure [S3 storage](https://min.io/)
+7. Multiple [environments](https://www.digitalocean.com/community/tutorials/an-introduction-to-ci-cd-best-practices) (staging, production)
+8. [GitLab Review Apps](https://docs.gitlab.com/ee/ci/review_apps/)
+9. [Self-hosting](https://geek-cookbook.funkypenguin.co.nz/) arbitrary apps
+10. One-shot ephemeral clusters for [testing in CI/CD](https://dev.to/katiatalhi/provision-ephemeral-kubernetes-clusters-on-aws-eks-using-terraform-and-gitlab-ci-cd-3f74)
+11. [Federated monitoring](https://banzaicloud.com/blog/prometheus-federation/) with Prometheus and Grafana
+12. [Hybrid clusters](https://www.packet.com/resources/guides/crosscloud-vpn-with-wireguard/) (thanks to Wireguard)
 
 **apollo** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
 

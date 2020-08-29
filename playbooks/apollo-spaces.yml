@@ -6,9 +6,6 @@
   tasks:
     - name: space README
       block:
-        - debug:
-            msg: "{{ hostvars }}"
-
         - name: Create README.md config for space
           template:
             src: "README.md.j2"
@@ -16,6 +13,13 @@
             owner: root
             group: root
             mode: 0755
+
+    - name: space QR code
+      block:
+        - name: Create QR code for Portainer
+          command: "qrencode -o {{ apollo_space_dir }}/logo.png https://portainer.{{ space_domain }}"
+            args:
+              creates: "{{ apollo_space_dir }}/logo.png"
 
     - name: SSH Configs
       block:

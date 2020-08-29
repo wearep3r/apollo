@@ -39,7 +39,7 @@
     - name: Install cert-manager
       command: helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v0.15.0
       register: cert_manager_install
-      when: cert_manager_installed == ""
+      #when: cert_manager_installed == ""
 
     - name: Waiting for Cert-Manager to be fully up
       pause:
@@ -52,5 +52,5 @@
       register: rancher_installed
 
     - name: Install Rancher
-      command: "helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.{{ platform_domain }}" 
-      when: rancher_installed == ""
+      command: "helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.{{ space_domain }}" 
+      #when: rancher_installed == ""
