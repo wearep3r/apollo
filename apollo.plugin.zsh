@@ -78,6 +78,8 @@ apollo::load() {
     # Add ssh-key
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1
     
+    # echo $(htpasswd -nbB admin "h6KL8fz5c") | sed -e s/\\$/\\$\\$/g
+
     export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
     export APOLLO_SPACE=${APOLLO_SPACE}
     export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"

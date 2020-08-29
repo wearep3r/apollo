@@ -134,8 +134,8 @@ apollo_runner_enabled: "{{ lookup('env','APOLLO_RUNNER_ENABLED') | default(runne
 runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(1, true) }}"
 runner_build_enabled: "{{ lookup('env','RUNNER_BUILD_ENABLED') | default(1, true) }}"
 runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default(gitlab_shared_runners_token, true) }}"
-ci_docker_image: "docker:19.03.6"
-ci_dind_image: "docker:19.03.6-dind"
+ci_docker_image: "docker:19.03.12"
+ci_dind_image: "docker:19.03.12-dind"
 runner_env: 
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"

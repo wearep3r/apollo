@@ -49,8 +49,8 @@
 
     - name: Check if Rancher is already installed
       command: helm list --namespace cattle-system -f rancher -q
-      #register: rancher_installed
+      register: rancher_installed
 
     - name: Install Rancher
       command: "helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.{{ platform_domain }}" 
-      #when: rancher_installed == ""
+      when: rancher_installed == ""

@@ -4,6 +4,19 @@
   strategy: linear
   gather_facts: False
   tasks:
+    - name: space README
+      block:
+        - debug:
+            msg: "{{ hostvars }}"
+
+        - name: Create README.md config for space
+          template:
+            src: "README.md.j2"
+            dest: "{{ apollo_space_dir }}/README.md"
+            owner: root
+            group: root
+            mode: 0755
+
     - name: SSH Configs
       block:
         - name: Create SSH config for space

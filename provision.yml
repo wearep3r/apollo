@@ -3,6 +3,9 @@
   import_playbook: playbooks/aws.yml
   when: apollo_provider == "aws"
 
+- name: "@apollo-facts"
+  import_playbook: playbooks/apollo-facts.yml
+
 - name: "@apollo-spaces"
   import_playbook: playbooks/apollo-spaces.yml
   tags:

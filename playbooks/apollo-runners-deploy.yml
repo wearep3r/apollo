@@ -14,7 +14,10 @@
     gitlab_runner_concurrent: 1
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-deploy"
-        env_vars: "{{ runner_env }}"
+        env_vars:
+          - "DOCKER_DRIVER=overlay2"
+          - "DOCKER_BUILDKIT=1"
+          - "DOCKER_HOST=unix:///var/run/docker.sock"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -28,7 +31,7 @@
           - "/cache"
         extra_configs:
           runners.custom_build_dir: 
-            enaled: True
+            enabled: True
           runners.docker:
             privileged: True
             disable_cache: False

@@ -1,0 +1,8 @@
+- name: "@apollo-facts"
+  hosts: all
+  gather_facts: True
+  become: true
+  tasks:
+    - name: Setup facts
+      setup:
+        filter: "*"
