@@ -77,7 +77,7 @@ services:
         prometheus.path: "/probe"
     volumes:
       - blackbox-exporter:/blackbox-exporter
-      - "{{ apollo_app_dir }}/blackbox-exporter":/etc/blackbox-exporter
+      - "{{ app_dir }}:/etc/blackbox-exporter"
 
 networks:
   monitoring:

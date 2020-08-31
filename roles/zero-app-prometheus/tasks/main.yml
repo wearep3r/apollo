@@ -67,6 +67,14 @@
         group: root
         mode: '0644'
 
+    - name: Copy Blackbox-Exporter config
+      template:
+        src: templates/blackbox.yml.j2
+        dest: "{{ app_dir }}/blackbox.yml"
+        owner: root
+        group: root
+        mode: '0644'
+
     - name: Pull images
       docker_image:
         name: "{{ item.value }}"
