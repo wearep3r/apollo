@@ -65,6 +65,20 @@ services:
     volumes:
       - victoria-data:/victoria-data
 
+  blackbox:
+    image: prom/blackbox-exporter
+    command:
+      "--config.file=/etc/blackbox-exporter/blackbox.yml"
+    networks:
+      - monitoring
+    deploy:
+      labels:
+        prometheus.port: "9115"
+        prometheus.path: "/probe"
+    volumes:
+      - blackbox-exporter:/blackbox-exporter
+      - "{{ apollo_app_dir }}/blackbox-exporter":/etc/blackbox-exporter
+
 networks:
   monitoring:
     driver: overlay
@@ -76,3 +90,4 @@ networks:
 volumes:
   prometheus-data:
   victoria-data:
+  blackbox-exporter:
