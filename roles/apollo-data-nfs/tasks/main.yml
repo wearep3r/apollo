@@ -40,6 +40,9 @@
   notify: reload nfs
   when: ansible_hostname == apollo_data_nfs_source.ansible_hostname
 
+- name: Ensure exports exists
+  meta: flush_handlers
+
 - name: Ensure nfs is running.
   service: "name={{ nfs_server_daemon }} state=started enabled=yes"
   when: nfs_exports|length and ansible_hostname == apollo_data_nfs_source.ansible_hostname

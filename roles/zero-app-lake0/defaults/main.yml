@@ -2,9 +2,3 @@
 # defaults file for zero-app-minio
 images:
   lake0: "{{ lookup('env','APOLLO_APP_LAKE0_IMAGES_LAKE0') | default('registry.gitlab.com/peter.saarland/lake0:latest', true) }}"
-
-restic_repository: "{{ lookup('env','RESTIC_REPOSITORY') | default('s3:https://minio.'+platform_domain+'/'+apollo_space+'-backups', true) }}"
-restic_password: "{{ lookup('env','RESTIC_PASSWORD') | default(admin_password, true) }}"
-restic_backup_cron: "{{ lookup('env','RESTIC_BACKUP_CRON') | default('30 * * * *', true) }}"
-restic_forget_args: "{{ lookup('env','RESTIC_FORGET_ARGS') | default('--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1', true) }}"
-restic_job_args: "{{ lookup('env','RESTIC_JOB_ARGS') | default('--exclude minio_minio-data', true) }}"

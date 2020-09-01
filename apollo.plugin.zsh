@@ -489,6 +489,7 @@ apollo::init() {
       read APOLLO_GIT_REMOTE
     fi
     SPACE_CONFIG+=("APOLLO_GIT_REMOTE=${APOLLO_GIT_REMOTE}")
+    SPACE_CONFIG+=("APOLLO_SYNC=${APOLLO_SYNC}")
   fi
 
   # Cloud Provider
@@ -596,6 +597,35 @@ apollo::init() {
     read APOLLO_BASE_DOMAIN
   fi 
   SPACE_CONFIG+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
+
+  # Username
+  if [ ! -z "$7" ];
+  then
+    APOLLO_ADMIN_USER=$7
+    apollo::echo "${bold}Admin User: ${normal}$7"
+  else
+    apollo::echo_n "${bold}Admin User: ${normal}"
+
+    read APOLLO_ADMIN_USER_INPUT
+    APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER_INPUT:-admin}
+  fi 
+  SPACE_CONFIG+=("APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER}")
+
+  # Username
+  if [ ! -z "$8" ];
+  then
+    APOLLO_ADMIN_PASSWORD=$8
+    apollo::echo "${bold}Admin Password: ${normal}$8"
+  else
+    apollo::echo_n "${bold}Admin Password: ${normal}"
+
+    read APOLLO_ADMIN_PASSWORD_INPUT
+    APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD_INPUT:-insecure!}
+  fi 
+  SPACE_CONFIG+=("APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD}")
+
+  APOLLO_ADMIN_PASSWORD_HASH=`echo $(htpasswd -nbB $APOLLO_ADMIN_USER "$APOLLO_ADMIN_PASSWORD") | sed -e s/\\$/\\$\\$/g | awk -F":" '{ print $2 }'`
+  SPACE_CONFIG+=("APOLLO_ADMIN_PASSWORD_HASH=${APOLLO_ADMIN_PASSWORD_HASH}")
 
   # LetsEncrypt
   apollo::echo_n "${bold}Enable LetsEncrypt? ${normal}[y/N] "

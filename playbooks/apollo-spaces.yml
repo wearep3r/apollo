@@ -18,8 +18,8 @@
       block:
         - name: Create QR code for Portainer
           command: "qrencode -o {{ apollo_space_dir }}/logo.png https://portainer.{{ space_domain }}"
-            args:
-              creates: "{{ apollo_space_dir }}/logo.png"
+          args:
+            creates: "{{ apollo_space_dir }}/logo.png"
 
     - name: SSH Configs
       block:
@@ -66,3 +66,18 @@
             line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
             state: present
       when: docker_directory.stat.exists
+
+    # - name: Setup DNS
+    #   block: 
+    #     - name: "Set A Record for {{ space_domain }}"
+    #       digital_ocean_domain:
+    #         state: present
+    #         name: "{{ space_domain }}"
+    #         ip: "{{ ingress_ip }}"
+
+    #     - name: "Set Wildcard Record for {{ space_domain }}"
+    #       digital_ocean_domain:
+    #         state: present
+    #         name: "*.{{ space_domain }}"
+    #         ip: "{{ ingress_ip }}"
+    #   when: apollo_dns_enabled|bool

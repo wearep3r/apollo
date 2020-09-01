@@ -1,5 +1,0 @@
-- Login as root (or do `sudo -s`)
-- `mkdir .ssh`
-- Add the space public key to user root's authorized_keys
-- `echo $SSH_PUBLIC_KEY > /root/.ssh/authorized_keys`
-- Set `PermitRootLogin` to `without-password`

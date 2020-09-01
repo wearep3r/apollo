@@ -1,8 +1,43 @@
 # {{ apollo_space }}
 
+## Details
+
+- Container-Engine: [{{ apollo_engine }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_engine }})
+- Container-Orchestrator: [{{ apollo_orchestrator }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_orchestrator }})
+- Data-Engine: [{{ apollo_data }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_data }})
+- Provider: {{ apollo_provider }}
+- Wireguard: {{ apollo_wireguard_enabled|bool }}
+- Get Help: [apollo docs](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/)
+
+### Nodes
+
+{% for host in groups['all'] %}
+* {{ host }}: {{ hostvars[host]['ansible_'+public_iface]['ipv4']['address'] }}
+{% endfor %}
+
+{% if apollo_federation_enabled|bool %}
+## Federation
+
+- Federation-User: {{ apollo_federation_user }}
+- Federation-Password: {{ apollo_federation_password }}
+- Federation-Spaces:
+{% for space in apollo_federation_spaces %}
+  - {{ space }}
+{% endfor %}
+{% endif %}
+
+{% if apollo_backups_enabled|bool %}
+## Backups
+
+- Backup-User: {{ aws_access_key_id }}
+- Backup-Password: {{ aws_secret_access_key }}
+- Backup-Ziel: {{ restic_repository }}
+- Backup-Keyphrase: {{ restic_password }}
+{% endif %}
+
 ## Authentication
 
-apollo uses Basic Authentication to authenticate access on backplane services:
+apollo uses **Basic Authentication** to authenticate access on backplane services:
 
 - Username: {{ admin_user }}
 - Password: {{ admin_password }}
@@ -41,7 +76,7 @@ Once connected, you can reach any other node in the cluster by simply doing `ssh
 {% if backplane_enabled|bool %}
 ### Web
 
-You can reach any of the backplane services through its webinterface. Use `APOLLO_ADMIN_USER` and `APOLLO_ADMIN_PASSWORD` to authenticate.
+You can reach any of the backplane services through its webinterface. Use `{{ apollo_admin_user }}` and `{{ apollo_admin_password }}` to authenticate.
 
 - [Portainer](http://portainer.{{ space_domain }})
 - [Grafana](http://grafana.{{ space_domain }})
