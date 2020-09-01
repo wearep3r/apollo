@@ -69,7 +69,7 @@ services:
     volumes:
       - victoria-data:/victoria-data
 
-  blackbox:
+  blackbox-exporter:
     image: prom/blackbox-exporter
     command:
       "--config.file=/etc/blackbox-exporter/blackbox.yml"
@@ -79,6 +79,11 @@ services:
       labels:
         prometheus.port: "9115"
         prometheus.path: "/probe"
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
     volumes:
       - blackbox-exporter:/blackbox-exporter
       - "{{ app_dir }}:/etc/blackbox-exporter"

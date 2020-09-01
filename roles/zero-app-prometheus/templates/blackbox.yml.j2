@@ -1,4 +1,10 @@
 modules:
+  http_backplane:
+    prober: http
+    http:
+      basic_auth:
+        username: '{{ admin_user }}'
+        password: '{{ admin_password }}'
   http_2xx:
     prober: http
   http_post_2xx:

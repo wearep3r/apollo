@@ -22,10 +22,11 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-  - job_name: 'blackbox'
+  
+  - job_name: 'blackbox-exporter'
     metrics_path: /probe
     params:
-      module: [http_2xx]  # Look for a HTTP 200 response.
+      module: [http_backplane]
     static_configs:
       - targets:
         - http://portainer.{{ space_domain }}
@@ -38,7 +39,7 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 127.0.0.1:9115  # The blackbox exporter's real hostname:port.
+        replacement: blackbox-exporter:9115  # The blackbox exporter's real hostname:port.
 
     
 {% if backplane_enabled|bool %}
