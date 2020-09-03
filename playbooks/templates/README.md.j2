@@ -73,6 +73,18 @@ Assuming you cloned the repository and work from its local directory, you can co
 
 Once connected, you can reach any other node in the cluster by simply doing `ssh manager-0` etc.
 
+### VS Code Remote Development
+
+Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remote/remote-overview) first.
+
+- Clone this repo
+- cd into the repository directory
+- add your ssh-key to the apollo manager: `ssh-copy-id -i ~/.ssh/id_rsa -f -o "IdentityFile .ssh/id_rsa" root@{{ space_domain }}`
+- Setup [SSH](https://code.visualstudio.com/docs/remote/ssh-tutorial)
+- Click the "Open a remote window" button, select "Remote SSH: connect to host", then "+ Add new SSH Host"
+- Enter `ssh root@{{ space_domain }}`
+- Enjoy
+
 {% if backplane_enabled|bool %}
 ### Web
 
