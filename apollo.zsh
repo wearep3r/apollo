@@ -86,7 +86,7 @@ apollo::test() {
   fi
 
   # Test for default password
-  if [ "$APOLLO_ADMIN_PASSWORD" = "insecure!" ];
+  if [ "$APOLLO_ADMIN_PASSWORD" = "insecure" ];
   then
     sev=5
     echo "+$sev Using default password '$APOLLO_ADMIN_PASSWORD'"

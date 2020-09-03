@@ -35,7 +35,7 @@
           runners.docker:
             privileged: True
             disable_cache: False
-            allowed_images: ["*/*:*"]
+            #allowed_images: ["*/*:*"]
   roles:
     - { role: riemers.gitlab-runner }
   tags:

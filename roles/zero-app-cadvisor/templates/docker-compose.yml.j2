@@ -2,8 +2,8 @@ version: '3.7'
 
 services:
   cadvisor:
-    image: gcr.io/google-containers/cadvisor:v0.34.0
-    command: -logtostderr -docker_only
+    image: gcr.io/google-containers/cadvisor:v0.36.0
+    command: --logtostderr --docker_only --allow_dynamic_housekeeping=true --housekeeping_interval=10s
     networks: 
       - monitoring
     volumes: 

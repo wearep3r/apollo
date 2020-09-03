@@ -85,7 +85,7 @@ space_domain: "{{ lookup('env','APOLLO_SPACE_DOMAIN') | default(apollo_space + '
 zero_admin_user: "{{ lookup('env','ZERO_ADMIN_USER') | default('admin', true) }}"
 admin_user: "{{ lookup('env','APOLLO_ADMIN_USER') | default(zero_admin_user, true) }}"
 apollo_admin_user: "{{ lookup('env','APOLLO_ADMIN_USER') | default(admin_user, true) }}"
-zero_admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('insecure!', true) }}"
+zero_admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('insecure', true) }}"
 admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(zero_admin_password, true) }}"
 apollo_admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(admin_password, true) }}"
 #admin_password_hash_escaped: "{{ admin_password_hash | replace('$','$$') }}"
