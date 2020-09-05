@@ -20,9 +20,9 @@
           - /tmp/zero-app-statping.yml
       register: statping_provision
 
-    - name: "Wait for http://statping.{{ platform_domain }} to become ready"
+    - name: "Wait for http://statping.{{ space_domain }} to become ready"
       uri:
-        url: "http://statping.{{ platform_domain }}"
+        url: "http://statping.{{ space_domain }}"
         method: GET
         status_code: 200
         user: "{{admin_user}}"

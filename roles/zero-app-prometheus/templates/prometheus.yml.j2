@@ -72,7 +72,7 @@ scrape_configs:
     static_configs:
     - targets:
 {% for host in groups['all'] %}
-      - "{{ hostvars[host].ansible_hostname }}.{{ platform_domain }}:9100"
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9100"
 {% endfor %}
     metrics_path: /metrics
 

@@ -55,10 +55,10 @@
     remote_src: yes
     owner: "{{ ansible_user }}"
 
-- name: "Replace https://localhost:6443 with https://{{ platform_domain }}:6443"
+- name: "Replace https://localhost:6443 with https://{{ space_domain }}:6443"
   command: >-
     k3s kubectl config set-cluster default
-      --server=https://{{ platform_domain }}:6443
+      --server=https://{{ space_domain }}:6443
       --kubeconfig /root/.kube/config
   changed_when: true
   

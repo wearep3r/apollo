@@ -20,9 +20,9 @@
           - /tmp/zero-app-healthchecks.yml
       register: healthchecks_provision
 
-    - name: "Wait for http://healthchecks.{{ platform_domain }} to become ready"
+    - name: "Wait for http://healthchecks.{{ space_domain }} to become ready"
       uri:
-        url: "http://healthchecks.{{ platform_domain }}"
+        url: "http://healthchecks.{{ space_domain }}"
         method: GET
         status_code: 200
         user: "{{admin_user}}"

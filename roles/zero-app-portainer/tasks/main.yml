@@ -29,9 +29,9 @@
       tags:
           - portainer
 
-    - name: "Wait for http://portainer.{{ platform_domain }} to become ready"
+    - name: "Wait for http://portainer.{{ space_domain }} to become ready"
       uri:
-        url: "http://portainer.{{ platform_domain }}"
+        url: "http://portainer.{{ space_domain }}"
         method: GET
         status_code: 200
         validate_certs: no

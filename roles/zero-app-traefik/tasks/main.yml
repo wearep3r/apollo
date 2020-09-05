@@ -20,9 +20,9 @@
           - /tmp/zero-app-traefik.yml
       register: traefik_provision
 
-    - name: "Wait for http://proxy.{{ platform_domain }} to become ready"
+    - name: "Wait for http://proxy.{{ space_domain }} to become ready"
       uri:
-        url: "http://proxy.{{ platform_domain }}"
+        url: "http://proxy.{{ space_domain }}"
         method: GET
         status_code: 200
         user: "{{admin_user}}"

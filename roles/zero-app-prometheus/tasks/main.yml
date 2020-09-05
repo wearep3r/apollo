@@ -101,7 +101,7 @@
     #     group: "65534"
     #   when: apollo_data == "storidge"
 
-    - name: Provision prometheus
+    - name: Provision metrics
       docker_stack:
         state: present
         name: prometheus
@@ -111,15 +111,15 @@
           - "{{ app_dir }}/docker-compose.yml"
       register: prometheus_provision
 
-    - name: "Wait for http://{{ app_domain }} to become ready"
-      uri:
-        url: "http://{{ app_domain }}"
-        method: GET
-        status_code: 200
-        validate_certs: no
-        user: "{{admin_user}}"
-        password: "{{admin_password}}"
-      register: _result
-      until: _result.status == 200
-      retries: 30
-      delay: 10
+    # - name: "Wait for http://{{ app_domain }} to become ready"
+    #   uri:
+    #     url: "http://{{ app_domain }}"
+    #     method: GET
+    #     status_code: 200
+    #     validate_certs: no
+    #     user: "{{admin_user}}"
+    #     password: "{{admin_password}}"
+    #   register: _result
+    #   until: _result.status == 200
+    #   retries: 30
+    #   delay: 10

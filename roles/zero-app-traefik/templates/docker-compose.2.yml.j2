@@ -72,7 +72,7 @@ services:
           traefik.tags: "proxy"
           traefik.docker.network: "proxy"
           traefik.port: "8080"
-          traefik.frontend.rule: "Host:proxy.{{ platform_domain }}"
+          traefik.frontend.rule: "Host:proxy.{{ space_domain }}"
           traefik.backend: "zero-app-traefik"
           traefik.protocol: "http"
 
@@ -89,19 +89,19 @@ services:
 
     #       # Dashboard
     #       traefik.http.routers.proxy.service: "api@internal"
-    #       traefik.http.routers.proxy.rule: "Host(`proxy.{{ platform_domain }}`)"
+    #       traefik.http.routers.proxy.rule: "Host(`proxy.{{ space_domain }}`)"
     #       traefik.http.routers.proxy.entrypoints: "web"
     #       traefik.http.routers.proxy.middlewares: "https_redirect"
     #       traefik.http.services.proxy.loadbalancer.server.port: "8080"
 
     #       # Dashboard (HTTPS)
     #       traefik.http.routers.proxy-secured.service: "api@internal"
-    #       traefik.http.routers.proxy-secured.rule: "Host(`proxy.{{ platform_domain }}`)"
+    #       traefik.http.routers.proxy-secured.rule: "Host(`proxy.{{ space_domain }}`)"
     #       traefik.http.routers.proxy-secured.entrypoints: "web-secured"
     #       traefik.http.routers.proxy-secured.tls: "true"
     #       traefik.http.routers.proxy-secured.tls.certresolver: "myresolver"
-    #       #traefik.http.routers.proxy-secured.tls.domains[0].main: "{{ platform_domain }}"
-    #       #traefik.http.routers.proxy-secured.tls.domains[0].sans: "*.{{ platform_domain }}"
+    #       #traefik.http.routers.proxy-secured.tls.domains[0].main: "{{ space_domain }}"
+    #       #traefik.http.routers.proxy-secured.tls.domains[0].sans: "*.{{ space_domain }}"
     #       traefik.http.services.proxy-secured.loadbalancer.server.port: "8080"
 {% if letsencrypt_enabled|bool %}
           traefik.frontend.entryPoints: "http,https"

@@ -46,7 +46,7 @@ services:
         traefik.docker.network: "proxy"
         traefik.port: "3000"
         traefik.frontend.rule: "Host:{{ app_domain }}"
-        traefik.backend: "zero-app-grafana"
+        traefik.backend: "apollo-grafana"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
 {% if letsencrypt_enabled|bool %}
@@ -59,13 +59,13 @@ services:
         traefik.frontend.entryPoints: "http"
 {%endif%}
 
-  trickster:
-    image: {{ images.trickster }}
-    networks:
-      - monitoring
-    deploy:
-      mode: replicated
-      replicas: 1
+  # trickster:
+  #   image: {{ images.trickster }}
+  #   networks:
+  #     - monitoring
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
 
 networks:
   monitoring:

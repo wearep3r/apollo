@@ -29,7 +29,7 @@ services:
 {% endif %}
       --logLevel=INFO 
       --api 
-      --docker.domain={{ platform_domain }} 
+      --docker.domain={{ space_domain }} 
       --ping 
       --rest 
       --retry 
@@ -60,7 +60,7 @@ services:
           traefik.tags: "proxy"
           traefik.docker.network: "proxy"
           traefik.port: "8080"
-          traefik.frontend.rule: "Host:proxy.{{ platform_domain }}"
+          traefik.frontend.rule: "Host:proxy.{{ space_domain }}"
           traefik.backend: "zero-app-traefik"
           traefik.protocol: "http"
 {% if letsencrypt_enabled|bool %}

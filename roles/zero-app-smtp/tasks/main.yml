@@ -26,9 +26,9 @@
           - /tmp/zero-app-smtp.yml
       register: smtp_provision
 
-    - name: "Wait for http://maildev.{{ platform_domain }} to become ready"
+    - name: "Wait for http://maildev.{{ space_domain }} to become ready"
       uri:
-        url: "http://maildev.{{ platform_domain }}"
+        url: "http://maildev.{{ space_domain }}"
         method: GET
         status_code: 200
         user: "{{admin_user}}"

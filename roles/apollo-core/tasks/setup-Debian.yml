@@ -33,7 +33,7 @@
   lineinfile: 
     dest=/etc/hosts 
     regexp='.*{{ item }}$' 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname'] }} {{ hostvars[item]['ansible_hostname'] }}.{{ platform_domain }}" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname'] }} {{ hostvars[item]['ansible_hostname'] }}.{{ space_domain }}" 
     state=present
   #when: hostvars[item]['vpn_ip']['ipv4']['address'] is defined
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
@@ -42,8 +42,8 @@
 - name: nodes.* A-Record
   lineinfile: 
     dest=/etc/hosts 
-    regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.{{ platform_domain }}" 
+    regexp=".*logs.{{ space_domain }}$" 
+    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.{{ space_domain }}" 
     state=present
   #when: hostvars[item]['vpn_ip'] is defined
   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
@@ -54,7 +54,7 @@
 # - name: zero.nodes A-Record
 #   lineinfile: 
 #     dest=/etc/hosts 
-#     regexp=".*logs.{{ platform_domain }}$" 
+#     regexp=".*logs.{{ space_domain }}$" 
 #     line="{{ hostvars[item]['vpn_ip'] }} zero.nodes" 
 #     state=present
 #   #when: hostvars[item]['vpn_ip'] is defined
@@ -64,7 +64,7 @@
 - name: nodes.apollo A-Record
   lineinfile: 
     dest=/etc/hosts 
-    regexp=".*logs.{{ platform_domain }}$" 
+    regexp=".*logs.{{ space_domain }}$" 
     line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.apollo" 
     state=present
   #when: hostvars[item]['vpn_ip'] is defined

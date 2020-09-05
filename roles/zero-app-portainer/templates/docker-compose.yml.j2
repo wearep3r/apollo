@@ -43,7 +43,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9000"
-        traefik.frontend.rule: "Host:portainer.{{ platform_domain }}"
+        traefik.frontend.rule: "Host:portainer.{{ space_domain }}"
         traefik.backend: "zero-app-portainer"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"

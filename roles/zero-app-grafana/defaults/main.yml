@@ -1,7 +1,7 @@
 ---
 app_name: "grafana"
 app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-app_domain: "{{ lookup('env','APOLLO_APP_GRAFANA_APP_DOMAIN') | default(app_name+'.'+platform_domain, true) }}"
+app_domain: "{{ lookup('env','APOLLO_APP_GRAFANA_APP_DOMAIN') | default(app_name+'.'+space_domain, true) }}"
 
 images:
   #grafana: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_GRAFANA') | default('registry.gitlab.com/p3r.one/apollo/grafana', true) }}"
