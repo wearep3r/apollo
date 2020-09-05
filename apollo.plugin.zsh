@@ -187,6 +187,9 @@ apollo::terraform_apply() {
           terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH} >&5
           terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${APOLLO_SPACE_DIR}/nodes.apollo.env
         )
+
+        apollo::echo "Sleeping a bit, waiting for nodes to become ready"
+        sleep 20
         apollo::load $APOLLO_SPACE_DIR
       fi
     fi

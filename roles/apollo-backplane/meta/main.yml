@@ -15,4 +15,3 @@ dependencies:
   - zero-app-prometheus
   - zero-app-alertmanager
   - zero-app-grafana
-  - zero-app-lake0

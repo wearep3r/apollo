@@ -90,7 +90,7 @@ admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(zero_admin_p
 apollo_admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(admin_password, true) }}"
 #admin_password_hash_escaped: "{{ admin_password_hash | replace('$','$$') }}"
 # echo $(htpasswd -nbB admin "D4nkD0lph") | sed -e s/\\$/\\$\\$/g
-zero_admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$KjJMrwd7ZQbn/6p0uQvXYusZoR6uGNgEgvPfAzhmJ12T4bPFal/se', true) }}"
+zero_admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$MjKXERLDVgQIgzbHqiPlruU5j2di9W7Se0WTsvs98WJfMQTHkvlmO', true) }}"
 admin_password_hash: "{{ lookup('env','APOLLO_ADMIN_PASSWORD_HASH') | default(zero_admin_password_hash, true) }}"
 apollo_admin_password_hash: "{{ lookup('env','APOLLO_ADMIN_PASSWORD_HASH') | default(admin_password_hash, true) }}"
 
@@ -165,7 +165,7 @@ ci_dind_image: "docker:19.03.12-dind"
 runner_env: 
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"
-gitlab_runner_package_version: 13.0.0
+gitlab_runner_package_version: 13.3.1
 gitlab_runner_listen_address: ":9252"
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
