@@ -4,6 +4,7 @@ global:
 
   external_labels:
     monitor: 'prometheus'
+    space: '{{ apollo_space }}'
 
 remote_write:
   - url: http://victoria:8428/api/v1/write

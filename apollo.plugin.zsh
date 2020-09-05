@@ -81,6 +81,13 @@ apollo::load() {
 			set +o allexport
 		done
 
+    echo $APOLLO_SPACE_DOMAIN
+
+    # Reload Default config
+    source /apollo/defaults.env
+
+    echo $APOLLO_SPACE_DOMAIN
+
     # Add ssh-key
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1
     
@@ -108,7 +115,7 @@ apollo::load() {
     else
       export HTTP_ENDPOINT=http
     fi
-    export LOKI_ADDR=${HTTP_ENDPOINT}://logs.${APOLLO_PLATFORM_DOMAIN}
+    export LOKI_ADDR=${HTTP_ENDPOINT}://logs.${APOLLO_SPACE_DOMAIN}
 
     apollo::inspect
 	fi
@@ -394,10 +401,10 @@ apollo::inspect() {
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
       apollo::echo "🟢 ${bold}Backplane: ${normal}Enabled"
-      apollo::echo " ∟ 🟢 ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_PLATFORM_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@proxy.$APOLLO_PLATFORM_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Prometheus: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@prometheus.$APOLLO_PLATFORM_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_PLATFORM_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@proxy.$APOLLO_SPACE_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Prometheus: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@prometheus.$APOLLO_SPACE_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_SPACE_DOMAIN"
     else
       apollo::warn "🔴 ${bold}Backplane: ${normal}Disabled"
     fi

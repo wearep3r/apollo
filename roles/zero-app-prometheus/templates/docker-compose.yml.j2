@@ -52,7 +52,7 @@ services:
 {%endif%}
 
   victoria:
-    image: victoriametrics/victoria-metrics:latest
+    image: "{{ images.victoria }}"
     command: -storageDataPath=/victoria-data -memory.allowedPercent=20
     networks:
       - monitoring
@@ -69,8 +69,26 @@ services:
     volumes:
       - victoria-data:/victoria-data
 
+  victoria-agent:
+    image: "{{ images.victoria-agent }}"
+    command: -promscrape.config=/etc/prometheus/prometheus.yml -remoteWrite.url=https://victoria:8428/api/v1/write
+    networks:
+      - monitoring
+    deploy:
+      labels:
+        prometheus.enable: "true"
+        prometheus.port: "8428"
+        prometheus.path: "/metrics"
+      mode: replicated
+      placement:
+        constraints:
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+      replicas: 1
+    volumes:
+      - "{{ app_dir }}:/etc/prometheus"
+
   blackbox-exporter:
-    image: prom/blackbox-exporter
+    image: "{{ images.blackbox }}"
     command:
       "--config.file=/etc/blackbox-exporter/blackbox.yml"
     networks:
