@@ -67,6 +67,12 @@ apollo::load() {
     sed -i 's/ZERO_PUBLIC_INTERFACE/APOLLO_PUBLIC_INTERFACE/g' *.env
     sed -i 's/ZERO_PROVIDER/APOLLO_PROVIDER/g' *.env
 
+    # Load Default config
+    source /apollo/defaults.env
+    # set -o allexport
+    # export $(grep -hv '^#' /apollo/defaults.env | xargs) > /dev/null
+    # set +o allexport
+
     # Load Space config
 		for file in *.env;
 		do
@@ -80,21 +86,22 @@ apollo::load() {
     
     # echo $(htpasswd -nbB admin "h6KL8fz5c") | sed -e s/\\$/\\$\\$/g
 
-    export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
-    export APOLLO_SPACE=${APOLLO_SPACE}
-    export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
-    PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
-    export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
-    export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
-    export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
-    export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
-    export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure"}
-    export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
-    export TF_IN_AUTOMATION=1
-    export TF_VAR_environment=${APOLLO_SPACE}
-    export TF_VAR_ssh_public_key_file=${APOLLO_SPACE_DIR}/.ssh/id_rsa.pub
-    export DOCKER_HOST=ssh://root@${APOLLO_INGRESS_IP}
-    export LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
+    # export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
+    # export APOLLO_SPACE=${APOLLO_SPACE}
+    # export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
+    # PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
+    # export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
+    # export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
+    # export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
+    # export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
+    # export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure"}
+    # export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
+    # export TF_IN_AUTOMATION=1
+    # export TF_VAR_environment=${APOLLO_SPACE}
+    # export TF_VAR_ssh_public_key_file=${APOLLO_SPACE_DIR}/.ssh/id_rsa.pub
+    # export DOCKER_HOST=ssh://root@${APOLLO_INGRESS_IP}
+    # export LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
+    # export APOLLO_BACKUPS_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
     if [ "$LETSENCRYPT_ENABLED" != "0" ];
     then
       export HTTP_ENDPOINT=https
@@ -381,7 +388,7 @@ apollo::inspect() {
         apollo::echo " ∟ 🟢 ${bold}${space}${normal}"
       done
     else
-      apollo::warn "❌ ${bold}Federation: ${normal}Disabled"
+      apollo::warn "🔴 ${bold}Federation: ${normal}Disabled"
     fi
 
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
@@ -392,10 +399,28 @@ apollo::inspect() {
       apollo::echo " ∟ 🟢 ${bold}Prometheus: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@prometheus.$APOLLO_PLATFORM_DOMAIN"
       apollo::echo " ∟ 🟢 ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_PLATFORM_DOMAIN"
     else
-      apollo::warn "❌ ${bold}Backplane: ${normal}Disabled"
+      apollo::warn "🔴 ${bold}Backplane: ${normal}Disabled"
     fi
 
-    if [ ! -z "$APOLLO_RUNNER_ENABLED" ];
+    if [ "$APOLLO_BACKUPS_ENABLED" != "0" ];
+    then
+      apollo::echo "🟢 ${bold}Backups: ${normal}Enabled"
+      apollo::echo " ∟ 🟢 ${bold}Repository: ${normal}${RESTIC_REPOSITORY}"
+      apollo::echo " ∟ 🟢 ${bold}Password: ${normal}${RESTIC_PASSWORD}"
+    else
+      apollo::warn "🔴 ${bold}Backups: ${normal}Disabled"
+    fi
+
+    if [ "$APOLLO_ALERTS_ENABLED" != "0" ];
+    then
+      apollo::echo "🟢 ${bold}Alerts: ${normal}Enabled"
+      apollo::echo " ∟ 🟢 ${bold}Slack Webhook: ${normal}${SLACK_WEBHOOK}"
+      apollo::echo " ∟ 🟢 ${bold}Slack Channel: ${normal}${SLACK_CHANNEL}"
+    else
+      apollo::warn "🔴 ${bold}Alerts: ${normal}Disabled"
+    fi
+
+    if [ "$APOLLO_RUNNER_ENABLED" != "0" ];
     then
       apollo::echo "🟢 ${bold}GitLab Runner: ${normal}Enabled"
 

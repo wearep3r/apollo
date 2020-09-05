@@ -13,5 +13,4 @@ dependencies:
   - zero-app-cadvisor
   - zero-app-gc
   - zero-app-prometheus
-  - zero-app-alertmanager
   - zero-app-grafana

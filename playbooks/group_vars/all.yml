@@ -143,7 +143,7 @@ apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default
 apollo_gc_cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | default(0, true) }}"
 
 # apollo. > PaaS > Backplane > Prometheus
-
+apollo_alerts_enabled: "{{ lookup('env','APOLLO_ALERTS_ENABLED') | default(0, true) }}"
 
 # apollo. > PaaS > Apps
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"

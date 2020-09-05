@@ -5,9 +5,16 @@
   roles:
     - apollo-app-node-exporter
 
-- name: "@apollo-backup"
+- name: "@apollo-alerts"
   become: True
-  hosts: all
+  hosts: manager[0]
+  gather_facts: True
+  roles:
+    - zero-app-alertmanager
+
+- name: "@apollo-backups"
+  become: True
+  hosts: manager[0]
   gather_facts: True
   roles:
     - zero-app-lake0

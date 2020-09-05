@@ -1,5 +1,5 @@
 ---
-- name: Configure Backups
+- name: Configure backups
   block:
     - name: Creating app directory
       file:
