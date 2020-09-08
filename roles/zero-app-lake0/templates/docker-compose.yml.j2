@@ -12,13 +12,17 @@ services:
       RESTIC_JOB_ARGS: "{{ restic_job_args }}"
       AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
       AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+      RESTIC_SNAPSHOT_ID: "{{ restic_snapshot_id }}"
+      RESTIC_RESTORE_DIR: "{{ restic_restore_dir }}"
     networks: 
       - monitoring
     volumes: 
 {% if apollo_data == "storidge" %}
       - /cio/volumes:/data
+      - /cio/volumes/restic_restore:/tmp/restic_restore/
 {% else %}
       - /var/lib/docker/volumes:/data
+      - /var/lib/docker/volumes/restic_restore:/tmp/restic_restore/
 {% endif %}
     deploy:
       mode: global

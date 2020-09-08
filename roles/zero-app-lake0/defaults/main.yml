@@ -8,3 +8,6 @@ restic_password: "{{ lookup('env','RESTIC_PASSWORD') | default(admin_password, t
 restic_backup_cron: "{{ lookup('env','RESTIC_BACKUP_CRON') | default('30 * * * *', true) }}"
 restic_forget_args: "{{ lookup('env','RESTIC_FORGET_ARGS') | default('--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1', true) }}"
 restic_job_args: "{{ lookup('env','RESTIC_JOB_ARGS') | default('--exclude minio_minio-data', true) }}"
+
+restic_restore_dir: "{{ lookup('env','RESTIC_RESTORE_DIR') | default('/tmp/restic_restore/', true) }}"
+restic_snapshot_id: "{{ lookup('env','RESTIC_SNAPSHOT_ID') | default('latest', true) }}"
