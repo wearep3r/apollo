@@ -29,7 +29,7 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "80"
-        traefik.frontend.rule: "Host: maildev.{{ platform_domain }}"
+        traefik.frontend.rule: "Host: maildev.{{ space_domain }}"
         traefik.backend: "zero-app-maildev"
         traefik.protocol: "http"
 {% if letsencrypt_enabled|bool %}

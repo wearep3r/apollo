@@ -26,7 +26,7 @@
           #- "/var/run/docker.sock:/var/run/docker.sock"
         extra_configs:
           runners.custom_build_dir: 
-            enaled: True
+            enabled: True
           runners.docker:
             privileged: True
             disable_cache: False

@@ -1,0 +1,8 @@
+---
+app_name: "loki"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+_loki_binary_install_dir: "/usr/local/bin"
+_loki_system_group: "loki"
+_loki_system_user: "loki"
+loki_version: "1.6.1"

@@ -1,0 +1,45 @@
+---
+# tasks file for zero-app-portainer
+- name: Provision Portainer
+  block:
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /tmp/zero-app-portainer.yml
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
+    - name: Provision Portainer
+      docker_stack:
+        state: present
+        name: portainer
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - /tmp/zero-app-portainer.yml
+
+      register: portainer_provision
+      tags:
+          - portainer
+
+    - name: "Wait for http://portainer.{{ space_domain }} to become ready"
+      uri:
+        url: "http://portainer.{{ space_domain }}"
+        method: GET
+        status_code: 200
+        validate_certs: no
+        user: "{{admin_user}}"
+        password: "{{admin_password}}"
+      register: _result
+      until: _result.status == 200
+      retries: 30
+      delay: 10
+      tags:
+        - portainer

@@ -26,9 +26,9 @@
 #           - /tmp/zero-app-wireguard.yml
 #       register: wireguard_provision
 
-#     - name: "Wait for http://wireguard.{{ platform_domain }} to become ready"
+#     - name: "Wait for http://wireguard.{{ space_domain }} to become ready"
 #       uri:
-#         url: "http://wireguard.{{ platform_domain }}"
+#         url: "http://wireguard.{{ space_domain }}"
 #         method: GET
 #         status_code: 200
 #         validate_certs: no

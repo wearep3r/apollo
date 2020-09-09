@@ -1,0 +1,79 @@
+---
+# tasks file for zero-app-cadvisor
+- name: Provision garbage-collector
+  block:
+    - name: Teardown legacy Docker stack
+      docker_stack:
+        absent_retries: 5
+        absent_retries_interval: 10
+        state: absent
+        name: garbage-collector
+
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: "{{ app_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+        mode: '0644'
+      register: stack_file
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
+
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
+    # - name: Provision garbage-collector
+    #   docker_stack:
+    #     state: present
+    #     name: apollo-garbage-collector
+    #     prune: yes
+    #     with_registry_auth: yes
+    #     compose:
+    #       - "{{ app_dir }}/docker-compose.yml"
+
+    - name: "Copy {{ app_name }} systemd service file"
+      template:
+        src: templates/garbage-collector.service.j2
+        dest: /etc/systemd/system/garbage-collector.service
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart garbage-collector
+
+    - name: Make sure service is started
+      service:
+        name: garbage-collector
+        state: started
+        enabled: true

@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include zero-app-portainer"
-      include_role:
-        name: "zero-app-portainer"

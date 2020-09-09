@@ -1,4 +1,5 @@
 force_reboot: 0
+in_ci: "{{ lookup('env','CI') | default(0, true) }}"
 
 # apollo.
 apollo_version: "{{ lookup('env','APOLLO_VERSION') | default('', true) }}"
@@ -41,6 +42,10 @@ apollo_smtp_port: "{{ lookup('env','APOLLO_SMTP_PORT') | default(zero_smtp_port,
 appollo_custom_resolvers: "{{ lookup('env','APPOLLO_CUSTOM_RESOLVERS').split(',') | default([], true) }}"
 apollo_custom_resolvers: "{{ lookup('env','APOLLO_CUSTOM_RESOLVERS').split(',') | default(appollo_custom_resolvers, true) }}"
 
+# For automating DNS record creation with DigitalOcean
+apollo_dns_enabled: "{{ lookup('env','APOLLO_DNS_ENABLED') | default(0, true) }}"
+apollo_dns_challenge_provider: "{{ lookup('env','APOLLO_DNS_CHALLENGE_PROVIDER') | default('generic', true) }}"
+
 # apollo. > IaaS
 worker_os_family: "{{ lookup('env', 'TF_VAR_worker_os_family') | default('ubuntu', true) }}"
 zero_private_iface: "{{ lookup('env','ZERO_PRIVATE_INTERFACE') | default('eth0', true) }}"
@@ -49,6 +54,21 @@ zero_public_iface: "{{ lookup('env','ZERO_PUBLIC_INTERFACE') | default('eth1', t
 public_iface: "{{ lookup('env','APOLLO_PUBLIC_INTERFACE') | default(zero_public_iface, true) }}"
 zero_provider: "{{ lookup('env','ZERO_PROVIDER') | default('generic', true) }}"
 apollo_provider: "{{ lookup('env','APOLLO_PROVIDER') | default(zero_provider, true) }}"
+worker_size: "{{ lookup('env', 'TF_VAR_worker_size') }}"
+manager_size: "{{ lookup('env', 'TF_VAR_manager_size') }}"
+
+# apollo. > IaaS > hcloud
+hcloud_pricing:
+    cx11: "2.89"
+    cx21: "5.68"
+    cx31: "10.32"
+    cx41: "18.44"
+    cx51: "34.68"
+    cpx11: "4.05"
+    cpx21: "8.00"
+    cpx31: "14.38"
+    cpx41: "26.56"
+    cpx51: "57.88"
 
 # apollo. > PaaS
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
@@ -58,6 +78,8 @@ ansible_ssh_private_key_file: "{{ lookup('env','SSH_PRIVATE_KEY_FILE') | default
 ansible_ssh_public_key_file: "{{ lookup('env','SSH_PUBLIC_KEY_FILE') | default(apollo_space_dir+'/.ssh/id_rsa.pub', true) }}"
 zero_ingress_ip: "{{ lookup('env','ZERO_INGRESS_IP') | default('127.0.0.1', true) }}"
 ingress_ip: "{{ lookup('env','APOLLO_INGRESS_IP') | default(zero_ingress_ip, true) }}"
+apollo_ingress_ip: "{{ lookup('env','APOLLO_INGRESS_IP') | default(ingress_ip, true) }}"
+apollo_management_ip: "{{ lookup('env','APOLLO_MANAGEMENT_IP') | default(apollo_ingress_ip, true) }}"
 zero_base_domain: "{{ lookup('env','ZERO_BASE_DOMAIN') | default(ingress_ip + '.xip.io', true) }}"
 base_domain: "{{ lookup('env','APOLLO_BASE_DOMAIN') | default(zero_base_domain, true) }}"
 zero_platform_domain: "{{ lookup('env','ZERO_PLATFORM_DOMAIN') | default(apollo_space + '.' + base_domain, true) }}"
@@ -65,11 +87,15 @@ platform_domain: "{{ lookup('env','APOLLO_PLATFORM_DOMAIN') | default(zero_platf
 space_domain: "{{ lookup('env','APOLLO_SPACE_DOMAIN') | default(apollo_space + '.' + base_domain, true) }}"
 zero_admin_user: "{{ lookup('env','ZERO_ADMIN_USER') | default('admin', true) }}"
 admin_user: "{{ lookup('env','APOLLO_ADMIN_USER') | default(zero_admin_user, true) }}"
-zero_admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('insecure!', true) }}"
+apollo_admin_user: "{{ lookup('env','APOLLO_ADMIN_USER') | default(admin_user, true) }}"
+zero_admin_password: "{{ lookup('env','ZERO_ADMIN_PASSWORD') | default('insecure', true) }}"
 admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(zero_admin_password, true) }}"
+apollo_admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default(admin_password, true) }}"
 #admin_password_hash_escaped: "{{ admin_password_hash | replace('$','$$') }}"
-zero_admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$KjJMrwd7ZQbn/6p0uQvXYusZoR6uGNgEgvPfAzhmJ12T4bPFal/se', true) }}"
+# echo $(htpasswd -nbB admin "D4nkD0lph") | sed -e s/\\$/\\$\\$/g
+zero_admin_password_hash: "{{ lookup('env','ZERO_ADMIN_PASSWORD_HASH') | default('$$2y$$05$$MjKXERLDVgQIgzbHqiPlruU5j2di9W7Se0WTsvs98WJfMQTHkvlmO', true) }}"
 admin_password_hash: "{{ lookup('env','APOLLO_ADMIN_PASSWORD_HASH') | default(zero_admin_password_hash, true) }}"
+apollo_admin_password_hash: "{{ lookup('env','APOLLO_ADMIN_PASSWORD_HASH') | default(admin_password_hash, true) }}"
 
 # apollo. > PaaS > Engine
 zero_engine: "{{ lookup('env','ZERO_ENGINE') | default('docker', true) }}"
@@ -82,6 +108,9 @@ apollo_orchestrator: "{{ lookup('env','APOLLO_ORCHESTRATOR') | default(zero_orch
 # apollo. > PaaS > Data
 zero_data: "{{ lookup('env','ZERO_DATA') | default('generic', true) }}"
 apollo_data: "{{ lookup('env','APOLLO_DATA') | default(zero_data, true) }}"
+apollo_data_volumes_dir: "{{ lookup('env','APOLLO_DATA_VOLUMES_DIR') | default(apollo_remote_dir+'/volumes', true) }}"
+apollo_data_nfs_source: "{{ hostvars[lookup('env','APOLLO_DATA_NFS_SOURCE')] | default(hostvars['manager-0'], true) }}"
+apollo_data_nfs_directory: "{{ lookup('env','APOLLO_DATA_NFS_DIRECTORY') | default(apollo_data_volumes_dir, true) }}"
 
 # apollo. > PaaS > Security
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(1, true) }}"
@@ -101,19 +130,25 @@ wireguard_post_up: false
 wireguard_post_down: false
 
 # apollo. > PaaS > Backups
-apollo_backups_enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(1, true) }}"
+apollo_backups_enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(0, true) }}"
 aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default(admin_user, true) }}"
 aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default(admin_password, true) }}"
+restic_repository: "{{ lookup('env','RESTIC_REPOSITORY') | default('s3:https://minio.'+space_domain+'/'+apollo_space+'-backups', true) }}"
+restic_password: "{{ lookup('env','RESTIC_PASSWORD') | default(admin_password, true) }}"
+restic_backup_cron: "{{ lookup('env','RESTIC_BACKUP_CRON') | default('30 * * * *', true) }}"
+restic_forget_args: "{{ lookup('env','RESTIC_FORGET_ARGS') | default('--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1', true) }}"
+restic_job_args: "{{ lookup('env','RESTIC_JOB_ARGS') | default('--exclude minio_minio-data', true) }}"
 
 # apollo. > PaaS > Backplane
 backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
+apollo_controlplane_enabled: "{{ lookup('env','APOLLO_CONTROLPLANE_ENABLED') | default(1, true) }}"
 apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(backplane_enabled, true) }}"
 
 # apollo. > PaaS > Backplane > Garbage Collection
 apollo_gc_cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | default(0, true) }}"
 
 # apollo. > PaaS > Backplane > Prometheus
-
+apollo_alerts_enabled: "{{ lookup('env','APOLLO_ALERTS_ENABLED') | default(0, true) }}"
 
 # apollo. > PaaS > Apps
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
@@ -130,12 +165,12 @@ apollo_runner_enabled: "{{ lookup('env','APOLLO_RUNNER_ENABLED') | default(runne
 runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(1, true) }}"
 runner_build_enabled: "{{ lookup('env','RUNNER_BUILD_ENABLED') | default(1, true) }}"
 runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default(gitlab_shared_runners_token, true) }}"
-ci_docker_image: "docker:19.03.6"
-ci_dind_image: "docker:19.03.6-dind"
+ci_docker_image: "docker:19.03.12"
+ci_dind_image: "docker:19.03.12-dind"
 runner_env: 
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"
-gitlab_runner_package_version: 13.0.0
+gitlab_runner_package_version: 13.3.1
 gitlab_runner_listen_address: ":9252"
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'

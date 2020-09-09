@@ -3,7 +3,7 @@ version: '3.7'
 services:
   alertmanager:
     image: {{ images.alertmanager }}
-    command: "--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --web.external-url=http://prometheus.{{ platform_domain }}"
+    command: "--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --web.external-url=http://prometheus.{{ space_domain }}"
     networks: 
       - monitoring
     volumes: 

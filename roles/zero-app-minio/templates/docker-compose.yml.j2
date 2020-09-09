@@ -7,7 +7,7 @@ services:
     environment:
       MINIO_ACCESS_KEY: "{{ admin_user }}"
       MINIO_SECRET_KEY: "{{ admin_password }}"
-      MINIO_DOMAIN: "minio.{{ platform_domain }}"
+      MINIO_DOMAIN: "minio.{{ space_domain }}"
       MINIO_PROMETHEUS_AUTH_TYPE: "public"
     networks: 
       - proxy
@@ -27,13 +27,17 @@ services:
         condition: any
       placement:
         constraints: 
+{% if hostvars[groups['worker'][0]] %}
+        - "node.hostname == {{ hostvars[groups['worker'][0]]['ansible_hostname'] }}"
+{% else %}
         - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+{% endif %}
       labels:
         traefik.enable: "true"
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9000"
-        traefik.frontend.rule: "Host:minio.{{ platform_domain }}"
+        traefik.frontend.rule: "Host:minio.{{ space_domain }}"
         traefik.backend: "zero-app-minio"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"

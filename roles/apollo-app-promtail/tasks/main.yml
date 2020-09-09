@@ -1,0 +1,104 @@
+---
+- name: Provision promtail 
+  block:
+    - name: Create app group
+      group:
+        name: "{{ app_name }}"
+        state: present
+
+    - name: Create app user
+      user:
+        name: "{{ app_name }}"
+        comment: "apollo-app-{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
+
+    - name: Copy promtail config
+      template:
+        src: templates/promtail-config.yml.j2
+        dest: "{{ app_dir }}/promtail-config.yml"
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+        mode: '0644'
+      notify: restart promtail
+
+    - name: Download promtail binary
+      become: false
+      get_url:
+        url: "https://github.com/grafana/loki/releases/download/v{{ promtail_version }}/promtail-linux-amd64.zip"
+        dest: "/tmp/promtail-v{{ promtail_version }}.zip"
+      register: _download_binary
+      until: _download_binary is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+    - name: Unpack promtail binary
+      become: false
+      unarchive:
+        remote_src: True
+        src: "/tmp/promtail-v{{ promtail_version }}.zip"
+        dest: "/tmp"
+        creates: "/tmp/promtail-linux-amd64"
+      check_mode: false
+
+    - name: Propagate promtail binaries
+      copy:
+        src: "/tmp/promtail-linux-amd64"
+        dest: "{{ _promtail_binary_install_dir }}/promtail"
+        mode: 0755
+        owner: root
+        group: root
+        remote_src: True
+      notify: restart promtail
+      when: not ansible_check_mode
+
+    - name: Copy the promtail systemd service file
+      template:
+        src: templates/promtail.service.j2
+        dest: /etc/systemd/system/promtail.service
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart promtail
+
+    - name: Make sure service is started
+      service:
+        name: promtail
+        state: started
+        enabled: true

@@ -24,6 +24,7 @@
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 23 -j ACCEPT
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+-A FILTERS -m state --state NEW -m tcp -p tcp --dport 8443 -j ACCEPT
 {% if apollo_orchestrator in ["kubernetes", "k3s"] %}
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 6443 -j ACCEPT
 {% endif %}

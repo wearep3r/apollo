@@ -24,11 +24,11 @@ services:
   statping:
     image: statping/statping
     environment:
-      VIRTUAL_HOST: "statping.{{ platform_domain }}"
+      VIRTUAL_HOST: "statping.{{ space_domain }}"
       VIRTUAL_PORT: 8080
       VERBOSE: 2
       NAME: "{{ apollo_space }}"
-      DOMAIN: "statping.{{ platform_domain }}"
+      DOMAIN: "statping.{{ space_domain }}"
       DB_CONN: postgres
       DB_HOST: postgres
       DB_USER: statup
@@ -57,7 +57,7 @@ services:
           traefik.tags: "proxy"
           traefik.docker.network: "proxy"
           traefik.port: "8080"
-          traefik.frontend.rule: "Host:statping.{{ platform_domain }}"
+          traefik.frontend.rule: "Host:statping.{{ space_domain }}"
           traefik.backend: "zero-app-statping"
           traefik.protocol: "http"
 {% if letsencrypt_enabled|bool %}

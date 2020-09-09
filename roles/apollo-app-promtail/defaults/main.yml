@@ -1,0 +1,10 @@
+---
+app_name: "promtail"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+_promtail_binary_install_dir: "/usr/local/bin"
+_promtail_system_group: "root"
+_promtail_system_user: "root"
+promtail_version: "1.6.1"
+
+  

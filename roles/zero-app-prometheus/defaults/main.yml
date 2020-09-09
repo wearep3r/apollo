@@ -1,9 +1,0 @@
----
-app_name: "prometheus"
-app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-app_domain: "{{ lookup('env','APOLLO_APP_PROMETHEUS_APP_DOMAIN') | default(app_name+'.'+platform_domain, true) }}"
-
-images:
-  prometheus: "{{ lookup('env','APOLLO_APP_PROMETHEUS_IMAGES_PROMETHEUS') | default('prom/prometheus:v2.19.2', true) }}"
-
-prometheus_federation_enabled: "{{ lookup('env','PROMETHEUS_FEDERATION_ENABLED') | default(apollo_federation_enabled, true) }}"

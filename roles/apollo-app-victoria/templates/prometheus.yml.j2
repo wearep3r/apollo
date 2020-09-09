@@ -1,0 +1,180 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+  external_labels:
+    monitor: 'victoria'
+    space: '{{ apollo_space }}'
+
+#remote_write:
+#  - url: http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8428/api/v1/write
+
+# rule_files:
+#   - "swarm_node.rules.yml"
+#   - "swarm_task.rules.yml"
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+scrape_configs:
+  # - job_name: 'prometheus'
+  #   static_configs:
+  #     - targets: ['localhost:9090']
+  
+  - job_name: 'blackbox-exporter'
+    metrics_path: /probe
+    params:
+      module: [http_backplane]
+    static_configs:
+      - targets:
+        - http://portainer.{{ space_domain }}
+        - http://grafana.{{ space_domain }}
+        - http://proxy.{{ space_domain }}
+        - http://prometheus.{{ space_domain }}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ hostvars[groups['manager'][0]]['cluster_ip'] }}:9115  # The blackbox exporter's real hostname:port.
+
+    
+{% if backplane_enabled|bool %}
+  # - job_name: 'cadvisor'
+  #   dns_sd_configs:
+  #   - names:
+  #     # This A-Record is managed by Docker Swarm
+  #     - 'tasks.cadvisor'
+  #     type: 'A'
+  #     port: 9009
+
+  - job_name: 'cadvisor'
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9009"
+{% endfor %}
+    metrics_path: /metrics
+
+  - job_name: 'dockerd'
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9323"
+{% endfor %}
+    metrics_path: /metrics
+  
+  - job_name: 'victoria'
+    static_configs:
+    - targets:
+      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8428"
+    metrics_path: /metrics
+  
+  - job_name: 'grafana'
+    static_configs:
+    - targets:
+      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3000"
+    metrics_path: /metrics
+
+  - job_name: 'node-exporter'
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9100"
+{% endfor %}
+    metrics_path: /metrics
+
+    # dns_sd_configs:
+    # - names:
+    #   # This A-Record is managed by Docker Swarm
+    #   - 'tasks.node-exporter'
+    #   type: 'A'
+    #   port: 9100
+
+  - job_name: 'traefik'
+    static_configs:
+    - targets:
+      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8082"
+    metrics_path: /metrics
+
+  - job_name: 'loki'
+    static_configs:
+    - targets:
+      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3100"
+    metrics_path: /metrics
+
+  - job_name: 'promtail'
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9080"
+{% endfor %}
+    metrics_path: /metrics
+
+{% endif %}
+
+{% if 'minio' in apollo_apps %}
+  - job_name: 'minio'
+    dns_sd_configs:
+      - names:
+        # This A-Record is managed by Docker Swarm
+        - 'tasks.minio'
+        type: 'A'
+        port: 9000
+    metrics_path: /minio/prometheus/metrics
+{% endif %}
+
+{% if 'statping' in apollo_apps %}
+  - job_name: 'statping'
+    bearer_token: {{ admin_password }}
+    dns_sd_configs:
+    - names:
+      - 'tasks.statping'
+      type: 'A'
+      port: 8080
+{% endif %}
+
+{% if runner_enabled|bool %}
+  - job_name: 'giltlab-runner'
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9252"
+{% endfor %}
+    metrics_path: /metrics
+{% endif %}
+
+{% if apollo_data == "storidge" %}
+  - job_name: 'cio-exporter'
+    static_configs:
+    - targets:
+      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:16995"
+    metrics_path: /metrics
+{% endif %}
+
+{% if prometheus_federation_enabled|bool %}
+{% for space in apollo_federation_spaces %}
+  - job_name: 'federate-{{ space.apollo_space }}'
+    scrape_interval: 15s
+    scrape_timeout: 7s
+    honor_labels: true
+    metrics_path: '/federate'
+    basic_auth:
+      username: munfred
+      password: D7psPWqVVT7toJf
+    params:
+      'match[]':
+        - '{job="prometheus"}'
+        - '{__name__=~"job:.*"}'
+    static_configs:
+      - targets:
+      - '{{ space.prometheus_domain }}'
+        labels:
+          apollo_space: {{ space.apollo_space }}
+{% endfor %}
+
+{% endif %}

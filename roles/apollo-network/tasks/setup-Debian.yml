@@ -1,8 +1,4 @@
 ---
-# - name: Debug Interfaces
-#   debug: 
-#     msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Ingress IP: '+ingress_ip }}"
-
 - name: Copying firewall config
   template:
     src: templates/iptables.conf.j2
@@ -195,10 +191,13 @@
       when: config.changed
   when: apollo_wireguard_enabled|bool
 
+# This is needed because HETZNER machines sometimes mess
+# up their networking interfaces. So we save private_iface to
+# a network configuration file to keep configuration sane
 - name: Configure hcloud networking
   block:
     - name: Set network config
-      copy:
+      template:
         src: templates/hcloud-network.cfg.j2
         dest: /etc/network/interfaces.d/61-apollo-hcloud-network.cfg
       register: hcloud_network_config

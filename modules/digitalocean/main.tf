@@ -5,7 +5,7 @@ resource "digitalocean_tag" "environment" {
 }
 
 resource "digitalocean_tag" "provider" {
-  name = "dash1"
+  name = "apollo"
 }
 
 # Shared tags

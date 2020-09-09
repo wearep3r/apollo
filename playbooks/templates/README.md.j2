@@ -1,0 +1,98 @@
+# {{ apollo_space }}
+
+## Details
+
+- Container-Engine: [{{ apollo_engine }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_engine }})
+- Container-Orchestrator: [{{ apollo_orchestrator }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_orchestrator }})
+- Data-Engine: [{{ apollo_data }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_data }})
+- Provider: {{ apollo_provider }}
+- Wireguard: {{ apollo_wireguard_enabled|bool }}
+- Get Help: [apollo docs](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/)
+
+### Nodes
+
+{% for host in groups['all'] %}
+* {{ host }}: {{ hostvars[host]['ansible_'+public_iface]['ipv4']['address'] }}
+{% endfor %}
+
+{% if apollo_federation_enabled|bool %}
+## Federation
+
+- Federation-User: {{ apollo_federation_user }}
+- Federation-Password: {{ apollo_federation_password }}
+- Federation-Spaces:
+{% for space in apollo_federation_spaces %}
+  - {{ space }}
+{% endfor %}
+{% endif %}
+
+{% if apollo_backups_enabled|bool %}
+## Backups
+
+- Backup-User: {{ aws_access_key_id }}
+- Backup-Password: {{ aws_secret_access_key }}
+- Backup-Ziel: {{ restic_repository }}
+- Backup-Keyphrase: {{ restic_password }}
+{% endif %}
+
+## Authentication
+
+apollo uses **Basic Authentication** to authenticate access on backplane services:
+
+- Username: {{ admin_user }}
+- Password: {{ admin_password }}
+
+## DNS Setup
+
+- Base Domain: {{ base_domain }}
+- Space Domain: {{ space_domain }}
+- Ingress IP: {{ apollo_ingress_ip }}
+- Management IP: {{ apollo_management_ip }}
+
+By default, apollo expects ingress traffic to land on the worker nodes which is why `INGRESS_IP` defaults to `worker-0`'s IP.
+
+To operate this space, please add the following records to your DNS zone (`{{ base_domain }}`):
+
+```
+{{ apollo_space }} IN A {{ apollo_management_ip }}
+*.{{ apollo_space }} IN A {{ apollo_management_ip }}
+```
+
+## Access
+
+### SSH
+
+A set of SSH-Keys belonging to this space can be found in `.ssh/`. The keys can be used to connect as user **root** to any of the IPs in `APOLLO_NODES_MANAGER` or `APOLLO_NODES_WORKER`:
+
+{% for host in groups['all'] %}
+* {{ host }}: {{ hostvars[host]['ansible_'+public_iface]['ipv4']['address'] }}
+{% endfor %}
+
+Assuming you cloned the repository and work from its local directory, you can connect via ssh like this:
+
+`ssh -l root -i .ssh/id_rsa {{ space_domain }}`
+
+Once connected, you can reach any other node in the cluster by simply doing `ssh manager-0` etc.
+
+### VS Code Remote Development
+
+Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remote/remote-overview) first.
+
+- Clone this repo
+- cd into the repository directory
+- add your ssh-key to the apollo manager: `ssh-copy-id -i ~/.ssh/id_rsa -f -o "IdentityFile .ssh/id_rsa" root@{{ space_domain }}`
+- Setup [SSH](https://code.visualstudio.com/docs/remote/ssh-tutorial)
+- Click the "Open a remote window" button, select "Remote SSH: connect to host", then "+ Add new SSH Host"
+- Enter `ssh root@{{ space_domain }}`
+- Enjoy
+
+{% if backplane_enabled|bool %}
+### Web
+
+You can reach any of the controlplane services through its webinterface. Use `{{ apollo_admin_user }}` and `{{ apollo_admin_password }}` to authenticate.
+
+- [Cockpit](http://cockpit.{{ space_domain }}:8443)
+- [Portainer](http://portainer.{{ space_domain }}:8443)
+- [Grafana](http://grafana.{{ space_domain }}:8443)
+- [Traefik](http://traefik.{{ space_domain }}:8443)
+{% endif %}

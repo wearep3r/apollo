@@ -11,6 +11,12 @@
     state: directory
     mode: '0755'
 
+- name: Creating apollo apps directory
+  file:
+    path: "{{ apollo_data_volumes_dir }}"
+    state: directory
+    mode: '0755'
+
 - name: Setting Hostname
   hostname:
     name: "{{ inventory_hostname }}"
@@ -33,44 +39,28 @@
   lineinfile: 
     dest=/etc/hosts 
     regexp='.*{{ item }}$' 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[item]['ansible_hostname'] }}" 
+    line="{{ hostvars[item]['cluster_ip'] }} {{ hostvars[item]['ansible_hostname'] }} {{ hostvars[item]['ansible_hostname'] }}.{{ space_domain }}" 
     state=present
-  #when: hostvars[item]['vpn_ip']['ipv4']['address'] is defined
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['cluster_ip'] is defined
   with_items: "{{ groups['all'] }}"
 
 - name: nodes.* A-Record
   lineinfile: 
     dest=/etc/hosts 
-    regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.{{ platform_domain }}" 
+    regexp=".*logs.{{ space_domain }}$" 
+    line="{{ hostvars[item]['cluster_ip'] }} nodes.{{ space_domain }}" 
     state=present
-  #when: hostvars[item]['vpn_ip'] is defined
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['cluster_ip'] is defined
   with_items: "{{ groups['all'] }}"
-  #line="{{ hostvars[item]['vpn_ip'] }} {{ hostvars[item]['ansible_hostname']}}" 
-
-# Deprecated
-# - name: zero.nodes A-Record
-#   lineinfile: 
-#     dest=/etc/hosts 
-#     regexp=".*logs.{{ platform_domain }}$" 
-#     line="{{ hostvars[item]['vpn_ip'] }} zero.nodes" 
-#     state=present
-#   #when: hostvars[item]['vpn_ip'] is defined
-#   when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
-#   with_items: "{{ groups['all'] }}"
 
 - name: nodes.apollo A-Record
   lineinfile: 
     dest=/etc/hosts 
-    regexp=".*logs.{{ platform_domain }}$" 
-    line="{{ hostvars[item]['ansible_'+private_iface]['ipv4']['address'] }} nodes.apollo" 
+    regexp=".*logs.{{ space_domain }}$" 
+    line="{{ hostvars[item]['cluster_ip'] }} nodes.apollo" 
     state=present
-  #when: hostvars[item]['vpn_ip'] is defined
-  when: hostvars[item]['ansible_'+private_iface]['ipv4']['address'] is defined
+  when: hostvars[item]['cluster_ip'] is defined
   with_items: "{{ groups['all'] }}"
-  #line="{{ hostvars[item]['vpn_ip'] }} nodes.apollo" 
 
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
@@ -109,14 +99,6 @@
     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
     validate: 'visudo -cf %s'
 
-# - name: Remove require tty
-#   lineinfile: 
-#     regexp: '^(Defaults\s+requiretty)$'
-#     line: '# \1'
-#     dest: /etc/sudoers 
-#     #state: absent
-#     backrefs: yes
-
 - name: Unlocking apt
   command: apt update
   changed_when: False
@@ -140,12 +122,26 @@
       - lm-sensors
       - make
       - zsh
-      #- fzf
-      #- ack
+      - adduser
+      - libfontconfig
       - open-iscsi
       - resolvconf
+      - unzip
+      - gnupg2
+      - cockpit 
+      - cockpit-dashboard
+      - cockpit-storaged
     state: present
     update_cache: False
+
+- name: Setting up Cockpit config
+  template:
+    src: "cockpit-machines.j2"
+    dest: "/etc/cockpit/machines.d/05-apollo-nodes.json"
+    owner: root
+    group: root
+    mode: 0755
+  when: ansible_hostname == "manager-0"
 
 - name: Installing pip dependencies
   pip:
@@ -154,95 +150,7 @@
       - pyyaml
       - docker
       - psutil
-
-# - name: Copying custom resolver config
-#   block:
-#     - name: Copying resolvconf config
-#       template:
-#         src: templates/head.j2
-#         dest: /etc/resolvconf/resolv.conf.d/head
-#         owner: root
-#         group: root
-#         mode: '0644'
-#       notify: restart resolvconf
-#   when: apollo_custom_resolvers|length > 0
-
-# - name: Installing ZSH
-#   block:
-#     - name: Check if .zshrc exists
-#       stat:
-#         path: ~/.zshrc
-#       register: stat_rc_result
-
-#     - name: Check if .oh-my-zsh exists
-#       stat:
-#         path: ~/.oh-my-zsh
-#       register: stat_oh_my_zsh_result
-
-#     - name: Cloning oh-my-zsh
-#       git:
-#         repo=https://github.com/robbyrussell/oh-my-zsh
-#         dest=~/.oh-my-zsh
-#       when: not stat_oh_my_zsh_result.stat.exists
-
-#     - name: Cloning zsh-autosuggestions
-#       git:
-#         repo=https://github.com/zsh-users/zsh-autosuggestions
-#         dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
-
-#     - name: Cloning zsh-completions
-#       git:
-#         repo=https://github.com/zsh-users/zsh-completions
-#         dest=~/.oh-my-zsh/plugins/zsh-completions
-    
-#     - name: Cloning zsh-syntax-highlighting
-#       git:
-#         repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
-#         dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
-
-#     - name: Cloning fzf-tab-completion
-#       git:
-#         repo=https://github.com/lincheney/fzf-tab-completion.git
-#         dest=~/.oh-my-zsh/plugins/fzf-tab-completion
-      
-#     - name: Create ~/.zshrc
-#       template:
-#         src: templates/zshrc.j2
-#         dest: /root/.zshrc
-#         group: root
-#         owner: root
-#         mode: 0644
-#   ignore_errors: yes
-
-
-# - name: Installing bashtop
-#   block:
-#     - name: Clone bashtop Git repository
-#       git:
-#         repo: 'https://github.com/aristocratos/bashtop.git'
-#         dest: /opt/bashtop
-      
-#     - name: Install bashtop
-#       command: make install
-#         chdir=/opt/bashtop
-#       changed_when: False
-#   ignore_errors: yes
-
-
-# - name: Installing lazydocker
-#   block:
-#     - name: Download lazydocker
-#       get_url:
-#         url: "{{ lazydocker_url }}"
-#         dest: /usr/local/src/lazydocker.tar.gz
-#         mode: '0440'
-    
-#     - name: Extract lazydocker
-#       unarchive:
-#         src: /usr/local/src/lazydocker.tar.gz
-#         dest: /usr/local/bin/
-#         remote_src: True
-#   ignore_errors: yes
+      - jmespath
 
 - name: Setting up Kernel (Ubuntu)
   block:
