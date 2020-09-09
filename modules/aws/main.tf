@@ -7,7 +7,7 @@ locals {
   # Common tags to be assigned to all resources
   common_tags = {
     "environment" = var.environment,
-    "provider" = "dash1"
+    "provider" = "apollo"
   }
 
   all_tags = merge(local.common_tags, var.tags)

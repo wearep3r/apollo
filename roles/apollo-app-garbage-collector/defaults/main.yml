@@ -1,0 +1,6 @@
+---
+app_name: "garbage-collector"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+  
+images:
+  gc: "{{ lookup('env','APOLLO_APP_GARBAGE_COLLECTOR_IMAGES_GC') | default('clockworksoul/docker-gc-cron:latest', true) }}"

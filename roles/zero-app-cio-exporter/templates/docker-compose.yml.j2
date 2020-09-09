@@ -5,6 +5,8 @@ services:
     image: {{ images.cio_prom }}
     networks: 
       - monitoring
+    ports:
+      - "16995:16995"
     deploy:
       mode: replicated
       replicas: 1

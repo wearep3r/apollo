@@ -1,0 +1,19 @@
+- name: "@apollo-facts"
+  hosts: all
+  gather_facts: True
+  become: true
+  tasks:
+    - name: Setup facts
+      setup:
+        filter: "*"
+
+    - name: Set Node Facts
+      set_fact:
+        apollo_manager: "{{  hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}"
+        cluster_ip: "{{  hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+
+    - name: Set Node Facts (Wireguard)
+      set_fact:  
+        apollo_manager: "{{ hostvars[groups['manager'][0]]['apollo_cluster_ip'] }}"
+        cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"
+      when: apollo_wireguard_enabled|bool

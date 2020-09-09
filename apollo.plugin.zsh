@@ -30,7 +30,8 @@ apollo::load() {
       $APOLLO_FZF_DEFAULT_OPTS
       --bind=\"enter:execute(cd $APOLLO_SPACES_DIR/{})\"
     "
-    space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
+    #space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
+    space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf)
     export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$space
   fi
 
@@ -67,6 +68,12 @@ apollo::load() {
     sed -i 's/ZERO_PUBLIC_INTERFACE/APOLLO_PUBLIC_INTERFACE/g' *.env
     sed -i 's/ZERO_PROVIDER/APOLLO_PROVIDER/g' *.env
 
+    # Load Default config
+    source /apollo/defaults.env
+    # set -o allexport
+    # export $(grep -hv '^#' /apollo/defaults.env | xargs) > /dev/null
+    # set +o allexport
+
     # Load Space config
 		for file in *.env;
 		do
@@ -75,31 +82,37 @@ apollo::load() {
 			set +o allexport
 		done
 
+    # Reload Default config
+    source /apollo/defaults.env
+
     # Add ssh-key
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1
     
-    export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
-    export APOLLO_SPACE=${APOLLO_SPACE}
-    export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
-    PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
-    export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
-    export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
-    export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
-    export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
-    export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure!"}
-    export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
-    export TF_IN_AUTOMATION=1
-    export TF_VAR_environment=${APOLLO_SPACE}
-    export TF_VAR_ssh_public_key_file=${APOLLO_SPACE_DIR}/.ssh/id_rsa.pub
-    export DOCKER_HOST=ssh://root@${APOLLO_INGRESS_IP}
-    export LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
+    # echo $(htpasswd -nbB admin "h6KL8fz5c") | sed -e s/\\$/\\$\\$/g
+
+    # export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
+    # export APOLLO_SPACE=${APOLLO_SPACE}
+    # export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
+    # PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
+    # export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
+    # export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
+    # export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
+    # export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
+    # export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure"}
+    # export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
+    # export TF_IN_AUTOMATION=1
+    # export TF_VAR_environment=${APOLLO_SPACE}
+    # export TF_VAR_ssh_public_key_file=${APOLLO_SPACE_DIR}/.ssh/id_rsa.pub
+    # export DOCKER_HOST=ssh://root@${APOLLO_INGRESS_IP}
+    # export LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
+    # export APOLLO_BACKUPS_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
     if [ "$LETSENCRYPT_ENABLED" != "0" ];
     then
       export HTTP_ENDPOINT=https
     else
       export HTTP_ENDPOINT=http
     fi
-    export LOKI_ADDR=${HTTP_ENDPOINT}://logs.${APOLLO_PLATFORM_DOMAIN}
+    export LOKI_ADDR=${HTTP_ENDPOINT}://logs.${APOLLO_SPACE_DOMAIN}
 
     apollo::inspect
 	fi
@@ -185,6 +198,9 @@ apollo::terraform_apply() {
           terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH} >&5
           terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${APOLLO_SPACE_DIR}/nodes.apollo.env
         )
+
+        apollo::echo "Sleeping a bit, waiting for nodes to become ready"
+        sleep 20
         apollo::load $APOLLO_SPACE_DIR
       fi
     fi
@@ -376,21 +392,39 @@ apollo::inspect() {
         apollo::echo " ∟ 🟢 ${bold}${space}${normal}"
       done
     else
-      apollo::warn "❌ ${bold}Federation: ${normal}Disabled"
+      apollo::warn "🔴 ${bold}Federation: ${normal}Disabled"
     fi
 
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
       apollo::echo "🟢 ${bold}Backplane: ${normal}Enabled"
-      apollo::echo " ∟ 🟢 ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_PLATFORM_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@proxy.$APOLLO_PLATFORM_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Prometheus: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@prometheus.$APOLLO_PLATFORM_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_PLATFORM_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@proxy.$APOLLO_SPACE_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Prometheus: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@prometheus.$APOLLO_SPACE_DOMAIN"
+      apollo::echo " ∟ 🟢 ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_SPACE_DOMAIN"
     else
-      apollo::warn "❌ ${bold}Backplane: ${normal}Disabled"
+      apollo::warn "🔴 ${bold}Backplane: ${normal}Disabled"
     fi
 
-    if [ ! -z "$APOLLO_RUNNER_ENABLED" ];
+    if [ "$APOLLO_BACKUPS_ENABLED" != "0" ];
+    then
+      apollo::echo "🟢 ${bold}Backups: ${normal}Enabled"
+      apollo::echo " ∟ 🟢 ${bold}Repository: ${normal}${RESTIC_REPOSITORY}"
+      apollo::echo " ∟ 🟢 ${bold}Password: ${normal}${RESTIC_PASSWORD}"
+    else
+      apollo::warn "🔴 ${bold}Backups: ${normal}Disabled"
+    fi
+
+    if [ "$APOLLO_ALERTS_ENABLED" != "0" ];
+    then
+      apollo::echo "🟢 ${bold}Alerts: ${normal}Enabled"
+      apollo::echo " ∟ 🟢 ${bold}Slack Webhook: ${normal}${SLACK_WEBHOOK}"
+      apollo::echo " ∟ 🟢 ${bold}Slack Channel: ${normal}${SLACK_CHANNEL}"
+    else
+      apollo::warn "🔴 ${bold}Alerts: ${normal}Disabled"
+    fi
+
+    if [ "$APOLLO_RUNNER_ENABLED" != "0" ];
     then
       apollo::echo "🟢 ${bold}GitLab Runner: ${normal}Enabled"
 
@@ -487,6 +521,7 @@ apollo::init() {
       read APOLLO_GIT_REMOTE
     fi
     SPACE_CONFIG+=("APOLLO_GIT_REMOTE=${APOLLO_GIT_REMOTE}")
+    SPACE_CONFIG+=("APOLLO_SYNC=${APOLLO_SYNC}")
   fi
 
   # Cloud Provider
@@ -594,6 +629,35 @@ apollo::init() {
     read APOLLO_BASE_DOMAIN
   fi 
   SPACE_CONFIG+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
+
+  # Username
+  if [ ! -z "$7" ];
+  then
+    APOLLO_ADMIN_USER=$7
+    apollo::echo "${bold}Admin User: ${normal}$7"
+  else
+    apollo::echo_n "${bold}Admin User: ${normal}"
+
+    read APOLLO_ADMIN_USER_INPUT
+    APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER_INPUT:-admin}
+  fi 
+  SPACE_CONFIG+=("APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER}")
+
+  # Username
+  if [ ! -z "$8" ];
+  then
+    APOLLO_ADMIN_PASSWORD=$8
+    apollo::echo "${bold}Admin Password: ${normal}$8"
+  else
+    apollo::echo_n "${bold}Admin Password: ${normal}"
+
+    read APOLLO_ADMIN_PASSWORD_INPUT
+    APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD_INPUT:-insecure}
+  fi 
+  SPACE_CONFIG+=("APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD}")
+
+  APOLLO_ADMIN_PASSWORD_HASH=`echo $(htpasswd -nbB $APOLLO_ADMIN_USER "$APOLLO_ADMIN_PASSWORD") | sed -e s/\\$/\\$\\$/g | awk -F":" '{ print $2 }'`
+  SPACE_CONFIG+=("APOLLO_ADMIN_PASSWORD_HASH=${APOLLO_ADMIN_PASSWORD_HASH}")
 
   # LetsEncrypt
   apollo::echo_n "${bold}Enable LetsEncrypt? ${normal}[y/N] "

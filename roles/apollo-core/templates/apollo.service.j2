@@ -1,0 +1,23 @@
+[Unit]
+Description=apollo %i
+Requires=docker.service network-online.target
+After=docker.service network-online.target
+
+[Service]
+WorkingDirectory={{ apollo_app_dir }}/%i
+Type=simple
+TimeoutStartSec=15min
+Restart=always
+
+ExecStartPre=/usr/local/bin/docker-compose pull --quiet --ignore-pull-failures
+ExecStartPre=/usr/local/bin/docker-compose build --pull
+
+ExecStart=/usr/local/bin/docker-compose up --remove-orphans
+
+ExecStop=/usr/local/bin/docker-compose down --remove-orphans
+
+ExecReload=/usr/local/bin/docker-compose pull --quiet --ignore-pull-failures
+ExecReload=/usr/local/bin/docker-compose build --pull
+
+[Install]
+WantedBy=multi-user.target

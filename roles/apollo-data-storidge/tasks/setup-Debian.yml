@@ -151,10 +151,23 @@
   register: cio_profile
   when: storidge_profile is defined and storidge_profile.changed
 
-- name: Setting private IP
-  set_fact:
+- name: Set Node Facts
+  set_fact:  
     private_ip: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
-  when: inventory_hostname == groups["manager"][0]
+  #when: 
+  #  - inventory_hostname == groups["manager"][0]
+
+- name: Set Node Facts (Wireguard)
+  set_fact:  
+    private_ip: "{{ hostvars[inventory_hostname]['cluster_ip'] }}"
+  when: 
+    - apollo_wireguard_enabled|bool
+    #- inventory_hostname == groups["manager"][0]
+
+# - name: Setting private IP
+#   set_fact:
+#     private_ip: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+#   when: inventory_hostname == groups["manager"][0]
 
 - name: Getting Cluster Status
   shell: >
@@ -209,8 +222,18 @@
     - storidge
   when: inventory_hostname == groups["manager"][0]
 
+# - name: Joining Nodes to Storidge Cluster
+#   shell: "cioctl join {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+#   register: result
+#   when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != groups['manager'][0]"
+#   retries: 6
+#   delay: 10
+#   until: result is succeeded
+#   tags:
+#     - storidge
+
 - name: Joining Nodes to Storidge Cluster
-  shell: "cioctl join {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+  shell: "cioctl join {{ hostvars[groups['manager'][0]]['private_ip'] }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ hostvars[inventory_hostname]['private_ip'] }}"
   register: result
   when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != groups['manager'][0]"
   retries: 6
@@ -226,6 +249,10 @@
   tags:
     - storidge
   when: "result.changed and inventory_hostname != hostvars[groups['manager'][0]]['inventory_hostname']"
+
+- name: Debug init command
+  debug:
+    msg: "cioctl init {{ hostvars[groups['manager'][0]]['clustertoken'].stdout.split('-')[1] }}"
 
 - name: Running cioctl init
   shell: "cioctl init {{ hostvars[groups['manager'][0]]['clustertoken'].stdout.split('-')[1] }}"
@@ -267,7 +294,7 @@
 - name: Enable K8s Storidge Driver
   command: kubectl create -f https://raw.githubusercontent.com/Storidge/csi-cio/master/deploy/releases/csi-cio-v1.3.0.yaml
   register: storige_k8s_driver
-  when: apollo_orchestrator == "kubernetes" and inventory_hostname == groups["manager"][0]
+  when: apollo_orchestrator in ["k8s","k3s"] and inventory_hostname == groups["manager"][0]
     
 # Upgrade Storidge
 # - name: Getting Storidge Nodes

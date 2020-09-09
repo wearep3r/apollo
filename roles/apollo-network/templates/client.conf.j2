@@ -4,6 +4,7 @@ PrivateKey = {{ client_privatekey.content | b64decode | trim }}
 
 {% for node in play_hosts %}
 [Peer]
+# {{ hostvars[node]['inventory_hostname'] }}.{{ space_domain }}
 PublicKey = {{ hostvars[node].public.content | b64decode | trim }}
 AllowedIPs = {{ hostvars[node].vpn_ip }}
 Endpoint = {{ hostvars[node]['ansible_host'] | default(hostvars[node]['inventory_hostname']) }}:{{ wireguard_port }}

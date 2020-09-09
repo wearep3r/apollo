@@ -3,10 +3,14 @@
   import_playbook: playbooks/aws.yml
   when: apollo_provider == "aws"
 
+- name: "@apollo-facts"
+  import_playbook: playbooks/apollo-facts.yml
+
 - name: "@apollo-spaces"
   import_playbook: playbooks/apollo-spaces.yml
   tags:
     - print_action
+  when: not in_ci|bool
 
 - name: "@apollo-federation"
   import_playbook: playbooks/apollo-federation.yml
@@ -14,15 +18,21 @@
     - print_action
   when: apollo_federation_enabled|bool
 
+- name: "@apollo-core"
+  import_playbook: playbooks/apollo-core.yml
+  tags:
+    - print_action
+
 - name: "@apollo-network"
   import_playbook: playbooks/apollo-network.yml
   tags:
     - print_action
 
-- name: "@apollo-core"
-  import_playbook: playbooks/apollo-core.yml
+- name: "@apollo-controlplane"
+  import_playbook: playbooks/apollo-controlplane.yml
+  when: apollo_controlplane_enabled|bool
   tags:
-    - print_action
+    - "provision_controlplane"
 
 - name: "@apollo-engine"
   import_playbook: playbooks/apollo-engine.yml

@@ -14,25 +14,16 @@ ENV APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 
 ENV TERM=xterm-256color 
 
-RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh
+RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh /root/.local/share/fonts /root/.config
 # silversearcher-ag
-RUN apt-get update \
-    && apt-get -y --no-install-recommends install zsh less man sudo figlet rsync \
-    # && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
-    # && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian  $(lsb_release -cs) stable" \
-    # && apt-get update \
-    # && apt-get -y --no-install-recommends install docker-ce-cli \
-    # && curl -O -L "https://github.com/grafana/loki/releases/download/v1.5.0/logcli-linux-amd64.zip" -o logcli-linux-amd64.zip \
-    # && unzip "logcli-linux-amd64.zip" \
-    # && mv logcli-linux-amd64 /usr/local/bin/logcli \
+RUN apt-get update --allow-releaseinfo-change \
+    && apt-get -y --no-install-recommends install zsh less man sudo rsync qrencode python3-jmespath fonts-firacode \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
-    # && curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash \
     && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
     && ~/.fzf/install --all --key-bindings --completion \
-    && git clone https://github.com/wfxr/forgit ~/.forgit \
-    && git clone https://github.com/dracula/zsh.git ~/dracula-zsh \
-    && mkdir -p ~/.oh-my-zsh/themes \
-    && ln -s ~/dracula-zsh/dracula.zsh-theme ~/.oh-my-zsh/themes/dracula.zsh-theme \
+    && curl -fsSL https://starship.rs/install.sh | bash -s -- --yes \
+    && pip install jmespath \
+    #&& curl -fsSL -o "/root/.local/share/fonts/3270-Medium-Nerd-Font-Complete.otf" https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/3270/Medium/complete/3270-Medium%20Nerd%20Font%20Complete.otf \
     && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/plugins/zsh-autosuggestions \
     && git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/plugins/zsh-completions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/plugins/zsh-syntax-highlighting \
@@ -52,11 +43,11 @@ COPY requirements.yml requirements.yml
 
 RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
-COPY .zprofile /root/.zprofile
+COPY .zshrc /root/.zshrc
 
-RUN rm /root/.zshrc \
-    && ln -s /root/.zprofile /root/.zshrc \
-    && ln -s /apollo/apollo.zsh /usr/local/bin/apollo
+COPY starship.toml /root/.config/starhip.toml
+
+COPY apollo.zsh /usr/local/bin/apollo
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 

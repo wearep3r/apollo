@@ -1,0 +1,53 @@
+[http]
+  [http.routers]
+    [http.routers.grafana]
+      entryPoints = ["apollo"]
+      service = "apollo-app-grafana"
+      rule = "Host(`grafana.{{ space_domain }}`)"
+      [http.routers.grafana.tls]
+
+    [http.routers.cockpit]
+      entryPoints = ["apollo"]
+      service = "apollo-app-cockpit"
+      rule = "Host(`cockpit.{{ space_domain }}`)"
+      [http.routers.cockpit.tls]
+
+    [http.routers.traefik-dashboard]
+      entryPoints = ["apollo"]
+      rule = "Host(`traefik.{{ space_domain }}`)"
+      service = "api@internal"
+      [http.routers.traefik-dashboard.tls]
+
+  [http.middlewares]    
+    [http.middlewares.apollo-basic-auth.basicAuth]
+      users = [
+        "{{ admin_user }}:{{ admin_password_hash | replace('$$','$') }}"
+      ]
+    
+    # [http.middlewares.apollo.headers]
+    #   browserXssFilter = true
+    #   contentTypeNosniff = true
+    #   frameDeny = true
+    #   #sslRedirect = true
+    #   #HSTS Configuration
+    #   stsIncludeSubdomains = true
+    #   stsPreload = true
+    #   stsSeconds = 31536000
+    #   customFrameOptionsValue = "SAMEORIGIN"
+
+    [http.middlewares.apollo.compress]
+
+  [http.services]
+    [http.services.apollo-app-grafana]
+      [http.services.apollo-app-grafana.loadBalancer]
+        [http.services.apollo-app-grafana.loadBalancer.healthCheck]
+          path = "/api/health"
+          interval = "10s"
+          timeout = "3s"
+        [[http.services.apollo-app-grafana.loadBalancer.servers]]
+          url = "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3000"
+
+    [http.services.apollo-app-cockpit]
+      [http.services.apollo-app-cockpit.loadBalancer]
+        [[http.services.apollo-app-cockpit.loadBalancer.servers]]
+          url = "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:9090"

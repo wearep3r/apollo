@@ -1,6 +1,6 @@
 ---
 # tasks file for zero-app-cadvisor
-- name: Provision alertmanager
+- name: Configure alerts
   block:
     - name: Creating app directory
       file:
@@ -64,4 +64,17 @@
         with_registry_auth: yes
         compose:
           - "{{ app_dir }}/docker-compose.yml"
-      register: alertmanager_provision  
+      register: alertmanager_provision
+  when:
+    - apollo_alerts_enabled|bool
+
+- name: Configure alerts
+  block:
+    - name: Removing alertmanager
+      docker_stack:
+        state: absent
+        name: alertmanager
+        prune: yes
+      register: alertmanager_provision
+  when:
+    - not apollo_alerts_enabled|bool

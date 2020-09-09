@@ -55,14 +55,14 @@
     remote_src: yes
     owner: "{{ ansible_user }}"
 
-- name: "Replace https://localhost:6443 with https://{{ platform_domain }}:6443"
+- name: "Replace https://localhost:6443 with https://{{ space_domain }}:6443"
   command: >-
     k3s kubectl config set-cluster default
-      --server=https://{{ platform_domain }}:6443
+      --server=https://{{ space_domain }}:6443
       --kubeconfig /root/.kube/config
   changed_when: true
   
-- name: Copy "kubectl-config" to Apollo Space Directory
+- name: Copy "kubectl-config" to apollo space Directory
   fetch:
     src: /root/.kube/config
     dest: "{{ apollo_space_dir }}/kubectl-config.yml"

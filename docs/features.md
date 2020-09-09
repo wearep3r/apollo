@@ -1,34 +1,5 @@
 # Features
 
-## Network
-
-apollo. handles networking and ingress by spanning a peer-to-peer Wireguard network between nodes and limiting access to the cluster through custom firewalling.
-
-| Port | Description | Access | Condition |
-|------------|-------|----------|-----|
-| 22    | SSH |  ✅ | - |
-| 23    | NTP |  ✅ | - |
-| 80    | HTTP | ✅ | - |
-| 443    | HTTPS | ✅ | - |
-| 6443    | Kubernetes API | ✅ | `APOLLO_ORCHESTRATOR` in `k3s,k8s` |
-| 5888    | VPN | ✅ | `wireguard` in `APOLLO_APPS` |
-| 2222    | GitLab SSH | ✅ | `gitlab` in `APOLLO_APPS` |
-| *    | ALL | ❌ | DROP all other traffic |
-
-### Wireguard
-
-apollo. uses [Wireguard](https://www.wireguard.com/) to establish secure networking between nodes in a cluster.
-
-## Engine
-
-| Configuration Variables | Options | Default |
-|------------|-------|-------|
-| APOLLO_ENGINE    | docker | [docker](#-docker) |
-
-### Docker
-
-[Docker](https://www.docker.com/) is the default **Container Engine** in apollo.
-
 ## Orchestrator
 
 apollo. uses a container orchestrator to run apps and workloads. apollo. supports **Docker Swarm**, **k3s** and **k8s**.

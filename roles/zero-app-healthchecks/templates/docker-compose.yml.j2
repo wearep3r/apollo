@@ -6,9 +6,9 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - SITE_ROOT=healthchecks.{{ platform_domain }}
-      - BASE_URL=healthchecks.{{ platform_domain }}
-      - SITE_NAME=healthchecks.{{ platform_domain }}
+      - SITE_ROOT=healthchecks.{{ space_domain }}
+      - BASE_URL=healthchecks.{{ space_domain }}
+      - SITE_NAME=healthchecks.{{ space_domain }}
       - DEFAULT_FROM_EMAIL={{ letsencrypt_mail }}
       - EMAIL_HOST={{ apollo_smtp_server }}
       - EMAIL_PORT={{ apollo_smtp_port }}
@@ -16,7 +16,7 @@ services:
       - EMAIL_HOST_PASSWORD={{ apollo_smtp_password }}
       - EMAIL_USE_TLS=False
       - ALLOWED_HOSTS="*"
-      - SUPERUSER_EMAIL={{ admin_user }}@{{ platform_domain }}
+      - SUPERUSER_EMAIL={{ admin_user }}@{{ space_domain }}
       - SUPERUSER_PASSWORD={{ admin_password }}
       - REGISTRATION_OPEN=False
       - Debug=True
@@ -39,7 +39,7 @@ services:
           traefik.tags: "proxy"
           traefik.docker.network: "proxy"
           traefik.port: "8000"
-          traefik.frontend.rule: "Host:healthchecks.{{ platform_domain }}"
+          traefik.frontend.rule: "Host:healthchecks.{{ space_domain }}"
           traefik.backend: "zero-app-healthchecks"
           traefik.protocol: "http"
 {% if letsencrypt_enabled|bool %}
