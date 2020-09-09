@@ -159,7 +159,7 @@
 
 - name: Set Node Facts (Wireguard)
   set_fact:  
-    private_ip: "{{ hostvars[inventory_hostname]['vpn_ip'].split('/')[0] }}"
+    private_ip: "{{ hostvars[inventory_hostname]['cluster_ip'] }}"
   when: 
     - apollo_wireguard_enabled|bool
     #- inventory_hostname == groups["manager"][0]

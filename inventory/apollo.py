@@ -63,6 +63,7 @@ class ZeroInventory(object):
                     inventory["manager"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
                         "vpn_ip": "10.1.0.{}/32".format(i+1),
+                        "apollo_cluster_ip": "10.1.0.{}".format(i+1),
                         "ansible_host": node,
                         "ansible_user ": "root"
                     }
@@ -82,6 +83,7 @@ class ZeroInventory(object):
                     inventory["worker"].append(hostname)
                     inventory['_meta']['hostvars'][hostname] = {
                         "vpn_ip": "10.1.1.{}/32".format(i+1),
+                        "apollo_cluster_ip": "10.1.1.{}".format(i+1),
                         "ansible_host": node,
                         "ansible_user ": "root"
                     }

@@ -175,8 +175,6 @@ if [[ "$1" = "test" ]];
 then
   apollo::populate
 
-  env
-
   apollo::test
 fi
 

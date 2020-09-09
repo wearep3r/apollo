@@ -18,11 +18,12 @@ apollo manages the full life-cycle of a container-platform:
 
 - creation of infrastructure
 - provisioning of configuration
-- deployment of applications
 - monitoring of resources
-- visualization of metrics
 - logging of events
+- alerting of incidents
+- visualization of metrics
 - management of operations
+- deployment of applications
 - elemination of waste
 
 ### Featured features

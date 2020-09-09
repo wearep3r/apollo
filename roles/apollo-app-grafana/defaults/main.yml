@@ -1,0 +1,60 @@
+---
+app_name: "grafana"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_GRAFANA_APP_DOMAIN') | default(app_name+'.'+space_domain, true) }}"
+
+images:
+  #grafana: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_GRAFANA') | default('registry.gitlab.com/p3r.one/apollo/grafana', true) }}"
+  grafana: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_GRAFANA') | default('grafana/grafana', true) }}"
+  trickster: "{{ lookup('env','APOLLO_APP_GRAFANA_IMAGES_TRICKSTER') | default('tricksterio/trickster', true) }}"
+
+_grafana_binary_install_dir: "/usr/local/bin"
+_grafana_system_group: "root"
+_grafana_system_user: "root"
+grafana_version: "7.1.5"
+
+grafana_yum_repo_template: etc/yum.repos.d/grafana.repo.j2
+grafana_manage_repo: true
+
+# Should we use the provisioning capability when possible (provisioning require grafana >= 5.0)
+grafana_use_provisioning: true
+
+# Should the provisioning be kept synced. If true, previous provisioned objects will be removed if not referenced anymore.
+grafana_provisioning_synced: false
+
+grafana_logs_dir: "/var/log/grafana"
+grafana_data_dir: "/var/lib/grafana"
+grafana_address: "0.0.0.0"
+grafana_port: 3000
+grafana_dashboards_dir: "dashboards"
+grafana_environment: {}
+grafana_package: "grafana{% if ansible_architecture == 'armv6l' %}-rpi{% endif %}{{ (grafana_version != 'latest') | ternary('=' ~ grafana_version, '') }}"
+
+grafana_plugins:
+  - grafana-clock-panel
+  - grafana-simple-json-datasource
+  - grafana-piechart-panel
+
+grafana_datasources:
+  - name: "apollo-prometheus"
+    type: "prometheus"
+    access: "proxy"
+    url: "http://{{ apollo_manager }}:8428"
+    basicAuth: true
+    isDefault: true
+    editable: false
+    jsonData:
+      tlsAuth: false
+      tlsAuthWithCACert: false
+      tlsSkipVerify: true
+  - name: "apollo-loki"
+    type: "loki"
+    access: "proxy"
+    url: "http://{{ apollo_manager }}:3100"
+    basicAuth: true
+    isDefault: false
+    editable: false
+    jsonData:
+      tlsAuth: false
+      tlsAuthWithCACert: false
+      tlsSkipVerify: true

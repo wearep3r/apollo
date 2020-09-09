@@ -30,7 +30,8 @@ apollo::load() {
       $APOLLO_FZF_DEFAULT_OPTS
       --bind=\"enter:execute(cd $APOLLO_SPACES_DIR/{})\"
     "
-    space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
+    #space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
+    space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf)
     export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$space
   fi
 
@@ -81,12 +82,8 @@ apollo::load() {
 			set +o allexport
 		done
 
-    echo $APOLLO_SPACE_DOMAIN
-
     # Reload Default config
     source /apollo/defaults.env
-
-    echo $APOLLO_SPACE_DOMAIN
 
     # Add ssh-key
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1

@@ -1,23 +1,4 @@
-- name: "@apollo-monitoring"
-  become: True
-  hosts: all
-  gather_facts: True
-  roles:
-    - apollo-app-node-exporter
-
-- name: "@apollo-alerts"
-  become: True
-  hosts: manager[0]
-  gather_facts: True
-  roles:
-    - zero-app-alertmanager
-
-- name: "@apollo-backups"
-  become: True
-  hosts: manager[0]
-  gather_facts: True
-  roles:
-    - zero-app-lake0
+- import_playbook: apollo-facts.yml
 
 - name: "@apollo-backplane"
   hosts: manager[0]

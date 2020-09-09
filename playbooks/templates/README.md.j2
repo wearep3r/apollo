@@ -46,15 +46,16 @@ apollo uses **Basic Authentication** to authenticate access on backplane service
 
 - Base Domain: {{ base_domain }}
 - Space Domain: {{ space_domain }}
-- Ingress IP: {{ ingress_ip }}
+- Ingress IP: {{ apollo_ingress_ip }}
+- Management IP: {{ apollo_management_ip }}
 
 By default, apollo expects ingress traffic to land on the worker nodes which is why `INGRESS_IP` defaults to `worker-0`'s IP.
 
-To make this space work, please add the following records to your DNS zone:
+To operate this space, please add the following records to your DNS zone (`{{ base_domain }}`):
 
 ```
-{{ apollo_space }} IN A {{ ingress_ip }}
-*.{{ apollo_space }} IN A {{ ingress_ip }}
+{{ apollo_space }} IN A {{ apollo_management_ip }}
+*.{{ apollo_space }} IN A {{ apollo_management_ip }}
 ```
 
 ## Access
@@ -88,10 +89,10 @@ Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remot
 {% if backplane_enabled|bool %}
 ### Web
 
-You can reach any of the backplane services through its webinterface. Use `{{ apollo_admin_user }}` and `{{ apollo_admin_password }}` to authenticate.
+You can reach any of the controlplane services through its webinterface. Use `{{ apollo_admin_user }}` and `{{ apollo_admin_password }}` to authenticate.
 
-- [Portainer](http://portainer.{{ space_domain }})
-- [Grafana](http://grafana.{{ space_domain }})
-- [Traefik](http://proxy.{{ space_domain }})
-- [Prometheus](http://prometheus.{{ space_domain }})
+- [Cockpit](http://cockpit.{{ space_domain }}:8443)
+- [Portainer](http://portainer.{{ space_domain }}:8443)
+- [Grafana](http://grafana.{{ space_domain }}:8443)
+- [Traefik](http://traefik.{{ space_domain }}:8443)
 {% endif %}

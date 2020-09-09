@@ -11,16 +11,16 @@
   set_fact:
     swarm: "{{ swarm_status }}"
  
+# - name: Set Swarm Facts
+#   set_fact:  
+#     advertise_address: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377"
+#     manager_address: "{{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377"
+
 - name: Set Swarm Facts
   set_fact:  
-    advertise_address: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377"
-    manager_address: "{{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377"
-
-- name: Set Swarm Facts (Wireguard)
-  set_fact:  
-    advertise_address: "{{ hostvars[inventory_hostname]['vpn_ip'].split('/')[0] }}:2377"
-    manager_address: "{{ hostvars[groups['manager'][0]]['vpn_ip'].split('/')[0] }}:2377"
-  when: apollo_wireguard_enabled|bool
+    advertise_address: "{{ hostvars[inventory_hostname]['cluster_ip'] }}:2377"
+    manager_address: "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:2377"
+  #when: apollo_wireguard_enabled|bool
 
 # Create dynamic in-memory groups "swarm_manager_active"
 # and "swarm_manager_inactive" depending on the output of `docker info`

@@ -6,11 +6,4 @@ galaxy_info:
   license: MIT
   min_ansible_version: 2.9
   galaxy_tags: []
-dependencies:
-  - zero-app-traefik
-  - zero-app-loki
-  - zero-app-portainer
-  - zero-app-cadvisor
-  - zero-app-gc
-  - zero-app-prometheus
-  - zero-app-grafana
+dependencies: []

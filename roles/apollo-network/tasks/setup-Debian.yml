@@ -1,8 +1,4 @@
 ---
-# - name: Debug Interfaces
-#   debug: 
-#     msg: "{{ 'Private Interface: '+private_iface+' - Public Interface: '+public_iface+' - Ingress IP: '+ingress_ip }}"
-
 - name: Copying firewall config
   template:
     src: templates/iptables.conf.j2
