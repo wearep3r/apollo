@@ -2,13 +2,6 @@
 # tasks file for zero-app-cadvisor
 - name: Provision garbage-collector
   block:
-    - name: Teardown legacy Docker stack
-      docker_stack:
-        absent_retries: 5
-        absent_retries_interval: 10
-        state: absent
-        name: garbage-collector
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"

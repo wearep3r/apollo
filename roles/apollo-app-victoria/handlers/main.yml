@@ -19,3 +19,10 @@
     daemon_reload: true
     name: blackbox_exporter
     state: restarted
+
+- name: restart process_exporter
+  become: true
+  systemd:
+    daemon_reload: true
+    name: process_exporter
+    state: restarted

@@ -25,3 +25,8 @@ _blackbox_binary_install_dir: "/usr/local/bin"
 _blackbox_system_group: "root"
 _blackbox_system_user: "root"
 blackbox_version: "0.17.0"
+
+_process_binary_install_dir: "/usr/local/bin"
+_process_system_group: "root"
+_process_system_user: "root"
+process_version: "0.7.2"

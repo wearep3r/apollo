@@ -6,7 +6,7 @@ apollo_version: "{{ lookup('env','APOLLO_VERSION') | default('', true) }}"
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
 apollo_remote_dir: "{{ lookup('env','APOLLO_REMOTE_DIR') | default('/srv/.apollo', true) }}"
 apollo_app_dir: "{{ lookup('env','APOLLO_APP_DIR') | default(apollo_remote_dir+'/apps', true) }}"
-apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://assets.gitlab-static.net/uploads/-/system/project/avatar/17046783/logo.png', true) }}"
+apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://gitlab.com/p3r.one/apollo/-/raw/master/logo.png', true) }}"
 
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
@@ -171,7 +171,7 @@ runner_env:
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"
 gitlab_runner_package_version: 13.3.1
-gitlab_runner_listen_address: ":9252"
+gitlab_runner_listen_address: "{{ apollo_cluster_ip }}:9252"
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
 gitlab_runner_coordinator_url: "{{ lookup('env','GITLAB_RUNNER_COORDINATOR_URL') | default('https://gitlab.com', true) }}"

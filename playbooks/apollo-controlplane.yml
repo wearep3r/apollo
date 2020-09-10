@@ -1,6 +1,33 @@
 - import_playbook: apollo-facts.yml
 
-- name: "@apollo-proxy"
+- name: "@apollo-cleanup"
+  become: True
+  hosts: manager[0]
+  gather_facts: True
+  tasks:
+    - name: "Gather Package facts"
+      package_facts:
+        manager: "auto"
+
+    - name: "Teardown {{ item }} Docker stack"
+      docker_stack:
+        absent_retries: 5
+        absent_retries_interval: 10
+        state: absent
+        name: "{{ item }}"
+      when: 
+        - "'docker-ce' in ansible_facts.packages"
+      with_items:
+        - cadvisor
+        - loki
+        - grafana
+        - node-exporter
+        - promtail
+        - prometheus
+        - garbage-collector
+        - alertmanager
+
+- name: "@apollo-traefik"
   become: True
   hosts: manager[0]
   gather_facts: True
@@ -13,6 +40,7 @@
   gather_facts: True
   roles:
     - apollo-app-node-exporter
+    - apollo-app-process-exporter
     - apollo-app-cadvisor
 
 - name: "@apollo-logs"
@@ -35,7 +63,7 @@
   hosts: manager[0]
   gather_facts: True
   roles:
-    - zero-app-alertmanager
+    - apollo-app-alertmanager
 
 - name: "@apollo-status"
   become: True
@@ -44,16 +72,16 @@
   roles:
     - apollo-app-grafana
 
-- name: "@apollo-garbage-collector"
-  become: True
-  hosts: manager[0]
-  gather_facts: True
-  roles:
-    - apollo-app-garbage-collector
+# - name: "@apollo-garbage-collector"
+#   become: True
+#   hosts: manager[0]
+#   gather_facts: True
+#   roles:
+#     - apollo-app-garbage-collector
 
-- name: "@apollo-backups"
-  become: True
-  hosts: manager[0]
-  gather_facts: True
-  roles:
-    - zero-app-lake0
+# - name: "@apollo-backups"
+#   become: True
+#   hosts: manager[0]
+#   gather_facts: True
+#   roles:
+#     - zero-app-lake0

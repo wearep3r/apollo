@@ -1,0 +1,8 @@
+---
+app_name: "process-exporter"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+_process_binary_install_dir: "/usr/local/bin"
+_process_system_group: "root"
+_process_system_user: "root"
+process_version: "0.7.2"

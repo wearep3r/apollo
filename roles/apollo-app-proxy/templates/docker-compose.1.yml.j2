@@ -1,0 +1,91 @@
+version: '3.7'
+
+services:
+  proxy:
+    image: "{{ images.traefik }}"
+    command: > 
+      traefik 
+      --docker 
+{% if apollo_orchestrator == "swarm" %}
+      --docker.swarmmode 
+{% endif %}
+      --docker.watch 
+      --docker.exposedbydefault=false 
+      --insecureSkipVerify 
+      --entrypoints="Name:http Address::80 Compress:true" 
+      --metrics
+      --metrics.prometheus
+      --accessLog
+{% if letsencrypt_enabled|bool %}
+      --entrypoints="Name:https Address::443 TLS TLS.MinVersion:VersionTLS12 Compress:true TLS.CipherSuites:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      --acme 
+      --acme.email={{ letsencrypt_mail }} 
+      --acme.storage="/etc/traefik/acme.json" 
+      --acme.entryPoint=https 
+      --acme.httpChallenge 
+      --acme.httpChallenge.entrypoint="http" 
+      --acme.onhostrule=true 
+      --acme.acmelogging=true 
+{% endif %}
+      --logLevel=INFO 
+      --api 
+      --docker.domain={{ space_domain }} 
+      --ping 
+      --rest 
+      --retry 
+    networks:
+      - proxy
+{% for network in traefik_extra_networks %}
+{% if network != '' %}
+      - {{ network }}
+{% endif %}
+{% endfor %}
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes: 
+      #- traefik-data:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "{{ app_dir }}:/etc/traefik"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+          condition: on-failure
+      placement:
+          constraints: 
+          - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+      labels:
+          traefik.enable: "true"
+          traefik.tags: "proxy"
+          traefik.docker.network: "proxy"
+          traefik.port: "8080"
+          traefik.frontend.rule: "Host:proxy.{{ space_domain }}"
+          traefik.backend: "apollo-app-traefik"
+          traefik.protocol: "http"
+{% if letsencrypt_enabled|bool %}
+          traefik.frontend.entryPoints: "http,https"
+          traefik.frontend.headers.SSLRedirect: "true"
+          traefik.frontend.headers.STSSeconds: "31536000"
+          traefik.frontend.headers.STSIncludeSubdomains: "true"
+          traefik.frontend.headers.STSPreload: "true"
+{% else %}
+          traefik.frontend.entryPoints: "http"
+{%endif%}
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
+
+networks:
+  proxy:
+    driver: overlay
+    attachable: true
+    name: proxy
+{% for network in traefik_extra_networks %}
+{% if network != '' %}
+  {{ network }}:
+    driver: overlay
+    attachable: true
+    name: {{ network }}
+{% endif %}
+{% endfor %}

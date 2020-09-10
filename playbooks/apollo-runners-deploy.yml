@@ -18,6 +18,7 @@
           - "DOCKER_DRIVER=overlay2"
           - "DOCKER_BUILDKIT=1"
           - "DOCKER_HOST=unix:///var/run/docker.sock"
+          - "APOLLO_INGRESS_IP={{ apollo_ingress_ip }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
@@ -28,7 +29,6 @@
         docker_privileged: True
         docker_volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
-          - "/cache"
         extra_configs:
           runners.custom_build_dir: 
             enabled: True

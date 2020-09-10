@@ -23,6 +23,11 @@
   tags:
     - print_action
 
+- name: "@apollo-security"
+  import_playbook: playbooks/apollo-security.yml
+  tags:
+    - print_action
+
 - name: "@apollo-network"
   import_playbook: playbooks/apollo-network.yml
   tags:

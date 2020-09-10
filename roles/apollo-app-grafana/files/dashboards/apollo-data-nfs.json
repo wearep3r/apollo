@@ -3521,7 +3521,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "NFS Full",
+  "title": "apollo Data NFS",
   "version": 4,
   "description": "NFS and NFSd monitor for prometheus-node-exporter"
 }

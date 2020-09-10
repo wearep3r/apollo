@@ -38,17 +38,3 @@
       until: _result.status == 200
       retries: 30 # retry X times  
       delay: 10 # pause for X sec b/w each call 
-
-  rescue:
-    - name: Teardown smtp
-      docker_stack:
-          absent_retries: 5
-          absent_retries_interval: 10
-          state: absent
-          name: smtp
-      register: smtp_smtp
-
-    - name: Remove Stack File
-      file:
-        path: /tmp/zero-app-smtp.yml
-        state: absent

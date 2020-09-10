@@ -68,13 +68,13 @@
   when:
     - apollo_alerts_enabled|bool
 
-- name: Configure alerts
-  block:
-    - name: Removing alertmanager
-      docker_stack:
-        state: absent
-        name: alertmanager
-        prune: yes
-      register: alertmanager_provision
-  when:
-    - not apollo_alerts_enabled|bool
+# - name: Configure alerts
+#   block:
+#     - name: Removing alertmanager
+#       docker_stack:
+#         state: absent
+#         name: alertmanager
+#         prune: yes
+#       register: alertmanager_provision
+#   when:
+#     - not apollo_alerts_enabled|bool

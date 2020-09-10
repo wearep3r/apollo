@@ -1,0 +1,12 @@
+---
+app_name: "proxy"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_TRAEFIK_APP_DOMAIN') | default('proxy.'+space_domain, true) }}"
+
+images:
+  traefik: "{{ lookup('env','APOLLO_APP_TRAEFIK_IMAGES_TRAEFIK') | default('traefik:v1.7.26-alpine', true) }}"
+
+traefik_version: 1
+traefik_dnschallenge_provider: "{{ lookup('env','TRAEFIK_DNSCHALLENGE_PROVIDER') | default('', true) }}"
+traefik_dnschallenge_resolvers: "{{ lookup('env','TRAEFIK_DNSCHALLENGE_RESOLVERS') | default('1.1.1.1:53', true) }}"
+traefik_extra_networks: "{{ lookup('env','TRAEFIK_EXTRA_NETWORKS').split(',') | default(['backplane'], true) }}"

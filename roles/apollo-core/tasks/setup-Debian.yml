@@ -1,21 +1,31 @@
 ---
-- name: Creating apollo remote directory
+- name: Create apollo group
+  group:
+    name: apollo
+    state: present
+
+
+- name: Create apollo user
+  user:
+    name: "apollo"
+    comment: "apollo@{{ apollo_space }}"
+    group: apollo
+    home: "{{ apollo_remote_dir }}"
+    append: yes
+    groups: docker
+    password: "{{ admin_password | password_hash('sha512', admin_password_hash ) }}"
+
+    shell: "/bin/zsh"
+
+- name: Creating apollo directories
   file:
     path: "{{ apollo_remote_dir }}"
     state: directory
     mode: '0755'
-
-- name: Creating apollo apps directory
-  file:
-    path: "{{ apollo_app_dir }}"
-    state: directory
-    mode: '0755'
-
-- name: Creating apollo apps directory
-  file:
-    path: "{{ apollo_data_volumes_dir }}"
-    state: directory
-    mode: '0755'
+  with_items:
+    - "{{ apollo_remote_dir }}"
+    - "{{ apollo_app_dir }}"
+    - "{{ apollo_data_volumes_dir }}"
 
 - name: Setting Hostname
   hostname:
@@ -128,9 +138,11 @@
       - resolvconf
       - unzip
       - gnupg2
-      - cockpit 
+      - cockpit
+      - cockpit-ws
       - cockpit-dashboard
       - cockpit-storaged
+      - fail2ban
     state: present
     update_cache: False
 

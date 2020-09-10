@@ -1,8 +1,16 @@
 - import_playbook: apollo-facts.yml
 
-- name: "@apollo-backplane"
+# - name: "@apollo-backplane"
+#   hosts: manager[0]
+#   become: True
+#   gather_facts: True
+#   roles:
+#     - apollo-backplane
+
+- name: "@apollo-proxy"
   hosts: manager[0]
   become: True
   gather_facts: True
   roles:
-    - apollo-backplane
+    - apollo-app-proxy
+    - apollo-app-portainer

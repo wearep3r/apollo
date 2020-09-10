@@ -51,8 +51,8 @@
   mount:
     fstype: nfs
     opts: defaults
-    dump: 0
-    passno: 0
+    dump: "0"
+    passno: "0"
     state: mounted
     src: "{{ apollo_data_nfs_source.ansible_hostname }}:{{ apollo_data_nfs_directory }}"
     path: "{{ apollo_data_nfs_directory }}"

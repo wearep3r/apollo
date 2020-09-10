@@ -256,6 +256,28 @@ apollo::deploy() {
         )
         echo $apollo_status
       fi
+    elif [ "$1" = "controlplane" ];
+    then
+      if [ "$2" != "" ];
+      then
+        apollo::echo "Deploying Controlplane App $2"
+
+        apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
+        )
+        echo $apollo_status
+      else
+        apollo::echo "Deploying Controlplane"
+
+        apollo_status=$(
+          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+          cd /apollo
+          ansible-playbook provision.yml --flush-cache --tags "provision_controlplane,always" >&5
+        )
+        echo $apollo_status
+      fi
     else
       apollo::terraform_apply
 

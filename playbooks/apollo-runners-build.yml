@@ -10,6 +10,14 @@
       command: "gitlab-runner unregister --name {{ ansible_hostname }}-build"
       when: 'registered_runners is defined and "{{ ansible_hostname }}-build" in registered_runners.stderr'
       ignore_errors: True
+
+    - name: Creating storage directory
+      file:
+        path: "{{ apollo_data_volumes_dir }}/gitlab-runner-build/cache"
+        state: directory
+        mode: '0755'
+        owner: "root"
+        group: "root"
   vars:
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-build"
@@ -22,7 +30,7 @@
         run_untagged: True
         docker_privileged: True
         docker_volumes:
-          - "/cache"
+          - "{{ apollo_data_volumes_dir }}/gitlab-runner-build/cache:/cache"
           #- "/var/run/docker.sock:/var/run/docker.sock"
         extra_configs:
           runners.custom_build_dir: 
