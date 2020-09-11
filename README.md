@@ -1,6 +1,6 @@
-# 🚀 apollo - Platform as a Service toolkit
+# 🚀 apollo - a DevOps platform
 
-**apollo** helps you to get from idea to production fast and safe - you'll be up & running quickly with a cloud-native tech-stack and great operational stability.
+**apollo** helps you to get from idea to production fast and safe - you'll be up & running quickly with a cloud-native tech-stack and great operational stability. It's made for developers and operators alike.
 
 Use this repository as a boilerplate for your own platform or manage your [apollo spaces](#-) using our batteries-included [Docker image](#-).
 
@@ -14,7 +14,7 @@ Use this repository as a boilerplate for your own platform or manage your [apoll
 
 ## What's inside
 
-apollo manages the full life-cycle of a container-platform:
+apollo manages the full **life-cycle of a container platform**:
 
 - creation of infrastructure
 - provisioning of configuration
@@ -26,45 +26,22 @@ apollo manages the full life-cycle of a container-platform:
 - deployment of applications
 - elemination of waste
 
-### Featured features
+We call those platforms **spaces**.
 
-- Git-versioned configuration method tailored to CI/CD
-- Infrastructure as a Service with [Terraform](#)
-- Platform as a Service with [Ansible](#)
+### Features
+
+- Distributed container platform (**Docker Swarm** or **Kubernetes**)
+- Git-versioned configuration method tailored to CI/CD 
+- Automated infrastructure (currently only **DigitalOcean** and **HETZNER Cloud** supported)
+- Ready-to-rock, auto-ssl ingress proxy by **Traefik**
+- Cluster-wide metrics & logs with **Victoria Metrics** and **Grafana Loki**
+- Secure networking through **Wireguard**
+- Beautiful dashboards thanks to **Grafana**
 - Configured almost entirely by **environment variables**
-- **Docker** as container-runtime
-- **Docker Swarm**, **k8s** or **k3s** as container-orchestrator
-- Automated Distributed Storage with [Storidge](https://storidge.com/) for **Docker Swarm** and [Longhorn](https://rancher.com/docs/k3s/latest/en/storage/) for **k3s**
-- Single-node clusters are possible and can be scaled up
-- Integrated with AWS, DigitalOcean and HETZNER Cloud
-- **Backplane (Docker Swarm only)**: pre-installed ingress-proxy, auto-ssl, monitoring, auto-backups, dashboards, automatic backups
-- **Turn-Key Apps (Docker Swarm only)**: GitLab, Minio, GitLab Runner, Rancher, more to come ...
-- Supports **Windows Workers** in **Docker Swarm** and **k8s** (**ATTENTION**: Limited Support, WIP & alpha!)
-- Integrated with [GitLab](https://gitlab.com) (CI/CD, Registry, Environments, Metrics, ...)
-- Support for configuration encryption
-
-### Feature Matrix
-
-|            | [Swarm](docs/features.md#-docker-swarm) | [k3s](docs/features.md#-k3s) | [k8s](docs/features.md#k8s)  |
-|------------|-------|-----|---|
-| [Wireguard](docs/features.md#-wireguard)    | ✅    | ✅    | ✅  |
-| [Docker](docs/features.md#-docker)    | ✅    | ✅    | ✅  |
-| [Distributed Storage](docs/features.md#-distributed-storage)    | ✅    | ✅    | ❌  |
-| [Traefik](docs/features.md#-traefik)    | ✅    | ❌    | ❌  |
-| [Letsencrypt](docs/features.md#-letsencrypt)    | ✅    | ❌    | ❌  |
-| [Monitoring](docs/features.md#-monitoring)    | ✅    | ❌    | ❌  |
-| [Logging](docs/features.md#-logging)    | ✅    | ❌    | ❌  |
-| [Alerting](docs/features.md#-alerting)    | ✅    | ❌    | ❌  |
-| [Portainer](docs/features.md#-portainer)  | ✅    | ❌    | ❌  |
-| [Rancher](docs/features.md#-rancher)  | ❌    | ✅    | ✅  |
-| [Garbage Collection](docs/features.md#-garbage-collection)  | ✅    | ❌    | ❌  |
-| [Prometheus](docs/features.md#-prometheus) | ✅    | ❌    | ❌  |
-| [Grafana](docs/features.md#-grafana)    | ✅    | ❌    | ❌  |
-| [Backups](docs/features.md#-backups)    | ✅    | ❌    | ❌  |
-| [GitLab](docs/features.md#-gitlab)    | ✅    | ❌    | ❌  |
-| [Minio](docs/features.md#-minio)    | ✅    | ❌    | ❌  |
-| [Statping](docs/features.md#-statping)    | ✅    | ❌    | ❌  |
-| [GitLab Runner](docs/features.md#-gitlab-runner)    | ✅    | ❌    | ❌  |
+- Distributed storage (**Storidge**, **NFS** or **Longhorn**)
+- **Single-node clusters are possible** and can be scaled up
+- Integrated with [GitLab](https://gitlab.com) (CI/CD, registry, environments, metrics, kubernetes)
+- Support for configuration encryption, auditing and Continuous Delivery
 
 ## What you can do with it
 
@@ -81,19 +58,60 @@ apollo manages the full life-cycle of a container-platform:
 11. [Federated monitoring](https://banzaicloud.com/blog/prometheus-federation/) with Prometheus and Grafana
 12. [Hybrid clusters](https://www.packet.com/resources/guides/crosscloud-vpn-with-wireguard/) (thanks to Wireguard)
 
-**apollo** is highly scalable (you can start with 1 node and scale up infinitely) and comes with a shared storage layer so you don't have to think about data persistance too much. Your applications' data is available within your entire cluster and regularly backed up - automagically (**Docker Swarm only**).
+## How it works
 
-**apollo** comes with a pre-configured set of apps that integrate with each other - such as **GitLab, Sentry, Prometheus, Grafana, Loki, a user backend** and more. You simply enable them and start working!
+1. You supply [minimum configuration](#-getting-started) to create a **space**
+2. apollo creates infrastructure if needed
+3. apollo configures the machines and sets up your container platform
+4. You check out the auto-generated README to know the next steps
 
-**apollo** is tailored to development teams. Made by seasoned operators, it contains everything a DevOps-enabled team needs to start changing the world.
+Check the [Getting Started](#-getting-started) section to start your journey with apollo.
 
-**apollo** runs on every major and minor cloud provider, as well as directly on bare-metal, embedded devices or platforms like Proxmox and VMWare. **apollo** comes with integrated support for an [inital set of infrastructure providers](modules/).
+## Philosophy
 
-**apollo** follows an **Infrastructure as Code** design-pattern. The cluster, its state and the apps running on the platform are merely a function applied to the data stored in **apollo**'s storage layer. **apollo** strictly separates data from application, which means that migrating between clusters is as easy as restoring a backup to a new cluster. Moving a cluster is as easy as providing new compute-resources at a different provider.
+These are the design principles we base our work on apollo on. It's heavily inspired by DevOps and Clean Code practices and the works and arts of Martin Fowler who brought us immutable infrastructure.
 
-**apollo** creates and manages so called **spaces** - clusters of machines with a specific configuration and purpose.
+- Every **space**, including development, SHOULD be versioned in a repository
+- There is ONE workflow for installation and deployment that applies to all spaces
+- No manual actions on the platform - everything must be code
+- Every change to infrastructure SHOULD be code-reviewed to:
+  - avoid mistakes
+  - make other (including non-DevOps) team members able to learn
+  - make sure everything stays portable and immutable
+- Everyone SHOULD be able to:
+  - create their development environment in a minute with minimum effort
+  - reproduce a production-like environment
+  - understand the whole infrastructure
+  - propose modifications to the infrastructure, while being able to test them
+- apollo SHOULD be a boilerplate and a framework: modify it to fulfill your needs!
+- The companion CLI is written in Bash so it is easy to understand what a command does, and it is easy to modify command behaviors or to add new ones
 
-**apollo** is based on the latest technologies and design patterns. It strives to be fully automated and it greatly reduces the operational overhead in organizations. It's a DevOps platform, doing lots of the ops work automagically for you. You can use it to bootstrap and manage your Kubernetes cluster.
+apollo is tailored to development teams. It's made by seasoned operators and contains everything a DevOps-enabled team needs to start changing the world.
+
+apollo runs on every major and minor cloud provider, as well as directly on bare-metal. IoT devices or platforms like Proxmox and VMWare are currently on the roadmap.
+
+apollo is based on the latest technologies and design patterns. We're working hard to make it fully automated but it already reduces lots of the operational overhead in organizations. It's a DevOps platform, doing ops work automagically for you, so you can do developer magic on top of it.
+
+## Knowledge prerequisites
+
+If you want to build upon this repository, you'll need to be very proficient with the following tools:
+
+- Ansible
+- Terraform
+- Bash
+- Docker
+- Python
+- Docker Swarm
+- Kubernetes
+
+If you just want to use apollo to manage your container platforms, you just need to know:
+
+- Docker
+
+## Technical prerequisites
+
+- Local machine: Docker
+- Remote machines: Ubuntu 18.04
 
 ## Getting started
 

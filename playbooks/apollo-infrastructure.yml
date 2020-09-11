@@ -1,0 +1,180 @@
+- name: "@apollo-infrastructure"
+  hosts: localhost
+  become: True
+  strategy: linear
+  gather_facts: false
+  tasks:
+    - name: Capturing Terraform Command
+      command: which terraform
+      register: _terraform_command
+      changed_when: false
+      tags:
+        - terraform_apply
+        - terraform_destroy
+        - terraform_init
+        - terraform_inventory
+        - terraform_plan
+
+    - name: Setting Terraform facts
+      set_fact:
+        terraform_command: "{{ _terraform_command['stdout'] }}"
+        terraform_dir: "/apollo/modules/{{ apollo_provider }}"
+      tags:
+        - terraform_apply
+        - terraform_destroy
+        - terraform_init
+        - terraform_inventory
+        - terraform_plan
+
+    # - name: Generating Terraform Variables
+    #   template:
+    #     src: templates/terraform_variables.tf.j2
+    #     dest: "{{ terraform_dir }}/variables.tf"
+    #   tags:
+    #     - terraform_apply
+    #     - terraform_destroy
+    #     - terraform_init
+    #     - terraform_inventory
+    #     - terraform_plan
+
+    # - name: Generating Secret Terraform Variables
+    #   template:
+    #     src: templates/terraform.tfvars.j2
+    #     dest: "{{ terraform_dir }}/terraform.tfvars"
+    #   tags:
+    #     - terraform_apply
+    #     - terraform_destroy
+    #     - terraform_init
+    #     - terraform_inventory
+    #     - terraform_plan
+
+    # - name: Generating Terraform Inventory Resources
+    #   template:
+    #     src: templates/terraform_inventory_resources.tf.j2
+    #     dest: "{{ terraform_dir }}/inventory_resources.tf"
+    #   tags:
+    #     - terraform_apply
+    #     - terraform_destroy
+    #     - terraform_init
+    #     - terraform_inventory
+    #     - terraform_plan
+
+    # - name: Generating Terraform VM Definitions
+    #   template:
+    #     src: templates/terraform_vm_resources.tf.j2
+    #     dest: "{{ terraform_dir }}/vm_resources.tf"
+    #   tags:
+    #     - terraform_apply
+    #     - terraform_destroy
+    #     - terraform_init
+    #     - terraform_inventory
+    #     - terraform_plan
+
+    # - name: Generating Terraform PDNS Resources
+    #   template:
+    #     src: templates/terraform_pdns_resources.tf.j2
+    #     dest: "{{ terraform_dir }}/pdns_resources.tf"
+    #   tags:
+    #     - terraform_apply
+    #     - terraform_destroy
+    #     - terraform_init
+    #     - terraform_inventory
+    #     - terraform_plan
+
+    - name: Capturing Terraform Init State
+      command: "{{ terraform_command }} init -get=true -compact-warnings input=false"
+      register: _terraform_init_state
+      changed_when: false
+      args:
+        chdir: "{{ terraform_dir }}"
+        creates: "{{ terraform_dir }}/.terraform"
+      tags:
+        - terraform_init
+
+    - name: Running Terraform Plan
+      command: "{{ terraform_command }} plan -out={{ apollo_space_dir }}/infrastructure.apollo.plan -input=false -detailed-exitcode -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate -lock=true"
+      register: _terraform_plan
+      changed_when: false
+      args:
+        chdir: "{{ terraform_dir }}"
+        creates: "{{ apollo_space_dir }}/infrastructure.apollo.plan"
+      
+      tags:
+        - terraform_apply
+        - terraform_plan
+      failed_when: _terraform_plan['rc'] > 2
+
+    - name: Displaying Terraform Plan
+      debug: var=_terraform_plan
+      tags:
+        - terraform_apply
+        - terraform_plan
+
+    - name: Applying Terraform Plan
+      command: "{{ terraform_command }} apply -compact-warnings -input=false -auto-approve=true -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate {{ apollo_space_dir }}/infrastructure.apollo.plan"
+      register: _terraform_apply
+      changed_when: false
+      args:
+        chdir: "{{ terraform_dir }}"
+        creates: "{{ apollo_space_dir }}/infrastructure.apollo.tfstate"
+      tags:
+        - terraform_apply
+      when: >
+        _terraform_plan['rc'] == 2 and
+        terraform_apply
+
+    - name: Destroying Terraform Plan
+      command: "{{ terraform_command }} destroy -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate -compact-warnings -auto-approve=true -force"
+      register: _terraform_destroy
+      changed_when: false
+      args:
+        chdir: "{{ terraform_dir }}"
+        removes: "{{ apollo_space_dir }}/infrastructure.apollo.tfstate"
+      tags:
+        - terraform_destroy
+      when: apollo_terraform_destroy
+
+    - name: Destroying Terraform artifacts
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ apollo_space_dir }}/infrastructure.apollo.tfstate"
+        - "{{ apollo_space_dir }}/infrastructure.apollo.tfstate.backup"
+        - "{{ apollo_space_dir }}/infrastructure.apollo.plan"
+        - "{{ apollo_space_dir }}/nodes.apollo.env"
+      tags:
+        - terraform_destroy
+      when: apollo_terraform_destroy
+
+    - name: Capturing Terraform State
+      command: "{{ terraform_command }} state pull"
+      register: _terraform_state
+      changed_when: false
+      args:
+        chdir: "{{ terraform_dir }}"
+      tags:
+        - terraform_apply
+        - terraform_destroy
+        - terraform_inventory
+
+    # - name: Generating Terraform Ansible Inventory
+    #   template:
+    #     src: terraform.inv.j2
+    #     dest: "{{ vsphere_inventory_directory }}/terraform.inv"
+    #   tags:
+    #     - terraform_apply
+    #     - terraform_destroy
+    #     - terraform_inventory
+
+    - name: Generating Terraform Ansible Inventory
+      command: "{{ terraform_command }} output -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate | tr -d ' ' > {{ apollo_space_dir}}/nodes.apollo.env"
+      register: _terraform_state
+      changed_when: false
+      args:
+        chdir: "{{ terraform_dir }}"
+        creates: "{{ apollo_space_dir}}/nodes.apollo.env"
+      tags:
+        - terraform_apply
+        - terraform_destroy
+        - terraform_inventory

@@ -124,96 +124,9 @@ apollo::unload() {
   cd ${APOLLO_SPACES_DIR}
 }
 
-apollo::terraform_init() {
-  if [[ ! -z "$APOLLO_SPACE" ]];
-  then
-    apollo::echo "Terraform > Init"
-
-    exec 5>&1
-
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      if [ ! -d /apollo/modules/${APOLLO_PROVIDER}/.terraform ];
-      then
-        apollo_status=$(
-          cd /apollo/modules/$APOLLO_PROVIDER
-          terraform init -compact-warnings -input=false >&5
-        )
-      fi
-    fi
-    echo $apollo_status
-  else
-    apollo::echo "No Space selected. Use \`apollo load\`"
-  fi
-}
-
-apollo::terraform_plan() {
-  if [[ ! -z "$APOLLO_SPACE" ]];
-  then
-    apollo::echo "Terraform > Plan"
-
-    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
-    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
-
-    exec 5>&1
-
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      apollo::terraform_init
-      
-      if [ ! -f $TF_PLAN_PATH ];
-      then
-        apollo_status=$(
-          cd /apollo/modules/$APOLLO_PROVIDER
-          
-          terraform plan -lock=true -compact-warnings -input=false -out=${TF_PLAN_PATH} -state=${TF_STATE_PATH} >&5
-        )
-      fi
-    fi
-    echo $apollo_status
-  else
-    apollo::echo "No Space selected. Use \`apollo load\`"
-  fi
-}
-
-apollo::terraform_apply() {
-  if [[ ! -z "$APOLLO_SPACE" ]];
-  then
-    apollo::echo "Terraform > Apply"
-
-    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
-    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
-
-    exec 5>&1
-
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      apollo::terraform_plan
-      
-      if [ ! -f $TF_STATE_PATH ];
-      then
-        apollo_status=$(
-          cd /apollo/modules/$APOLLO_PROVIDER
-          
-          terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH} >&5
-          terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${APOLLO_SPACE_DIR}/nodes.apollo.env
-        )
-
-        apollo::echo "Sleeping a bit, waiting for nodes to become ready"
-        sleep 20
-        apollo::load $APOLLO_SPACE_DIR
-      fi
-    fi
-    echo $apollo_status
-  else
-    apollo::echo "no Space selected. Use \`load\`"
-  fi
-}
-
 apollo::deploy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "deploying space '$APOLLO_SPACE'"
     apollo::echo "verbosity: '$ANSIBLE_VERBOSITY'"
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
@@ -228,63 +141,8 @@ apollo::deploy() {
         ansible-playbook provision.yml --flush-cache --tags "provision_${1},always" >&5
       )
       echo $apollo_status
-    elif [ "$1" = "backplane" ];
-    then
-      if [ "$2" != "" ];
-      then
-        apollo::echo "Deploying Backplane App $2"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "provision_${2},always" >&5
-        )
-        echo $apollo_status
-      else
-        apollo::echo "Deploying Backplane"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "provision_backplane,always" >&5
-        )
-        echo $apollo_status
-      fi
-    elif [ "$1" = "controlplane" ];
-    then
-      if [ "$2" != "" ];
-      then
-        apollo::echo "Deploying Controlplane App $2"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
-        )
-        echo $apollo_status
-      else
-        apollo::echo "Deploying Controlplane"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "provision_controlplane,always" >&5
-        )
-        echo $apollo_status
-      fi
-    elif [ "$1" = "orchestrator" ];
-    then
-      apollo::echo "Deploying Orchestrator"
-
-      apollo_status=$(
-        export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-        cd /apollo
-        ansible-playbook provision.yml --flush-cache --tags "provision_orchestrator,always" >&5
-      )
-      echo $apollo_status
     else
-      apollo::terraform_apply
-
+      apollo::echo "deploying ${APOLLO_SPACE}"
       apollo_status=$(
         export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
         cd /apollo
@@ -293,7 +151,7 @@ apollo::deploy() {
       echo $apollo_status
     fi
   else
-    apollo::echo "No Space selected. Use \`apollo load\`"
+    apollo::echo "No space selected. Use \`load\`"
   fi
 }
 
