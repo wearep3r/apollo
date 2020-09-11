@@ -113,9 +113,13 @@ If you just want to use apollo to manage your container platforms, you just need
 - Local machine: Docker
 - Remote machines: Ubuntu 18.04
 
+apollo requires a manager- or control-node. We call this `manager-0`. This node runs the entire controlplane and monitoring stack for a cluster and should be sized appropriately (8GB Memory, 2-4 vCPUs).
+
+apollo can manage additional managers (not more than 3, it doesn't make sense) as well as an arbitrary number of workers to deal with your workloads. Make sure to adjust manager-size to your number of workers. The more nodes your cluster has, the more resources operations will need.
+
 ## Getting started
 
-The simplest way to use **apollo** is to run our [Docker Image](https://hub.docker.com/r/wearep3r/apollo/tags).
+The simplest way to use **apollo** is to run our [Docker Image](https://gitlab.com/p3r.one/apollo/container_registry/eyJuYW1lIjoicDNyLm9uZS9hcG9sbG8iLCJ0YWdzX3BhdGgiOiIvcDNyLm9uZS9hcG9sbG8vcmVnaXN0cnkvcmVwb3NpdG9yeS8xMjcwMTkyL3RhZ3M%2FZm9ybWF0PWpzb24iLCJpZCI6MTI3MDE5Mn0=).
 
 ### Prerequisites
 
@@ -143,13 +147,13 @@ docker run --rm -it \
   -v ${HOME}/.ssh:/root/.ssh \
   -v ${HOME}/.gitconfig:/root/.gitconfig \
   -v ${HOME}/.apollo:/root/.apollo \
-  wearep3r/apollo:latest
+  registry.gitlab.com/p3r.one/apollo:latest
 ```
 
 **PRO TIP**: Save this **alias** to your `.zshrc` or `.bashrc` file to get quick access to **apollo**:
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo wearep3r/apollo:latest"
+alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r.one/apollo:latest"
 ```
 
 ### Create your first space
@@ -157,15 +161,20 @@ alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOM
 Open a new terminal and run `apollo`. You will be presented with a prompt from inside the **apollo** Container:
 
 ```bash
-~/.apollo/.spaces
+❯ apollo
+[.space] Welcome to apollo (fix/ci-cli:0166836). Use load to select a space for deployment or init to create a new space
+[.space] If you need support, please visit https://gitlab.com/p3r.one/apollo
+
+~/.apollo/.spaces with apollo fix/ci-cli:0166836
+[.space] 
 ❯  
 ```
 
-You're inside your **spaces directory** (aka `APOLLO_SPACES_DIR`). From here you can create a new **space** by simply running `init`.
+You're inside your **spaces directory** (aka `APOLLO_SPACES_DIR` which defaults to `~/.apollo/.spaces`). From here you can create a new **space** by simply running `init`.
 
 You will be guided through the creation of a new space.
 
-1. Give your **space** a name (**hint**: use a `hostname` formatted name (e.g. `apollo-demo-1`) as it will be used in the **space** urls)
+1. Give your space a name (**hint**: use a `hostname` formatted name (e.g. `apollo-demo-1`) as it will be used in the **space** urls)
 2. If you want to sync your space with a remote git repository, type `y`, otherwise just press enter
 3. If you want to use one of apollo's supported cloud providers, enter the tag here, otherwise just press enter (**hint**: you will be asked for credentials if you choose a cloud provider)
 4. Enter the ip-addresses of the nodes you want to be a manager in your apollo cluster (**hint**: enter multiple ips comma-separated, e.g. `192.168.178.187,192.168.178.188`)
@@ -174,46 +183,60 @@ You will be guided through the creation of a new space.
 7. If you want to use LetsEncrypt, type `y`, otherwise just press enter (**hint**: LetsEncrypt doesn't work without a public IP for your apollo cluster and you need to provide an e-mail address if you want to use LetsEncrypt)
 
 ```bash
-[DEV] 🚀 .spaces init
-[apollo] Initializing new Space
-[apollo] Name: apollo-demo-1
-[apollo-demo-1] Do you want to sync this Space with a remote repository? [y/N]
-[apollo-demo-1] Cloud Provider (generic,hcloud,digitalocean,aws):
-[apollo-demo-1] Manager IPs (comma separated): 192.168.178.187
-[apollo-demo-1] Worker IPs (comma separated):
-[apollo-demo-1] Base domain:
-[apollo-demo-1] Enable LetsEncrypt? [y/N]
-[apollo-demo-1] 🚀 Space: apollo-demo-1
-[apollo-demo-1]  ∟ 🌐 Base Domain: 192.168.178.187.xip.io
-[apollo-demo-1]  ∟ 🤖 User: admin
-[apollo-demo-1]  ∟ 🙊 Password: insecure!
-[apollo-demo-1] 🟢 Nodes:
-[apollo-demo-1]  ∟ 🟢 apollo-demo-1-manager-0 - 192.168.178.187
-[apollo-demo-1] ❌ Federation: Disabled
-[apollo-demo-1] 🟢 Backplane: Enabled
-[apollo-demo-1]  ∟ 🟢 Portainer: http://admin:insecure!@portainer.apollo-demo-1.192.168.178.187.xip.io
-[apollo-demo-1]  ∟ 🟢 Traefik: http://admin:insecure!@proxy.apollo-demo-1.192.168.178.187.xip.io
-[apollo-demo-1]  ∟ 🟢 Prometheus: http://admin:insecure!@prometheus.apollo-demo-1.192.168.178.187.xip.io
-[apollo-demo-1]  ∟ 🟢 Grafana: http://grafana.apollo-demo-1.192.168.178.187.xip.io
-[apollo-demo-1] 🔴 GitLab Runner: Disabled
-[apollo-demo-1] 🔴 Apps: Disabled
+.apollo/.spaces/hcloud-demo-1.space with apollo fix/ci-cli:0166836
+[.space] init
+[.space] Initializing new Space
+[.space] Name: hcloud-demo-1
+[hcloud-demo-1.space] Do you want to sync this Space with a remote repository? [y/N] 
+[hcloud-demo-1.space] apollo Provider (generic,hcloud,digitalocean,aws): hcloud
+[hcloud-demo-1.space] HCLOUD Token: 123456678
+[hcloud-demo-1.space] Manager instances: 1
+[hcloud-demo-1.space] Worker instances: 0
+[hcloud-demo-1.space] Base domain: example.com
+[hcloud-demo-1.space] Admin User: admin
+[hcloud-demo-1.space] Admin Password: admin
+[hcloud-demo-1.space] Enable LetsEncrypt? [y/N] y
+[hcloud-demo-1.space] LetsEncrypt E-Mail: info@example.com
+
+[hcloud-demo-1.space] Space: hcloud-demo-1
+[hcloud-demo-1.space] ∟ Base Domain: example.com
+[hcloud-demo-1.space] ∟ User: admin
+[hcloud-demo-1.space] ∟ Password: admin
+[hcloud-demo-1.space] ∟ Data: generic
+[hcloud-demo-1.space] ∟ Provider: hcloud
+[hcloud-demo-1.space] ∟ Ingress IP: 127.0.0.1
+[hcloud-demo-1.space] ∟ Management IP: 127.0.0.1
+[hcloud-demo-1.space] ∟ LetsEncrypt: Enabled
+[hcloud-demo-1.space] Nodes: 
+[hcloud-demo-1.space] Federation: Disabled
+[hcloud-demo-1.space] Backplane: Enabled
+[hcloud-demo-1.space] ∟ Portainer: https://admin:admin@portainer.hcloud-demo-1.example.com:8443
+[hcloud-demo-1.space] ∟ Traefik: https://admin:admin@traefik.hcloud-demo-1.example.com:8443
+[hcloud-demo-1.space] ∟ Grafana: https://grafana.hcloud-demo-1.example.com:8443
+[hcloud-demo-1.space] Backups: Disabled
+[hcloud-demo-1.space] Wireguard: Disabled
+[hcloud-demo-1.space] Alerts: Disabled
+[hcloud-demo-1.space] GitLab Runner: Disabled
+[hcloud-demo-1.space] Apps: Disabled
 ```
 
-**Congratulations!** You just created your first **apollo** space. You've been taken to your space directory (aka `APOLLO_SPACE_DIR`) automatically and can now take a look at your **space** config:
+**Congratulations!** You just created your first apollo space. You've been taken to your space directory (aka `APOLLO_SPACE_DIR`) automatically and can now take a look at your **space** config:
 
 ```bash
-[DEV] 🚀 apollo-demo-1.space ls
+.apollo/.spaces/hcloud-demo-1.space with apollo fix/ci-cli:0166836
+[hcloud-demo-1.space] ls -la
 .ssh
 apollo.env
 infrastructure.apollo.env
 ```
 
-If you're using a cloud provider, certain necessary values **apollo** needs to operate will be automatically saved to `nodes.apolloenv` - amongst them `APOLLO_INGRESS_IP`. **apollo** generates SSH-Keys for you in `$APOLLO_SPACE_DIR/.ssh` which will be used to connect to the provisioned infrastructure.
+If you're using a cloud provider, certain necessary values **apollo** needs to operate will be automatically saved to `nodes.apollo.env` - amongst them `APOLLO_INGRESS_IP`. apollo generates SSH-Keys for you in `APOLLO_SPACE_DIR/.ssh` which will be used to connect to the provisioned infrastructure.
 
-In case you're using your own infrastructure, please add the following values (adjusted to your infrastructure) to `infrastructure.apollo.env` manually before proceeding.
+In case you're using your own infrastructure, please add the following values (adjusted to your infrastructure) to `infrastructure.apollo.env` manually before proceeding:
 
 ```bash
 APOLLO_INGRESS_IP=1.2.3.4
+APOLLO_MANAGEMENT_IP=1.2.3.4
 APOLLO_NODES_MANAGER=1.2.3.4
 APOLLO_NODES_WORKER=
 APOLLO_PRIVATE_INTERFACE=eth0
@@ -221,12 +244,15 @@ APOLLO_PROVIDER=generic
 APOLLO_PUBLIC_INTERFACE=eth0
 ```
 
+**NOTE**: `APOLLO_INGRESS_IP`is the IP you should direct your traffic to. If you're running a multi-node setup with workers, `APOLLO_INGRESS_IP` should point to one or all of the workers. `APOLLO_MANAGEMENT_IP` should point to your first manager (i.e. node zero). It's used to access the controlplane.
+
 ### Deploy a space
 
 Using `deploy`, you can deploy your Ssace. Please note that for a successful deployment `APOLLO_INGRESS_IP` needs to have a useful value and needs to be accessible through SSH with the SSH-Keys generated during the init process.
 
 ```bash
-🚀 apollo-demo-1.space deploy
+.apollo/.spaces/hcloud-demo-1.space with apollo fix/ci-cli:0166836 
+[hcloud-demo-1.space] deploy
 ```
 
 ## Advanced usage

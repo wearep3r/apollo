@@ -31,6 +31,7 @@ alias ls='lsd'
 alias grep='grep --color'
 alias zshrc="nano ~/.zshrc"
 alias -g Z='| fzf'
-alias less="batcat"
+alias less="bat"
 
-apollo::echo "Welcome to ${bold}apollo${normal}. Use ${bold}load${normal} to select a space for deployment or ${bold}init${normal} to create a new space"
+apollo::echo "Welcome to ${bold}apollo${normal} ($APOLLO_VERSION). Use ${bold}load${normal} to select a space for deployment or ${bold}init${normal} to create a new space"
+apollo::echo "If you need support, please visit ${bold}https://gitlab.com/p3r.one/apollo${normal}"

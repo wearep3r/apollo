@@ -1,4 +1,4 @@
-add_newline = false
+add_newline = true
 
 # Replace the "❯" symbol in the prompt with "➜"
 [character]      # The name of the module we are configuring is "character"
@@ -11,7 +11,7 @@ disabled = false
 [env_var]
 variable = "APOLLO_VERSION"
 default = "version unknown"
-prefix = "apollo v"
+prefix = "apollo "
 style = "dimmed bold blue"
 disabled = false
 

@@ -7,10 +7,10 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-apollo::warn() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
-apollo::info() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
-apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
-apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s" '\e[0;32m' '\e[0m' "$@" }
+apollo::warn() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
+apollo::info() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
+apollo::echo() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
+apollo::echo_n() { printf "%b[${APOLLO_SPACE}.space]%b %s" '\e[0;32m' '\e[0m' "$@" }
 
 # Apollo commands
 apollo::load() {
@@ -119,15 +119,16 @@ apollo::load() {
 }
 
 apollo::unload() {
-  apollo::echo "Unloading ${APOLLO_SPACE}"
+  apollo::echo "unloading ${APOLLO_SPACE}"
   unset APOLLO_SPACE
+  source /apollo/defaults.env
   cd ${APOLLO_SPACES_DIR}
 }
 
 apollo::deploy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "verbosity: '$ANSIBLE_VERBOSITY'"
+    apollo::echo "verbosity: $ANSIBLE_VERBOSITY"
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
@@ -429,9 +430,9 @@ apollo::init() {
   if [ ! -z "$3" ];
   then
     APOLLO_PROVIDER=$3
-    apollo::echo "${bold}Apollo Provider: ${normal}$3"
+    apollo::echo "${bold}apollo Provider: ${normal}$3"
   else
-    apollo::echo_n "${bold}Cloud Provider (generic,hcloud,digitalocean,aws): ${normal}"
+    apollo::echo_n "${bold}apollo Provider (generic,hcloud,digitalocean,aws): ${normal}"
 
     read APOLLO_PROVIDER_INPUT
     APOLLO_PROVIDER=${APOLLO_PROVIDER_INPUT:-generic}
