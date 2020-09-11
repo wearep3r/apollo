@@ -135,7 +135,7 @@ docker pull wearep3r/apollo
 
 ### Running apollo
 
-Run apollo's Docker Image (**apollo** needs access to a few local directories to work):
+Run apollo's Docker Image (**apollo** needs access to a few local directories to work properly):
 
 ```bash
 docker run --rm -it \
@@ -157,7 +157,8 @@ alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOM
 Open a new terminal and run `apollo`. You will be presented with a prompt from inside the **apollo** Container:
 
 ```bash
-🚀 .spaces
+~/.apollo/.spaces
+❯  
 ```
 
 You're inside your **spaces directory** (aka `APOLLO_SPACES_DIR`). From here you can create a new **space** by simply running `init`.

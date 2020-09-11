@@ -7,10 +7,10 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-apollo::warn() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
-apollo::info() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
-apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
-apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s" '\e[0;32m' '\e[0m' "$@" }
+apollo::warn() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
+apollo::info() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
+apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
+apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}.space]%b %s" '\e[0;32m' '\e[0m' "$@" }
 
 # Apollo commands
 apollo::load() {

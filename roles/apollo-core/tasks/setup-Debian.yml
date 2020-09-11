@@ -4,7 +4,6 @@
     name: apollo
     state: present
 
-
 - name: Create apollo user
   user:
     name: "apollo"
@@ -14,8 +13,12 @@
     append: yes
     #groups: docker
     password: "{{ admin_password | password_hash('sha512', admin_password_hash ) }}"
-
     shell: "/bin/zsh"
+
+- name: Change shell for root
+  user:
+    name: "root"
+    shell: /bin/zsh
 
 - name: Creating apollo directories
   file:
