@@ -79,7 +79,7 @@ services:
 networks:
   proxy:
     driver: overlay
-    attachable: true
+    external: true
     name: proxy
 {% for network in traefik_extra_networks %}
 {% if network != '' %}

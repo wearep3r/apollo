@@ -19,8 +19,12 @@
 - name: Set Swarm Facts
   set_fact:  
     advertise_address: "{{ hostvars[inventory_hostname]['cluster_ip'] }}:2377"
-    manager_address: "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:2377"
+    manager_address: "{{ apollo_manager }}:2377"
   #when: apollo_wireguard_enabled|bool
+
+- name: Debug Swarm Facts
+  debug:
+    msg: "advertise_address: {{ advertise_address }}, manager_address {{ manager_address }}"
 
 # Create dynamic in-memory groups "swarm_manager_active"
 # and "swarm_manager_inactive" depending on the output of `docker info`
@@ -37,7 +41,6 @@
   shell: >
     docker swarm init
     --advertise-addr={{ advertise_address }}
-    #--advertise-addr={{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}:2377
   when: "'swarm_manager_active' not in groups and inventory_hostname == groups['manager'][0]"
   register: bootstrap_first_node
 

@@ -1,0 +1,8 @@
+---
+  postfix_config_file: /etc/postfix/main.cf
+
+  postfix_service_state: started
+  postfix_service_enabled: true
+  
+  postfix_inet_interfaces: private
+  postfix_inet_protocols: all

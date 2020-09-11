@@ -97,13 +97,18 @@
         source: pull
       with_dict: "{{ images }}"
 
-    - name: Teardown legacy Traefik
+    - name: Teardown legacy Traefik stack
       docker_stack:
         state: absent
         name: traefik
         prune: yes
+
+    - name: Create proxy network
+      docker_network:
+        name: proxy
+        driver: overlay
     
-    - name: Provision Traefik
+    - name: Provision apollo proxy
       docker_stack:
         state: present
         name: proxy
@@ -111,7 +116,7 @@
         with_registry_auth: yes
         compose:
           - "{{ app_dir }}/docker-compose.yml"
-      register: traefik_provision
+      register: proxy_provision
 
     # - name: "Wait for http://proxy.{{ space_domain }} to become ready"
     #   uri:

@@ -12,7 +12,7 @@
     group: apollo
     home: "{{ apollo_remote_dir }}"
     append: yes
-    groups: docker
+    #groups: docker
     password: "{{ admin_password | password_hash('sha512', admin_password_hash ) }}"
 
     shell: "/bin/zsh"
@@ -32,12 +32,12 @@
     name: "{{ inventory_hostname }}"
   ignore_errors: true
 
-- name: Disabling Ubuntu motd-news
-  shell: "chmod -x *"
-  args:
-    chdir: /etc/update-motd.d
-    warn: false
-  changed_when: false
+# - name: Disabling Ubuntu motd-news
+#   shell: "chmod -x *"
+#   args:
+#     chdir: /etc/update-motd.d
+#     warn: false
+#   changed_when: false
   
 - name: Setting apollo motd
   template:
@@ -138,22 +138,25 @@
       - resolvconf
       - unzip
       - gnupg2
-      - cockpit
-      - cockpit-ws
-      - cockpit-dashboard
-      - cockpit-storaged
+      #- cockpit
+      #- cockpit-ws
+      #- cockpit-dashboard
+      #- cockpit-storaged
       - fail2ban
+      - moreutils
+      - postfix
+      - mosh
     state: present
     update_cache: False
 
-- name: Setting up Cockpit config
-  template:
-    src: "cockpit-machines.j2"
-    dest: "/etc/cockpit/machines.d/05-apollo-nodes.json"
-    owner: root
-    group: root
-    mode: 0755
-  when: ansible_hostname == "manager-0"
+# - name: Setting up Cockpit config
+#   template:
+#     src: "cockpit-machines.j2"
+#     dest: "/etc/cockpit/machines.d/05-apollo-nodes.json"
+#     owner: root
+#     group: root
+#     mode: 0755
+#   when: ansible_hostname == "manager-0"
 
 - name: Installing pip dependencies
   pip:
@@ -163,6 +166,40 @@
       - docker
       - psutil
       - jmespath
+
+- name: Provision Postfix
+  block:
+    - name: Update Postfix configuration.
+      lineinfile:
+        dest: "{{ postfix_config_file }}"
+        line: "{{ item.name }} = {{ item.value }}"
+        regexp: "^{{ item.name }} ="
+        mode: 0644
+      with_items:
+        - name: inet_interfaces
+          value: "{{ postfix_inet_interfaces }}"
+        - name: inet_protocols
+          value: "{{ postfix_inet_protocols }}"
+        - name: myorigin
+          value: "{{ space_domain }}"
+        - name: myhostname
+          value: "{{ space_domain }}"
+        - name: mydomain
+          value: "{{ space_domain }}"
+        - name: mynetworks_style
+          value: "host"
+        - name: relay_domains
+          value: ""
+        - name: mydestination
+          value: ""
+      notify: restart postfix
+
+    - name: Ensure postfix is started and enabled at boot.
+      service:
+        name: postfix
+        state: "{{ postfix_service_state }}"
+        enabled: "{{ postfix_service_enabled }}"
+  when: ansible_hostname == "manager-0"
 
 - name: Setting up Kernel (Ubuntu)
   block:

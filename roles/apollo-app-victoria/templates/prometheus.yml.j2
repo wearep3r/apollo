@@ -34,7 +34,7 @@ scrape_configs:
         - http://proxy.{{ space_domain }}
         - https://traefik.{{ space_domain }}:8443
         - https://grafana.{{ space_domain }}:8443
-        - https://cockpit.{{ space_domain }}:8443
+        #- https://cockpit.{{ space_domain }}:8443
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

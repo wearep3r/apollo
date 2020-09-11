@@ -153,7 +153,7 @@
 
 - name: Set Node Facts
   set_fact:  
-    private_ip: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+    private_ip: "{{ hostvars[inventory_hostname]['cluster_ip'] }}"
   #when: 
   #  - inventory_hostname == groups["manager"][0]
 

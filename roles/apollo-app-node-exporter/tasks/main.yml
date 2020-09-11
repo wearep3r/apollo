@@ -229,12 +229,17 @@
 
 - name: Setup node_exporter for Swarm
   block:
+    - name: "Gather Package facts"
+      package_facts:
+        manager: "auto"
+
     - name: Get Swarm Node Info
       docker_node_info:
         name: "{{ ansible_hostname }}"
       register: docker_node_info
       delegate_to: manager-0
-      when: apollo_orchestrator == "swarm"
+      when: 
+        - "'docker-ce' in ansible_facts.packages"
 
     - name: Swarm Node ID
       debug:
@@ -253,17 +258,23 @@
       when: node_exporter_textfile_dir | length > 0
   when: apollo_orchestrator == "swarm"
 
-- name: Copy textfile exporters
+- name: Copy textfile-exporters
   copy:
     src: "files/textfile-exporters/{{ item }}"
-    dest: "{{ node_exporter_textfile_dir }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
     mode: 0755
     owner: "{{ _node_exporter_system_user }}"
     group: "{{ _node_exporter_system_user }}"
-  notify: restart node_exporter
   when: not ansible_check_mode
   with_items:
     - "apt.sh"
+
+- name: Create textfile-exporter cronjob
+  cron:
+    name: "apollo-app-node-exporter-textfile-exporter-apt"
+    minute: "0"
+    hour: "*"
+    job: "/usr/local/bin/apt.sh | sponge {{ node_exporter_textfile_dir }}/apt.prom"
 
 - name: Make sure service is started
   service:
