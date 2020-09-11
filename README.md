@@ -8,6 +8,7 @@ Use this repository as a boilerplate for your own platform or manage your [apoll
 [!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
 [!["License"](https://img.shields.io/github/license/wearep3r/apollo)](https://github.com/wearep3r/apollo)
 [!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
+[!["GitLab Stars"](https://img.shields.io/badge/dynamic/json?color=orange&label=GitLab%20stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F17046783)](https://gitlab.com/p3r.one/apollo)
 [!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
 [!["Docker Hub Downloads"](https://img.shields.io/docker/pulls/wearep3r/apollo?label=Downloads&logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
 [!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
@@ -94,6 +95,10 @@ apollo is based on the latest technologies and design patterns. We're working ha
 
 ## Knowledge prerequisites
 
+If you just want to use apollo to manage your container platforms, you just need to know:
+
+- Docker
+
 If you want to build upon this repository, you'll need to be very proficient with the following tools:
 
 - Ansible
@@ -103,10 +108,6 @@ If you want to build upon this repository, you'll need to be very proficient wit
 - Python
 - Docker Swarm
 - Kubernetes
-
-If you just want to use apollo to manage your container platforms, you just need to know:
-
-- Docker
 
 ## Technical prerequisites
 
@@ -134,7 +135,7 @@ mkdir -p $HOME/.apollo
 Download apollo's Docker Image from the Docker Hub:
 
 ```bash
-docker pull wearep3r/apollo
+docker pull registry.gitlab.com/p3r.one/apollo:latest
 ```
 
 ### Running apollo
