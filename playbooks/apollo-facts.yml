@@ -7,13 +7,33 @@
       setup:
         filter: "*"
 
+    # - name: Fallback Interfaces
+    #   set_fact:
+    #     private_iface: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
+    #     cacheable: false
+    #   when: private_iface not in hostvars[inventory_hostname]['ansible_interfaces']
+    
+    # - name: Display all variables/facts known for a host
+    #   debug:
+    #     var: hostvars[inventory_hostname]['ansible_default_ipv4']
+
     - name: Set Node Facts
       set_fact:
-        apollo_manager: "{{  hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}"
-        cluster_ip: "{{  hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+        apollo_manager: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
+        apollo_public_ip: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
+        cluster_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        #apollo_cluster_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
+        apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
 
     - name: Set Node Facts (Wireguard)
       set_fact:  
         apollo_manager: "{{ hostvars[groups['manager'][0]]['apollo_cluster_ip'] }}"
         cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"
+        #apollo_cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"
+        apollo_public_ip: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
+        apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
+        apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
       when: apollo_wireguard_enabled|bool
+
+    

@@ -1,0 +1,80 @@
+---
+# tasks file for zero-app-cadvisor
+- name: Configure alerts
+  block:
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: "{{ app_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
+
+    - name: Copy Alertmanager config
+      template:
+        src: templates/alertmanager.yml.j2
+        dest: "{{ app_dir }}/alertmanager.yml"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Pull images
+      docker_image:
+        name: "{{ image.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+      loop_control:
+        loop_var: image
+
+    - name: Provision alertmanager
+      docker_stack:
+        state: present
+        name: alertmanager
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - "{{ app_dir }}/docker-compose.yml"
+      register: alertmanager_provision
+  when:
+    - apollo_alerts_enabled|bool
+
+# - name: Configure alerts
+#   block:
+#     - name: Removing alertmanager
+#       docker_stack:
+#         state: absent
+#         name: alertmanager
+#         prune: yes
+#       register: alertmanager_provision
+#   when:
+#     - not apollo_alerts_enabled|bool

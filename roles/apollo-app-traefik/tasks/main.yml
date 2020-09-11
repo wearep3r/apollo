@@ -134,33 +134,21 @@
         path: "{{ app_dir }}/traefik.toml"
         state: absent
 
-    - name: Check if volume is already migrated
-      stat:
-        path: "{{ app_dir }}/acme.json"
-      register: stat_result
-
-    - name: Migrate volume
-      copy:
-        src: /var/lib/docker/volumes/traefik_traefik-data/_data
-        dest: "{{ app_dir }}"
-        remote_src: yes
-      when: not stat_result.stat.exists
-
-    - name: Pull images
-      docker_image:
-        name: "{{ item.value }}"
-        source: pull
-      with_dict: "{{ images }}"
+    # - name: Pull images
+    #   docker_image:
+    #     name: "{{ item.value }}"
+    #     source: pull
+    #   with_dict: "{{ images }}"
     
-    - name: Provision Traefik
-      docker_stack:
-        state: present
-        name: traefik
-        prune: yes
-        with_registry_auth: yes
-        compose:
-          - "{{ app_dir }}/docker-compose.yml"
-      register: traefik_provision
+    # - name: Provision Traefik
+    #   docker_stack:
+    #     state: present
+    #     name: traefik
+    #     prune: yes
+    #     with_registry_auth: yes
+    #     compose:
+    #       - "{{ app_dir }}/docker-compose.yml"
+    #   register: traefik_provision
 
     # - name: "Wait for http://proxy.{{ space_domain }} to become ready"
     #   uri:

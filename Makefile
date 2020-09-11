@@ -42,7 +42,8 @@ TF_PLAN_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.plan
 VERBOSITY ?= 0
 export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 export DOCKER_BUILDKIT=1
-SHIPMATE_CARGO_VERSION = "$(shell git rev-parse --short HEAD)"
+SHIPMATE_BRANCH_NAME= "$(shell git rev-parse --abbrev-ref HEAD)"
+SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}:$(shell git rev-parse --short HEAD)"
 
 
 .PHONY: help

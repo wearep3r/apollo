@@ -22,7 +22,7 @@
     docker swarm join
     --advertise-addr={{ hostvars[inventory_hostname]['ansible_ip_addresses'][0] }}:2377
     --token={{ hostvars[groups['manager'][0]]['swarm_worker_token']['stdout'] }}
-    {{ hostvars[groups['manager'][0]]['ansible_'+private_iface]['ipv4']['address'] }}:2377
+    {{ hostvars[groups['manager'][0]]['cluster_ip'] }}:2377
   when: "'swarm_worker_inactive' in group_names and 'swarm_worker_active' not in group_names and inventory_hostname != groups['manager'][0]"
   register: swarm_worker_joined
 

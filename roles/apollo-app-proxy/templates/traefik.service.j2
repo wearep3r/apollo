@@ -1,0 +1,18 @@
+[Unit]
+Description=traefik
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ _traefik_system_user }}
+Group={{ _traefik_system_group }}
+ExecStart={{ _traefik_binary_install_dir }}/traefik \
+        --configFile {{ app_dir }}/apollo-traefik.toml
+
+SyslogIdentifier=traefik
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

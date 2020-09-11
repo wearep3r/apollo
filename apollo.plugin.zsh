@@ -7,10 +7,10 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-apollo::warn() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
-apollo::info() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
-apollo::echo() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
-apollo::echo_n() { printf "%b[${APOLLO_SPACE:-$APOLLO_WHITELABEL_NAME}]%b %s" '\e[0;32m' '\e[0m' "$@" }
+apollo::warn() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
+apollo::info() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
+apollo::echo() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" }
+apollo::echo_n() { printf "%b[${APOLLO_SPACE}.space]%b %s" '\e[0;32m' '\e[0m' "$@" }
 
 # Apollo commands
 apollo::load() {
@@ -119,146 +119,31 @@ apollo::load() {
 }
 
 apollo::unload() {
-  apollo::echo "Unloading ${APOLLO_SPACE}"
+  apollo::echo "unloading ${APOLLO_SPACE}"
   unset APOLLO_SPACE
+  source /apollo/defaults.env
   cd ${APOLLO_SPACES_DIR}
-}
-
-apollo::terraform_init() {
-  if [[ ! -z "$APOLLO_SPACE" ]];
-  then
-    apollo::echo "Terraform > Init"
-
-    exec 5>&1
-
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      if [ ! -d /apollo/modules/${APOLLO_PROVIDER}/.terraform ];
-      then
-        apollo_status=$(
-          cd /apollo/modules/$APOLLO_PROVIDER
-          terraform init -compact-warnings -input=false >&5
-        )
-      fi
-    fi
-    echo $apollo_status
-  else
-    apollo::echo "No Space selected. Use \`apollo load\`"
-  fi
-}
-
-apollo::terraform_plan() {
-  if [[ ! -z "$APOLLO_SPACE" ]];
-  then
-    apollo::echo "Terraform > Plan"
-
-    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
-    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
-
-    exec 5>&1
-
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      apollo::terraform_init
-      
-      if [ ! -f $TF_PLAN_PATH ];
-      then
-        apollo_status=$(
-          cd /apollo/modules/$APOLLO_PROVIDER
-          
-          terraform plan -lock=true -compact-warnings -input=false -out=${TF_PLAN_PATH} -state=${TF_STATE_PATH} >&5
-        )
-      fi
-    fi
-    echo $apollo_status
-  else
-    apollo::echo "No Space selected. Use \`apollo load\`"
-  fi
-}
-
-apollo::terraform_apply() {
-  if [[ ! -z "$APOLLO_SPACE" ]];
-  then
-    apollo::echo "Terraform > Apply"
-
-    TF_PLAN_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.plan
-    TF_STATE_PATH=${APOLLO_SPACE_DIR}/infrastructure.apollo.tfstate
-
-    exec 5>&1
-
-    if [ "$APOLLO_PROVIDER" != "generic" ];
-    then
-      apollo::terraform_plan
-      
-      if [ ! -f $TF_STATE_PATH ];
-      then
-        apollo_status=$(
-          cd /apollo/modules/$APOLLO_PROVIDER
-          
-          terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH} >&5
-          terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${APOLLO_SPACE_DIR}/nodes.apollo.env
-        )
-
-        apollo::echo "Sleeping a bit, waiting for nodes to become ready"
-        sleep 20
-        apollo::load $APOLLO_SPACE_DIR
-      fi
-    fi
-    echo $apollo_status
-  else
-    apollo::echo "No Space selected. Use \`apollo load\`"
-  fi
 }
 
 apollo::deploy() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "Deploying Space '$APOLLO_SPACE'"
-    apollo::echo "VERBOSITY: '$ANSIBLE_VERBOSITY'"
+    apollo::echo "verbosity: $ANSIBLE_VERBOSITY"
 
     # https://stackoverflow.com/questions/15153158/how-to-redirect-an-output-file-descriptor-of-a-subshell-to-an-input-file-descrip
     exec 5>&1
 
-    if [ "$1" = "apps" ];
+    if [ "$1" != "" ];
     then
-      if [ "$2" != "" ];
-      then
-        apollo::echo "Deploying App $2"
-      else
-        apollo::echo "Deploying Apps"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "provision_apps,always" >&5
-        )
-        echo $apollo_status
-      fi
-    elif [ "$1" = "backplane" ];
-    then
-      if [ "$2" != "" ];
-      then
-        apollo::echo "Deploying Backplane App $2"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "app_${2},always" >&5
-        )
-        echo $apollo_status
-      else
-        apollo::echo "Deploying Backplane"
-
-        apollo_status=$(
-          export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
-          cd /apollo
-          ansible-playbook provision.yml --flush-cache --tags "provision_backplane,always" >&5
-        )
-        echo $apollo_status
-      fi
+      apollo::echo "deploying $1"
+      apollo_status=$(
+        export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+        cd /apollo
+        ansible-playbook provision.yml --flush-cache --tags "provision_${1},always" >&5
+      )
+      echo $apollo_status
     else
-      apollo::terraform_apply
-
+      apollo::echo "deploying ${APOLLO_SPACE}"
       apollo_status=$(
         export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
         cd /apollo
@@ -267,7 +152,7 @@ apollo::deploy() {
       echo $apollo_status
     fi
   else
-    apollo::echo "No Space selected. Use \`apollo load\`"
+    apollo::echo "No space selected. Use \`load\`"
   fi
 }
 
@@ -362,102 +247,119 @@ apollo::destroy() {
 apollo::inspect() {
   if [[ ! -z "$APOLLO_SPACE" ]];
   then
-    apollo::echo "🚀 ${bold}Space: ${normal}$APOLLO_SPACE"
-    apollo::echo " ∟ 🌐 ${bold}Base Domain: ${normal}$APOLLO_BASE_DOMAIN"
-    apollo::echo " ∟ 🤖 ${bold}User: ${normal}$APOLLO_ADMIN_USER"
-    apollo::echo " ∟ 🙊 ${bold}Password: ${normal}$APOLLO_ADMIN_PASSWORD"
+    apollo::echo "${bold}Space: ${normal}$APOLLO_SPACE"
+    apollo::echo "∟ ${bold}Base Domain: ${normal}$APOLLO_BASE_DOMAIN"
+    apollo::echo "∟ ${bold}User: ${normal}$APOLLO_ADMIN_USER"
+    apollo::echo "∟ ${bold}Password: ${normal}$APOLLO_ADMIN_PASSWORD"
+    apollo::echo "∟ ${bold}Data: ${normal}${APOLLO_DATA}"
+    apollo::echo "∟ ${bold}Provider: ${normal}$APOLLO_PROVIDER"
+    apollo::echo "∟ ${bold}Ingress IP: ${normal}$APOLLO_INGRESS_IP"
+    apollo::echo "∟ ${bold}Management IP: ${normal}$APOLLO_MANAGEMENT_IP"
 
-    apollo::echo "🟢 ${bold}Nodes: ${normal}"
+    if [ "$APOLLO_LETSENCRYPT_ENABLED" != "0" ];
+    then
+      apollo::echo "∟ ${bold}LetsEncrypt: ${normal}Enabled"
+    else
+      apollo::warn "∟ ${bold}LetsEncrypt: ${normal}Disabled"
+    fi
+
+    apollo::echo "${bold}Nodes: ${normal}"
 
     mngr_cnt=0
     for manager in $(echo $APOLLO_NODES_MANAGER | sed "s/,/ /g")
     do
-      apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-manager-$mngr_cnt - ${manager}${normal}"
+      apollo::echo "∟ ${bold}$APOLLO_SPACE-manager-$mngr_cnt - ${manager}${normal}"
       mngr_cnt=$((mngr_cnt+1))
     done
 
     wrkr_cnt=0
     for worker in $(echo $APOLLO_NODES_WORKER | sed "s/,/ /g")
     do
-      apollo::echo " ∟ 🟢 ${bold}$APOLLO_SPACE-worker-$wrkr_cnt - ${worker}${normal}"
+      apollo::echo "∟ ${bold}$APOLLO_SPACE-worker-$wrkr_cnt - ${worker}${normal}"
       wrkr_cnt=$((wrkr_cnt+1))
     done
 
     if [ "$APOLLO_FEDERATION_ENABLED" != "0" ];
     then
-      apollo::echo "🟢 ${bold}Federation: ${normal}Enabled"
+      apollo::echo "${bold}Federation: ${normal}Enabled"
       
       for space in $(echo $APOLLO_FEDERATION_SPACES | sed "s/,/ /g")
       do
-        apollo::echo " ∟ 🟢 ${bold}${space}${normal}"
+        apollo::echo "∟ ${bold}${space}${normal}"
       done
     else
-      apollo::warn "🔴 ${bold}Federation: ${normal}Disabled"
+      apollo::warn "${bold}Federation: ${normal}Disabled"
     fi
 
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
-      apollo::echo "🟢 ${bold}Backplane: ${normal}Enabled"
-      apollo::echo " ∟ 🟢 ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@proxy.$APOLLO_SPACE_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Prometheus: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@prometheus.$APOLLO_SPACE_DOMAIN"
-      apollo::echo " ∟ 🟢 ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_SPACE_DOMAIN"
+      apollo::echo "${bold}Backplane: ${normal}Enabled"
+      apollo::echo "∟ ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@traefik.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_SPACE_DOMAIN:8443"
     else
-      apollo::warn "🔴 ${bold}Backplane: ${normal}Disabled"
+      apollo::warn "${bold}Backplane: ${normal}Disabled"
     fi
 
     if [ "$APOLLO_BACKUPS_ENABLED" != "0" ];
     then
-      apollo::echo "🟢 ${bold}Backups: ${normal}Enabled"
-      apollo::echo " ∟ 🟢 ${bold}Repository: ${normal}${RESTIC_REPOSITORY}"
-      apollo::echo " ∟ 🟢 ${bold}Password: ${normal}${RESTIC_PASSWORD}"
+      apollo::echo "${bold}Backups: ${normal}Enabled"
+      apollo::echo "∟ ${bold}Repository: ${normal}${RESTIC_REPOSITORY}"
+      apollo::echo "∟ ${bold}Password: ${normal}${RESTIC_PASSWORD}"
     else
-      apollo::warn "🔴 ${bold}Backups: ${normal}Disabled"
+      apollo::warn "${bold}Backups: ${normal}Disabled"
+    fi
+
+    if [ "$APOLLO_WIREGUARD_ENABLED" != "0" ];
+    then
+      apollo::echo "${bold}Wireguard: ${normal}Enabled"
+    else
+      apollo::warn "${bold}Wireguard: ${normal}Disabled"
     fi
 
     if [ "$APOLLO_ALERTS_ENABLED" != "0" ];
     then
-      apollo::echo "🟢 ${bold}Alerts: ${normal}Enabled"
-      apollo::echo " ∟ 🟢 ${bold}Slack Webhook: ${normal}${SLACK_WEBHOOK}"
-      apollo::echo " ∟ 🟢 ${bold}Slack Channel: ${normal}${SLACK_CHANNEL}"
+      apollo::echo "${bold}Alerts: ${normal}Enabled"
+      apollo::echo "∟ ${bold}Slack Webhook: ${normal}${SLACK_WEBHOOK}"
+      apollo::echo "∟ ${bold}Slack Channel: ${normal}${SLACK_CHANNEL}"
     else
-      apollo::warn "🔴 ${bold}Alerts: ${normal}Disabled"
+      apollo::warn "${bold}Alerts: ${normal}Disabled"
     fi
 
     if [ "$APOLLO_RUNNER_ENABLED" != "0" ];
     then
-      apollo::echo "🟢 ${bold}GitLab Runner: ${normal}Enabled"
+      apollo::echo "${bold}GitLab Runner: ${normal}Enabled"
 
       RUNNER_BUILD_ENABLED=${RUNNER_BUILD_ENABLED:-"1"}
       if [ "$RUNNER_BUILD_ENABLED" != "0" ];
       then
-        apollo::echo " ∟ 🟢 ${bold}Build: ${normal}Enabled"
+        apollo::echo "∟ ${bold}Build: ${normal}Enabled"
       else
-        apollo::echo " ∟ 🔴 ${bold}Build: ${normal}Disabled"
+        apollo::echo "∟ ${bold}Build: ${normal}Disabled"
       fi
 
       RUNNER_DEPLOY_ENABLED=${RUNNER_DEPLOY_ENABLED:-"1"}
       if [ "$RUNNER_DEPLOY_ENABLED" != "0" ];
       then
-        apollo::echo " ∟ 🟢 ${bold}Deploy: ${normal}Enabled"
+        apollo::echo "∟ ${bold}Deploy: ${normal}Enabled"
       else
-        apollo::echo " ∟ 🔴 ${bold}Deploy: ${normal}Disabled"
+        apollo::echo "∟ ${bold}Deploy: ${normal}Disabled"
       fi
-      apollo::echo " ∟ 🟢 ${bold}Coordinator URL: ${normal}${GITLAB_RUNNER_COORDINATOR_URL:-https://gitlab.com}"
-      apollo::echo " ∟ 🟢 ${bold}Token: ${normal}${GITLAB_RUNNER_TOKEN}"
+      apollo::echo "∟ ${bold}Coordinator URL: ${normal}${GITLAB_RUNNER_COORDINATOR_URL:-https://gitlab.com}"
+      apollo::echo "∟ ${bold}Token: ${normal}${GITLAB_RUNNER_TOKEN}"
     else
-      apollo::warn "🔴 ${bold}GitLab Runner: ${normal}Disabled"
+      apollo::warn "${bold}GitLab Runner: ${normal}Disabled"
     fi
 
     if [ ! -z "$APOLLO_APPS" ];
     then
-      apollo::echo "🟢 ${bold}Apps: ${normal}"
+      apollo::echo "${bold}Apps: ${normal}"
       for app in $(echo $APOLLO_APPS | sed "s/,/ /g")
       do
-        apollo::echo " ∟ 🟢 ${bold}${app}${normal}"
+        apollo::echo "∟ ${bold}${app}${normal}"
       done
     else
-      apollo::warn "🔴 ${bold}Apps: ${normal}Disabled"
+      apollo::warn "${bold}Apps: ${normal}Disabled"
     fi
 
     #apollo::echo `git status`
@@ -528,9 +430,9 @@ apollo::init() {
   if [ ! -z "$3" ];
   then
     APOLLO_PROVIDER=$3
-    apollo::echo "${bold}Apollo Provider: ${normal}$3"
+    apollo::echo "${bold}apollo Provider: ${normal}$3"
   else
-    apollo::echo_n "${bold}Cloud Provider (generic,hcloud,digitalocean,aws): ${normal}"
+    apollo::echo_n "${bold}apollo Provider (generic,hcloud,digitalocean,aws): ${normal}"
 
     read APOLLO_PROVIDER_INPUT
     APOLLO_PROVIDER=${APOLLO_PROVIDER_INPUT:-generic}

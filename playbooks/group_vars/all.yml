@@ -6,7 +6,7 @@ apollo_version: "{{ lookup('env','APOLLO_VERSION') | default('', true) }}"
 apollo_whitelabel_name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
 apollo_remote_dir: "{{ lookup('env','APOLLO_REMOTE_DIR') | default('/srv/.apollo', true) }}"
 apollo_app_dir: "{{ lookup('env','APOLLO_APP_DIR') | default(apollo_remote_dir+'/apps', true) }}"
-apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://assets.gitlab-static.net/uploads/-/system/project/avatar/17046783/logo.png', true) }}"
+apollo_logo: "{{ lookup('env', 'APOLLO_LOGO') | default('https://gitlab.com/p3r.one/apollo/-/raw/master/logo.png', true) }}"
 
 if0_environment: "{{ lookup('env','IF0_ENVIRONMENT') | default(apollo_whitelabel_name, true) }}"
 apollo_environment: "{{ lookup('env','APOLLO_ENVIRONMENT') | default(if0_environment, true) }}"
@@ -56,6 +56,7 @@ zero_provider: "{{ lookup('env','ZERO_PROVIDER') | default('generic', true) }}"
 apollo_provider: "{{ lookup('env','APOLLO_PROVIDER') | default(zero_provider, true) }}"
 worker_size: "{{ lookup('env', 'TF_VAR_worker_size') }}"
 manager_size: "{{ lookup('env', 'TF_VAR_manager_size') }}"
+apollo_terraform_destroy: "{{ lookup('env', 'APOLLO_TERRAFORM_DESTROY') | default(0,true) }}"
 
 # apollo. > IaaS > hcloud
 hcloud_pricing:
@@ -114,7 +115,9 @@ apollo_data_nfs_directory: "{{ lookup('env','APOLLO_DATA_NFS_DIRECTORY') | defau
 
 # apollo. > PaaS > Security
 letsencrypt_enabled: "{{ lookup('env','LETSENCRYPT_ENABLED') | default(1, true) }}"
-letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL')  | default('le@'+space_domain, true) }}"
+apollo_letsencrypt_enabled: "{{ lookup('env','APOLLO_LETSENCRYPT_ENABLED') | default(letsencrypt_enabled, true) }}"
+letsencrypt_mail: "{{ lookup('env','LETSENCRYPT_MAIL')  | default('apollo@'+space_domain, true) }}"
+apollo_letsencrypt_mail: "{{ lookup('env','APOLLO_LETSENCRYPT_MAIL') | default(letsencrypt_mail, true) }}"
 
 # apollo. > PaaS > Network > Wireguard
 apollo_wireguard_enabled: "{{ lookup('env','APOLLO_WIREGUARD_ENABLED') | default(0, true) }}"
@@ -149,6 +152,7 @@ apollo_gc_cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | defau
 
 # apollo. > PaaS > Backplane > Prometheus
 apollo_alerts_enabled: "{{ lookup('env','APOLLO_ALERTS_ENABLED') | default(0, true) }}"
+apollo_alerts_email_to: "{{ lookup('env','APOLLO_ALERTS_EMAIL_TO') | default(letsencrypt_mail, true) }}"
 
 # apollo. > PaaS > Apps
 zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
@@ -171,7 +175,7 @@ runner_env:
     - "DOCKER_DRIVER=overlay2"
     - "DOCKER_BUILDKIT=1"
 gitlab_runner_package_version: 13.3.1
-gitlab_runner_listen_address: ":9252"
+gitlab_runner_listen_address: "{{ apollo_cluster_ip }}:9252"
 gitlab_runner_registration_token: "{{ runner_token }}"
 gitlab_runner_package_name: 'gitlab-runner'
 gitlab_runner_coordinator_url: "{{ lookup('env','GITLAB_RUNNER_COORDINATOR_URL') | default('https://gitlab.com', true) }}"

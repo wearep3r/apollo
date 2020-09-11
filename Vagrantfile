@@ -11,8 +11,8 @@ Vagrant.configure("2") do |config|
     v.customize ["modifyvm", :id, "--ioapic", "on"]
   end
   config.vm.box = "bento/ubuntu-18.04"
-  config.vm.hostname = "zero-manager-0"
-  config.vm.define "zero-manager-0"
+  config.vm.hostname = "manager-0"
+  config.vm.define "manager-0"
   config.vm.network "private_network", ip: "10.16.73.20"
 
   config.vm.provision "ansible" do |ansible|
@@ -23,15 +23,15 @@ Vagrant.configure("2") do |config|
     
     ansible.extra_vars = {
       ingress_ip: "10.16.73.20",
-      base_domain: "zero.ns0.co",
+      base_domain: "10.16.73.20.xip.io",
       private_iface: "eth0",
       public_iface: "eth1"
     }
     galaxy_role_file = "requirements.yml"
     # https://www.vagrantup.com/docs/provisioning/ansible_intro.html
     ansible.groups = {
-      "manager" => ["zero-manager-0"],
-      "runner" => ["zero-manager-0"],
+      "manager" => ["manager-0"],
+      "runner" => ["manager-0"],
       "all_groups:children" => ["manager", "runner"],
     }
 

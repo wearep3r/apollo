@@ -30,10 +30,11 @@ scrape_configs:
       module: [http_backplane]
     static_configs:
       - targets:
-        - http://portainer.{{ space_domain }}
-        - http://grafana.{{ space_domain }}
+        - http://portainer.{{ space_domain }}        
         - http://proxy.{{ space_domain }}
-        - http://prometheus.{{ space_domain }}
+        - https://traefik.{{ space_domain }}:8443
+        - https://grafana.{{ space_domain }}:8443
+        #- https://cockpit.{{ space_domain }}:8443
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -88,6 +89,14 @@ scrape_configs:
 {% endfor %}
     metrics_path: /metrics
 
+  - job_name: 'process-exporter'
+    static_configs:
+    - targets:
+{% for host in groups['all'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9256"
+{% endfor %}
+    metrics_path: /metrics
+
     # dns_sd_configs:
     # - names:
     #   # This A-Record is managed by Docker Swarm
@@ -99,6 +108,12 @@ scrape_configs:
     static_configs:
     - targets:
       - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8082"
+    metrics_path: /metrics
+
+  - job_name: 'proxy'
+    static_configs:
+    - targets:
+      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8080"
     metrics_path: /metrics
 
   - job_name: 'loki'
@@ -138,13 +153,19 @@ scrape_configs:
       port: 8080
 {% endif %}
 
-{% if runner_enabled|bool %}
+{% if apollo_runner_enabled|bool %}
   - job_name: 'giltlab-runner'
     static_configs:
     - targets:
+{% if runner_build_enabled|bool %}
 {% for host in groups['all'] %}
       - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9252"
 {% endfor %}
+{% elif runner_deploy_enabled|bool %}
+{% for host in groups['manager'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9252"
+{% endfor %}
+{% endif %}
     metrics_path: /metrics
 {% endif %}
 
@@ -176,5 +197,4 @@ scrape_configs:
         labels:
           apollo_space: {{ space.apollo_space }}
 {% endfor %}
-
 {% endif %}

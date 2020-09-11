@@ -7,7 +7,7 @@ Type=simple
 User=root
 Group=root
 ExecStart={{ _blackbox_binary_install_dir }}/blackbox_exporter \
-    --config.file={{ app_dir }}/blackbox.yml
+    --config.file={{ app_dir }}/blackbox_exporter.yml
 
 SyslogIdentifier=blackbox_exporter
 Restart=always

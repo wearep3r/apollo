@@ -1,12 +1,6 @@
 ---
 - name: "Provision {{ app_name }}"
   block:
-    - name: "Teardown Docker Stack"
-      docker_stack:
-        absent_retries: 5
-        absent_retries_interval: 10
-        state: absent
-        name: "{{ app_name }}"
 
     - name: Create app group
       group:
