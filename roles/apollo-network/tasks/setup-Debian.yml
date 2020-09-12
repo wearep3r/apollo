@@ -21,10 +21,15 @@
   tags:
     - firewall
 
+- name: reload systemd
+  systemd:
+    daemon_reload: True
+
 - name: Enabling firewall service
   service:
     name: iptables
     enabled: True
+    state: started
   tags:
     - firewall
 

@@ -35,7 +35,7 @@ docker run --rm -it \
   -v ${HOME}/.ssh:/root/.ssh \
   -v ${HOME}/.gitconfig:/root/.gitconfig \
   -v ${HOME}/.apollo:/root/.apollo \
-  wearep3r/apollo:latest
+  registry.gitlab.com/p3r.one/apollo:latest
 ```
 
 Once you're runnning the Docker image, type `init`, press `ENTER` and work through the wizard.
@@ -55,7 +55,7 @@ By now, you should already have that alias from the [README](../README.md) in yo
 From within a space directory, run:
 
 ```bash
-apollo deploy
+deploy
 ```
 
 This makes sure the space configuration will be compiled into real world artifacts: you container-platform.

@@ -6,6 +6,7 @@
 # https://stackoverflow.com/questions/2924697/how-does-one-output-bold-text-in-bash
 bold=$(tput bold)
 normal=$(tput sgr0)
+underline="$(tput smul)"
 
 apollo::warn() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;33m' '\e[0m' "$@" >&2; }
 apollo::info() { printf "%b[${APOLLO_SPACE}.space]%b %s\n" '\e[0;32m' '\e[0m' "$@" >&2; }
@@ -30,15 +31,15 @@ apollo::load() {
       $APOLLO_FZF_DEFAULT_OPTS
       --bind=\"enter:execute(cd $APOLLO_SPACES_DIR/{})\"
     "
-    #space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
-    space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf)
+    space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
+    #space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf)
     export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$space
   fi
 
   if [ -d $APOLLO_SPACE_DIR ];
 	then
     # Unload previous Space
-    apollo::unload > /dev/null
+    #apollo::unload > /dev/null
 
     # Go to current Space
     cd "$APOLLO_SPACE_DIR"
@@ -70,15 +71,12 @@ apollo::load() {
 
     # Load Default config
     source /apollo/defaults.env
-    # set -o allexport
-    # export $(grep -hv '^#' /apollo/defaults.env | xargs) > /dev/null
-    # set +o allexport
-
+    
     # Load Space config
 		for file in *.env;
 		do
 			set -o allexport
-			export $(grep -hv '^#' $file | xargs) > /dev/null
+			export $(grep -hv -e '^#' -e '^$' $file | xargs) > /dev/null
 			set +o allexport
 		done
 
@@ -88,31 +86,12 @@ apollo::load() {
     # Add ssh-key
     [ -d ".ssh" ] && eval `ssh-agent -s` > /dev/null && ssh-add -k .ssh/id_rsa > /dev/null 2>&1
     
-    # echo $(htpasswd -nbB admin "h6KL8fz5c") | sed -e s/\\$/\\$\\$/g
-
-    # export APOLLO_INGRESS_IP=${APOLLO_INGRESS_IP:-"127.0.0.1"}
-    # export APOLLO_SPACE=${APOLLO_SPACE}
-    # export APOLLO_BASE_DOMAIN="${APOLLO_BASE_DOMAIN:-${APOLLO_INGRESS_IP}.xip.io}"
-    # PLATFORM_DOMAIN="${APOLLO_SPACE}.${APOLLO_BASE_DOMAIN}"
-    # export APOLLO_PLATFORM_DOMAIN="${APOLLO_PLATFORM_DOMAIN:-${PLATFORM_DOMAIN}}"
-    # export APOLLO_BACKPLANE_ENABLED=${APOLLO_BACKPLANE_ENABLED:-$BACKPLANE_ENABLED}
-    # export APOLLO_FEDERATION_ENABLED=${APOLLO_FEDERATION_ENABLED:-0}
-    # export APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER:-"admin"}
-    # export APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD:-"insecure"}
-    # export APOLLO_RUNNER_ENABLED=${APOLLO_RUNNER_ENABLED:-$RUNNER_ENABLED}
-    # export TF_IN_AUTOMATION=1
-    # export TF_VAR_environment=${APOLLO_SPACE}
-    # export TF_VAR_ssh_public_key_file=${APOLLO_SPACE_DIR}/.ssh/id_rsa.pub
-    # export DOCKER_HOST=ssh://root@${APOLLO_INGRESS_IP}
-    # export LETSENCRYPT_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
-    # export APOLLO_BACKUPS_ENABLED=${LETSENCRYPT_ENABLED:-"0"}
     if [ "$LETSENCRYPT_ENABLED" != "0" ];
     then
       export HTTP_ENDPOINT=https
     else
       export HTTP_ENDPOINT=http
     fi
-    export LOKI_ADDR=${HTTP_ENDPOINT}://logs.${APOLLO_SPACE_DOMAIN}
 
     apollo::inspect
 	fi
@@ -294,9 +273,9 @@ apollo::inspect() {
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
       apollo::echo "${bold}Backplane: ${normal}Enabled"
-      apollo::echo "∟ ${bold}Portainer: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN:8443"
-      apollo::echo "∟ ${bold}Traefik: ${normal}${HTTP_ENDPOINT}://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@traefik.$APOLLO_SPACE_DOMAIN:8443"
-      apollo::echo "∟ ${bold}Grafana: ${normal}${HTTP_ENDPOINT}://grafana.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Portainer: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Traefik: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@traefik.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Grafana: ${normal}https://grafana.$APOLLO_SPACE_DOMAIN:8443"
     else
       apollo::warn "${bold}Backplane: ${normal}Disabled"
     fi
@@ -384,16 +363,16 @@ apollo::init() {
 
   SPACE_CONFIG=()
 
-  apollo::echo "Initializing new Space"
+  apollo::echo "Create a new space"
 
   # Prompt
   # Name
   if [ ! -z "$1" ];
   then
     APOLLO_SPACE=$1
-    apollo::echo "${bold}Name: ${normal}$1"
+    apollo::echo "${bold}Name${normal}: $1"
   else
-    apollo::echo_n "${bold}Name: ${normal}"
+    apollo::echo_n "${bold}Name${normal} (required): "
     read APOLLO_SPACE
   fi
   SPACE_CONFIG+=("APOLLO_SPACE=${APOLLO_SPACE}")
@@ -404,9 +383,9 @@ apollo::init() {
     APOLLO_SYNC=1
     APOLLO_GIT_REMOTE=$2
     SPACE_CONFIG+=("APOLLO_GIT_REMOTE=${APOLLO_GIT_REMOTE}")
-    apollo::echo "${bold}Remote Repository: ${normal}$2"
+    apollo::echo "${bold}Remote Repository${normal}: $2"
   else
-    apollo::echo_n "${bold}Do you want to sync this Space with a remote repository? ${normal}[y/N] "
+    apollo::echo_n "${bold}Do you want to sync this space with a remote repository${normal}? [y/N] "
 
     read APOLLO_SYNC
     
@@ -418,7 +397,7 @@ apollo::init() {
     
     if [ "$APOLLO_SYNC" != "0" ];
     then
-      apollo::echo_n "${bold}Remote Repository: ${normal}"
+      apollo::echo_n "${bold}Remote Repository${normal}: "
 
       read APOLLO_GIT_REMOTE
     fi
@@ -430,9 +409,9 @@ apollo::init() {
   if [ ! -z "$3" ];
   then
     APOLLO_PROVIDER=$3
-    apollo::echo "${bold}apollo Provider: ${normal}$3"
+    apollo::echo "${bold}Provider${normal}: $3"
   else
-    apollo::echo_n "${bold}apollo Provider (generic,hcloud,digitalocean,aws): ${normal}"
+    apollo::echo_n "${bold}Provider ${normal}(${underline}generic${normal},hcloud,digitalocean): ${normal}"
 
     read APOLLO_PROVIDER_INPUT
     APOLLO_PROVIDER=${APOLLO_PROVIDER_INPUT:-generic}
@@ -444,10 +423,10 @@ apollo::init() {
     # Authentication
     if [ "$APOLLO_PROVIDER" = "aws" ]
     then
-      apollo::echo_n "${bold}AWS Access Key ID: ${normal}"
+      apollo::echo_n "${bold}AWS Access Key ID${normal}: "
       read AWS_ACCESS_KEY_ID
 
-      apollo::echo_n "${bold}AWS Secret Access Key: ${normal}"
+      apollo::echo_n "${bold}AWS Secret Access Key${normal}: "
       read AWS_SECRET_ACCESS_KEY
       SPACE_INFRASTRUCTURE+=("AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}")
       SPACE_INFRASTRUCTURE+=("AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}")
@@ -455,7 +434,7 @@ apollo::init() {
     
     if [ "$APOLLO_PROVIDER" = "hcloud" ]
     then
-      apollo::echo_n "${bold}HCLOUD Token: ${normal}"
+      apollo::echo_n "${bold}HETZNER Cloud API Key${normal}: "
       read HCLOUD_TOKEN_INPUT
       HCLOUD_TOKEN=${HCLOUD_TOKEN_INPUT:-$HCLOUD_TOKEN}
       SPACE_INFRASTRUCTURE+=("HCLOUD_TOKEN=${HCLOUD_TOKEN}")
@@ -463,7 +442,7 @@ apollo::init() {
 
     if [ "$APOLLO_PROVIDER" = "digitalocean" ]
     then
-      apollo::echo_n "${bold}Digitalocean Access Token: ${normal}"
+      apollo::echo_n "${bold}Digitalocean Access Token${normal}: "
       read DIGITALOCEAN_ACCESS_TOKEN
       SPACE_INFRASTRUCTURE+=("DIGITALOCEAN_ACCESS_TOKEN=${DIGITALOCEAN_ACCESS_TOKEN}")
     fi
@@ -472,11 +451,12 @@ apollo::init() {
     if [ ! -z "$4" ];
     then
       TF_VAR_manager_instances=$4
-      apollo::echo "${bold}Manager instances: ${normal}$4"
+      apollo::echo "${bold}Manager instances ${normal}: $4"
     else
-      apollo::echo_n "${bold}Manager instances: ${normal}"
+      apollo::echo_n "${bold}Manager instances ${normal}(default: 1): "
 
-      read TF_VAR_manager_instances
+      read APOLLO_MANAGER_INSTANCES
+      TF_VAR_manager_instances=${APOLLO_MANAGER_INSTANCES:-1}
     fi
     SPACE_INFRASTRUCTURE+=("TF_VAR_manager_instances=${TF_VAR_manager_instances}")
 
@@ -484,11 +464,12 @@ apollo::init() {
     if [ ! -z "$5" ];
     then
       TF_VAR_worker_instances=$5
-      apollo::echo "${bold}Worker instances: ${normal}$5"
+      apollo::echo "${bold}Worker instances ${normal}: $5"
     else
-      apollo::echo_n "${bold}Worker instances: ${normal}"
+      apollo::echo_n "${bold}Worker instances ${normal}(default: 0): "
 
-      read TF_VAR_worker_instances
+      read APOLLO_WORKER_INSTANCES
+      TF_VAR_worker_instances=${APOLLO_WORKER_INSTANCES:-0}
     fi 
     SPACE_INFRASTRUCTURE+=("TF_VAR_worker_instances=${TF_VAR_worker_instances}")
   else
@@ -496,9 +477,9 @@ apollo::init() {
     if [ ! -z "$4" ];
     then
       APOLLO_NODES_MANAGER=$4
-      apollo::echo "${bold}Manager IPs (comma separated): ${normal}$4"
+      apollo::echo "${bold}Manager IPs${normal}: $4"
     else
-      apollo::echo_n "${bold}Manager IPs (comma separated): ${normal}"
+      apollo::echo_n "${bold}Manager IPs ${normal}(comma separated): "
 
       read APOLLO_NODES_MANAGER
     fi
@@ -511,34 +492,52 @@ apollo::init() {
     if [ ! -z "$5" ];
     then
       APOLLO_NODES_WORKER=$5
-      apollo::echo "${bold}Worker IPs (comma separated): ${normal}$5"
+      apollo::echo "${bold}Worker IPs${normal}: $5"
     else
-      apollo::echo_n "${bold}Worker IPs (comma separated): ${normal}"
+      apollo::echo_n "${bold}Worker IPs ${normal}(comma separated): "
 
       read APOLLO_NODES_WORKER
     fi 
     SPACE_INFRASTRUCTURE+=("APOLLO_NODES_WORKER=${APOLLO_NODES_WORKER}")
+
+    # Set INGRESS_IP and MANAGEMENT_IP
+    IFS=$',' apollo_nodes_manager=($(echo $APOLLO_NODES_MANAGER))
+    IFS=$',' apollo_nodes_worker=($(echo $APOLLO_NODES_WORKER))
+    
+    SPACE_INFRASTRUCTURE+=("APOLLO_MANAGEMENT_IP=${apollo_nodes_manager[1]}")
+    if [ ${#apollo_nodes_worker[@]} > 0 ];
+    then
+      SPACE_INFRASTRUCTURE+=("APOLLO_INGRESS_IP=${apollo_nodes_worker[1]}")
+    else
+      SPACE_INFRASTRUCTURE+=("APOLLO_INGRESS_IP=${apollo_nodes_manager[1]}")
+    fi
   fi
 
   # Base Domain
   if [ ! -z "$6" ];
   then
     APOLLO_BASE_DOMAIN=$6
-    apollo::echo "${bold}Base domain: ${normal}$6"
+    apollo::echo "${bold}Base domain${normal}: $6"
   else
-    apollo::echo_n "${bold}Base domain: ${normal}"
+    apollo::echo_n "${bold}Base domain${normal}: "
 
     read APOLLO_BASE_DOMAIN
-  fi 
+  fi
+
+  if ["$APOLLO_BASE_DOMAIN" = "" ];
+  then
+    APOLLO_BASE_DOMAIN="${APOLLO_MANAGEMENT_IP}.xip.io"
+  fi
+
   SPACE_CONFIG+=("APOLLO_BASE_DOMAIN=${APOLLO_BASE_DOMAIN}")
 
   # Username
   if [ ! -z "$7" ];
   then
     APOLLO_ADMIN_USER=$7
-    apollo::echo "${bold}Admin User: ${normal}$7"
+    apollo::echo "${bold}Admin User${normal}: $7"
   else
-    apollo::echo_n "${bold}Admin User: ${normal}"
+    apollo::echo_n "${bold}Admin User${normal} (default: admin): "
 
     read APOLLO_ADMIN_USER_INPUT
     APOLLO_ADMIN_USER=${APOLLO_ADMIN_USER_INPUT:-admin}
@@ -549,9 +548,9 @@ apollo::init() {
   if [ ! -z "$8" ];
   then
     APOLLO_ADMIN_PASSWORD=$8
-    apollo::echo "${bold}Admin Password: ${normal}$8"
+    apollo::echo "${bold}Admin Password${normal}: $8"
   else
-    apollo::echo_n "${bold}Admin Password: ${normal}"
+    apollo::echo_n "${bold}Admin Password${normal} (default: insecure): "
 
     read APOLLO_ADMIN_PASSWORD_INPUT
     APOLLO_ADMIN_PASSWORD=${APOLLO_ADMIN_PASSWORD_INPUT:-insecure}
@@ -574,7 +573,7 @@ apollo::init() {
   
   if [ "$LETSENCRYPT_ENABLED" != "0" ];
   then
-    apollo::echo_n "${bold}LetsEncrypt E-Mail: ${normal}"
+    apollo::echo_n "${bold}LetsEncrypt E-Mail${normal}: "
 
     read LETSENCRYPT_EMAIL
 
@@ -596,6 +595,22 @@ apollo::init() {
 
   if [ ! -f apollo.env ] && printf "%s\n" "${SPACE_CONFIG[@]}" > apollo.env  
   if [ ! -f infrastructure.apollo.env ] && printf "%s\n" "${SPACE_INFRASTRUCTURE[@]}" > infrastructure.apollo.env
+
+  # Initialize git
+  if [ "$APOLLO_SYNC" = "1" ];
+  then
+    if [ "$APOLLO_GIT_REMOTE" != "" ];
+    then
+      git init
+      git remote add origin $APOLLO_GIT_REMOTE
+      git add .
+      git commit -am "feat: apollo space '${APOLLO_SPACE}' created"
+      git push
+    fi
+  fi
+  apollo::echo
+  apollo::echo "Space successfully created. Reloading ..."
+  apollo::echo
 
   apollo::load .
 }

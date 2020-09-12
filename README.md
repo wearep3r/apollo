@@ -61,12 +61,12 @@ We call those platforms **spaces**.
 
 ## How it works
 
-1. You supply [minimum configuration](#-getting-started) to create a **space**
+1. You supply [minimum configuration](#getting-started) to create a **space**
 2. apollo creates infrastructure if needed
 3. apollo configures the machines and sets up your container platform
 4. You check out the auto-generated README to know the next steps
 
-Check the [Getting Started](#-getting-started) section to start your journey with apollo.
+Check the [Getting Started](#getting-started) section to start your journey with apollo.
 
 ## Philosophy
 

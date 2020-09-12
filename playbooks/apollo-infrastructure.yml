@@ -87,7 +87,7 @@
       changed_when: false
       args:
         chdir: "{{ terraform_dir }}"
-        creates: "{{ terraform_dir }}/.terraform"
+        #creates: "{{ terraform_dir }}/.terraform"
       tags:
         - terraform_init
 
@@ -98,7 +98,6 @@
       args:
         chdir: "{{ terraform_dir }}"
         creates: "{{ apollo_space_dir }}/infrastructure.apollo.plan"
-      
       tags:
         - terraform_apply
         - terraform_plan
@@ -120,8 +119,7 @@
       tags:
         - terraform_apply
       when: >
-        _terraform_plan['rc'] == 2 and
-        terraform_apply
+        _terraform_plan['rc'] == 2
 
     - name: Destroying Terraform Plan
       command: "{{ terraform_command }} destroy -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate -compact-warnings -auto-approve=true -force"
@@ -168,7 +166,7 @@
     #     - terraform_inventory
 
     - name: Generating Terraform Ansible Inventory
-      command: "{{ terraform_command }} output -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate | tr -d ' ' > {{ apollo_space_dir}}/nodes.apollo.env"
+      shell: "{{ terraform_command }} output -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate | tr -d ' ' > {{ apollo_space_dir}}/nodes.apollo.env"
       register: _terraform_state
       changed_when: false
       args:
