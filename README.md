@@ -72,20 +72,23 @@ Check the [Getting Started](#getting-started) section to start your journey with
 
 These are the design principles we base our work on apollo on. It's heavily inspired by DevOps and Clean Code practices and the works and arts of Martin Fowler who brought us immutable infrastructure.
 
-- Every **space**, including development, SHOULD be versioned in a repository
-- There is ONE workflow for installation and deployment that applies to all spaces
+- Developers and operators should be able to trust their infrastructure and platform
+- Every **space** should be versioned in a repository
+- Configuration should be declarative
+- There should be no bootstrapping step
+- There should be one workflow for installation and deployment that applies to all spaces
 - No manual actions on the platform - everything must be code
-- Every change to infrastructure SHOULD be code-reviewed to:
+- Every change to infrastructure should be code-reviewed to:
   - avoid mistakes
-  - make other (including non-DevOps) team members able to learn
+  - make other team members able to learn
   - make sure everything stays portable and immutable
 - Everyone SHOULD be able to:
-  - create their development environment in a minute with minimum effort
+  - create their development environment with minimum effort
   - reproduce a production-like environment
   - understand the whole infrastructure
   - propose modifications to the infrastructure, while being able to test them
-- apollo SHOULD be a boilerplate and a framework: modify it to fulfill your needs!
-- The companion CLI is written in Bash so it is easy to understand what a command does, and it is easy to modify command behaviors or to add new ones
+- apollo is a boilerplate and a framework - it should be customizable but still predictable
+- The CLI is written in Bash so it is easy to understand what a command does, and it is easy to modify command behaviors or to add new ones
 
 apollo is tailored to development teams. It's made by seasoned operators and contains everything a DevOps-enabled team needs to start changing the world.
 

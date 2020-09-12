@@ -20,7 +20,7 @@
   tags:
     - print_action
     - provision_spaces
-  when: not in_ci|bool
+  when: not apollo_in_ci|bool
 
 - name: "@apollo-federation"
   import_playbook: playbooks/apollo-federation.yml
@@ -88,7 +88,7 @@
 
 - name: "@apollo-runner"
   import_playbook: playbooks/provision-runner.yml
-  when: apollo_runner_enabled|bool
+  when: apollo_gitlab_runner_enabled|bool
   tags:
     - print_action
     - provision_runner

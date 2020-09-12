@@ -153,15 +153,15 @@ scrape_configs:
       port: 8080
 {% endif %}
 
-{% if apollo_runner_enabled|bool %}
+{% if apollo_gitlab_runner_enabled|bool %}
   - job_name: 'giltlab-runner'
     static_configs:
     - targets:
-{% if runner_build_enabled|bool %}
+{% if apollo_gitlab_runner_build_enabled|bool %}
 {% for host in groups['all'] %}
       - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9252"
 {% endfor %}
-{% elif runner_deploy_enabled|bool %}
+{% elif apollo_runner_deploy_enabled|bool %}
 {% for host in groups['manager'] %}
       - "{{ hostvars[host].ansible_hostname }}.{{ space_domain }}:9252"
 {% endfor %}

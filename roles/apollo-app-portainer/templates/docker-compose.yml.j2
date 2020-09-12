@@ -49,7 +49,7 @@ services:
         traefik.backend: "apollo-app-portainer"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
-        traefik.frontend.auth.basic.users: "{{admin_user}}:{{admin_password_hash}}"
+        traefik.frontend.auth.basic.users: "{{admin_user}}:{{ admin_password_hash | replace('$','$$') }}"
 {% if letsencrypt_enabled|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"

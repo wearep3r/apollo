@@ -305,26 +305,26 @@ apollo::inspect() {
       apollo::warn "${bold}Alerts: ${normal}Disabled"
     fi
 
-    if [ "$APOLLO_RUNNER_ENABLED" != "0" ];
+    if [ "$APOLLO_GITLAB_RUNNER_ENABLED" != "0" ];
     then
       apollo::echo "${bold}GitLab Runner: ${normal}Enabled"
 
-      RUNNER_BUILD_ENABLED=${RUNNER_BUILD_ENABLED:-"1"}
-      if [ "$RUNNER_BUILD_ENABLED" != "0" ];
+      RUNNER_BUILD_ENABLED=${APOLLO_GITLAB_RUNNER_BUILD_ENABLED:-"1"}
+      if [ "$APOLLO_GITLAB_RUNNER_BUILD_ENABLED" != "0" ];
       then
         apollo::echo "∟ ${bold}Build: ${normal}Enabled"
       else
         apollo::echo "∟ ${bold}Build: ${normal}Disabled"
       fi
 
-      RUNNER_DEPLOY_ENABLED=${RUNNER_DEPLOY_ENABLED:-"1"}
-      if [ "$RUNNER_DEPLOY_ENABLED" != "0" ];
+      RUNNER_DEPLOY_ENABLED=${APOLLO_GITLAB_RUNNER_DEPLOY_ENABLED:-"1"}
+      if [ "$APOLLO_GITLAB_RUNNER_DEPLOY_ENABLED" != "0" ];
       then
         apollo::echo "∟ ${bold}Deploy: ${normal}Enabled"
       else
         apollo::echo "∟ ${bold}Deploy: ${normal}Disabled"
       fi
-      apollo::echo "∟ ${bold}Coordinator URL: ${normal}${GITLAB_RUNNER_COORDINATOR_URL:-https://gitlab.com}"
+      apollo::echo "∟ ${bold}Coordinator URL: ${normal}${APOLLO_GITLAB_RUNNER_COORDINATOR_URL:-https://gitlab.com}"
       apollo::echo "∟ ${bold}Token: ${normal}${GITLAB_RUNNER_TOKEN}"
     else
       apollo::warn "${bold}GitLab Runner: ${normal}Disabled"

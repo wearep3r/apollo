@@ -7,33 +7,24 @@
       setup:
         filter: "*"
 
-    # - name: Fallback Interfaces
-    #   set_fact:
-    #     private_iface: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
-    #     cacheable: false
-    #   when: private_iface not in hostvars[inventory_hostname]['ansible_interfaces']
-    
-    # - name: Display all variables/facts known for a host
-    #   debug:
-    #     var: hostvars[inventory_hostname]['ansible_default_ipv4']
+    - name: Check for required config
+      fail: msg="{{ item }} is not defined"
+      when: not item
+      with_items:
+        - "{{ apollo_required_vars }}"
 
     - name: Set Node Facts
       set_fact:
         apollo_manager: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
-        apollo_public_ip: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
         cluster_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-        #apollo_cluster_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        apollo_public_ip: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
         apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
         apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
 
-    - name: Set Node Facts (Wireguard)
+    - name: Update Node Facts (Wireguard)
       set_fact:  
         apollo_manager: "{{ hostvars[groups['manager'][0]]['apollo_cluster_ip'] }}"
         cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"
-        #apollo_cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"
-        apollo_public_ip: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
-        apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
-        apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
       when: apollo_wireguard_enabled|bool
 
     
