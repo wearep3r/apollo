@@ -88,7 +88,7 @@ destroy:
 > @cd modules/${APOLLO_PROVIDER}
 > @terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
 > @rm -rf /tmp/.*.sentinel
-> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${ENVIRONMENT_DIR}/nodes.apollo.env
+> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${APOLLO_SPACE_DIR}/nodes.apollo.env ${APOLLO_SPACE_DIR}/.ssh/config
 
 .PHONY: infrastructure
 infrastructure: ${ENVIRONMENT_DIR}/nodes.apollo.env ## apollo IaaS

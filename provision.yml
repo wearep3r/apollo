@@ -7,89 +7,78 @@
 - name: "@apollo-infrastructure"
   import_playbook: playbooks/apollo-infrastructure.yml
   tags:
-    - print_action
     - provision_infrastructure
   when: apollo_provider != "generic"
   
 - name: "AWS: Enable root access"
   import_playbook: playbooks/aws.yml
+  tags:
+    - provision_aws
   when: apollo_provider == "aws"
 
 - name: "@apollo-spaces"
   import_playbook: playbooks/apollo-spaces.yml
   tags:
-    - print_action
     - provision_spaces
   when: not apollo_in_ci|bool
 
 - name: "@apollo-federation"
   import_playbook: playbooks/apollo-federation.yml
   tags:
-    - print_action
     - provision_federation
   when: apollo_federation_enabled|bool
 
 - name: "@apollo-core"
   import_playbook: playbooks/apollo-core.yml
   tags:
-    - print_action
     - provision_core
 
 - name: "@apollo-security"
   import_playbook: playbooks/apollo-security.yml
   tags:
-    - print_action
     - provision_security
 
 - name: "@apollo-network"
   import_playbook: playbooks/apollo-network.yml
   tags:
-    - print_action
     - provision_network
 
 - name: "@apollo-engine"
   import_playbook: playbooks/apollo-engine.yml
   tags:
-    - print_action
     - provision_engine
 
 - name: "@apollo-orchestrator"
   import_playbook: playbooks/apollo-orchestrator.yml
   tags:
-    - print_action
     - provision_orchestrator
 
 - name: "@apollo-controlplane"
   import_playbook: playbooks/apollo-controlplane.yml
   when: apollo_controlplane_enabled|bool
   tags:
-    - print_action
     - provision_controlplane
 
 - name: "@apollo-data"
   import_playbook: playbooks/apollo-data.yml
   tags:
-    - print_action
     - provision_data
 
 - name: "@apollo-backplane"
   import_playbook: playbooks/apollo-backplane.yml
   when: apollo_backplane_enabled|bool
   tags:
-    - print_action
     - provision_backplane
   
 - name: "@apollo-apps"
   import_playbook: playbooks/apollo-apps.yml
   when: apollo_apps|length > 0
   tags:
-    - print_action
     - provision_apps
 
 - name: "@apollo-runner"
   import_playbook: playbooks/provision-runner.yml
   when: apollo_gitlab_runner_enabled|bool
   tags:
-    - print_action
     - provision_runner
 

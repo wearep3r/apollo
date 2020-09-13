@@ -4,7 +4,7 @@
   strategy: linear
   gather_facts: false
   tasks:
-    - name: Capturing Terraform Command
+    - name: asserting terraform command
       command: which terraform
       register: _terraform_command
       changed_when: false
@@ -15,7 +15,7 @@
         - terraform_inventory
         - terraform_plan
 
-    - name: Setting Terraform facts
+    - name: setting terraform facts
       set_fact:
         terraform_command: "{{ _terraform_command['stdout'] }}"
         terraform_dir: "/apollo/modules/{{ apollo_provider }}"
@@ -81,7 +81,7 @@
     #     - terraform_inventory
     #     - terraform_plan
 
-    - name: Capturing Terraform Init State
+    - name: initializing terraform modules
       command: "{{ terraform_command }} init -get=true -compact-warnings input=false"
       register: _terraform_init_state
       changed_when: false
@@ -91,7 +91,7 @@
       tags:
         - terraform_init
 
-    - name: Running Terraform Plan
+    - name: running terraform plan
       command: "{{ terraform_command }} plan -out={{ apollo_space_dir }}/infrastructure.apollo.plan -input=false -detailed-exitcode -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate -lock=true"
       register: _terraform_plan
       changed_when: false
@@ -103,13 +103,13 @@
         - terraform_plan
       failed_when: _terraform_plan['rc'] > 2
 
-    - name: Displaying Terraform Plan
+    - name: showing terraform plan
       debug: var=_terraform_plan
       tags:
         - terraform_apply
         - terraform_plan
 
-    - name: Applying Terraform Plan
+    - name: applying terraform plan
       command: "{{ terraform_command }} apply -compact-warnings -input=false -auto-approve=true -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate {{ apollo_space_dir }}/infrastructure.apollo.plan"
       register: _terraform_apply
       changed_when: false
@@ -121,7 +121,7 @@
       when: >
         _terraform_plan['rc'] == 2
 
-    - name: Destroying Terraform Plan
+    - name: destroying terraform plan
       command: "{{ terraform_command }} destroy -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate -compact-warnings -auto-approve=true -force"
       register: _terraform_destroy
       changed_when: false
@@ -132,7 +132,7 @@
         - terraform_destroy
       when: apollo_terraform_destroy
 
-    - name: Destroying Terraform artifacts
+    - name: destroying terraform artifacts
       file:
         path: "{{ item }}"
         state: absent
@@ -145,7 +145,7 @@
         - terraform_destroy
       when: apollo_terraform_destroy
 
-    - name: Capturing Terraform State
+    - name: asserting terraform state
       command: "{{ terraform_command }} state pull"
       register: _terraform_state
       changed_when: false
@@ -165,7 +165,7 @@
     #     - terraform_destroy
     #     - terraform_inventory
 
-    - name: Generating Terraform Ansible Inventory
+    - name: setting terraform inventory
       shell: "{{ terraform_command }} output -state={{ apollo_space_dir }}/infrastructure.apollo.tfstate | tr -d ' ' > {{ apollo_space_dir}}/nodes.apollo.env"
       register: _terraform_state
       changed_when: false

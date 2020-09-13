@@ -93,7 +93,8 @@ apollo::load() {
       export HTTP_ENDPOINT=http
     fi
 
-    apollo::inspect
+    #apollo::inspect
+    apollo::echo "Space loaded"
 	fi
 }
 
@@ -118,15 +119,25 @@ apollo::deploy() {
       apollo_status=$(
         export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
         cd /apollo
-        ansible-playbook provision.yml --flush-cache --tags "provision_${1},always" >&5
+        ansible-playbook provision.yml --skip-tags "provision_infrastructure" --tags "provision_${1},always" --flush-cache >&5
       )
       echo $apollo_status
     else
       apollo::echo "deploying ${APOLLO_SPACE}"
+
+      provision_infrastructure=$(
+        export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
+        cd /apollo
+        ansible-playbook provision.yml --tags "provision_infrastructure,always" --flush-cache >&5
+      )
+      echo $provision_infrastructure
+
+      apollo::load .
+
       apollo_status=$(
         export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY}
         cd /apollo
-        ansible-playbook provision.yml --flush-cache >&5
+        ansible-playbook provision.yml --skip-tags "provision_infrastructure" --flush-cache >&5
       )
       echo $apollo_status
     fi
@@ -270,12 +281,27 @@ apollo::inspect() {
       apollo::warn "${bold}Federation: ${normal}Disabled"
     fi
 
+    if [ "$APOLLO_CONTROLPLANE_ENABLED" != "0" ];
+    then
+      apollo::echo "${bold}Controlplane: ${normal}Enabled"
+      apollo::echo "∟ ${bold}Traefik: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@traefik.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Grafana: ${normal}https://grafana.$APOLLO_SPACE_DOMAIN:8443"
+
+      if [ "$APOLLO_ALERTS_ENABLED" != "0" ];
+      then
+        apollo::echo "∟ ${bold}Alerts: ${normal}https://alerts.$APOLLO_SPACE_DOMAIN:8443"
+      else
+        apollo::echo "∟ ${bold}Alerts: ${normal}Disabled"
+      fi
+    else
+      apollo::warn "${bold}Controlplane: ${normal}Disabled"
+    fi
+
     if [ "$APOLLO_BACKPLANE_ENABLED" != "0" ];
     then
       apollo::echo "${bold}Backplane: ${normal}Enabled"
-      apollo::echo "∟ ${bold}Portainer: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN:8443"
-      apollo::echo "∟ ${bold}Traefik: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@traefik.$APOLLO_SPACE_DOMAIN:8443"
-      apollo::echo "∟ ${bold}Grafana: ${normal}https://grafana.$APOLLO_SPACE_DOMAIN:8443"
+      apollo::echo "∟ ${bold}Portainer: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@portainer.$APOLLO_SPACE_DOMAIN"
+      apollo::echo "∟ ${bold}Proxy: ${normal}https://${APOLLO_ADMIN_USER}:${APOLLO_ADMIN_PASSWORD}@proxy.$APOLLO_SPACE_DOMAIN"
     else
       apollo::warn "${bold}Backplane: ${normal}Disabled"
     fi

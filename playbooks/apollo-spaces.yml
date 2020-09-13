@@ -4,9 +4,9 @@
   strategy: linear
   gather_facts: False
   tasks:
-    - name: space README
+    - name: setting README
       block:
-        - name: Create README.md config for space
+        - name: creating README.md for space
           template:
             src: "README.md.j2"
             dest: "{{ apollo_space_dir }}/README.md"
@@ -14,16 +14,16 @@
             group: root
             mode: 0755
 
-    - name: space QR code
+    - name: setting space QR code
       block:
-        - name: Create QR code for Portainer
+        - name: creating QR code for portainer
           command: "qrencode -o {{ apollo_space_dir }}/logo.png https://portainer.{{ space_domain }}"
           args:
             creates: "{{ apollo_space_dir }}/logo.png"
 
-    - name: SSH Configs
+    - name: setting ssh config
       block:
-        - name: Create SSH config for space
+        - name: creating ssh config for space
           template:
             src: "ssh-config.j2"
             dest: "{{ apollo_space_dir }}/.ssh/config"
@@ -31,40 +31,33 @@
             group: root
             mode: 0755
 
-        - name: Include Space in ssh config
+        - name: including space in local ssh config
           lineinfile: 
             dest: /root/.ssh/config
             #regexp=".*Include$" 
             line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
             state: present
 
-    - name: Probe for Docker directory
+    - name: asserting docker directory
       stat:
         path: /root/.docker
       register: docker_directory
 
-    - name: Docker Contexts
+    - name: setting docker contexts
       block:
-        - name: Creating Docker contexts directory
+        - name: creating docker contexts directory
           file:
             path: "/root/.docker/contexts"
             state: directory
             mode: '0755'
 
-        - name: Create Docker context for space
+        - name: creating docker context for space
           template:
             src: "docker-context.j2"
             dest: "/root/.docker/contexts/{{ space_domain }}"
             owner: root
             group: root
             mode: 0755
-
-        - name: Include Space in ssh config
-          lineinfile: 
-            dest: /root/.ssh/config
-            #regexp=".*Include$" 
-            line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
-            state: present
       when: docker_directory.stat.exists
 
     # - name: Setup DNS

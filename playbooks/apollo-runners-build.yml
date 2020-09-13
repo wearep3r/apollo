@@ -1,5 +1,3 @@
-- import_playbook: apollo-facts.yml
-
 - hosts: all
   become: True
   pre_tasks:

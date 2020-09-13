@@ -1,0 +1,18 @@
+alertmanager:
+  interval: 60s
+  servers:
+    - name: {{ apollo_space }}
+      cluster: {{ apollo_space }}
+      uri: http://{{ apollo_manager }}:9093
+      external_uri: https://alerts.{{ apollo_space_domain }}:8443
+      timeout: 10s
+      proxy: true
+      readonly: false
+
+karma:
+  name: {{ apollo_space }}
+
+listen:
+  address: "0.0.0.0"
+  port: 9010
+  prefix: /

@@ -44,4 +44,4 @@ galaxy_info:
     #       Maximum 20 tags per role.
 
 dependencies:
-  - zero-app-cio-exporter
+  #- zero-app-cio-exporter

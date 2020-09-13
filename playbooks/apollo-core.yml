@@ -1,5 +1,3 @@
-- import_playbook: apollo-facts.yml
-
 - name: "@apollo-core"
   hosts: all
   gather_facts: true

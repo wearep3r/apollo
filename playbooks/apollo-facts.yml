@@ -1,19 +1,23 @@
 - name: "@apollo-facts"
   hosts: all
-  gather_facts: True
+  gather_facts: False
   become: true
+  strategy: linear
   tasks:
+    - name: asserting nodes are up
+      wait_for_connection:
+
     - name: Setup facts
       setup:
         filter: "*"
 
-    - name: Check for required config
+    - name: asserting missing configuration
       fail: msg="{{ item }} is not defined"
       when: not item
       with_items:
         - "{{ apollo_required_vars }}"
 
-    - name: Set Node Facts
+    - name: setting cluster facts
       set_fact:
         apollo_manager: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
         cluster_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
@@ -21,7 +25,7 @@
         apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
         apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
 
-    - name: Update Node Facts (Wireguard)
+    - name: updating cluster facts | wireguard
       set_fact:  
         apollo_manager: "{{ hostvars[groups['manager'][0]]['apollo_cluster_ip'] }}"
         cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"

@@ -154,20 +154,6 @@
 - name: Set Node Facts
   set_fact:  
     private_ip: "{{ hostvars[inventory_hostname]['cluster_ip'] }}"
-  #when: 
-  #  - inventory_hostname == groups["manager"][0]
-
-- name: Set Node Facts (Wireguard)
-  set_fact:  
-    private_ip: "{{ hostvars[inventory_hostname]['cluster_ip'] }}"
-  when: 
-    - apollo_wireguard_enabled|bool
-    #- inventory_hostname == groups["manager"][0]
-
-# - name: Setting private IP
-#   set_fact:
-#     private_ip: "{{ hostvars[inventory_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
-#   when: inventory_hostname == groups["manager"][0]
 
 - name: Getting Cluster Status
   shell: >
@@ -176,7 +162,6 @@
   tags:
     - storidge
   changed_when: False
-  #when: inventory_hostname == groups["manager"][0]
 
 - name: DEBUG | Cluster Status
   debug:
@@ -197,7 +182,7 @@
 
 - name: Creating Storidge Cluster
   shell: >
-    cioctl create --noportainer --ip {{ private_ip }} | awk '/cioctl join/ {print $4}'
+    cioctl create --noportainer --ip {{ cluster_ip }} | awk '/cioctl join/ {print $4}'
   register: clustertoken
   when: >
     inventory_hostname == groups['manager'][0] and
@@ -233,7 +218,7 @@
 #     - storidge
 
 - name: Joining Nodes to Storidge Cluster
-  shell: "cioctl join {{ hostvars[groups['manager'][0]]['private_ip'] }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ hostvars[inventory_hostname]['private_ip'] }}"
+  shell: "cioctl join {{ apollo_manager }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ cluster_ip }}"
   register: result
   when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != groups['manager'][0]"
   retries: 6

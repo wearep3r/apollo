@@ -1,0 +1,18 @@
+[Unit]
+Description=karma
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart={{ _karma_binary_install_dir }}/karma \
+    --config.file "{{ app_dir }}/karma.yml"
+   
+SyslogIdentifier=karma
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

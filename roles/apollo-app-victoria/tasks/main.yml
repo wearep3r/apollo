@@ -1,12 +1,6 @@
 ---
 - name: Provision victoria-metrics
   block:
-    - name: Creating app directory
-      file:
-        path: "{{ app_dir }}"
-        state: directory
-        mode: '0755'
-
     - name: Create app group
       group:
         name: "{{ app_name }}"

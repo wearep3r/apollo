@@ -1,0 +1,26 @@
+[Unit]
+Description=Alertmanager
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart={{ _alertmanager_binary_install_dir }}/alertmanager \
+    -rule="{{ app_dir }}/alertmanager.yml"
+    -rule=alert.rules \
+    -datasource.url=http://{{ apollo_manager }}:8428 \  # PromQL compatible datasource
+    -notifier.url=http://{{ apollo_manager }}:9093 \    # AlertManager URL
+    -remoteWrite.url=http://{{ apollo_manager }}:8428 \ # remote write compatible storage to persist rules
+    -remoteRead.url=http://{{ apollo_manager }}:8428 \  # PromQL compatible datasource to restore alerts state from
+    -external.label=space={{ apollo_space }} \         # External label to be applied for each rule
+    -external.label=base_domain={{ apollo_base_domain }} \              # Multiple external labels may be set
+    -evaluationInterval=3s        
+
+SyslogIdentifier=alertmanager
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target
