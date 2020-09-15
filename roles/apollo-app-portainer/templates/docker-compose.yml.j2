@@ -45,11 +45,11 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9000"
-        traefik.frontend.rule: "Host:portainer.{{ space_domain }}"
+        traefik.frontend.rule: "Host:portainer.{{ arc['space']['space_domain'] }}"
         traefik.backend: "apollo-app-portainer"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
-        traefik.frontend.auth.basic.users: "{{admin_user}}:{{ admin_password_hash | replace('$','$$') }}"
+        traefik.frontend.auth.basic.users: "{{arc['auth']['admin_user']}}:{{ arc['auth']['admin_password_hash'] | replace('$','$$') }}"
 {% if letsencrypt_enabled|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"

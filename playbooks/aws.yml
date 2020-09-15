@@ -1,4 +1,6 @@
-- hosts: all
+- hosts: 
+    - manager
+    - worker
   become: True
   gather_facts: True
   tasks:

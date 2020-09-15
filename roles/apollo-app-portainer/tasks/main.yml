@@ -29,14 +29,14 @@
       tags:
           - portainer
 
-    - name: "Wait for http://portainer.{{ space_domain }} to become ready"
+    - name: "Wait for http://portainer.{{ arc['space']['space_domain'] }} to become ready"
       uri:
-        url: "http://portainer.{{ space_domain }}"
+        url: "http://portainer.{{ arc['space']['space_domain'] }}"
         method: GET
         status_code: 200
         validate_certs: no
-        user: "{{admin_user}}"
-        password: "{{admin_password}}"
+        user: "{{arc['auth']['admin_user']}}"
+        password: "{{arc['auth']['admin_password']}}"
       register: _result
       until: _result.status == 200
       retries: 30

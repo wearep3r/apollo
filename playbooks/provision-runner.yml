@@ -1,7 +1,0 @@
-- name: Build-Runners
-  import_playbook: apollo-runners-build.yml
-  when: apollo_gitlab_runner_build_enabled|bool
-
-- name: Deploy-Runners
-  import_playbook: apollo-runners-deploy.yml
-  when: apollo_gitlab_runner_deploy_enabled|bool

@@ -2,14 +2,14 @@
 set -e
 setopt aliases
 
-source /apollo/apollo.plugin.zsh
+# source /apollo/apollo.plugin.zsh
 
-if [ -f $HOME/.apollo/apollo.env ];
-then
-  set -o allexport
-  export $(grep -hv '^#' $HOME/.apollo/apollo.env | xargs)
-  set +o allexport
-fi
+# if [ -f $HOME/.apollo/apollo.env ];
+# then
+#   set -o allexport
+#   export $(grep -hv '^#' $HOME/.apollo/apollo.env | xargs)
+#   set +o allexport
+# fi
 
 if [ ! -d $HOME/.apollo/.spaces ];
 then

@@ -1,4 +1,5 @@
-- hosts: manager
+- name: "@apollo-gitlab-runner deploy"
+  hosts: manager
   become: True
   pre_tasks:
     - name: List Runners

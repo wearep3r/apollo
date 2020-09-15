@@ -1,5 +1,7 @@
 - name: "@apollo-engine"
-  hosts: all
+  hosts: 
+    - manager
+    - worker
   serial: 1
   gather_facts: true
   become: true

@@ -1,6 +1,10 @@
 #!/bin/zsh
 
 apollo::populate() {
+  # Load Spacefile.yml
+  export APOLLO_SPACE="${APOLLO_SPACE:-apollo}"
+  export APOLLO_SPACE_VERSION="${APOLLO_SPACE_VERSION}"
+  export APOLLO_SPACE_DIR="${PWD}"
   source /apollo/defaults.env
 
   # if not in CI

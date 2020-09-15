@@ -1,5 +1,7 @@
 - name: "@apollo-network"
-  hosts: all
+  hosts: 
+    - manager
+    - worker
   gather_facts: true
   strategy: linear
   become: true

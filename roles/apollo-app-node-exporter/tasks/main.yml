@@ -12,7 +12,7 @@
   tags:
     - skip_ansible_lint
 
-- name: Set systemd version fact
+- name: setting systemd facts
   set_fact:
     node_exporter_systemd_version: "{{ __systemd_version.stdout_lines[0] | regex_replace('^systemd\\s(\\d+).*$', '\\1') }}"
 
@@ -72,12 +72,12 @@
     - skip_ansible_lint
 
 - block:
-    - name: Get checksum list from github
+    - name: setting checksums
       set_fact:
         _checksums: "{{ lookup('url', 'https://github.com/prometheus/node_exporter/releases/download/v' + node_exporter_version + '/sha256sums.txt', wantlist=True) | list }}"
       run_once: true
 
-    - name: "Get checksum for {{ go_arch }} architecture"
+    - name: "setting checksum for {{ go_arch }} architecture"
       set_fact:
         node_exporter_checksum: "{{ item.split(' ')[0] }}"
       with_items: "{{ _checksums }}"

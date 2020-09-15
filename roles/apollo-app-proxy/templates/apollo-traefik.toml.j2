@@ -15,8 +15,8 @@
       [entryPoints.apollo.http.tls]
         options = "apollo"
         [[entryPoints.apollo.http.tls.domains]]
-          main = "{{ space_domain }}"
-          sans = ["*.{{ space_domain }}"]
+          main = "{{ arc['space']['space_domain'] }}"
+          sans = ["*.{{ arc['space']['space_domain'] }}"]
 
 [tls.options]
   [tls.options.apollo]
@@ -55,7 +55,7 @@
   entrypoint = "apollo"
 
 [certificatesResolvers.leresolver.acme]
-  email = "{{ letsencrypt_mail }}"
+  email = "{{ arc['letsencrypt']['mail'] }}"
   storage = "{{ app_dir }}/apollo-acme.json"
 
   [certificatesResolvers.leresolver.acme.httpChallenge]

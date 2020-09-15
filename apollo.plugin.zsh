@@ -33,6 +33,7 @@ apollo::load() {
     "
     space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf --preview="$cmd")
     #space=$(find $APOLLO_SPACES_DIR -mindepth 1 -name "*.space" -printf '%P\n' 2> /dev/null -type d | FZF_DEFAULT_OPTS=$APOLLO_FZF_DEFAULT_OPTS fzf)
+
     export APOLLO_SPACE_DIR=$APOLLO_SPACES_DIR/$space
   fi
 
@@ -656,10 +657,10 @@ apollo::enter() {
       if [ "$2" != "" ];
       then
         apollo::echo "Entering Manager $2"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[$2+1]}
+        ssh -q -o "StrictHostKeyChecking no" -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[$2+1]}
       else
         apollo::echo "Entering Manager 0"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[1]}
+        ssh -q -o "StrictHostKeyChecking no" -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_manager[1]}
       fi
     elif [ "$1" = "w" ];
     then
@@ -667,14 +668,14 @@ apollo::enter() {
       if [ "$2" != "" ];
       then
         apollo::echo "Entering Worker $2"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[$2+1]}
+        ssh -q -o "StrictHostKeyChecking no" -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[$2+1]}
       else
         apollo::echo "Entering Worker 0"
-        ssh -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[1]}
+        ssh -q -o "StrictHostKeyChecking no" -l root -i $PWD/.ssh/id_rsa ${apollo_nodes_worker[1]}
       fi
     else
       apollo::echo "Entering Ingress"
-      ssh -l root -i $PWD/.ssh/id_rsa ${APOLLO_INGRESS_IP}
+      ssh -q -o "StrictHostKeyChecking no" -l root -i $PWD/.ssh/id_rsa ${APOLLO_INGRESS_IP}
     fi
   else
     apollo::echo "No Space selected. Use \`load\`"
@@ -710,12 +711,12 @@ apollo::destroy() {
 }
 
 # Defaults
-export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
-export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
-export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
-export APOLLO_REMOTE_DIR=${APOLLO_REMOTE_DIR:-/srv/.apollo}
-export ANSIBLE_VERBOSITY=${VERBOSITY:-${ANSIBLE_VERBOSITY:-0}}
-export APOLLO_PROVIDER=${APOLLO_PROVIDER:-generic}
+# export APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME:-apollo}
+# export APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
+# export APOLLO_DEVELOPMENT=${APOLLO_DEVELOPMENT:-0}
+# export APOLLO_REMOTE_DIR=${APOLLO_REMOTE_DIR:-/srv/.apollo}
+# export ANSIBLE_VERBOSITY=${VERBOSITY:-${ANSIBLE_VERBOSITY:-0}}
+# export APOLLO_PROVIDER=${APOLLO_PROVIDER:-generic}
 
 export APOLLO_FZF_DEFAULT_OPTS="
 $FZF_DEFAULT_OPTS

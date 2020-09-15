@@ -1,5 +1,5 @@
 {
-{% for host in groups['all'] %}
+{% for host in groups['cluster'] %}
     "{{ hostvars[host].ansible_hostname }}": {
         "address": "{{ hostvars[host]['cluster_ip'] }}",
         "visible": true,

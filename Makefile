@@ -119,6 +119,7 @@ check: /tmp/.loaded.sentinel
 # Development
 .PHONY: build
 build:
+> @docker image prune -f
 > @docker build --pull --build-arg SHIPMATE_CARGO_VERSION="${SHIPMATE_CARGO_VERSION}" -t ${APOLLO_WHITELABEL_NAME} .
 
 .PHONY: dev

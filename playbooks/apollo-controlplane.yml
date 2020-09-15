@@ -34,7 +34,9 @@
 
 - name: "@apollo-monitoring"
   become: True
-  hosts: all
+  hosts: 
+    - manager
+    - worker
   gather_facts: True
   roles:
     - apollo-app-node-exporter
@@ -43,7 +45,9 @@
 
 - name: "@apollo-logs"
   become: True
-  hosts: all
+  hosts: 
+    - manager
+    - worker
   gather_facts: True
   roles:
     - apollo-app-loki

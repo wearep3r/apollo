@@ -29,7 +29,7 @@ services:
 {% endif %}
       --logLevel=INFO 
       --api 
-      --docker.domain={{ space_domain }} 
+      --docker.domain={{ arc['space']['space_domain'] }} 
       --ping 
       --rest 
       --retry 
@@ -61,10 +61,10 @@ services:
           traefik.tags: "proxy"
           traefik.docker.network: "proxy"
           traefik.port: "8080"
-          traefik.frontend.rule: "Host:proxy.{{ space_domain }}"
+          traefik.frontend.rule: "Host:proxy.{{ arc['space']['space_domain'] }}"
           traefik.backend: "apollo-app-traefik"
           traefik.protocol: "http"
-{% if letsencrypt_enabled|bool %}
+{% if arc['letsencrypt']['enabled']|bool %}
           traefik.frontend.entryPoints: "http,https"
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.headers.STSSeconds: "31536000"
@@ -74,7 +74,7 @@ services:
           traefik.frontend.entryPoints: "http"
 {%endif%}
           traefik.backend.loadbalancer.stickiness: "true"
-          traefik.frontend.auth.basic.users: "{{admin_user}}:{{ admin_password_hash | replace('$','$$') }}"
+          traefik.frontend.auth.basic.users: "{{arc['auth']['admin_user']}}:{{ arc['auth']['admin_password_hash'] | replace('$','$$') }}"
 
 networks:
   proxy:

@@ -1,5 +1,7 @@
 - name: "@apollo-orchestrator"
-  hosts: all
+  hosts: 
+    - manager
+    - worker
   gather_facts: true
   become: true
   roles:

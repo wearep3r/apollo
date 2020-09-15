@@ -38,7 +38,7 @@
 #-A FILTERS -s {{ hostvars[inventory_hostname]['ansible_'+apollo_private_interface]['ipv4']['network']+"/"+hostvars[inventory_hostname]['ansible_'+apollo_private_interface]['ipv4']['netmask'] }} -j ACCEPT
 -A FILTERS -s 10.0.0.0/8 -j ACCEPT
 -A FILTERS -s 172.0.0.0/8 -j ACCEPT
-{% for host in groups['all']|sort %}
+{% for host in groups['cluster']|sort %}
 # Fix for AWS Windows machines
 {% if hostvars[host]['ansible_os_family'] == "Windows" %}
 -A FILTERS -s {{ hostvars[host]['ansible_ip_addresses'][0] }} -j ACCEPT

@@ -21,14 +21,14 @@
         owner: "{{ app_name }}"
         group: "{{ app_name }}"
 
-    - name: Copy Stack-File
-      template:
-        src: templates/docker-compose.{{ traefik_version }}.yml.j2
-        dest: "{{ app_dir }}/docker-compose.yml"
-        mode: '0644'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
-      register: stack_file
+    # - name: Copy Stack-File
+    #   template:
+    #     src: templates/docker-compose.{{ traefik_version }}.yml.j2
+    #     dest: "{{ app_dir }}/docker-compose.yml"
+    #     mode: '0644'
+    #     owner: "{{ app_name }}"
+    #     group: "{{ app_name }}"
+    #   register: stack_file
 
     - name: Create config directories
       file:

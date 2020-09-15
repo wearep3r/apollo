@@ -8,7 +8,7 @@ plugins=(
 	zsh-autosuggestions
 	zsh-completions
   zsh-syntax-highlighting
-  fzf
+  #fzf
 )
 
 # zsh-completions
@@ -16,11 +16,8 @@ autoload -U compinit && compinit
 
 source $ZSH/oh-my-zsh.sh
 
-[ -f $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh ] && source $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
+#[ -f $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh ] && source $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
 [ -f $ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source $ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-# forgit - https://github.com/wfxr/forgit
-[ -f ~/.forgit/forgit.plugin.zsh ] && source ~/.forgit/forgit.plugin.zsh
 
 # ALIASES
 
@@ -29,5 +26,5 @@ alias reload="source ~/.zshrc"
 alias ls='ls --color=auto'
 alias grep='grep --color'
 alias zshrc="nano ~/.zshrc"
-alias -g Z='| fzf'
+#alias -g Z='| fzf'
 alias logs='tail -fn 200 /var/log/syslog'

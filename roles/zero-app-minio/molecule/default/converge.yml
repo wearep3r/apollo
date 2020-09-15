@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include zero-app-grafana"
-      include_role:
-        name: "zero-app-grafana"

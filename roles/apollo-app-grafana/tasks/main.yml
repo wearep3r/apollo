@@ -261,7 +261,7 @@
           register: _dashboards_copied
           notify: "provisioned dashboards changed"
 
-        - name: Get dashboard lists
+        - name: setting dashboard facts
           set_fact:
             _dashboards_present_list: "{{ _dashboards_present | json_query('files[*].path') | default([]) }}"
             _dashboards_copied_list: "{{ _dashboards_copied | json_query('results[*].dest') | default([]) }}"

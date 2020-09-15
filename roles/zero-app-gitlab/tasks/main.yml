@@ -44,4 +44,4 @@
       when: apollo_gitlab_runner_token != gitlab_shared_runners_token
       delegate_to: "{{ item }}"
       delegate_facts: true
-      with_items: "{{ groups['all'] }}"
+      with_items: "{{ groups['cluster'] }}"

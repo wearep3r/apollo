@@ -11,7 +11,7 @@
 
 ### Nodes
 
-{% for host in groups['all'] %}
+{% for host in groups['manager'] | intersect(groups['worker']) %}
 * {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
@@ -64,7 +64,7 @@ To operate this space, please add the following records to your DNS zone (`{{ ba
 
 A set of SSH-Keys belonging to this space can be found in `.ssh/`. The keys can be used to connect as user **root** to any of the IPs in `APOLLO_NODES_MANAGER` or `APOLLO_NODES_WORKER`:
 
-{% for host in groups['all'] %}
+{% for host in groups['manager'] | intersect(groups['worker']) %}
 * {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 

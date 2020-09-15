@@ -1,8 +1,8 @@
 ---
-- name: set minio_server_cluster_nodes
+- name: setting cluster facts
   set_fact:
     minio_server_cluster_nodes: "{{ minio_server_cluster_nodes }} + [ 'http://{{ item }}{{ minio_server_datadirs[0] }}' ]"
-  with_items: "{{ groups['all'] }}"
+  with_items: "{{ groups['cluster'] }}"
   vars:
     minio_server_cluster_nodes: []
 

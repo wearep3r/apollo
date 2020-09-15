@@ -35,12 +35,12 @@
     name: "{{ inventory_hostname }}"
   ignore_errors: true
 
-# - name: Disabling Ubuntu motd-news
-#   shell: "chmod -x *"
-#   args:
-#     chdir: /etc/update-motd.d
-#     warn: false
-#   changed_when: false
+- name: Disabling Ubuntu motd-news
+  shell: "chmod -x *"
+  args:
+    chdir: /etc/update-motd.d
+    warn: false
+  changed_when: false
   
 - name: Setting apollo motd
   template:
@@ -55,7 +55,7 @@
     line="{{ hostvars[item]['cluster_ip'] }} {{ hostvars[item]['ansible_hostname'] }} {{ hostvars[item]['ansible_hostname'] }}.{{ space_domain }}" 
     state=present
   when: hostvars[item]['cluster_ip'] is defined
-  with_items: "{{ groups['all'] }}"
+  with_items: "{{ groups['cluster'] }}"
 
 - name: nodes.* A-Record
   lineinfile: 
@@ -64,7 +64,7 @@
     line="{{ hostvars[item]['cluster_ip'] }} nodes.{{ space_domain }}" 
     state=present
   when: hostvars[item]['cluster_ip'] is defined
-  with_items: "{{ groups['all'] }}"
+  with_items: "{{ groups['cluster'] }}"
 
 - name: nodes.apollo A-Record
   lineinfile: 
@@ -73,7 +73,7 @@
     line="{{ hostvars[item]['cluster_ip'] }} nodes.apollo" 
     state=present
   when: hostvars[item]['cluster_ip'] is defined
-  with_items: "{{ groups['all'] }}"
+  with_items: "{{ groups['cluster'] }}"
 
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
@@ -170,6 +170,57 @@
       - psutil
       - jmespath
 
+- name: Installing ZSH
+  block:
+    - name: Check if .zshrc exists
+      stat:
+        path: ~/.zshrc
+      register: stat_rc_result
+
+    - name: Check if .oh-my-zsh exists
+      stat:
+        path: ~/.oh-my-zsh
+      register: stat_oh_my_zsh_result
+
+    - name: Cloning oh-my-zsh
+      git:
+        repo=https://github.com/robbyrussell/oh-my-zsh
+        dest=~/.oh-my-zsh
+      when: not stat_oh_my_zsh_result.stat.exists
+
+    #- name: installing starship prompt
+    #  command: "curl -fsSL https://starship.rs/install.sh | bash -s -- --yes"
+
+    - name: Cloning zsh-autosuggestions
+      git:
+        repo=https://github.com/zsh-users/zsh-autosuggestions
+        dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
+
+    - name: Cloning zsh-completions
+      git:
+        repo=https://github.com/zsh-users/zsh-completions
+        dest=~/.oh-my-zsh/plugins/zsh-completions
+    
+    - name: Cloning zsh-syntax-highlighting
+      git:
+        repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
+
+    - name: Cloning fzf-tab-completion
+      git:
+        repo=https://github.com/lincheney/fzf-tab-completion.git
+        dest=~/.oh-my-zsh/plugins/fzf-tab-completion
+      
+    - name: Create ~/.zshrc
+      template:
+        src: templates/zshrc.j2
+        dest: /root/.zshrc
+        group: root
+        owner: root
+        mode: 0644
+  ignore_errors: yes
+
+
 - name: Provision Postfix
   block:
     - name: Update Postfix configuration.
@@ -236,7 +287,7 @@
         msg: "{{ ku_kernel_releases }}"
         verbosity: 1
 
-    - name: Setting kernel_update_grub_latest_kernel_version to the latest kernel
+    - name: setting kernel_update_grub_latest_kernel_version to the latest kernel
       set_fact:
         kernel_update_grub_kernel_versions: "{{ ku_kernel_releases.stdout.splitlines() }}"
         kernel_update_grub_latest_kernel_version: "{{ ku_kernel_releases.stdout.splitlines()[0] }}"

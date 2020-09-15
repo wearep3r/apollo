@@ -1,5 +1,5 @@
 - name: "@apollo-spaces"
-  hosts: localhost
+  hosts: apollo
   become: True
   strategy: linear
   gather_facts: False
@@ -17,7 +17,7 @@
     - name: setting space QR code
       block:
         - name: creating QR code for portainer
-          command: "qrencode -o {{ apollo_space_dir }}/logo.png https://portainer.{{ space_domain }}"
+          command: "qrencode -o {{ apollo_space_dir }}/logo.png https://portainer.{{ arc['space']['space_domain'] }}"
           args:
             creates: "{{ apollo_space_dir }}/logo.png"
 
@@ -59,6 +59,16 @@
             group: root
             mode: 0755
       when: docker_directory.stat.exists
+
+    - name: creating .gitignore
+      copy:
+        dest: "{{ apollo_space_dir }}/.gitignore"
+        content: |
+          .terraform
+        backup: false
+        owner: root
+        group: root
+        mode: 0755
 
     # - name: Setup DNS
     #   block: 

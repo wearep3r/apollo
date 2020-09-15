@@ -3,25 +3,25 @@
     [http.routers.grafana]
       entryPoints = ["apollo"]
       service = "apollo-app-grafana"
-      rule = "Host(`grafana.{{ space_domain }}`)"
+      rule = "Host(`grafana.{{ arc['space']['space_domain'] }}`)"
       [http.routers.grafana.tls]
 
     [http.routers.cockpit]
       entryPoints = ["apollo"]
       service = "apollo-app-cockpit"
-      rule = "Host(`cockpit.{{ space_domain }}`)"
+      rule = "Host(`cockpit.{{ arc['space']['space_domain'] }}`)"
       [http.routers.cockpit.tls]
 
     [http.routers.traefik-dashboard]
       entryPoints = ["apollo"]
-      rule = "Host(`traefik.{{ space_domain }}`)"
+      rule = "Host(`traefik.{{ arc['space']['space_domain'] }}`)"
       service = "api@internal"
       [http.routers.traefik-dashboard.tls]
 
   [http.middlewares]    
     [http.middlewares.apollo-basic-auth.basicAuth]
       users = [
-        "{{ admin_user }}:{{ admin_password_hash | replace('$$','$') }}"
+        "{{ arc['auth']['admin_user'] }}:{{ arc['auth']['admin_password_hash'] | replace('$$','$') }}"
       ]
     
     # [http.middlewares.apollo.headers]
@@ -45,9 +45,9 @@
           interval = "10s"
           timeout = "3s"
         [[http.services.apollo-app-grafana.loadBalancer.servers]]
-          url = "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3000"
+          url = "http://{{ apollo_manager }}:3000"
 
     [http.services.apollo-app-cockpit]
       [http.services.apollo-app-cockpit.loadBalancer]
         [[http.services.apollo-app-cockpit.loadBalancer.servers]]
-          url = "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:9090"
+          url = "http://{{ apollo_manager }}:9090"
