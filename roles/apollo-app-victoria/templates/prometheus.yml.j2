@@ -7,7 +7,7 @@ global:
     space: '{{ apollo_space }}'
 
 #remote_write:
-#  - url: http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8428/api/v1/write
+#  - url: http://{{ apollo_manager }}:8428/api/v1/write
 
 # rule_files:
 #   - "swarm_node.rules.yml"
@@ -30,18 +30,17 @@ scrape_configs:
       module: [http_backplane]
     static_configs:
       - targets:
-        - http://portainer.{{ space_domain }}        
-        - http://proxy.{{ space_domain }}
-        - https://traefik.{{ space_domain }}:8443
-        - https://grafana.{{ space_domain }}:8443
-        #- https://cockpit.{{ space_domain }}:8443
+        - http://portainer.{{ arc['space']['space_domain'] }}        
+        - http://proxy.{{ arc['space']['space_domain'] }}
+        - https://traefik.{{ arc['space']['space_domain'] }}:8443
+        - https://grafana.{{ arc['space']['space_domain'] }}:8443
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: {{ hostvars[groups['manager'][0]]['cluster_ip'] }}:9115  # The blackbox exporter's real hostname:port.
+        replacement: {{ apollo_manager }}:9115  # The blackbox exporter's real hostname:port.
 
     
 {% if backplane_enabled|bool %}

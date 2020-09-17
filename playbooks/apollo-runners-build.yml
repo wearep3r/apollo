@@ -24,11 +24,15 @@
   vars:
     gitlab_runner_runners:
       - name: "{{ ansible_hostname }}-build"
-        env_vars: "{{ runner_env }}"
+        env_vars:
+          - "DOCKER_DRIVER=overlay2"
+          - "DOCKER_BUILDKIT=1"
+          - "APOLLO_INGRESS_IP={{ apollo_ingress_ip }}"
+        token: "{{ arc['gitlab']['runner']['token'] }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
-          - "{{ apollo_space }}"
+          - "{{ arc['space']['name'] }}"
           - build
         run_untagged: True
         docker_privileged: True

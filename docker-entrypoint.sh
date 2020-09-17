@@ -1,6 +1,6 @@
 #!/bin/zsh
 set -e
-setopt aliases
+set -Eeo pipefail
 
 # source /apollo/apollo.plugin.zsh
 
@@ -24,6 +24,17 @@ if [ -d "$SSH_DIR" ]; then
         cp /.ssh/* /root/.ssh/. && chmod 0600 /root/.ssh/id_rsa
         echo "Copied SSH Keys to /root/.ssh"
     fi
+fi
+
+if [ "$1" = 'enter' ];
+then
+  cd /cargo
+  exec "/bin/zsh"
+else
+  #export APOLLO_SPACE_DIR=/cargo
+  #set -- /usr/local/bin/apollo --space-dir /cargo "$@"
+  set -- /usr/local/bin/apollo "$@"
+  cd /cargo
 fi
 
 exec "$@"

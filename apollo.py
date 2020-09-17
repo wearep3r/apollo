@@ -52,6 +52,7 @@ def deployInfrastructure(arc):
       "--flush-cache",
       "playbooks/cli-infrastructure.yml"
     ], cwd="/apollo")
+    return infrastructure
   else:
     typer.echo(f"Spacefile.infrastructure.provider is empty. Exiting.", err=True)
     raise typer.Exit(code=1)
@@ -133,23 +134,24 @@ def enter(where: str):
     raise typer.Exit(code=1)
 
 @app.command()
-def deploy(what: str):
+def commit():
+  print("commit")
+
+@app.command()
+def push():
+  print("push")
+
+@app.command()
+def deploy(what: str = typer.Argument("all")):
   """
   Deploy apollo
   """
   arc = loadConfig()
-
-  nodesfile = loadNodesfile()
-
-  # if nodesfile:
-  #   typer.echo("Loaded Nodesfile.yml")
-  # else:
-  #   typer.echo(f"Can't find Nodesfile.yml in {arc['space_dir']}", err=True)
-  #   typer.echo(f"Run `apollo deploy infrastructure` first", err=True)
   
   if what == "infrastructure":
     if arc['infrastructure']['enabled'] == True:
       infrastructure = deployInfrastructure(arc)
+      return infrastructure
     else:
       typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
       raise typer.Exit(code=1)
@@ -158,8 +160,9 @@ def deploy(what: str):
       "ansible-playbook",
       "--flush-cache", 
       "--tags", 
-      f"provision_{what},always", 
+      f"{what},always", 
       "provision.yml"], cwd="/apollo")
+    return deployment
   else:
     deployment = subprocess.run([
       "ansible-playbook",
@@ -167,6 +170,7 @@ def deploy(what: str):
       "provision_infrastructure",
       "--flush-cache", 
       "provision.yml"], cwd="/apollo")
+    return deployment
 
 @app.command()
 def destroy():
@@ -183,7 +187,9 @@ def destroy():
 
 @app.command()
 def show(what: str):
-  if what == "inventory":
+  arc = loadConfig()
+
+  if what in ["inventory","nodes"]:
     inventory = json.loads(subprocess.check_output([
       "python",
       "inventory/apollo-inventory.py",
@@ -192,16 +198,15 @@ def show(what: str):
     
     typer.echo(json.dumps(inventory,sort_keys=True, indent=4))
 
-  if what == "config":
-    arc = loadConfig()
-    
+  if what == "config":    
     typer.echo(json.dumps(arc,sort_keys=True, indent=4))
 
 @app.command()
 def check(what: str):
   """
-  Create a new user with USERNAME.
+  Check parts of the system
   """
+  arc = loadConfig()
 
   typer.echo(f"Checking {what}")
   check = subprocess.run([
@@ -212,6 +217,7 @@ def check(what: str):
       "--tags", 
       f"provision_{what},always", 
       "provision.yml"], cwd="/apollo")
+  return check
 
 @app.callback()
 def callback(
@@ -221,6 +227,10 @@ def callback(
   os.environ["APOLLO_CONFIG_VERSION"] = "2"
   os.environ["APOLLO_SPACE_DIR"] = space_dir
   os.environ["ANSIBLE_VERBOSITY"] = str(verbosity)
+
+  if verbosity > 0:
+    os.environ["ANSIBLE_DEBUG"] = "1"
+
   arc['space_dir'] = space_dir
   arc['verbosity'] = verbosity
 

@@ -30,7 +30,7 @@
     },
     {
       "type": "panel",
-      "id": "singlestat",
+      "id": "stat",
       "name": "Singlestat",
       "version": ""
     }
@@ -233,7 +233,7 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "probe_success{instance=\"http://adguard.peter.saarland\", job=\"blackbox-http\"}",
+      "tableColumn": "probe_success{instance=~\"$target\", job=\"blackbox-http\"}",
       "targets": [
         {
           "expr": "probe_success{instance=~\"$target\"}",
@@ -245,7 +245,7 @@
       ],
       "thresholds": "1,1",
       "title": "Status",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {
@@ -525,7 +525,7 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "probe_http_status_code{instance=\"http://adguard.peter.saarland\", job=\"blackbox-http\"}",
+      "tableColumn": "probe_http_status_code{instance=~\"$target\", job=\"blackbox-http\"}",
       "targets": [
         {
           "expr": "probe_http_status_code{instance=~\"$target\"}",
@@ -537,7 +537,7 @@
       ],
       "thresholds": "201, 399",
       "title": "HTTP Status Code",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {
@@ -622,7 +622,7 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "probe_http_version{instance=\"http://adguard.peter.saarland\", job=\"blackbox-http\"}",
+      "tableColumn": "probe_http_version{instance=~\"$target\", job=\"blackbox-http\"}",
       "targets": [
         {
           "expr": "probe_http_version{instance=~\"$target\"}",
@@ -633,7 +633,7 @@
       ],
       "thresholds": "",
       "title": "HTTP Version",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {
@@ -711,7 +711,7 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "probe_http_ssl{instance=\"http://adguard.peter.saarland\", job=\"blackbox-http\"}",
+      "tableColumn": "probe_http_ssl{instance=~\"$target\", job=\"blackbox-http\"}",
       "targets": [
         {
           "expr": "probe_http_ssl{instance=~\"$target\"}",
@@ -723,7 +723,7 @@
       ],
       "thresholds": "0, 1",
       "title": "SSL",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {
@@ -825,7 +825,7 @@
       "thresholds": "0,1209600",
       "timeFrom": null,
       "title": "SSL Expiry",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {
@@ -923,7 +923,7 @@
       ],
       "thresholds": "",
       "title": "Average Probe Duration",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {
@@ -1012,7 +1012,7 @@
       ],
       "thresholds": "",
       "title": "Average DNS Lookup",
-      "type": "singlestat",
+      "type": "stat",
       "valueFontSize": "80%",
       "valueMaps": [
         {

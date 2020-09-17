@@ -1,13 +1,13 @@
 - name: "@apollo-cleanup"
   become: True
+  gather_facts: False
   hosts: manager[0]
-  gather_facts: True
   tasks:
     - name: "Gather Package facts"
       package_facts:
         manager: "auto"
 
-    - name: "Teardown {{ item }} Docker stack"
+    - name: "removing legacy docker stacks"
       docker_stack:
         absent_retries: 5
         absent_retries_interval: 10
@@ -17,73 +17,80 @@
         - "'docker-ce' in ansible_facts.packages"
       with_items:
         - cadvisor
-        - loki
-        - grafana
+        - alertmanager
+        - prometheus
         - node-exporter
         - promtail
-        - prometheus
+        - grafana
         - garbage-collector
-        - alertmanager
+        - loki
 
 - name: "@apollo-traefik"
   become: True
   hosts: manager[0]
-  gather_facts: True
   roles:
     - apollo-app-traefik
-
-- name: "@apollo-monitoring"
-  become: True
-  hosts: 
-    - manager
-    - worker
-  gather_facts: True
-  roles:
-    - apollo-app-node-exporter
-    - apollo-app-process-exporter
-    - apollo-app-cadvisor
+  tags:
+    - traefik
 
 - name: "@apollo-logs"
   become: True
   hosts: 
     - manager
     - worker
-  gather_facts: True
   roles:
     - apollo-app-loki
     - apollo-app-promtail
+  tags:
+    - logs
+
+- name: "@apollo-metrics"
+  become: True
+  hosts: 
+    - manager
+    - worker
+  roles:
+    - apollo-app-node-exporter
+    - apollo-app-process-exporter
+    - apollo-app-cadvisor
+  tags:
+    - metrics
 
 - name: "@apollo-metrics"
   become: True
   hosts: manager[0]
-  gather_facts: True
   roles:
+    - apollo-app-node-exporter
+    - apollo-app-process-exporter
+    - apollo-app-cadvisor
     - apollo-app-victoria
+  tags:
+    - metrics
 
 - name: "@apollo-alerts"
   become: True
   hosts: manager[0]
-  gather_facts: True
   roles:
     - apollo-app-alerts
+  tags:
+    - alerts
 
-- name: "@apollo-status"
+- name: "@apollo-analytics"
   become: True
   hosts: manager[0]
-  gather_facts: True
   roles:
     - apollo-app-grafana
+  tags:
+    - analytics
 
 # - name: "@apollo-garbage-collector"
 #   become: True
 #   hosts: manager[0]
-#   gather_facts: True
 #   roles:
 #     - apollo-app-garbage-collector
 
 # - name: "@apollo-backups"
 #   become: True
 #   hosts: manager[0]
-#   gather_facts: True
 #   roles:
 #     - zero-app-lake0

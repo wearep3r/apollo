@@ -1,5 +1,6 @@
 - name: "@apollo-gitlab-runner deploy"
-  hosts: manager
+  hosts: 
+    - manager
   become: True
   pre_tasks:
     - name: List Runners
@@ -20,12 +21,12 @@
           - "DOCKER_BUILDKIT=1"
           - "DOCKER_HOST=unix:///var/run/docker.sock"
           - "APOLLO_INGRESS_IP={{ apollo_ingress_ip }}"
+        token: "{{ arc['gitlab']['runner']['token'] }}"
         executor: docker
         docker_image: "{{ ci_docker_image }}"
         tags:
           - deploy
-          - ship
-          - "{{ apollo_space }}"
+          - "{{ arc['space']['name'] }}"
         run_untagged: false
         docker_privileged: True
         docker_volumes:

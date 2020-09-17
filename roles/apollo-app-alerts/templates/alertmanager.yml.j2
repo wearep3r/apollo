@@ -1,26 +1,22 @@
 route:
-  receiver: 'slack'
-  receiver: 'email'
+  receiver: 'apollo'
 
 receivers:
-  - name: 'email'
-    email_configs:
-      to: '{{ apollo_alerts_email_to | default(letsencrypt_mail,true) }}'
-      from: 'apollo@{{ space_domain }}'
-      smarthost: '{{ apollo_manager }}'
-      hello: '{{ space_domain }}'
-      require_tls: false
-{% raw %}  
-        text: "{{ .CommonAnnotations.description }}"
-        html: '{{ template "email.default.html" . }}'
-{% endraw %}
-
-  - name: 'slack'
-    slack_configs:
-      - send_resolved: true
-{% raw %}  
-        text: "{{ .CommonAnnotations.description }}"
-{% endraw %}
-        username: "{{ slack_user }}"
-        channel: "{{ slack_channel }}"
-        api_url: "{{ slack_webhook }}"
+- name: 'apollo'
+  email_configs:
+    - to: '{{ arc['alerts']['mail']['to'] | default(arc['letsencrypt']['mail'],true) }}'
+      from: 'apollo@{{ arc['space']['space_domain'] }}'
+      smarthost: '{{ apollo_manager }}:25'
+      hello: '{{ arc['space']['space_domain'] }}'
+      require_tls: false{% raw %}  
+      text: '{{ .CommonAnnotations.description }}'
+      html: '{{ template "email.default.html" . }}'{% endraw %}
+      
+{% if arc['alerts']['slack']['enabled']|bool %}}
+  slack_configs:
+  - send_resolved: true{% raw %}  
+    text: '{{ .CommonAnnotations.description }}'{% endraw %}
+    username: "{{ slack_user }}"
+    channel: "{{ slack_channel }}"
+    api_url: "{{ slack_webhook }}"
+{% endif %}

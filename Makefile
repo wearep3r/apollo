@@ -34,7 +34,7 @@ export HISTFILE="${ENVIRONMENT_DIR}/.history"
 export TF_IN_AUTOMATION=1
 export TF_VAR_environment=${APOLLO_SPACE}
 
-DOCKER_SHELLFLAGS ?= run --rm -it -h dev -e APOLLO_DEVELOPMENT=1 -v ${HOME}/.docker:/root/.docker -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
+DOCKER_SHELLFLAGS ?= run --rm -it --hostname apollo-dev -e APOLLO_DEVELOPMENT=1 -v ${HOME}/.docker:/root/.docker -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
 
 TF_STATE_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.tfstate
 TF_PLAN_PATH=${ENVIRONMENT_DIR}/infrastructure.${APOLLO_WHITELABEL_NAME}.plan
@@ -43,7 +43,7 @@ VERBOSITY ?= 0
 export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 export DOCKER_BUILDKIT=1
 SHIPMATE_BRANCH_NAME= "$(shell git rev-parse --abbrev-ref HEAD)"
-SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}:$(shell git rev-parse --short HEAD)"
+SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}-$(shell git rev-parse --short HEAD)"
 
 
 .PHONY: help

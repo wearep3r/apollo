@@ -20,28 +20,35 @@ caas:
   portainer:
     enabled: true
 controlplane:
-  backups:
-    enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(0, true) }}"
-    aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default('', true) }}"
-    aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default('', true) }}"
-    restic_repository: "{{ lookup('env','RESTIC_REPOSITORY') | default('', true) }}"
-    restic_password: "{{ lookup('env','RESTIC_PASSWORD') | default('', true) }}"
-    restic_backup_cron: "{{ lookup('env','RESTIC_BACKUP_CRON') | default('30 * * * *', true) }}"
-    restic_forget_args: "{{ lookup('env','RESTIC_FORGET_ARGS') | default('--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1', true) }}"
-    restic_job_args: "{{ lookup('env','RESTIC_JOB_ARGS') | default('--exclude minio_minio-data', true) }}"
-  gc:
+  enabled: true
+backups:
+  enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(0, true) }}"
+  aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default('', true) }}"
+  aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default('', true) }}"
+  restic_repository: "{{ lookup('env','RESTIC_REPOSITORY') | default('', true) }}"
+  restic_password: "{{ lookup('env','RESTIC_PASSWORD') | default('', true) }}"
+  restic_backup_cron: "{{ lookup('env','RESTIC_BACKUP_CRON') | default('30 * * * *', true) }}"
+  restic_forget_args: "{{ lookup('env','RESTIC_FORGET_ARGS') | default('--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1', true) }}"
+  restic_job_args: "{{ lookup('env','RESTIC_JOB_ARGS') | default('--exclude minio_minio-data', true) }}"
+gc:
+  enabled: false
+  cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | default(0, true) }}"
+alerts:
+  enabled: "{{ lookup('env','APOLLO_ALERTS_ENABLED') | default(0, true) }}"
+  mail:
+    enabled: true
+    to: "{{ lookup('env','APOLLO_ALERTS_MAIL_TO') | default('', true) }}"
+  slack:
     enabled: false
-    cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | default(0, true) }}"
-  alerts:
-    enabled: "{{ lookup('env','APOLLO_ALERTS_ENABLED') | default(0, true) }}"
-    mail:
-      to: "{{ lookup('env','APOLLO_ALERTS_MAIL_TO') | default('', true) }}"
-  logs:
-    enabled: true
-  metrics:
-    enabled: true
-  status:
-    enabled: true
+    user: "{{ lookup('env','APOLLO_ALERTS_SLACK_USER') | default('', true) }}"
+    channel: "{{ lookup('env','APOLLO_ALERTS_SLACK_CHANNEL') | default('', true) }}"
+    api_url: "{{ lookup('env','APOLLO_ALERTS_SLACK_API_URL') | default('', true) }}"
+logs:
+  enabled: true
+metrics:
+  enabled: true
+analytics:
+  enabled: true
 data:
   provider: "{{ lookup('env','APOLLO_DATA') | default('generic', true) }}"
   volumes_dir: "{{ lookup('env','APOLLO_DATA_VOLUMES_DIR') | default('/srv/.apollo/volumes', true) }}"
@@ -84,7 +91,7 @@ infrastructure:
   path: "."
   provider: "{{ lookup('env','APOLLO_INFRASTRUCTURE_PROVIDER') | default('generic', true) }}"
   manager:
-    os_family: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_OS_FAMILY') | default('ubuntu', true) }}"
+    os_family: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_OS_FAMILY') | default('ubuntu-18.04', true) }}"
     interface:
       private: "{{ lookup('env','APOLLO_INFRASTRUCTURE_MANAGER_PRIVATE_INTERFACE') | default('eth0', true) }}"
       public: "{{ lookup('env','APOLLO_INFRASTRUCTURE_MANAGER_PUBLIC_INTERFACE') | default('eth1', true) }}"
@@ -93,7 +100,7 @@ infrastructure:
     volume_count: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_VOLUME_COUNT') | default(0, true) }}"
     volume_size: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_VOLUME_SIZE') | default(30, true) }}"
   worker:
-    os_family: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_OS_FAMILY') | default('ubuntu', true) }}"
+    os_family: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_OS_FAMILY') | default('ubuntu-18.04', true) }}"
     interface:
       private: "{{ lookup('env','APOLLO_INFRASTRUCTURE_WORKER_PRIVATE_INTERFACE') | default('eth0', true) }}"
       public: "{{ lookup('env','APOLLO_INFRASTRUCTURE_WORKER_PUBLIC_INTERFACE') | default('eth1', true) }}"

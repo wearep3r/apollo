@@ -57,7 +57,9 @@ COPY .zshrc /root/.zshrc
 
 COPY starship.toml /root/.config/starship.toml
 
-COPY apollo.zsh /usr/local/bin/apollo
+#COPY apollo.zsh /usr/local/bin/apollo
+
+COPY apollo.py /usr/local/bin/apollo
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
@@ -71,7 +73,7 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 
 SHELL ["/bin/zsh", "-c"]
 
-CMD ["/bin/zsh"]
+CMD ["/usr/local/bin/apollo"]
 
 ARG BUILD_DATE
 

@@ -2,7 +2,6 @@
   hosts: apollo
   become: True
   strategy: linear
-  gather_facts: False
   tasks:
     - name: setting README
       block:
@@ -65,6 +64,8 @@
         dest: "{{ apollo_space_dir }}/.gitignore"
         content: |
           .terraform
+          .terraform.tfstate.lock.info
+          terraform.tfstate.backup
         backup: false
         owner: root
         group: root

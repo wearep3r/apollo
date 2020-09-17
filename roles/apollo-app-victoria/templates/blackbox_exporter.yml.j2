@@ -3,8 +3,10 @@ modules:
     prober: http
     http:
       basic_auth:
-        username: '{{ admin_user }}'
-        password: '{{ admin_password }}'
+        username: '{{ arc['auth']['admin_user'] }}'
+        password: '{{ arc['auth']['admin_password'] }}'
+      tls_config:
+        insecure_skip_verify: true
   http_2xx:
     prober: http
   http_post_2xx:

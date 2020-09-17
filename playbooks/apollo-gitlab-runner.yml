@@ -1,7 +1,7 @@
 - name: "deploying build runners"
   import_playbook: apollo-runners-build.yml
-  when: apollo_gitlab_runner_build_enabled|bool
+  when: arc['gitlab']['runner']['build']['enabled']|bool
 
 - name: "deploying deploy runners"
   import_playbook: apollo-runners-deploy.yml
-  when: apollo_gitlab_runner_deploy_enabled|bool
+  when: arc['gitlab']['runner']['deploy']['enabled']|bool

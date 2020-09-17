@@ -8,12 +8,12 @@ User=root
 Group=root
 ExecStart={{ _vmalert_binary_install_dir }}/vmalert \
     -rule="{{ app_dir }}/alerts.yml" \
-    -datasource.url=http://{{ apollo_manager }}:8428 \  # PromQL compatible datasource
-    -notifier.url=http://{{ apollo_manager }}:9093 \    # AlertManager URL
-    -remoteWrite.url=http://{{ apollo_manager }}:8428 \ # remote write compatible storage to persist rules
-    -remoteRead.url=http://{{ apollo_manager }}:8428 \  # PromQL compatible datasource to restore alerts state from
-    -external.label=space={{ apollo_space }} \         # External label to be applied for each rule
-    -external.label=base_domain={{ apollo_base_domain }} \              # Multiple external labels may be set
+    -datasource.url="http://{{ apollo_manager }}:8428" \
+    -notifier.url="http://{{ apollo_manager }}:9093" \
+    -remoteWrite.url="http://{{ apollo_manager }}:8428" \
+    -remoteRead.url="http://{{ apollo_manager }}:8428" \
+    -external.label="space={{ arc['space']['name'] }}" \
+    -external.label="base_domain={{ arc['space']['base_domain'] }}" \
     -evaluationInterval=3s        
 
 SyslogIdentifier=vmalert

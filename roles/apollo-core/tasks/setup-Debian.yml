@@ -170,7 +170,58 @@
       - psutil
       - jmespath
 
-- name: Installing ZSH
+- name: installing custom packages
+  block:
+    - name: downloading lsd package
+      get_url:
+        url: https://github.com/Peltoche/lsd/releases/download/0.18.0/lsd_0.18.0_amd64.deb
+        dest: /tmp/lsd.deb
+        mode: '0755'
+
+    - name: installing lsd
+      apt:
+        deb: /tmp/lsd.deb
+
+    - name: downloading bat package
+      get_url:
+        url: https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb
+        dest: /tmp/bat.deb
+        mode: '0755'
+        
+    - name: installing bat
+      apt:
+        deb: /tmp/bat.deb
+
+- name: installing custom fonts
+  block:
+      - name: downloading font
+        get_url:
+          url: https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
+          dest: /tmp/Hack-v3.003-ttf.zip
+
+      - name: unpacking font
+        unarchive:
+          remote_src: True
+          src: "/tmp/Hack-v3.003-ttf.zip"
+          dest: "/tmp"
+        check_mode: false
+        
+      - name: installing font
+        copy:
+          src: "/tmp/ttf/{{ item }}"
+          dest: "/usr/local/share/fonts/"
+          mode: 0755
+          owner: root
+          group: root
+          remote_src: True
+        with_items:
+          - "Hack-BoldItalic.ttf"
+          - "Hack-Bold.ttf"
+          - "Hack-Italic.ttf"
+          - "Hack-Regular.ttf"
+        when: not ansible_check_mode
+
+- name: installing zsh
   block:
     - name: Check if .zshrc exists
       stat:
@@ -206,6 +257,14 @@
         repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
         dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
 
+    - name: downloading fzf
+      git:
+        repo: 'https://github.com/junegunn/fzf.git'
+        dest: /root/.fzf
+
+    - name: installing fzf
+      command: "/root/.fzf/install --all --key-bindings --completion"
+
     - name: Cloning fzf-tab-completion
       git:
         repo=https://github.com/lincheney/fzf-tab-completion.git
@@ -231,19 +290,19 @@
         mode: 0644
       with_items:
         - name: inet_interfaces
-          value: "{{ postfix_inet_interfaces }}"
+          value: "{{ apollo_manager }}"
         - name: inet_protocols
           value: "{{ postfix_inet_protocols }}"
         - name: myorigin
           value: "{{ space_domain }}"
         - name: myhostname
-          value: "{{ space_domain }}"
+          value: "{{ arc['space']['space_domain'] }}"
         - name: mydomain
-          value: "{{ space_domain }}"
+          value: "{{ arc['space']['space_domain'] }}"
         - name: mynetworks_style
           value: "host"
-        - name: relay_domains
-          value: ""
+        - name: mynetworks
+          value: 10.0.0/8
         - name: mydestination
           value: ""
       notify: restart postfix

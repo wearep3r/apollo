@@ -1,16 +1,16 @@
 alertmanager:
   interval: 60s
   servers:
-    - name: {{ apollo_space }}
-      cluster: {{ apollo_space }}
+    - name: {{ arc['space']['name'] }}
+      cluster: {{ arc['space']['name'] }}
       uri: http://{{ apollo_manager }}:9093
-      external_uri: https://alerts.{{ apollo_space_domain }}:8443
+      external_uri: https://alerts.{{ arc['space']['space_domain'] }}:8443
       timeout: 10s
       proxy: true
       readonly: false
 
 karma:
-  name: {{ apollo_space }}
+  name: {{ arc['space']['name'] }}
 
 listen:
   address: "0.0.0.0"

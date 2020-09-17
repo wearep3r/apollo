@@ -1,13 +1,15 @@
 - name: "@apollo-proxy"
   hosts: manager[0]
   become: True
-  gather_facts: True
   roles:
     - apollo-app-proxy
+  tags:
+    - proxy
 
 - name: "@apollo-portainer"
   hosts: manager[0]
   become: True
-  gather_facts: True
   roles:
     - apollo-app-portainer
+  tags:
+    - portainer

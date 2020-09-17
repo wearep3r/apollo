@@ -2,20 +2,20 @@
 
 ## Details
 
-- Container-Engine: [{{ apollo_engine }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_engine }})
-- Container-Orchestrator: [{{ apollo_orchestrator }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_orchestrator }})
+- Container-Engine: [{{ arc['engine']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['engine']['provider'] }})
+- Container-Orchestrator: [{{ arc['orchestrator']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['orchestrator']['provider'] }})
 - Data-Engine: [{{ apollo_data }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_data }})
-- Provider: {{ apollo_provider }}
-- Wireguard: {{ apollo_wireguard_enabled|bool }}
+- Provider: {{ arc['infrastructure']['provider'] }}
+- Wireguard: {{ arc['security']['wireguard']['enabled']|bool }}
 - Get Help: [apollo docs](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/)
 
 ### Nodes
 
-{% for host in groups['manager'] | intersect(groups['worker']) %}
-* {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% for host in groups['cluster'] %}
+- {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
-{% if apollo_federation_enabled|bool %}
+{% if arc['federation']['enabled']|bool %}
 ## Federation
 
 - Federation-User: {{ apollo_federation_user }}
@@ -26,7 +26,7 @@
 {% endfor %}
 {% endif %}
 
-{% if apollo_backups_enabled|bool %}
+{% if arc['backups']['enabled']|bool %}
 ## Backups
 
 - Backup-User: {{ aws_access_key_id }}
@@ -39,23 +39,23 @@
 
 apollo uses **Basic Authentication** to authenticate access on backplane services:
 
-- Username: {{ admin_user }}
-- Password: {{ admin_password }}
+- Username: {{ arc['auth']['admin_user'] }}
+- Password: {{ arc['auth']['admin_password'] }}
 
 ## DNS Setup
 
-- Base Domain: {{ base_domain }}
-- Space Domain: {{ space_domain }}
+- Base Domain: {{ arc['space']['base_domain'] }}
+- Space Domain: {{ arc['space']['space_domain'] }}
 - Ingress IP: {{ apollo_ingress_ip }}
 - Management IP: {{ apollo_management_ip }}
 
 By default, apollo expects ingress traffic to land on the worker nodes which is why `INGRESS_IP` defaults to `worker-0`'s IP.
 
-To operate this space, please add the following records to your DNS zone (`{{ base_domain }}`):
+To operate this space, please add the following records to your DNS zone (`{{ arc['space']['base_domain'] }}`):
 
 ```
-{{ apollo_space }} IN A {{ apollo_management_ip }}
-*.{{ apollo_space }} IN A {{ apollo_management_ip }}
+{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
+*.{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
 ```
 
 ## Access
@@ -64,13 +64,13 @@ To operate this space, please add the following records to your DNS zone (`{{ ba
 
 A set of SSH-Keys belonging to this space can be found in `.ssh/`. The keys can be used to connect as user **root** to any of the IPs in `APOLLO_NODES_MANAGER` or `APOLLO_NODES_WORKER`:
 
-{% for host in groups['manager'] | intersect(groups['worker']) %}
-* {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% for host in groups['cluster'] %}
+- {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
 Assuming you cloned the repository and work from its local directory, you can connect via ssh like this:
 
-`ssh -l root -i .ssh/id_rsa {{ space_domain }}`
+`ssh -l root -i .ssh/id_rsa {{ arc['space']['space_domain'] }}`
 
 Once connected, you can reach any other node in the cluster by simply doing `ssh manager-0` etc.
 
@@ -80,18 +80,27 @@ Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remot
 
 - Clone this repo
 - cd into the repository directory
-- add your ssh-key to the apollo manager: `ssh-copy-id -i ~/.ssh/id_rsa -f -o "IdentityFile .ssh/id_rsa" root@{{ space_domain }}`
+- add your ssh-key to the apollo manager: `ssh-copy-id -i ~/.ssh/id_rsa -f -o "IdentityFile .ssh/id_rsa" root@{{ arc['space']['space_domain'] }}`
 - Setup [SSH](https://code.visualstudio.com/docs/remote/ssh-tutorial)
 - Click the "Open a remote window" button, select "Remote SSH: connect to host", then "+ Add new SSH Host"
-- Enter `ssh root@{{ space_domain }}`
+- Enter `ssh root@{{ arc['space']['space_domain'] }}`
 - Enjoy
 
-{% if backplane_enabled|bool %}
+{% if arc['controlplane']['enabled']|bool %}
 ### Web
 
-You can reach any of the controlplane services through its webinterface. Use `{{ apollo_admin_user }}` and `{{ apollo_admin_password }}` to authenticate.
+You can reach any of the controlplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
 
-- [Portainer](http://portainer.{{ space_domain }})
-- [Grafana](https://grafana.{{ space_domain }}:8443)
-- [Traefik](https://traefik.{{ space_domain }}:8443)
+- [Grafana](https://grafana.{{ arc['space']['space_domain'] }}:8443)
+- [Traefik](https://traefik.{{ arc['space']['space_domain'] }}:8443)
+- [Alerts](https://alerts.{{ arc['space']['space_domain'] }}:8443)
+{% endif %}
+
+
+{% if arc['backplane']['enabled']|bool %}
+### Web
+
+You can reach any of the backplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
+
+- [Portainer](http://portainer.{{ arc['space']['space_domain'] }})
 {% endif %}

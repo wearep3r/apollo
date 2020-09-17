@@ -1,7 +1,6 @@
 - name: "@apollo-federation"
   hosts: localhost
   become: True
-  gather_facts: False
   tasks:
     - name: Gather Space information
       block:

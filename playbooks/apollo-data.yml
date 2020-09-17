@@ -2,7 +2,6 @@
   hosts: 
     - manager
     - worker
-  gather_facts: true
   become: true
   strategy: linear
   roles:

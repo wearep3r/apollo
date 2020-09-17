@@ -9,8 +9,7 @@ resource "local_file" "Nodesfile" {
     - name: ${manager.name}
       ipv4: ${manager.ipv4_address}
       interface: eth0
-%{ endfor }  worker:
-    %{ for worker in hcloud_server.worker }
+%{ endfor }  worker:%{ for worker in hcloud_server.worker }
     - name: ${worker.name}
       ipv4: ${worker.ipv4_address}
       interface: eth0

@@ -8,6 +8,7 @@ User=root
 Group=root
 ExecStart={{ _victoria_binary_install_dir }}/victoria-metrics \
     -storageDataPath="{{ apollo_data_volumes_dir }}/{{ app_name }}" \
+    -retentionPeriod=1 \
     -memory.allowedPercent=20
 
 SyslogIdentifier=vmagent

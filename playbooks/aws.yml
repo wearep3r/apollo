@@ -2,7 +2,6 @@
     - manager
     - worker
   become: True
-  gather_facts: True
   tasks:
     - name: Debug
       debug:
