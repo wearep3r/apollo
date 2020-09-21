@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User={{ _loki_system_user }}
-Group={{ _loki_system_group }}
-ExecStart={{ _loki_binary_install_dir }}/loki \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/loki \
         -config.file {{ app_dir }}/loki-config.yml
 
 SyslogIdentifier=loki

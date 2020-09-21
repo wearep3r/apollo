@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _process_binary_install_dir }}/process_exporter \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/process_exporter \
     -config.path={{ app_dir }}/process_exporter.yml
 
 SyslogIdentifier=process_exporter

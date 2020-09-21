@@ -59,7 +59,7 @@ COPY starship.toml /root/.config/starship.toml
 
 #COPY apollo.zsh /usr/local/bin/apollo
 
-COPY apollo.py /usr/local/bin/apollo
+COPY apollo-cli.py /usr/local/bin/apollo
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 

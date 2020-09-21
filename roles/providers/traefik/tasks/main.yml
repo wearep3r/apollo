@@ -2,41 +2,21 @@
 # tasks file for zero-app-traefik
 - name: Provision Traefik
   block:
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
-
-    # - name: Copy Stack-File
-    #   template:
-    #     src: templates/docker-compose.{{ traefik_version }}.yml.j2
-    #     dest: "{{ app_dir }}/docker-compose.yml"
-    #     mode: '0644'
-    #     owner: "{{ app_name }}"
-    #     group: "{{ app_name }}"
-    #   register: stack_file
+        owner: "apollo"
+        group: "apollo"
 
     - name: Create config directories
       file:
         path: "{{ app_dir }}/{{ config_dir.path }}"
         state: directory
         mode: '{{ config_dir.mode }}'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
       with_filetree:
         - "files/"
       when: config_dir.state == 'directory'
@@ -49,8 +29,8 @@
         src: "{{ config_file.src }}"
         dest: "{{ app_dir }}/{{ config_file.path }}"
         mode: "{{ config_file.mode }}"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
       with_filetree:
         - "files/"
       when: config_file.state == 'file'
@@ -62,7 +42,7 @@
       become: false
       get_url:
         url: "https://github.com/containous/traefik/releases/download/v{{ traefik_binary_version }}/traefik_v{{ traefik_binary_version }}_linux_amd64.tar.gz"
-        dest: "/tmp/traefik-v{{ traefik_binary_version }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}/traefik-v{{ traefik_binary_version }}.tar.gz"
       register: _download_binary
       until: _download_binary is succeeded
       retries: 5
@@ -73,15 +53,15 @@
       become: false
       unarchive:
         remote_src: True
-        src: "/tmp/traefik-v{{ traefik_binary_version }}.tar.gz"
-        dest: "/tmp"
-        creates: "/tmp/traefik"
+        src: "{{ apollo_downloads_dir }}/traefik-v{{ traefik_binary_version }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}"
+        creates: "{{ apollo_downloads_dir }}/traefik"
       check_mode: false
 
     - name: "Propagate {{ app_name }} binary"
       copy:
-        src: "/tmp/traefik"
-        dest: "{{ _traefik_binary_install_dir }}/traefik"
+        src: "{{ apollo_downloads_dir }}/traefik"
+        dest: "{{ apollo_binary_dir }}/traefik"
         mode: 0755
         owner: root
         group: root
@@ -102,8 +82,8 @@
       template:
         src: templates/apollo-traefik.toml.j2
         dest: "{{ app_dir }}/apollo-traefik.toml"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
         mode: '0644'
       notify: restart traefik
 
@@ -111,8 +91,8 @@
       template:
         src: templates/apollo-traefik-dynamic.toml.j2
         dest: "{{ app_dir }}/apollo-traefik-dynamic.toml"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
         mode: '0644'
       notify: restart traefik
 

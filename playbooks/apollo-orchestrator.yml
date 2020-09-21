@@ -1,7 +1,0 @@
-- name: "@apollo-orchestrator"
-  hosts: 
-    - manager
-    - worker
-  become: true
-  roles:
-    - apollo-orchestrator

@@ -12,6 +12,3 @@ traefik_dnschallenge_resolvers: "{{ lookup('env','TRAEFIK_DNSCHALLENGE_RESOLVERS
 traefik_extra_networks: "{{ lookup('env','TRAEFIK_EXTRA_NETWORKS').split(',') | default(['backplane'], true) }}"
 
 traefik_binary_version: 2.2.11
-_traefik_binary_install_dir: "/usr/local/bin"
-_traefik_system_group: "root"
-_traefik_system_user: "root"

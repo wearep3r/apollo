@@ -15,7 +15,7 @@ locals {
 
 resource "hcloud_ssh_key" "ssh_key" {
   name       = "{{ arc['space']['name'] }}-ssh"
-  public_key = file("{{ ansible_ssh_public_key_file }}")
+  public_key = file(".ssh/id_rsa.pub")
 }
 
 # Create a manager server

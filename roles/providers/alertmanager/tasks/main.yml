@@ -2,32 +2,21 @@
 # tasks file for zero-app-cadvisor
 - name: Configure alerts
   block:
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Creating storage directory
       file:
         path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Create config directories
       file:
@@ -58,7 +47,7 @@
         become: false
         get_url:
           url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
-          dest: "/tmp/alertmanager-{{ alertmanager_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}/alertmanager-{{ alertmanager_version }}.tar.gz"
         register: _download_binary
         until: _download_binary is succeeded
         retries: 5
@@ -69,18 +58,18 @@
         become: false
         unarchive:
           remote_src: True
-          src: "/tmp/alertmanager-{{ alertmanager_version }}.tar.gz"
-          dest: "/tmp"
-          creates: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64"
+          src: "{{ apollo_downloads_dir }}/alertmanager-{{ alertmanager_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}"
+          creates: "{{ apollo_downloads_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64"
         check_mode: false
   
       - name: Propagate alertmanager binaries
         copy:
-          src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
-          dest: "{{ _alertmanager_binary_install_dir }}/alertmanager"
+          src: "{{ apollo_downloads_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
+          dest: "{{ apollo_binary_dir }}/alertmanager"
           mode: 0755
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           remote_src: True
         notify: restart alertmanager
         when: not ansible_check_mode
@@ -89,8 +78,8 @@
         template:
           src: templates/alertmanager.yml.j2
           dest: "{{ app_dir }}/alertmanager.yml"
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           mode: '0644'
         notify: restart alertmanager
 
@@ -114,7 +103,7 @@
         become: false
         get_url:
           url: "https://github.com/prymitive/karma/releases/download/v{{ karma_version }}/karma-linux-amd64.tar.gz"
-          dest: "/tmp/karma-{{ karma_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}/karma-{{ karma_version }}.tar.gz"
         register: _download_binary
         until: _download_binary is succeeded
         retries: 5
@@ -125,18 +114,18 @@
         become: false
         unarchive:
           remote_src: True
-          src: "/tmp/karma-{{ karma_version }}.tar.gz"
-          dest: "/tmp"
-          creates: "/tmp/karma-linux-amd64"
+          src: "{{ apollo_downloads_dir }}/karma-{{ karma_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}"
+          creates: "{{ apollo_downloads_dir }}/karma-linux-amd64"
         check_mode: false
   
       - name: Propagate karma binaries
         copy:
-          src: "/tmp/karma-linux-amd64"
-          dest: "{{ _karma_binary_install_dir }}/karma"
+          src: "{{ apollo_downloads_dir }}/karma-linux-amd64"
+          dest: "{{ apollo_binary_dir }}/karma"
           mode: 0755
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           remote_src: True
         notify: restart karma
         when: not ansible_check_mode
@@ -145,8 +134,8 @@
         template:
           src: templates/karma.yml.j2
           dest: "{{ app_dir }}/karma.yml"
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           mode: '0644'
         notify: restart karma
 
@@ -170,7 +159,7 @@
         become: false
         get_url:
           url: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v{{ vmalert_version }}/vmutils-v{{ vmalert_version }}.tar.gz"
-          dest: "/tmp/vmutils-v{{ vmalert_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}/vmutils-v{{ vmalert_version }}.tar.gz"
         register: _download_binary
         until: _download_binary is succeeded
         retries: 5
@@ -181,18 +170,18 @@
         become: false
         unarchive:
           remote_src: True
-          src: "/tmp/vmutils-v{{ vmalert_version }}.tar.gz"
-          dest: "/tmp"
-          creates: "/tmp/vmalert-prod"
+          src: "{{ apollo_downloads_dir }}/vmutils-v{{ vmalert_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}"
+          creates: "{{ apollo_downloads_dir }}/vmalert-prod"
         check_mode: false
   
       - name: Propagate vmalert binaries
         copy:
-          src: "/tmp/vmalert-prod"
-          dest: "{{ _vmalert_binary_install_dir }}/vmalert"
+          src: "{{ apollo_downloads_dir }}/vmalert-prod"
+          dest: "{{ apollo_binary_dir }}/vmalert"
           mode: 0755
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           remote_src: True
         notify: restart vmalert
         when: not ansible_check_mode
@@ -201,8 +190,8 @@
         copy:
           src: files/alerts.yml
           dest: "{{ app_dir }}/alerts.yml"
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           mode: '0644'
         notify: restart vmalert
 

@@ -2,17 +2,17 @@
 version: 2
 apps: ""
 addons:
-  - name: proxy
+  proxy:
     enabled: true
     ssl:
       enabled: true
       provider: "letsencrypt"
-  - name: portainer
+  portainer:
     enabled: true
     ssl:
       enabled: true
       provider: proxy
-  - name: gitlab
+  gitlab:
     enabled: false
     gl_token: ""
     token: ""
@@ -21,17 +21,21 @@ addons:
       url: "registry.gitlab.com"
       user: ""
       password: ""
-    runner:
-      enabled: false
-      deploy:
-        enabled: true
-      build:
-        enabled: true
-      token: ""
-      coordinator_url: "https://gitlab.com"
     repository:
       sync:
         enabled: false
+  gitlab-runner:
+    enabled: false
+    deploy:
+      enabled: true
+    build:
+      enabled: true
+    token: ""
+    coordinator_url: "https://gitlab.com"
+    docker_image: "docker:19.03.12"
+    package_version: 13.4.0
+    registration_token: ""
+    package_name: 'gitlab-runner'
 auth:  
   enabled: true
   provider: basic

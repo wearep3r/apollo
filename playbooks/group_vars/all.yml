@@ -18,6 +18,7 @@ apollo_app_dir: "{{ apollo_remote_dir+'/apps' }}"
 apollo_addon_dir: "{{ apollo_remote_dir+'/addons' }}"
 apollo_downloads_dir: "{{ apollo_remote_dir+'/downloads' }}"
 apollo_volumes_dir: "{{ apollo_remote_dir+'/volumes' }}"
+apollo_binary_dir: "/usr/local/bin"
 
 # CHECK AGAIN
 apollo_terraform_destroy: "{{ lookup('env', 'APOLLO_TERRAFORM_DESTROY') | default(0,true) }}"
@@ -33,68 +34,60 @@ apollo_data_nfs_directory: "{{ arc['data']['nfs_directory'] }}"
 ####
 ####
 # apollo. > PaaS > Backplane
-backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
-apollo_controlplane_enabled: "{{ lookup('env','APOLLO_CONTROLPLANE_ENABLED') | default(arc['controlplane']['enabled'], true) }}"
-apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(arc['backplane']['enabled'], true) }}"
+# backplane_enabled: "{{ lookup('env','BACKPLANE_ENABLED') | default(1, true) }}"
+# apollo_controlplane_enabled: "{{ lookup('env','APOLLO_CONTROLPLANE_ENABLED') | default(arc['controlplane']['enabled'], true) }}"
+# apollo_backplane_enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(arc['backplane']['enabled'], true) }}"
 
 # apollo. > PaaS > Apps
-zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
-apollo_apps: "{{ lookup('env','APOLLO_APPS').split(',') | default(zero_apps, true) }}"
-app_healthcheck_retries: "{{ lookup('env','APOLLO_APP_HEALTHCHECK_RETRIES') | default(30, true) }}"
-app_healthcheck_delay: "{{ lookup('env','APOLLO_APP_HEALTHCHECK_DELAY') | default(30, true) }}"
+# zero_apps: "{{ lookup('env','ZERO_APPS').split(',') | default([''], true) }}"
+# apollo_apps: "{{ lookup('env','APOLLO_APPS').split(',') | default(zero_apps, true) }}"
+# app_healthcheck_retries: "{{ lookup('env','APOLLO_APP_HEALTHCHECK_RETRIES') | default(30, true) }}"
+# app_healthcheck_delay: "{{ lookup('env','APOLLO_APP_HEALTHCHECK_DELAY') | default(30, true) }}"
 
 
 # apollo. > PaaS > Apps > GitLab
-gitlab_shared_runners_token: "{{ lookup('env','GITLAB_SHARED_RUNNERS_TOKEN') | default('z7e3r2o0', true) }}"
+#gitlab_shared_runners_token: "{{ lookup('env','GITLAB_SHARED_RUNNERS_TOKEN') | default('z7e3r2o0', true) }}"
 
 # apollo. > PaaS > Apps > GitLab Runner
-runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(arc['gitlab']['runner']['enabled'], true) }}"
-apollo_runner_enabled: "{{ lookup('env','APOLLO_RUNNER_ENABLED') | default(arc['gitlab']['runner']['enabled'], true) }}"
-apollo_gitlab_runner_enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_ENABLED') | default(arc['gitlab']['runner']['enabled'], true) }}"
-runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(arc['gitlab']['runner']['deploy']['enabled'], true) }}"
-apollo_gitlab_runner_deploy_enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_DEPLOY_ENABLED') | default(arc['gitlab']['runner']['deploy']['enabled'], true) }}"
-runner_build_enabled: "{{ lookup('env','RUNNER_BUILD_ENABLED') | default(arc['gitlab']['runner']['build']['enabled'], true) }}"
-apollo_gitlab_runner_build_enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_BUILD_ENABLED') | default(arc['gitlab']['runner']['build']['enabled'], true) }}"
-runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default(arc['gitlab']['runner']['token'], true) }}"
-apollo_gitlab_runner_token: "{{ lookup('env','APOLLO_GITLAB_RUNNER_TOKEN') | default(arc['gitlab']['runner']['token'], true) }}"
-gitlab_runner_coordinator_url: "{{ arc['gitlab']['runner']['coordinator_url'] | default('https://gitlab.com', true) }}"
-apollo_gitlab_runner_coordinator_url: "{{ lookup('env','APOLLO_GITLAB_RUNNER_COORDINATOR_URL') | default(arc['gitlab']['runner']['coordinator_url'], true) }}"
-ci_docker_image: "docker:19.03.12"
-ci_dind_image: "docker:19.03.12-dind"
-runner_env: 
-    - "DOCKER_DRIVER=overlay2"
-    - "DOCKER_BUILDKIT=1"
-gitlab_runner_package_version: 13.3.1
-gitlab_runner_listen_address: "{{ apollo_cluster_ip }}:9252"
-gitlab_runner_registration_token: "{{ apollo_gitlab_runner_token }}"
-gitlab_runner_package_name: 'gitlab-runner'
+# runner_enabled: "{{ lookup('env','RUNNER_ENABLED') | default(arc['gitlab']['runner']['enabled'], true) }}"
+# apollo_runner_enabled: "{{ lookup('env','APOLLO_RUNNER_ENABLED') | default(arc['gitlab']['runner']['enabled'], true) }}"
+# apollo_gitlab_runner_enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_ENABLED') | default(arc['gitlab']['runner']['enabled'], true) }}"
+# runner_deploy_enabled: "{{ lookup('env','RUNNER_DEPLOY_ENABLED') | default(arc['gitlab']['runner']['deploy']['enabled'], true) }}"
+# apollo_gitlab_runner_deploy_enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_DEPLOY_ENABLED') | default(arc['gitlab']['runner']['deploy']['enabled'], true) }}"
+# runner_build_enabled: "{{ lookup('env','RUNNER_BUILD_ENABLED') | default(arc['gitlab']['runner']['build']['enabled'], true) }}"
+# apollo_gitlab_runner_build_enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_BUILD_ENABLED') | default(arc['gitlab']['runner']['build']['enabled'], true) }}"
+# runner_token: "{{ lookup('env','GITLAB_RUNNER_TOKEN') | default(arc['gitlab']['runner']['token'], true) }}"
+# apollo_gitlab_runner_token: "{{ lookup('env','APOLLO_GITLAB_RUNNER_TOKEN') | default(arc['gitlab']['runner']['token'], true) }}"
+# gitlab_runner_coordinator_url: "{{ arc['gitlab']['runner']['coordinator_url'] | default('https://gitlab.com', true) }}"
+# apollo_gitlab_runner_coordinator_url: "{{ lookup('env','APOLLO_GITLAB_RUNNER_COORDINATOR_URL') | default(arc['gitlab']['runner']['coordinator_url'], true) }}"
+# ci_docker_image: "docker:19.03.12"
+# ci_dind_image: "docker:19.03.12-dind"
+# runner_env: 
+#     - "DOCKER_DRIVER=overlay2"
+#     - "DOCKER_BUILDKIT=1"
+# gitlab_runner_package_version: 13.3.1
+# gitlab_runner_listen_address: "{{ apollo_cluster_ip }}:9252"
+# gitlab_runner_registration_token: "{{ apollo_gitlab_runner_token }}"
+# gitlab_runner_package_name: 'gitlab-runner'
 
     
 # apollo. > PaaS > Integrations > GitLab
-gl_token: "{{ lookup('env','GL_TOKEN') }}"
-apollo_gitlab_token: "{{ lookup('env','APOLLO_GITLAB_TOKEN') | default(gl_token) }}"
-registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
-apollo_gitlab_registry_url: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_URL') | default(registry_url, true) }}"
-registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
-apollo_gitlab_registry_user: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_USER') | default(registry_user) }}"
-registry_password: "{{ lookup('env','GITLAB_REGISTRY_PASSWORD') | default(apollo_gitlab_token, true) }}"
-apollo_gitlab_registry_password: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_PASSWORD') | default(registry_password, true) }}"
+# gl_token: "{{ lookup('env','GL_TOKEN') }}"
+# apollo_gitlab_token: "{{ lookup('env','APOLLO_GITLAB_TOKEN') | default(gl_token) }}"
+# registry_url: "{{ lookup('env','GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
+# apollo_gitlab_registry_url: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_URL') | default(registry_url, true) }}"
+# registry_user: "{{ lookup('env','GITLAB_REGISTRY_USER') }}"
+# apollo_gitlab_registry_user: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_USER') | default(registry_user) }}"
+# registry_password: "{{ lookup('env','GITLAB_REGISTRY_PASSWORD') | default(apollo_gitlab_token, true) }}"
+# apollo_gitlab_registry_password: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_PASSWORD') | default(registry_password, true) }}"
 
-apollo_required_vars:
-    - apollo_base_domain
-    - apollo_ingress_ip
-    - apollo_management_ip
-    - apollo_space
-    - apollo_admin_user
-    - apollo_admin_password
-
-# apollo. > Misc
-# # https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
-kernel_version: 0
-kernel_update_grub_requested_kernel_version: 4.15.0-99-generic
-kernel_update_config_prefix_grub_default: 99
-kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt
-
+# apollo_required_vars:
+#     - apollo_base_domain
+#     - apollo_ingress_ip
+#     - apollo_management_ip
+#     - apollo_space
+#     - apollo_admin_user
+#     - apollo_admin_password
 
 # apollo. > Federation
 # apollo_federation_dir: "{{ lookup('env','APOLLO_FEDERATION_DIR') | default('/tmp/federation', true) }}"

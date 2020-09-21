@@ -43,7 +43,7 @@ scrape_configs:
         replacement: {{ apollo_manager }}:9115  # The blackbox exporter's real hostname:port.
 
     
-{% if backplane_enabled|bool %}
+{% if arc['metrics']['enabled']|bool %}
   # - job_name: 'cadvisor'
   #   dns_sd_configs:
   #   - names:
@@ -71,13 +71,13 @@ scrape_configs:
   - job_name: 'victoria'
     static_configs:
     - targets:
-      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8428"
+      - "{{ apollo_manager }}:8428"
     metrics_path: /metrics
   
   - job_name: 'grafana'
     static_configs:
     - targets:
-      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3000"
+      - "{{ apollo_manager }}:3000"
     metrics_path: /metrics
 
   - job_name: 'node-exporter'
@@ -106,19 +106,19 @@ scrape_configs:
   - job_name: 'traefik'
     static_configs:
     - targets:
-      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8082"
+      - "{{ apollo_manager }}:8082"
     metrics_path: /metrics
 
   - job_name: 'proxy'
     static_configs:
     - targets:
-      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8080"
+      - "{{ apollo_manager }}:8080"
     metrics_path: /metrics
 
   - job_name: 'loki'
     static_configs:
     - targets:
-      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3100"
+      - "{{ apollo_manager }}:3100"
     metrics_path: /metrics
 
   - job_name: 'promtail'
@@ -131,7 +131,7 @@ scrape_configs:
 
 {% endif %}
 
-{% if 'minio' in apollo_apps %}
+{% if 'minio' in arc['addons'] %}
   - job_name: 'minio'
     dns_sd_configs:
       - names:
@@ -142,25 +142,15 @@ scrape_configs:
     metrics_path: /minio/prometheus/metrics
 {% endif %}
 
-{% if 'statping' in apollo_apps %}
-  - job_name: 'statping'
-    bearer_token: {{ admin_password }}
-    dns_sd_configs:
-    - names:
-      - 'tasks.statping'
-      type: 'A'
-      port: 8080
-{% endif %}
-
-{% if apollo_gitlab_runner_enabled|bool %}
+{% if arc['addons']['gitlab-runner']['enabled']|bool %}
   - job_name: 'giltlab-runner'
     static_configs:
     - targets:
-{% if apollo_gitlab_runner_build_enabled|bool %}
+{% if arc['addons']['gitlab-runner']['build']['enabled']|bool %}
 {% for host in groups['cluster'] %}
       - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9252"
 {% endfor %}
-{% elif apollo_runner_deploy_enabled|bool %}
+{% elif arc['addons']['gitlab-runner']['deploy']['enabled']|bool %}
 {% for host in groups['manager'] %}
       - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9252"
 {% endfor %}
@@ -172,28 +162,29 @@ scrape_configs:
   - job_name: 'cio-exporter'
     static_configs:
     - targets:
-      - "{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:16995"
+      - "{{ apollo_manager }}:16995"
     metrics_path: /metrics
 {% endif %}
 
-{% if prometheus_federation_enabled|bool %}
-{% for space in apollo_federation_spaces %}
-  - job_name: 'federate-{{ space.apollo_space }}'
-    scrape_interval: 15s
-    scrape_timeout: 7s
-    honor_labels: true
-    metrics_path: '/federate'
-    basic_auth:
-      username: munfred
-      password: D7psPWqVVT7toJf
-    params:
-      'match[]':
-        - '{job="prometheus"}'
-        - '{__name__=~"job:.*"}'
-    static_configs:
-      - targets:
-      - '{{ space.prometheus_domain }}'
-        labels:
-          apollo_space: {{ space.apollo_space }}
-{% endfor %}
-{% endif %}
+{# {% if prometheus_federation_enabled|bool %}
+# {% for space in apollo_federation_spaces %}
+#   - job_name: 'federate-{{ space.apollo_space }}'
+#     scrape_interval: 15s
+#     scrape_timeout: 7s
+#     honor_labels: true
+#     metrics_path: '/federate'
+#     basic_auth:
+#       username: munfred
+#       password: D7psPWqVVT7toJf
+#     params:
+#       'match[]':
+#         - '{job="prometheus"}'
+#         - '{__name__=~"job:.*"}'
+#     static_configs:
+#       - targets:
+#       - '{{ space.prometheus_domain }}'
+#         labels:
+#           apollo_space: {{ space.apollo_space }}
+# {% endfor %}
+# {% endif %}
+#}

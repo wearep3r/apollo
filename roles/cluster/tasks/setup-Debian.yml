@@ -29,7 +29,7 @@
   service:
     name: iptables
     enabled: True
-    state: started
+    #state: started
   tags:
     - firewall
 

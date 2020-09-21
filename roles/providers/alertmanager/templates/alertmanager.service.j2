@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _alertmanager_binary_install_dir }}/alertmanager --web.listen-address="{{ cluster_ip }}:9093" \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/alertmanager --web.listen-address="{{ cluster_ip }}:9093" \
     --config.file="{{ app_dir }}/alertmanager.yml"
 
 SyslogIdentifier=alertmanager

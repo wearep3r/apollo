@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _blackbox_binary_install_dir }}/blackbox_exporter \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/blackbox_exporter \
     --config.file={{ app_dir }}/blackbox_exporter.yml
 
 SyslogIdentifier=blackbox_exporter

@@ -1,6 +1,5 @@
 ---
-# tasks file for zero-app-traefik
-- name: Provision Traefik
+- name: enable proxy
   block:
     - name: Create app group
       group:
@@ -108,7 +107,7 @@
         name: proxy
         driver: overlay
     
-    - name: Provision apollo proxy
+    - name: enable proxy
       docker_stack:
         state: present
         name: proxy
@@ -117,3 +116,18 @@
         compose:
           - "{{ app_dir }}/docker-compose.yml"
       register: proxy_provision
+  when:
+    - arc['addons']['proxy']['enabled']|bool
+  tags:
+    - proxy
+
+- name: disable proxy
+  block:
+    - name: disable proxy
+      docker_stack:
+        state: absent
+        name: proxy
+  when:
+    - not arc['addons']['proxy']['enabled']|bool
+  tags:
+    - proxy

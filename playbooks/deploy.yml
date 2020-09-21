@@ -1,4 +1,4 @@
-- name: "Base"
+- name: "core"
   hosts: 
     - cluster
   become: true
@@ -7,11 +7,26 @@
     - include_role:
         name: "core"
         allow_duplicates: no
+        apply:
+          tags:
+            - core
       tags:
         - core
+  tags:
+    - core
+
+- name: "hardening"
+  hosts: 
+    - cluster
+  become: true
+  gather_facts: False
+  tasks:
     - include_role:
         name: "dev-sec.os-hardening"
         allow_duplicates: no
+        apply:
+          tags:
+            - hardening
       vars:
         sysctl_overwrite:
           net.ipv4.ip_forward: 1
@@ -20,15 +35,28 @@
           net.ipv6.conf.all.disable_ipv6: 0
       tags:
         - hardening
+  tags:
+    - hardening
+
+- name: "cluster"
+  hosts: 
+    - cluster
+  become: true
+  gather_facts: False
+  strategy: linear
+  tasks:
     - include_role:
         name: "cluster"
         allow_duplicates: no
+        apply:
+          tags:
+            - cluster
       tags:
         - cluster
   tags:
-    - core
+    - cluster
 
-- name: "Engine"
+- name: "engine"
   hosts: 
     - cluster
   serial: 1
@@ -38,13 +66,17 @@
     - include_role:
         name: "providers/{{ arc['engine']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['engine']['provider'] }}"
+            - engine
       tags:
         - engine
         - "{{ arc['engine']['provider'] }}"
       when:
         - arc['engine']['enabled']|bool
 
-- name: "Orchestrator"
+- name: "orchestrator"
   hosts: 
     - cluster
   become: true
@@ -52,13 +84,17 @@
     - include_role:
         name: "providers/{{ arc['orchestrator']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['orchestrator']['provider'] }}"
+            - orchestrator
       tags:
         - orchestrator
         - "{{ arc['orchestrator']['provider'] }}"
       when:
         - arc['orchestrator']['enabled']|bool
 
-- name: "Cleanup"
+- name: "cleanup"
   become: True
   gather_facts: False
   hosts: manager[0]
@@ -85,7 +121,7 @@
         - garbage-collector
         - loki
 
-- name: "Management"
+- name: "management"
   hosts: 
     - manager[0]
   become: true
@@ -95,10 +131,35 @@
     - include_role:
         name: "providers/{{ arc['management']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['management']['provider'] }}"
+            - management
       tags:
         - "{{ arc['management']['provider'] }}"
+        - management
 
-- name: "Collectors"
+- name: "data"
+  hosts: 
+    - cluster
+  become: true
+  strategy: linear
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['data']['provider'] }}"
+        allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['data']['provider'] }}"
+            - data
+      tags:
+        - "{{ arc['data']['provider'] }}"
+        - data
+      when:
+        - arc['data']['provider'] != "generic"
+
+- name: "collectors"
   hosts: 
     - cluster
   become: true
@@ -107,6 +168,10 @@
     - include_role:
         name: "providers/node-exporter"
         allow_duplicates: no
+        apply:
+          tags:
+            - metrics
+            - node-exporter
       tags:
         - metrics
         - node-exporter
@@ -114,6 +179,10 @@
     - include_role:
         name: "providers/cadvisor"
         allow_duplicates: no
+        apply:
+          tags:
+            - metrics
+            - cadvisor
       tags:
         - metrics
         - node-exporter
@@ -132,7 +201,7 @@
         - metrics
         - promtail
 
-- name: "Metrics"
+- name: "metrics"
   hosts: 
     - manager[0]
   become: true
@@ -141,10 +210,15 @@
     - include_role:
         name: "providers/{{ arc['metrics']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['metrics']['provider'] }}"
+            - metrics
       tags:
         - "{{ arc['metrics']['provider'] }}"
+        - metrics
 
-- name: "Logs"
+- name: "logs"
   hosts: 
     - manager[0]
   become: true
@@ -153,10 +227,15 @@
     - include_role:
         name: "providers/{{ arc['logs']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['logs']['provider'] }}"
+            - logs
       tags:
         - "{{ arc['logs']['provider'] }}"
+        - logs
 
-- name: "Alerts"
+- name: "alerts"
   hosts: 
     - manager[0]
   become: true
@@ -165,10 +244,15 @@
     - include_role:
         name: "providers/{{ arc['alerts']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['alerts']['provider'] }}"
+            - alerts
       tags:
         - "{{ arc['alerts']['provider'] }}"
+        - alerts
 
-- name: "Analytics"
+- name: "analytics"
   hosts: 
     - manager[0]
   become: true
@@ -177,31 +261,41 @@
     - include_role:
         name: "providers/{{ arc['analytics']['provider'] }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - "{{ arc['analytics']['provider'] }}"
       tags:
         - "{{ arc['analytics']['provider'] }}"
 
 # Todo
 # Backups, Garbage Collection
 
-- name: "Addons"
+- name: "addons"
   hosts: 
     - manager[0]
   become: true
   gather_facts: False
   tasks:
-    - debug:
-        msg: "{{ item.name }}"
-      with_items: "{{ arc['addons'] }}"
-      tags:
-        - addons
-
+    # - debug:
+    #     msg: "{{ item }}"
+    #   with_items: "{{ arc['addons'] }}"
+    #   tags:
+    #     - addons
+    # - debug:
+    #     msg: "{{ arc['addons'] }}"
+    #   tags:
+    #     - addons
     - include_role:
-        name: "addons/{{ addon.name }}"
+        name: "addons/{{ addon }}"
         allow_duplicates: no
+        apply:
+          tags:
+            - addons
+            - "{{ addon }}"
       tags:
         - addons
       with_items: "{{ arc['addons'] }}"
       when: 
-        - addon['enabled']|bool
+        - arc['addons'][addon]['enabled']|bool
       loop_control:
         loop_var: addon

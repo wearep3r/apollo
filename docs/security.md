@@ -5,7 +5,7 @@ apllo follows a "shift left" approach to security, trying to secure the platform
 - Includes the [DevSec Hardening Framework](https://dev-sec.io/) which implements [Deutsche Telekom's Security Requirements](https://www.telekom.com/de/verantwortung/datenschutz-und-datensicherheit/sicherheit/details/privacy-and-security-assessment-verfahren-342724)
 - Encrypted inter-node networking with Wireguard backbone
 - application-centric firewalling
-- - central ingress proxy with state-of-the-art security settings ([SSL Labs](https://www.ssllabs.com/ssltest/analyze.html?d=portainer.apollo-demo-1.paas.p3r.engineering))
+- central ingress proxy with state-of-the-art security settings ([SSL Labs](https://www.ssllabs.com/ssltest/analyze.html?d=portainer.apollo-demo-1.paas.p3r.engineering))
 - Ready to audit with **Inspec**
 - Optional: automatic SSL for applications
 - strict separation between controlplane and application platform

@@ -115,7 +115,6 @@ Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remot
 - Enter `ssh root@{{ arc['space']['space_domain'] }}`
 - Enjoy
 
-{% if arc['controlplane']['enabled']|bool %}
 ### Web
 
 You can reach any of the controlplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
@@ -123,8 +122,6 @@ You can reach any of the controlplane services through its webinterface. Use `{{
 - [Grafana](https://grafana.{{ arc['space']['space_domain'] }}:8443)
 - [Traefik](https://traefik.{{ arc['space']['space_domain'] }}:8443)
 - [Alerts](https://alerts.{{ arc['space']['space_domain'] }}:8443)
-{% endif %}
-{% if arc['backplane']['enabled']|bool %}
 
 ### Web
 
@@ -132,4 +129,3 @@ You can reach any of the backplane services through its webinterface. Use `{{ ar
 
 - [Portainer](http://portainer.{{ arc['space']['space_domain'] }})
 - [Proxy](http://proxy.{{ arc['space']['space_domain'] }})
-{% endif %}

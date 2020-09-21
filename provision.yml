@@ -1,6 +1,6 @@
 ---
 # Setup facts and populate them for the following plays
-- name: "@apollo-facts"
+- name: "gather facts"
   import_playbook: playbooks/apollo-facts.yml
   tags:
     - always
@@ -16,23 +16,35 @@
     - arc['infrastructure']['provider'] == "aws"
 
 # Setup local space configuration (ssh config, docker context, readme)
-- name: "spaces"
+- name: "setup space"
   import_playbook: playbooks/apollo-spaces.yml
   tags:
     - spaces
   when: not in_ci|bool
 
-# Setup federation (WIP)
-- name: "federation"
-  import_playbook: playbooks/apollo-federation.yml
-  tags:
-    - federation
-  when: arc['federation']['enabled']|bool
-
 - name: "deploy"
   import_playbook: playbooks/deploy.yml
   tags:
     - deploy
+
+# # Setup GitLab runner configuration
+# - name: "@apollo-runner"
+#   import_playbook: playbooks/apollo-gitlab-runner.yml
+#   when: arc['gitlab']['runner']['enabled']|bool
+#   tags:
+#     - runner
+
+# - name: "@apollo-recap"
+#   import_playbook: playbooks/apollo-recap.yml
+#   tags:
+#     - recap
+
+# Setup federation (WIP)
+# - name: "federation"
+#   import_playbook: playbooks/apollo-federation.yml
+#   tags:
+#     - federation
+#   when: arc['federation']['enabled']|bool
 
 # Setup controlplane configuration (logging, metrics, visualization, ...)
 
@@ -42,22 +54,10 @@
 #   when: arc['caas']['enabled']|bool
 #   tags:
 #     - backplane
-  
+
 # Setup app configuration (gitlab, minio, ...)
-- name: "@apollo-apps"
-  import_playbook: playbooks/apollo-apps.yml
-  when: apollo_apps|length > 0
-  tags:
-    - apps
-
-# Setup GitLab runner configuration
-- name: "@apollo-runner"
-  import_playbook: playbooks/apollo-gitlab-runner.yml
-  when: arc['gitlab']['runner']['enabled']|bool
-  tags:
-    - runner
-
-- name: "@apollo-recap"
-  import_playbook: playbooks/apollo-recap.yml
-  tags:
-    - recap
+# - name: "@apollo-apps"
+#   import_playbook: playbooks/apollo-apps.yml
+#   when: apollo_apps|length > 0
+#   tags:
+#     - apps

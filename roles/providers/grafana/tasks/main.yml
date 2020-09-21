@@ -1,40 +1,29 @@
 ---
 - name: "Provision {{ app_name }}"
   block:
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Creating storage directory
       file:
         path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Create config directories
       file:
         path: "{{ app_dir }}/{{ config_dir.path }}"
         state: directory
         mode: '{{ config_dir.mode }}'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
       with_filetree:
         - "files/"
       when: config_dir.state == 'directory'
@@ -47,65 +36,14 @@
         src: "{{ config_file.src }}"
         dest: "{{ app_dir }}/{{ config_file.path }}"
         mode: "{{ config_file.mode }}"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
       with_filetree:
         - "files/"
       when: config_file.state == 'file'
       loop_control:
         label: "{{ config_file.path }}"
         loop_var: config_file
-
-    # - name: Provision Grafana
-    #   docker_stack:
-    #     state: present
-    #     name: grafana
-    #     prune: yes
-    #     with_registry_auth: yes
-    #     compose:
-    #       - "{{ app_dir }}/docker-compose.yml"
-    #   register: grafana_provision
-
-    # - name: "Download {{ app_name }} binary"
-    #   become: false
-    #   get_url:
-    #     url: "https://dl.grafana.com/oss/release/{{ app_name }}-{{ grafana_version }}.linux-amd64.tar.gz"
-    #     dest: "/tmp/{{ app_name }}-v{{ grafana_version }}.tar.gz"
-    #   register: _download_binary
-    #   until: _download_binary is succeeded
-    #   retries: 5
-    #   delay: 2
-    #   check_mode: false
-
-    # - name: "Unpack {{ app_name }} binary"
-    #   become: false
-    #   unarchive:
-    #     remote_src: True
-    #     src: "/tmp/{{ app_name }}-v{{ grafana_version }}.tar.gz"
-    #     dest: "/tmp"
-    #     creates: "/tmp/{{ app_name }}-{{ grafana_version }}/bin/grafana-server"
-    #   check_mode: false
-
-    # - name: "Propagate grafana-server binary"
-    #   copy:
-    #     src: "/tmp/{{ app_name }}-{{ grafana_version }}/bin/grafana-server"
-    #     dest: "{{ _grafana_binary_install_dir }}/grafana-server"
-    #     mode: 0755
-    #     owner: root
-    #     group: root
-    #     remote_src: True
-    #   notify: restart grafana
-    #   when: not ansible_check_mode
-
-    # - name: "Propagate grafana-cli binary"
-    #   copy:
-    #     src: "/tmp/{{ app_name }}-{{ grafana_version }}/bin/grafana-cli"
-    #     dest: "{{ _grafana_binary_install_dir }}/grafana-cli"
-    #     mode: 0755
-    #     owner: root
-    #     group: root
-    #     remote_src: True
-    #   when: not ansible_check_mode
 
     - block:
       - name: Import Grafana GPG signing key [Debian/Ubuntu]

@@ -31,7 +31,7 @@
 {% if arc['cluster']['encryption']['enabled']|bool and arc['cluster']['encryption']['provider'] == "wireguard" %}
 -A FILTERS -m state --state NEW -m udp -p udp --dport 5888 -j ACCEPT
 {% endif %}
-{% if "gitlab" in apollo_apps %}
+{% if "gitlab" in arc['addons'] %}
 -A FILTERS -m state --state NEW -m tcp -p tcp --dport 2222 -j ACCEPT
 {% endif %}
 # Whitelist private network

@@ -1,32 +1,21 @@
 ---
 - name: Provision promtail 
   block:
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Create config directories
       file:
         path: "{{ app_dir }}/{{ config_dir.path }}"
         state: directory
         mode: '{{ config_dir.mode }}'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
       with_filetree:
         - "files/"
       when: config_dir.state == 'directory'
@@ -39,8 +28,8 @@
         src: "{{ config_file.src }}"
         dest: "{{ app_dir }}/{{ config_file.path }}"
         mode: "{{ config_file.mode }}"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
       with_filetree:
         - "files/"
       when: config_file.state == 'file'
@@ -52,8 +41,8 @@
       template:
         src: templates/promtail-config.yml.j2
         dest: "{{ app_dir }}/promtail-config.yml"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
         mode: '0644'
       notify: restart promtail
 
@@ -61,7 +50,7 @@
       become: false
       get_url:
         url: "https://github.com/grafana/loki/releases/download/v{{ promtail_version }}/promtail-linux-amd64.zip"
-        dest: "/tmp/promtail-v{{ promtail_version }}.zip"
+        dest: "{{ apollo_downloads_dir }}/promtail-v{{ promtail_version }}.zip"
       register: _download_binary
       until: _download_binary is succeeded
       retries: 5
@@ -72,18 +61,18 @@
       become: false
       unarchive:
         remote_src: True
-        src: "/tmp/promtail-v{{ promtail_version }}.zip"
-        dest: "/tmp"
-        creates: "/tmp/promtail-linux-amd64"
+        src: "{{ apollo_downloads_dir }}/promtail-v{{ promtail_version }}.zip"
+        dest: "{{ apollo_downloads_dir }}"
+        creates: "{{ apollo_downloads_dir }}/promtail-linux-amd64"
       check_mode: false
 
     - name: Propagate promtail binaries
       copy:
-        src: "/tmp/promtail-linux-amd64"
-        dest: "{{ _promtail_binary_install_dir }}/promtail"
+        src: "{{ apollo_downloads_dir }}/promtail-linux-amd64"
+        dest: "{{ apollo_binary_dir }}/promtail"
         mode: 0755
-        owner: root
-        group: root
+        owner: apollo
+        group: apollo
         remote_src: True
       notify: restart promtail
       when: not ansible_check_mode

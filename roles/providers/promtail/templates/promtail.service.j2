@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User={{ _promtail_system_user }}
-Group={{ _promtail_system_group }}
-ExecStart={{ _promtail_binary_install_dir }}/promtail \
+User=root
+Group=root
+ExecStart={{ apollo_binary_dir }}/promtail \
         -config.file {{ app_dir }}/promtail-config.yml
 
 SyslogIdentifier=promtail

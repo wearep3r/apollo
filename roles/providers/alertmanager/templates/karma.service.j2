@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _karma_binary_install_dir }}/karma \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/karma \
     --config.file "{{ app_dir }}/karma.yml"
    
 SyslogIdentifier=karma

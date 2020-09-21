@@ -4,11 +4,11 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _vmagent_binary_install_dir }}/vmagent \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/vmagent \
     -promscrape.config={{ app_dir }}/prometheus.yml \
-    -remoteWrite.url=http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:8428/api/v1/write \
+    -remoteWrite.url=http://{{ apollo_manager }}:8428/api/v1/write \
     -remoteWrite.tmpDataPath=/tmp/vmagent-remotewrite-data
 
 SyslogIdentifier=vmagent

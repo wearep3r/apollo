@@ -1,8 +1,0 @@
-- name: "@apollo-network"
-  hosts: 
-    - manager
-    - worker
-  strategy: linear
-  become: true
-  roles:
-    - apollo-network

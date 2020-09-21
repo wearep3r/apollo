@@ -1,3 +1,0 @@
-- name: "@apollo-backplane"
-  debug:
-    msg: "Provisioning Backplane"

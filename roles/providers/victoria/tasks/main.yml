@@ -1,32 +1,21 @@
 ---
 - name: Provision victoria-metrics
   block:
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Creating storage directory
       file:
         path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Create config directories
       file:
@@ -57,7 +46,7 @@
     #     - name: Access federated Spaces
     #       git:
     #         repo: "{{ space }}"
-    #         dest: "/tmp/prometheus-federation-space-{{ space_index }}"
+    #         dest: "{{ apollo_downloads_dir }}/prometheus-federation-space-{{ space_index }}"
     #       with_items:
     #         - "{{ prometheus_federation_spaces }}"
     #       register: prometheus_federation_directories
@@ -115,7 +104,7 @@
         become: false
         get_url:
           url: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v{{ victoria_version }}/victoria-metrics-v{{ victoria_version }}.tar.gz"
-          dest: "/tmp/victoria-metrics-v{{ victoria_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}/victoria-metrics-v{{ victoria_version }}.tar.gz"
         register: _download_binary
         until: _download_binary is succeeded
         retries: 5
@@ -126,18 +115,18 @@
         become: false
         unarchive:
           remote_src: True
-          src: "/tmp/victoria-metrics-v{{ victoria_version }}.tar.gz"
-          dest: "/tmp"
-          creates: "/tmp/victoria-metrics-prod"
+          src: "{{ apollo_downloads_dir }}/victoria-metrics-v{{ victoria_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}"
+          creates: "{{ apollo_downloads_dir }}/victoria-metrics-prod"
         check_mode: false
   
       - name: Propagate vmagent binaries
         copy:
-          src: "/tmp/victoria-metrics-prod"
-          dest: "{{ _victoria_binary_install_dir }}/victoria-metrics"
+          src: "{{ apollo_downloads_dir }}/victoria-metrics-prod"
+          dest: "{{ apollo_binary_dir }}/victoria-metrics"
           mode: 0755
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           remote_src: True
         notify: restart victoria
         when: not ansible_check_mode
@@ -162,7 +151,7 @@
         become: false
         get_url:
           url: "https://github.com/prometheus/blackbox_exporter/releases/download/v{{ blackbox_version }}/blackbox_exporter-{{ blackbox_version }}.linux-amd64.tar.gz"
-          dest: "/tmp/blackbox_exporter-v{{ blackbox_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}/blackbox_exporter-v{{ blackbox_version }}.tar.gz"
         register: _download_binary
         until: _download_binary is succeeded
         retries: 5
@@ -173,18 +162,18 @@
         become: false
         unarchive:
           remote_src: True
-          src: "/tmp/blackbox_exporter-v{{ blackbox_version }}.tar.gz"
-          dest: "/tmp"
-          creates: "/tmp/blackbox_exporter-{{ blackbox_version }}.linux-amd64/blackbox_exporter"
+          src: "{{ apollo_downloads_dir }}/blackbox_exporter-v{{ blackbox_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}"
+          creates: "{{ apollo_downloads_dir }}/blackbox_exporter-{{ blackbox_version }}.linux-amd64/blackbox_exporter"
         check_mode: false
   
       - name: Propagate blackbox-exporter binaries
         copy:
-          src: "/tmp/blackbox_exporter-{{ blackbox_version }}.linux-amd64/blackbox_exporter"
-          dest: "{{ _blackbox_binary_install_dir }}/blackbox_exporter"
+          src: "{{ apollo_downloads_dir }}/blackbox_exporter-{{ blackbox_version }}.linux-amd64/blackbox_exporter"
+          dest: "{{ apollo_binary_dir }}/blackbox_exporter"
           mode: 0755
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           remote_src: True
         notify: restart blackbox_exporter
         when: not ansible_check_mode
@@ -198,8 +187,8 @@
         template:
           src: templates/blackbox_exporter.yml.j2
           dest: "{{ app_dir }}/blackbox_exporter.yml"
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           mode: '0644'
         notify: restart blackbox_exporter
 
@@ -223,7 +212,7 @@
         become: false
         get_url:
           url: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v{{ vmagent_version }}/vmutils-v{{ vmagent_version }}.tar.gz"
-          dest: "/tmp/vmutils-v{{ vmagent_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}/vmutils-v{{ vmagent_version }}.tar.gz"
         register: _download_binary
         until: _download_binary is succeeded
         retries: 5
@@ -234,18 +223,18 @@
         become: false
         unarchive:
           remote_src: True
-          src: "/tmp/vmutils-v{{ vmagent_version }}.tar.gz"
-          dest: "/tmp"
-          creates: "/tmp/vmagent-prod"
+          src: "{{ apollo_downloads_dir }}/vmutils-v{{ vmagent_version }}.tar.gz"
+          dest: "{{ apollo_downloads_dir }}"
+          creates: "{{ apollo_downloads_dir }}/vmagent-prod"
         check_mode: false
   
       - name: Propagate vmagent binaries
         copy:
-          src: "/tmp/vmagent-prod"
-          dest: "{{ _vmagent_binary_install_dir }}/vmagent"
+          src: "{{ apollo_downloads_dir }}/vmagent-prod"
+          dest: "{{ apollo_binary_dir }}/vmagent"
           mode: 0755
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           remote_src: True
         notify: restart vmagent
         when: not ansible_check_mode
@@ -254,8 +243,8 @@
         template:
           src: templates/prometheus.yml.j2
           dest: "{{ app_dir }}/prometheus.yml"
-          owner: root
-          group: root
+          owner: apollo
+          group: apollo
           mode: '0644'
         notify: restart vmagent
 

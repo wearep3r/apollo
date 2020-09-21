@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _vmalert_binary_install_dir }}/vmalert \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/vmalert \
     -rule="{{ app_dir }}/alerts.yml" \
     -datasource.url="http://{{ apollo_manager }}:8428" \
     -notifier.url="http://{{ apollo_manager }}:9093" \

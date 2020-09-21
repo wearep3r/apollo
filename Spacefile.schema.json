@@ -7,51 +7,25 @@
 		"apps": {
 			"type": "string"
 		},
-		"auth": {
+		"addons": {
 			"type": "object",
 			"properties": {
-				"admin_user": {
-					"type": "string"
-				},
-				"admin_password": {
-					"type": "string"
-				},
-				"admin_password_hash": {
-					"type": "string"
-				}
-      },
-      "required": [ "admin_user", "admin_password", "admin_password_hash" ]
-		},
-		"backplane": {
-			"type": "object",
-			"properties": {
-				"enabled": {
-					"type": "boolean"
-				}
-			}
-		},
-		"caas": {
-			"type": "object",
-			"properties": {
-				"enabled": {
-					"type": "boolean"
-				},
-				"ssl": {
-					"type": "object",
-					"properties": {
-						"enabled": {
-							"type": "boolean"
-						},
-						"provider": {
-							"type": "string"
-						}
-					}
-				},
 				"proxy": {
 					"type": "object",
 					"properties": {
 						"enabled": {
 							"type": "boolean"
+						},
+						"ssl": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								},
+								"provider": {
+									"type": "string"
+								}
+							}
 						}
 					}
 				},
@@ -60,12 +34,135 @@
 					"properties": {
 						"enabled": {
 							"type": "boolean"
+						},
+						"ssl": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								},
+								"provider": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"gitlab": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean"
+						},
+						"gl_token": {
+							"type": "string"
+						},
+						"token": {
+							"type": "string"
+						},
+						"shared_runners_token": {
+							"type": "string"
+						},
+						"registry": {
+							"type": "object",
+							"properties": {
+								"url": {
+									"type": "string"
+								},
+								"user": {
+									"type": "string"
+								},
+								"password": {
+									"type": "string"
+								}
+							}
+						},
+						"repository": {
+							"type": "object",
+							"properties": {
+								"sync": {
+									"type": "object",
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"gitlab-runner": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean"
+						},
+						"deploy": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								}
+							}
+						},
+						"build": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								}
+							}
+						},
+						"token": {
+							"type": "string"
+						},
+						"coordinator_url": {
+							"type": "string"
+						},
+						"docker_image": {
+							"type": "string"
+						},
+						"package_version": {
+							"type": "string"
+						},
+						"registration_token": {
+							"type": "string"
+						},
+						"package_name": {
+							"type": "string"
 						}
 					}
 				}
 			}
 		},
-		"controlplane": {
+		"auth": {
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"provider": {
+					"type": "string"
+				},
+				"admin_user": {
+					"type": "string"
+				},
+				"admin_password": {
+					"type": "string"
+				},
+				"admin_password_hash": {
+					"type": "string"
+				},
+				"users": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"backplane": {
 			"type": "object",
 			"properties": {
 				"enabled": {
@@ -76,6 +173,9 @@
 		"backups": {
 			"type": "object",
 			"properties": {
+				"provider": {
+					"type": "string"
+				},
 				"enabled": {
 					"type": "boolean"
 				},
@@ -100,7 +200,53 @@
 				"restic_job_args": {
 					"type": "string"
 				}
-      }
+			}
+		},
+		"cluster": {
+			"type": "object",
+			"properties": {
+				"encryption": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean"
+						},
+						"provider": {
+							"type": "string"
+						}
+					}
+				},
+				"firewall": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean"
+						},
+						"provider": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		},
+		"management": {
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"provider": {
+					"type": "string"
+				}
+			}
+		},
+		"controlplane": {
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				}
+			}
 		},
 		"gc": {
 			"type": "object",
@@ -116,6 +262,9 @@
 		"alerts": {
 			"type": "object",
 			"properties": {
+				"provider": {
+					"type": "string"
+				},
 				"enabled": {
 					"type": "boolean"
 				},
@@ -154,6 +303,9 @@
 			"properties": {
 				"enabled": {
 					"type": "boolean"
+				},
+				"provider": {
+					"type": "string"
 				}
 			}
 		},
@@ -162,6 +314,9 @@
 			"properties": {
 				"enabled": {
 					"type": "boolean"
+				},
+				"provider": {
+					"type": "string"
 				}
 			}
 		},
@@ -170,12 +325,18 @@
 			"properties": {
 				"enabled": {
 					"type": "boolean"
+				},
+				"provider": {
+					"type": "string"
 				}
 			}
 		},
 		"data": {
 			"type": "object",
 			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
 				"provider": {
 					"type": "string"
 				},
@@ -201,14 +362,6 @@
 				},
 				"provider": {
 					"type": "string"
-				},
-				"auth": {
-					"type": "object",
-					"properties": {
-						"token": {
-							"type": "string"
-						}
-					}
 				}
 			}
 		},
@@ -242,77 +395,6 @@
 					"type": "array",
 					"items": {
 						"type": "string"
-					}
-				}
-			}
-		},
-		"gitlab": {
-			"type": "object",
-			"properties": {
-				"gl_token": {
-					"type": "string"
-				},
-				"token": {
-					"type": "string"
-				},
-				"shared_runners_token": {
-					"type": "string"
-				},
-				"registry": {
-					"type": "object",
-					"properties": {
-						"url": {
-							"type": "string"
-						},
-						"user": {
-							"type": "string"
-						},
-						"password": {
-							"type": "string"
-						}
-					}
-				},
-				"runner": {
-					"type": "object",
-					"properties": {
-						"enabled": {
-							"type": "boolean"
-						},
-						"deploy": {
-							"type": "object",
-							"properties": {
-								"enabled": {
-									"type": "boolean"
-								}
-							}
-						},
-						"build": {
-							"type": "object",
-							"properties": {
-								"enabled": {
-									"type": "boolean"
-								}
-							}
-						},
-						"token": {
-							"type": "string"
-						},
-						"coordinator_url": {
-							"type": "string"
-						}
-					}
-				},
-				"repository": {
-					"type": "object",
-					"properties": {
-						"sync": {
-							"type": "object",
-							"properties": {
-								"enabled": {
-									"type": "boolean"
-								}
-							}
-						}
 					}
 				}
 			}
@@ -393,39 +475,6 @@
 				}
 			}
 		},
-		"letsencrypt": {
-			"type": "object",
-			"properties": {
-				"enabled": {
-					"type": "boolean"
-				},
-				"mail": {
-					"type": "string"
-				},
-				"challenge": {
-					"type": "object",
-					"properties": {
-						"provider": {
-							"type": "string"
-						}
-					}
-				}
-			}
-		},
-		"misc": {
-			"type": "object",
-			"properties": {
-				"force_reboot": {
-					"type": "integer"
-				},
-				"in_ci": {
-					"type": "boolean"
-				},
-				"ci": {
-					"type": "boolean"
-				}
-			}
-		},
 		"orchestrator": {
 			"type": "object",
 			"properties": {
@@ -465,25 +514,20 @@
 							}
 						}
 					}
-				}
-			}
-		},
-		"security": {
-			"type": "object",
-			"properties": {
-				"wireguard": {
-					"type": "object",
-					"properties": {
-						"enabled": {
-							"type": "boolean"
-						}
-					}
 				},
-				"firewall": {
+				"letsencrypt": {
 					"type": "object",
 					"properties": {
-						"enabled": {
-							"type": "boolean"
+						"mail": {
+							"type": "string"
+						},
+						"challenge": {
+							"type": "object",
+							"properties": {
+								"provider": {
+									"type": "string"
+								}
+							}
 						}
 					}
 				}

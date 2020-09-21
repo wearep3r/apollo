@@ -1,0 +1,73 @@
+version: '3.7'
+
+services:
+  portainer-agent:
+    image: "{{ images.agent }}"
+    environment:
+      - AGENT_CLUSTER_ADDR=tasks.portainer-agent
+      - CAP_HOST_MANAGEMENT=1
+    networks: 
+      - portainer
+    volumes: 
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.platform.os == linux
+
+  portainer:
+    image: "{{ images.portainer }}"
+    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo '{{ arc['whitelabel']['logo'] }}' --no-analytics"
+    environment:
+      - AGENT_CLUSTER_ADDR=tasks.portainer-agent
+      - CAP_HOST_MANAGEMENT=1
+    networks:
+      - proxy
+      - portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - portainer-data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.role == manager
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.port: "9000"
+        traefik.frontend.rule: "Host:portainer.{{ arc['space']['space_domain'] }}"
+        traefik.backend: "apollo-app-portainer"
+        traefik.protocol: "http"
+        traefik.backend.loadbalancer.stickiness: "true"
+        traefik.frontend.auth.basic.users: "{{arc['auth']['admin_user']}}:{{ arc['auth']['admin_password_hash'] | replace('$','$$') }}"
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+        traefik.frontend.entryPoints: "http,https"
+        traefik.frontend.headers.SSLRedirect: "true"
+        traefik.frontend.headers.STSSeconds: "31536000"
+        traefik.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.frontend.headers.STSPreload: "true"
+{% else %}
+        traefik.frontend.entryPoints: "http"
+{%endif%}
+
+networks:
+  portainer:
+    driver: overlay
+    attachable: true
+    name: portainer
+  proxy:
+    driver: overlay
+    external: true
+
+volumes:
+  portainer-data:

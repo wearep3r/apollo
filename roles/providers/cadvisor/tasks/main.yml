@@ -5,7 +5,7 @@
       become: false
       get_url:
         url: "https://github.com/google/cadvisor/releases/download/v{{ cadvisor_version }}/cadvisor"
-        dest: "/tmp/cadvisor-v{{ cadvisor_version }}"
+        dest: "{{ apollo_downloads_dir }}/cadvisor-v{{ cadvisor_version }}"
       register: _download_binary
       until: _download_binary is succeeded
       retries: 5
@@ -14,11 +14,11 @@
 
     - name: Propagate cadvisor binaries
       copy:
-        src: "/tmp/cadvisor-v{{ cadvisor_version }}"
-        dest: "{{ _cadvisor_binary_install_dir }}/cadvisor"
+        src: "{{ apollo_downloads_dir }}/cadvisor-v{{ cadvisor_version }}"
+        dest: "{{ apollo_binary_dir }}/cadvisor"
         mode: 0755
-        owner: root
-        group: root
+        owner: apollo
+        group: apollo
         remote_src: True
       notify: restart cadvisor
       when: not ansible_check_mode

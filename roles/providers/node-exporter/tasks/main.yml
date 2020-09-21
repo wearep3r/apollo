@@ -53,14 +53,14 @@
 
 - name: Check if node_exporter is installed
   stat:
-    path: "{{ _node_exporter_binary_install_dir }}/node_exporter"
+    path: "{{ apollo_binary_dir }}/node_exporter"
   register: __node_exporter_is_installed
   check_mode: false
   tags:
     - node_exporter_install
 
 - name: Gather currently installed node_exporter version (if any)
-  command: "{{ _node_exporter_binary_install_dir }}/node_exporter --version"
+  command: "{{ apollo_binary_dir }}/node_exporter --version"
   args:
     warn: false
   changed_when: false
@@ -85,30 +85,12 @@
         - "('linux-' + go_arch + '.tar.gz') in item"
   when: node_exporter_binary_local_dir | length == 0
 
-- name: Create the node_exporter group
-  group:
-    name: "{{ _node_exporter_system_group }}"
-    state: present
-    system: true
-  when: _node_exporter_system_group != "root"
-
-- name: Create the node_exporter user
-  user:
-    name: "{{ _node_exporter_system_user }}"
-    groups: "{{ _node_exporter_system_group }}"
-    append: true
-    shell: /usr/sbin/nologin
-    system: true
-    create_home: false
-    home: /
-  when: _node_exporter_system_user != "root"
-
 - block:
     - name: Download node_exporter binary to local folder
       become: false
       get_url:
         url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
-        dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
         checksum: "sha256:{{ node_exporter_checksum }}"
       register: _download_binary
       until: _download_binary is succeeded
@@ -120,15 +102,15 @@
       become: false
       unarchive:
         remote_src: True
-        src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
-        dest: "/tmp"
-        creates: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
+        src: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}"
+        creates: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
       check_mode: false
 
     - name: Propagate node_exporter binaries
       copy:
-        src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
-        dest: "{{ _node_exporter_binary_install_dir }}/node_exporter"
+        src: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
+        dest: "{{ apollo_binary_dir }}/node_exporter"
         mode: 0755
         owner: root
         group: root
@@ -211,8 +193,8 @@
   file:
     path: "{{ node_exporter_textfile_dir }}"
     state: directory
-    owner: "{{ _node_exporter_system_user }}"
-    group: "{{ _node_exporter_system_group }}"
+    owner: "apollo"
+    group: "apollo"
     recurse: true
     mode: u+rwX,g+rwX,o=rX
   when: node_exporter_textfile_dir | length > 0
@@ -249,8 +231,8 @@
       copy:
         dest: "{{ node_exporter_textfile_dir }}/node-meta.prom"
         backup: false
-        owner: "{{ _node_exporter_system_user }}"
-        group: "{{ _node_exporter_system_group }}"
+        owner: "apollo"
+        group: "apollo"
         content: |
           node_meta{node_id="{{ docker_node_info.nodes[0].ID }}",container_label_com_docker_swarm_node_id="{{ docker_node_info.nodes[0].ID }}",node_name="{{ ansible_hostname }}"} 1
         mode: u+rwX,g+rwX,o=rX
@@ -263,8 +245,8 @@
     src: "files/textfile-exporters/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     mode: 0755
-    owner: "{{ _node_exporter_system_user }}"
-    group: "{{ _node_exporter_system_user }}"
+    owner: "apollo"
+    group: "apollo"
   when: not ansible_check_mode
   with_items:
     - "apt.sh"

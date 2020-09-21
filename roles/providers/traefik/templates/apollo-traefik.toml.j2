@@ -55,7 +55,7 @@
   entrypoint = "apollo"
 
 [certificatesResolvers.leresolver.acme]
-  email = "{{ arc['letsencrypt']['mail'] }}"
+  email = "{{ arc['providers'][arc['addons']['proxy']['ssl']['provider']]['mail'] }}"
   storage = "{{ app_dir }}/apollo-acme.json"
 
   [certificatesResolvers.leresolver.acme.httpChallenge]

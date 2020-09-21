@@ -6,33 +6,16 @@
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
-    - name: Creating app directory
-      file:
-        path: "{{ app_dir }}"
-        state: directory
-        mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Creating storage directory
       file:
         path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
 
     - name: Create config directories
       file:
@@ -62,7 +45,7 @@
       become: false
       get_url:
         url: "https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_version }}/process-exporter-{{ process_version }}.linux-amd64.tar.gz"
-        dest: "/tmp/process_exporter-v{{ process_version }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}/process_exporter-v{{ process_version }}.tar.gz"
       register: _download_binary
       until: _download_binary is succeeded
       retries: 5
@@ -73,15 +56,15 @@
       become: false
       unarchive:
         remote_src: True
-        src: "/tmp/process_exporter-v{{ process_version }}.tar.gz"
-        dest: "/tmp"
-        creates: "/tmp/process-exporter-{{ process_version }}.linux-amd64/process-exporter"
+        src: "{{ apollo_downloads_dir }}/process_exporter-v{{ process_version }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}"
+        creates: "{{ apollo_downloads_dir }}/process-exporter-{{ process_version }}.linux-amd64/process-exporter"
       check_mode: false
 
     - name: Propagate process-exporter binaries
       copy:
-        src: "/tmp/process-exporter-{{ process_version }}.linux-amd64/process-exporter"
-        dest: "{{ _process_binary_install_dir }}/process_exporter"
+        src: "{{ apollo_downloads_dir }}/process-exporter-{{ process_version }}.linux-amd64/process-exporter"
+        dest: "{{ apollo_binary_dir }}/process_exporter"
         mode: 0755
         owner: root
         group: root

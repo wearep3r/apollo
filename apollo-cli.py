@@ -71,14 +71,10 @@ def checkSpaceMail(mail: str):
   return False
 
 def loadConfig():
-  spacefile = loadSpacefile()
+  spacefile = validateSpacefile()
+  nodesfile = validateNodesfile()
 
-  if spacefile:
-    os.environ["APOLLO_SPACE"] = spacefile['space']['name']
-    return spacefile
-  else:
-    typer.echo(f"Can't find Spacefile.yml in {arc['space_dir']}", err=True)
-    raise typer.Exit(code=1)
+  return spacefile,nodesfile
 
 def loadDefaults():
   try:
@@ -181,10 +177,6 @@ def enter(where: str):
   nodesfile = loadNodesfile()
   ssh_config = "-o LogLevel=ERROR -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-  if not nodesfile:
-    typer.echo(f"Can't find Nodesfile.yml in {spacefile['space_dir']}", err=True)
-    raise typer.Exit(code=1)
-
   nodes = {}
   
   if nodesfile['manager']:
@@ -197,7 +189,7 @@ def enter(where: str):
 
   apollo_user = nodes.get(where,{}).get('user','root')
   apollo_ipv4 = nodes.get(where,{}).get('ipv4','')
-  command = "ssh {} -i {}/.ssh/id_rsa -l {} {}".format(ssh_config,spacefile['space_dir'],apollo_user,apollo_ipv4)
+  command = "ssh {} -i {}/.ssh/id_rsa -l {} {}".format(ssh_config,arc['space_dir'],apollo_user,apollo_ipv4)
 
   try:
     enter = subprocess.call(command, shell=True)
@@ -215,63 +207,65 @@ def push():
   print("push")
 
 @app.command()
+def build():
+  """
+  Build apollo
+  """
+  spacefile = loadSpacefile()
+
+  if spacefile['infrastructure']['enabled'] == True:
+    infrastructure = deployInfrastructure(spacefile)
+    return infrastructure
+  else:
+    typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
+    raise typer.Exit(code=1)
+
+@app.command()
 def deploy(what: str = typer.Argument("all")):
   """
   Deploy apollo
   """
   spacefile = loadSpacefile()
+  ansible_spacefile = {
+    "apollo_space_dir": arc['space_dir'],
+    "arc": spacefile
+  }
   
-  if what == "infrastructure":
-    if spacefile['infrastructure']['enabled'] == True:
-      infrastructure = deployInfrastructure(spacefile)
-      return infrastructure
-    else:
-      typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
-      raise typer.Exit(code=1)
+  nodesfile = loadNodesfile()
+  if what != "all":
+    if nodesfile:
+      command = [
+        "ansible-playbook",
+        "--extra-vars",
+        f"{json.dumps(ansible_spacefile)}",
+        #'{"arc":'+f"{json.dumps(spacefile)}"+'}',
+        "--flush-cache", 
+        "--tags", 
+        f"{what},always", 
+        "provision.yml"
+      ]
+
+      if arc['verbosity'] > 0:
+        typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+
+      deployment = subprocess.run(command, cwd="/apollo")
+        
+      return deployment
   else:
-    nodesfile = loadNodesfile()
-    if what != "all":
-      if nodesfile:
-        ansible_spacefile = {
-          "apollo_space_dir": arc['space_dir'],
-          "arc": spacefile
-        }
-        command = [
-          "ansible-playbook",
-          "--extra-vars",
-          f"{json.dumps(ansible_spacefile)}",
-          #'{"arc":'+f"{json.dumps(spacefile)}"+'}',
-          "--flush-cache", 
-          "--tags", 
-          f"{what},always", 
-          "provision.yml"
-        ]
+    if nodesfile:
+      command = [
+        "ansible-playbook",
+        "--extra-vars",
+        f"{json.dumps(ansible_spacefile)}",
+        "--flush-cache", 
+        "provision.yml"
+      ]
 
-        if arc['verbosity'] > 0:
-          typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+      if arc['verbosity'] > 0:
+        typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
-        deployment = subprocess.run(command, cwd="/apollo")
-          
-        return deployment
-    else:
-      if nodesfile:
-        ansible_spacefile = {
-          "apollo_space_dir": arc['space_dir'],
-          "arc": spacefile
-        }
-        command = [
-          "ansible-playbook",
-          "--extra-vars",
-          f"{json.dumps(ansible_spacefile)}",
-          "--flush-cache", 
-          "provision.yml"
-        ]
-
-        if arc['verbosity'] > 0:
-          typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
-
-        deployment = subprocess.run(command, cwd="/apollo")
-        return deployment
+      deployment = subprocess.run(command, cwd="/apollo")
+      return deployment
 
 @app.command()
 def destroy():
@@ -323,8 +317,11 @@ def check(what: str):
 def validateSpacefile():
   spacefile = loadSpacefile()
   schema = anyconfig.load("/apollo/Spacefile.schema.json")
-  #scm4 = anyconfig.gen_schema(spacefile)
+
+  #defaults = loadDefaults()
+  #scm4 = anyconfig.gen_schema(defaults)
   #scm4_s = anyconfig.dumps(scm4, "json")
+  #print(scm4_s)
 
   rc, err = anyconfig.validate(spacefile, schema)
   
@@ -332,8 +329,28 @@ def validateSpacefile():
     typer.secho(f"Could not validate Spacefile: {err}", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
   else:
-    typer.secho(f"Spacefile is valid", fg=typer.colors.GREEN)
+    if (arc['verbosity'] > 1):
+      typer.secho(f"Spacefile is valid", fg=typer.colors.GREEN)
     return spacefile
+
+def validateNodesfile():
+  nodesfile = loadNodesfile()
+  #schema = anyconfig.load("/apollo/Nodesfile.schema.json")
+
+  #defaults = loadDefaults()
+  #scm4 = anyconfig.gen_schema(defaults)
+  #scm4_s = anyconfig.dumps(scm4, "json")
+  #print(scm4_s)
+
+  #rc, err = anyconfig.validate(spacefile, schema)
+  
+  if not nodesfile:
+    typer.secho(f"Could not validate Nodesfile: {err}", err=True, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
+  else:
+    if (arc['verbosity'] > 1):
+      typer.secho(f"Nodesfile is valid", fg=typer.colors.GREEN)
+    return nodesfile
   
 @app.command()
 def validate():

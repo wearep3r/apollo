@@ -3,8 +3,6 @@
   group:
     name: apollo
     state: present
-- debug:
-    var: vars
 
 - name: Create apollo user
   user:
@@ -13,7 +11,7 @@
     group: apollo
     home: "{{ apollo_remote_dir }}"
     append: yes
-    #groups: docker
+    #groups: adm
     password: "{{ arc['auth']['admin_password'] | password_hash('sha512', arc['auth']['admin_password_hash'] ) }}"
     shell: "/bin/zsh"
 
@@ -27,6 +25,8 @@
     path: "{{ item }}"
     state: directory
     mode: '0755'
+    owner: "apollo"
+    group: "apollo"
   with_items:
     - "{{ apollo_remote_dir }}"
     - "{{ apollo_app_dir }}"

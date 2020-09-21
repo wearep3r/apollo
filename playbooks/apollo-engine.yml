@@ -1,8 +1,0 @@
-- name: "@apollo-engine"
-  hosts: 
-    - manager
-    - worker
-  serial: 1
-  become: true
-  roles:
-    - apollo-engine

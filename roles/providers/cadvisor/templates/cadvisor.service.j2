@@ -4,9 +4,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart={{ _cadvisor_binary_install_dir }}/cadvisor \
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/cadvisor \
         --logtostderr \
         --allow_dynamic_housekeeping=true \
         --housekeeping_interval=10s \

@@ -1,14 +1,62 @@
 ---
 # tasks file for zero-app-portainer
-- name: Provision Portainer
+- name: enable portainer
   block:
+    - name: Create app group
+      group:
+        name: "{{ app_name }}"
+        state: present
+
+    - name: Create app user
+      user:
+        name: "{{ app_name }}"
+        comment: "apollo-app-{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+
     - name: Copy Stack-File
       template:
         src: templates/docker-compose.yml.j2
-        dest: /tmp/zero-app-portainer.yml
-        owner: root
-        group: root
+        dest: "{{ app_dir }}/docker-compose.yml"
         mode: '0644'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      register: stack_file
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
     
     - name: Pull images
       docker_image:
@@ -16,30 +64,28 @@
         source: pull
       with_dict: "{{ images }}"
 
-    - name: Provision Portainer
+    - name: enable portainer
       docker_stack:
         state: present
         name: portainer
         prune: yes
         with_registry_auth: yes
         compose:
-          - /tmp/zero-app-portainer.yml
+          - "{{ app_dir }}/docker-compose.yml"
+  when:
+    - arc['addons']['portainer']['enabled']|bool
+  tags:
+    - portainer
 
-      register: portainer_provision
-      tags:
-          - portainer
 
-    - name: "Wait for http://portainer.{{ arc['space']['space_domain'] }} to become ready"
-      uri:
-        url: "http://portainer.{{ arc['space']['space_domain'] }}"
-        method: GET
-        status_code: 200
-        validate_certs: no
-        user: "{{arc['auth']['admin_user']}}"
-        password: "{{arc['auth']['admin_password']}}"
-      register: _result
-      until: _result.status == 200
-      retries: 30
-      delay: 10
-      tags:
-        - portainer
+# tasks file for zero-app-traefik
+- name: disable portainer
+  block:
+    - name: disable portainer
+      docker_stack:
+        state: absent
+        name: portainer
+  when:
+    - not arc['addons']['portainer']['enabled']|bool
+  tags:
+    - portainer
