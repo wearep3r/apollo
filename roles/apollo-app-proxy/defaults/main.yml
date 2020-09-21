@@ -1,7 +1,7 @@
 ---
 app_name: "proxy"
 app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-app_domain: "{{ lookup('env','APOLLO_APP_TRAEFIK_APP_DOMAIN') | default('proxy.'+space_domain, true) }}"
+app_domain: "{{ lookup('env','APOLLO_APP_TRAEFIK_APP_DOMAIN') | default('proxy.'+arc['space']['space_domain'], true) }}"
 
 images:
   traefik: "{{ lookup('env','APOLLO_APP_TRAEFIK_IMAGES_TRAEFIK') | default('traefik:v1.7.26-alpine', true) }}"

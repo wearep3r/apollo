@@ -1,12 +1,12 @@
-# {{ apollo_space }}
+# {{ arc['space']['name'] }}
 
 ## Details
 
 - Container-Engine: [{{ arc['engine']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['engine']['provider'] }})
 - Container-Orchestrator: [{{ arc['orchestrator']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['orchestrator']['provider'] }})
-- Data-Engine: [{{ apollo_data }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_data }})
+- Data-Engine: [{{ arc['data']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['data']['provider'] }})
 - Provider: {{ arc['infrastructure']['provider'] }}
-- Wireguard: {{ arc['security']['wireguard']['enabled']|bool }}
+- Wireguard: {{ arc['cluster']['encryption']['enabled']|bool }}
 - Get Help: [apollo docs](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/)
 
 ### Nodes
@@ -14,10 +14,11 @@
 {% for host in groups['cluster'] %}
 - {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
-
 {% if arc['federation']['enabled']|bool %}
+
 ## Federation
 
+- Enabled: True
 - Federation-User: {{ apollo_federation_user }}
 - Federation-Password: {{ apollo_federation_password }}
 - Federation-Spaces:
@@ -26,13 +27,17 @@
 {% endfor %}
 {% endif %}
 
-{% if arc['backups']['enabled']|bool %}
+
 ## Backups
 
-- Backup-User: {{ aws_access_key_id }}
-- Backup-Password: {{ aws_secret_access_key }}
-- Backup-Ziel: {{ restic_repository }}
-- Backup-Keyphrase: {{ restic_password }}
+{% if arc['backups']['enabled']|bool %}
+- Enabled: True
+- Backup-User: {{ arc['backups']['aws_access_key_id'] }}
+- Backup-Password: {{ arc['backups']['aws_secret_access_key'] }}
+- Backup-Ziel: {{ arc['backups']['restic_repository'] }}
+- Backup-Keyphrase: {{ arc['backups']['restic_password'] }}
+{% else %}
+- Enabled: False
 {% endif %}
 
 ## Authentication
@@ -58,6 +63,23 @@ To operate this space, please add the following records to your DNS zone (`{{ ar
 *.{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
 ```
 
+## Deployment
+
+To deploy this space, run the following commands from this space directory:
+
+### if you use a cloud provider and did not yet spin up your infrastructure
+
+```bash
+apollo deploy infrastructure
+apollo deploy all
+```
+
+### if you use your own nodes and already prepared Nodesfile.yml
+
+```bash
+apollo deploy all
+``` 
+
 ## Access
 
 ### SSH
@@ -73,6 +95,13 @@ Assuming you cloned the repository and work from its local directory, you can co
 `ssh -l root -i .ssh/id_rsa {{ arc['space']['space_domain'] }}`
 
 Once connected, you can reach any other node in the cluster by simply doing `ssh manager-0` etc.
+
+From within your space directory, you can also do this:
+
+```bash
+# replace manager-0 with any of the nodes you intend to enter
+apollo enter manager-0
+``` 
 
 ### VS Code Remote Development
 
@@ -95,12 +124,12 @@ You can reach any of the controlplane services through its webinterface. Use `{{
 - [Traefik](https://traefik.{{ arc['space']['space_domain'] }}:8443)
 - [Alerts](https://alerts.{{ arc['space']['space_domain'] }}:8443)
 {% endif %}
-
-
 {% if arc['backplane']['enabled']|bool %}
+
 ### Web
 
 You can reach any of the backplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
 
 - [Portainer](http://portainer.{{ arc['space']['space_domain'] }})
+- [Proxy](http://proxy.{{ arc['space']['space_domain'] }})
 {% endif %}

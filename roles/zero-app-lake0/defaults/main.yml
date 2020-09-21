@@ -1,7 +1,7 @@
 ---
 app_name: "lake0"
 app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-app_domain: "{{ lookup('env','APOLLO_APP_LAKE0_APP_DOMAIN') | default(app_name+'.'+space_domain, true) }}"
+app_domain: "{{ lookup('env','APOLLO_APP_LAKE0_APP_DOMAIN') | default(app_name+'.'+arc['space']['space_domain'], true) }}"
 
 images:
   lake0: "{{ lookup('env','APOLLO_APP_LAKE0_IMAGES_LAKE0') | default('registry.gitlab.com/peter.saarland/lake0:latest', true) }}"

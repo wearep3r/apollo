@@ -6,7 +6,7 @@ services:
     command: > 
       traefik 
       --docker 
-{% if apollo_orchestrator == "swarm" %}
+{% if arc['orchestrator']['provider'] == "swarm" %}
       --docker.swarmmode 
 {% endif %}
       --docker.watch 
@@ -16,10 +16,10 @@ services:
       --metrics
       --metrics.prometheus
       --accessLog
-{% if letsencrypt_enabled|bool %}
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
       --entrypoints="Name:https Address::443 TLS TLS.MinVersion:VersionTLS12 Compress:true TLS.CipherSuites:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
       --acme 
-      --acme.email={{ letsencrypt_mail }} 
+      --acme.email={{ arc['providers'][arc['addons']['proxy']['ssl']['provider']]['mail'] }} 
       --acme.storage="/etc/traefik/acme.json" 
       --acme.entryPoint=https 
       --acme.httpChallenge 
@@ -64,7 +64,7 @@ services:
           traefik.frontend.rule: "Host:proxy.{{ arc['space']['space_domain'] }}"
           traefik.backend: "apollo-app-traefik"
           traefik.protocol: "http"
-{% if arc['letsencrypt']['enabled']|bool %}
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
           traefik.frontend.entryPoints: "http,https"
           traefik.frontend.headers.SSLRedirect: "true"
           traefik.frontend.headers.STSSeconds: "31536000"

@@ -1,0 +1,184 @@
+- name: "Base"
+  hosts: 
+    - cluster
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "core"
+        allow_duplicates: no
+      tags:
+        - core
+    - include_role:
+        name: "dev-sec.os-hardening"
+        allow_duplicates: no
+      vars:
+        sysctl_overwrite:
+          net.ipv4.ip_forward: 1
+          net.ipv6.conf.all.forwarding: 1
+          net.ipv4.tcp_window_scaling: 0
+          net.ipv6.conf.all.disable_ipv6: 0
+      tags:
+        - hardening
+    - include_role:
+        name: "cluster"
+        allow_duplicates: no
+      tags:
+        - cluster
+  tags:
+    - core
+
+- name: "Engine"
+  hosts: 
+    - cluster
+  serial: 1
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['engine']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - engine
+        - "{{ arc['engine']['provider'] }}"
+      when:
+        - arc['engine']['enabled']|bool
+
+- name: "Orchestrator"
+  hosts: 
+    - cluster
+  become: true
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['orchestrator']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - orchestrator
+        - "{{ arc['orchestrator']['provider'] }}"
+      when:
+        - arc['orchestrator']['enabled']|bool
+
+- name: "Cleanup"
+  become: True
+  gather_facts: False
+  hosts: manager[0]
+  tasks:
+    - name: "Gather Package facts"
+      package_facts:
+        manager: "auto"
+
+    - name: "removing legacy docker stacks"
+      docker_stack:
+        absent_retries: 5
+        absent_retries_interval: 10
+        state: absent
+        name: "{{ item }}"
+      when: 
+        - "'docker-ce' in ansible_facts.packages"
+      with_items:
+        - cadvisor
+        - alertmanager
+        - prometheus
+        - node-exporter
+        - promtail
+        - grafana
+        - garbage-collector
+        - loki
+
+- name: "Management"
+  hosts: 
+    - manager[0]
+  become: true
+  strategy: linear
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['management']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - "{{ arc['management']['provider'] }}"
+
+- name: "Collectors"
+  hosts: 
+    - cluster
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/node-exporter"
+        allow_duplicates: no
+      tags:
+        - metrics
+        - node-exporter
+
+    - include_role:
+        name: "providers/cadvisor"
+        allow_duplicates: no
+      tags:
+        - metrics
+        - node-exporter
+
+    - include_role:
+        name: "providers/process-exporter"
+        allow_duplicates: no
+      tags:
+        - metrics
+        - process-exporter
+
+    - include_role:
+        name: "providers/promtail"
+        allow_duplicates: no
+      tags:
+        - metrics
+        - promtail
+
+- name: "Metrics"
+  hosts: 
+    - manager[0]
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['metrics']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - "{{ arc['metrics']['provider'] }}"
+
+- name: "Logs"
+  hosts: 
+    - manager[0]
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['logs']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - "{{ arc['logs']['provider'] }}"
+
+- name: "Alerts"
+  hosts: 
+    - manager[0]
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['alerts']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - "{{ arc['alerts']['provider'] }}"
+
+- name: "Analytics"
+  hosts: 
+    - manager[0]
+  become: true
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: "providers/{{ arc['analytics']['provider'] }}"
+        allow_duplicates: no
+      tags:
+        - "{{ arc['analytics']['provider'] }}"
+
+# Todo
+# Backups, Garbage Collection

@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  alertmanager:
+    image: {{ images.alertmanager }}
+    command: "--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --web.external-url=http://prometheus.{{ arc['space']['space_domain'] }}"
+    networks: 
+      - monitoring
+    volumes: 
+      - alertmanager-data:/alertmanager
+      - "{{ app_dir }}:/etc/alertmanager"
+    healthcheck:
+      test: "/bin/wget -q -Y off http://localhost:9093/metrics -O /dev/null > /dev/null 2>&1"
+      interval: 25s
+      timeout: 3s
+      start_period: 30s
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+      placement:
+        constraints: 
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+
+networks:
+  monitoring:
+    driver: overlay
+    external: true
+
+volumes:
+  alertmanager-data:
+# {% if arc['data']['provider'] == "storidge" %}
+#     driver: cio
+#     driver_opts: 
+#       profile: "SNAPSHOT"
+# {% endif %}

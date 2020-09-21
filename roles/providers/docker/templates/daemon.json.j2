@@ -1,0 +1,22 @@
+{
+  "metrics-addr" : "0.0.0.0:9323",
+  "experimental" : true,
+  "dns": ["{{ hostvars[groups['manager'][0]]['cluster_ip'] }}", "1.1.1.1"],
+{% if arc['orchestrator']['provider'] == "kubernetes" %}
+  "exec-opts": ["native.cgroupdriver=systemd"],
+{% endif %}
+{% if apollo_backplane_enabled|bool %}
+  "log-driver": "loki:latest",
+  "log-opts": {
+      "loki-url": "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3100/loki/api/v1/push",
+      "loki-batch-size": "400",
+      "max-size": "50m",    
+      "max-file": "5",
+      "loki-min-backoff": "10s",
+      "loki-retries": "5",
+      "loki-timeout": "5s",
+      "loki-batch-wait": "5s"
+  },
+{% endif %}
+  "debug": false
+}

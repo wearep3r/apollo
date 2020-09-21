@@ -5,9 +5,9 @@ services:
     image: "{{ images.minio }}"
     command: server /data
     environment:
-      MINIO_ACCESS_KEY: "{{ admin_user }}"
-      MINIO_SECRET_KEY: "{{ admin_password }}"
-      MINIO_DOMAIN: "minio.{{ space_domain }}"
+      MINIO_ACCESS_KEY: "{{  arc['auth']['admin_user'] }}"
+      MINIO_SECRET_KEY: "{{  arc['auth']['admin_password'] }}"
+      MINIO_DOMAIN: "minio.{{ arc['space']['space_domain'] }}"
       MINIO_PROMETHEUS_AUTH_TYPE: "public"
     networks: 
       - proxy
@@ -37,12 +37,12 @@ services:
         traefik.tags: "proxy"
         traefik.docker.network: "proxy"
         traefik.port: "9000"
-        traefik.frontend.rule: "Host:minio.{{ space_domain }}"
+        traefik.frontend.rule: "Host:minio.{{ arc['space']['space_domain'] }}"
         traefik.backend: "zero-app-minio"
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
         traefik.frontend.passHostHeader: "true"
-{% if letsencrypt_enabled|bool %}
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"
         traefik.frontend.headers.STSSeconds: "31536000"

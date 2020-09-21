@@ -126,7 +126,7 @@ build:
 dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
 dev: SHELL := docker
 dev:
-> @zsh
+> @enter
 
 .PHONY: ssh
 ssh: ${ENVIRONMENT_DIR}/.ssh/id_rsa ${ENVIRONMENT_DIR}/.ssh/id_rsa.pub

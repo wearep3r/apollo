@@ -64,7 +64,7 @@
           - "{{ app_dir }}/docker-compose.yml"
       register: lake0_provision
   when:
-    - apollo_backups_enabled|bool
+    - arc['backups']['enabled']|bool
 
 - name: Configure Backups
   block:
@@ -75,4 +75,4 @@
         prune: yes
       register: lake0_provision
   when:
-    - not apollo_backups_enabled|bool
+    - not arc['backups']['enabled']|bool

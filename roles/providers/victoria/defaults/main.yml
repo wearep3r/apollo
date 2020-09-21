@@ -1,0 +1,32 @@
+---
+app_name: "victoria"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_VICTORIA_APP_DOMAIN') | default(app_name+'.'+arc['space']['space_domain'], true) }}"
+
+images:
+  #prometheus: "{{ lookup('env','APOLLO_APP_PROMETHEUS_IMAGES_PROMETHEUS') | default('prom/prometheus:v2.20.1', true) }}"
+  victoria: "{{ lookup('env','APOLLO_APP_PROMETHEUS_IMAGES_VICTORIA') | default('victoriametrics/victoria-metrics:latest', true) }}"
+  victoria_agent: "{{ lookup('env','APOLLO_APP_PROMETHEUS_IMAGES_VICTORIA_AGENT') | default('victoriametrics/vmagent:latest', true) }}"
+  blackbox: "{{ lookup('env','APOLLO_APP_PROMETHEUS_IMAGES_BLACKBOX') | default('prom/blackbox-exporter:latest', true) }}"
+
+prometheus_federation_enabled: "{{ lookup('env','PROMETHEUS_FEDERATION_ENABLED') | default(apollo_federation_enabled, true) }}"
+
+_vmagent_binary_install_dir: "/usr/local/bin"
+_vmagent_system_group: "root"
+_vmagent_system_user: "root"
+vmagent_version: "1.40.1"
+
+_victoria_binary_install_dir: "/usr/local/bin"
+_victoria_system_group: "root"
+_victoria_system_user: "root"
+victoria_version: "1.40.1"
+
+_blackbox_binary_install_dir: "/usr/local/bin"
+_blackbox_system_group: "root"
+_blackbox_system_user: "root"
+blackbox_version: "0.17.0"
+
+_process_binary_install_dir: "/usr/local/bin"
+_process_system_group: "root"
+_process_system_user: "root"
+process_version: "0.7.2"

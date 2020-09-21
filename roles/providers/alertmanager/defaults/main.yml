@@ -1,0 +1,28 @@
+---
+app_name: "alertmanager"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_APP_DOMAIN') | default(app_name+'.'+arc['space']['space_domain'], true) }}"
+  
+
+images:
+  alertmanager: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_IMAGES_ALERTMANAGER') | default('prom/alertmanager:master', true) }}"
+
+# Slack
+slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
+slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
+slack_user: "{{ lookup('env','SLACK_USER') | default(arc['space']['space_domain'], true) }}"
+
+_alertmanager_binary_install_dir: "/usr/local/bin"
+_alertmanager_system_group: "root"
+_alertmanager_system_user: "root"
+alertmanager_version: "0.21.0"
+
+_karma_binary_install_dir: "/usr/local/bin"
+_karma_system_group: "root"
+_karma_system_user: "root"
+karma_version: "0.70"
+
+_vmalert_binary_install_dir: "/usr/local/bin"
+_vmalert_system_group: "root"
+_vmalert_system_user: "root"
+vmalert_version: "1.40.1"

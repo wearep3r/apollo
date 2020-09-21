@@ -1,0 +1,114 @@
+---
+- name: Provision process-exporter
+  block:
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create app group
+      group:
+        name: "{{ app_name }}"
+        state: present
+
+    - name: Create app user
+      user:
+        name: "{{ app_name }}"
+        comment: "apollo-app-{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Creating storage directory
+      file:
+        path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
+
+    - name: Download process-exporter binary
+      become: false
+      get_url:
+        url: "https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_version }}/process-exporter-{{ process_version }}.linux-amd64.tar.gz"
+        dest: "/tmp/process_exporter-v{{ process_version }}.tar.gz"
+      register: _download_binary
+      until: _download_binary is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+    - name: Unpack process-exporter binary
+      become: false
+      unarchive:
+        remote_src: True
+        src: "/tmp/process_exporter-v{{ process_version }}.tar.gz"
+        dest: "/tmp"
+        creates: "/tmp/process-exporter-{{ process_version }}.linux-amd64/process-exporter"
+      check_mode: false
+
+    - name: Propagate process-exporter binaries
+      copy:
+        src: "/tmp/process-exporter-{{ process_version }}.linux-amd64/process-exporter"
+        dest: "{{ _process_binary_install_dir }}/process_exporter"
+        mode: 0755
+        owner: root
+        group: root
+        remote_src: True
+      notify: restart process_exporter
+      when: not ansible_check_mode
+
+    - name: Propagate process-exporter config
+      template:
+        src: templates/process_exporter.yml.j2
+        dest: "{{ app_dir }}/process_exporter.yml"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart process_exporter
+
+    - name: Copy the process-exporter systemd service file
+      template:
+        src: templates/process_exporter.service.j2
+        dest: /etc/systemd/system/process_exporter.service
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart process_exporter
+
+    - name: Make sure service is started
+      service:
+        name: process_exporter
+        state: started
+        enabled: true

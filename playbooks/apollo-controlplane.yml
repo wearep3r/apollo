@@ -60,9 +60,6 @@
   become: True
   hosts: manager[0]
   roles:
-    - apollo-app-node-exporter
-    - apollo-app-process-exporter
-    - apollo-app-cadvisor
     - apollo-app-victoria
   tags:
     - metrics

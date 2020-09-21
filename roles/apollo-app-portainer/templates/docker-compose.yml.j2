@@ -21,7 +21,7 @@ services:
 
   portainer:
     image: "{{ images.portainer }}"
-    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo '{{ apollo_logo }}' --no-analytics"
+    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo '{{ arc['whitelabel']['logo'] }}' --no-analytics"
     environment:
       - AGENT_CLUSTER_ADDR=tasks.portainer-agent
       - CAP_HOST_MANAGEMENT=1
@@ -50,7 +50,7 @@ services:
         traefik.protocol: "http"
         traefik.backend.loadbalancer.stickiness: "true"
         traefik.frontend.auth.basic.users: "{{arc['auth']['admin_user']}}:{{ arc['auth']['admin_password_hash'] | replace('$','$$') }}"
-{% if letsencrypt_enabled|bool %}
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
         traefik.frontend.entryPoints: "http,https"
         traefik.frontend.headers.SSLRedirect: "true"
         traefik.frontend.headers.STSSeconds: "31536000"

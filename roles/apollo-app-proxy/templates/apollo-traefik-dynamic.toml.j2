@@ -21,7 +21,7 @@
   [http.middlewares]    
     [http.middlewares.apollo-basic-auth.basicAuth]
       users = [
-        "{{ arc['auth']['admin_user'] }}:{{ arc['auth']['admin_password_hash'] | replace('$$','$') }}"
+        "{{ arc['auth']['admin_user'] }}:{{ arc['auth']['admin_password_hash'] }}"
       ]
     
     # [http.middlewares.apollo.headers]

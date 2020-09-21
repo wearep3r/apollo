@@ -1,4 +1,4 @@
-- name: "@apollo-facts"
+- name: "facts"
   hosts: all
   gather_facts: False
   become: true
@@ -6,58 +6,63 @@
   tasks:
     - name: loading apollo config
       block:
-        - name: asserting config file exists
-          stat:
-            path: "{{ apollo_space_dir }}/Spacefile.yml"
-          register: apollo_spacefile
-          delegate_to: apollo
-
-        - name: stopping deployment
-          fail: msg="Spacefile.yml not found in {{ apollo_space_dir }}"
-          when: not apollo_spacefile.stat.exists
-
-        - name: loading startup config
-          include_vars: 
-            file: "/apollo/defaults.yml"
-            name: startup_config
-
-        - name: loading user config
-          include_vars: 
-            file: "{{ apollo_space_dir }}/Spacefile.yml"
-            name: user_config
-
-        - name: assembling running config
-          set_fact:
-            arc: "{{ startup_config | combine(user_config) }}"
-
-        - name: showing running config
+        - name: showing arc
           debug:
-            msg: "{{ arc }}"
+            msg: "{{ vars }}"
             verbosity: 1
 
-        - name: "setting runtime facts: space.base_domain"
-          set_fact:
-            arc: "{{ arc|combine({'space': {'base_domain': apollo_management_ip+'.xip.io' }}, recursive=True) }}"
-          when:
-            (arc['space']['base_domain'] is not defined)
+        # - name: asserting config file exists
+        #   stat:
+        #     path: "{{ apollo_space_dir }}/Spacefile.yml"
+        #   register: apollo_spacefile
+        #   delegate_to: apollo
 
-        - name: "setting runtime facts: space.ingress_ip"
-          set_fact:
-            arc: "{{ arc|combine({'space': {'ingress_ip': apollo_ingress_ip }}, recursive=True) }}"
-          when:
-            (arc['space']['ingress_ip'] is not defined)
+        # - name: stopping deployment
+        #   fail: msg="Spacefile.yml not found in {{ apollo_space_dir }}"
+        #   when: not apollo_spacefile.stat.exists
 
-        - name: "setting runtime facts: space.management_ip"
-          set_fact:
-            arc: "{{ arc|combine({'space': {'management_ip': apollo_management_ip }}, recursive=True) }}"
-          when:
-            (arc['space']['management_ip'] is not defined)
+        # - name: loading startup config
+        #   include_vars: 
+        #     file: "/apollo/defaults.yml"
+        #     name: startup_config
 
-        - name: "setting runtime facts: space.space_domain"
-          set_fact:
-            arc: "{{ arc|combine({'space': {'space_domain': arc['space']['name'] + '.' + arc['space']['base_domain'] }}, recursive=True) }}"
-          when:
-            (arc['space']['space_domain'] is not defined)
+        # - name: loading user config
+        #   include_vars: 
+        #     file: "{{ apollo_space_dir }}/Spacefile.yml"
+        #     name: user_config
+
+        # - name: assembling running config
+        #   set_fact:
+        #     arc: "{{ startup_config | combine(user_config) }}"
+
+        # - name: showing running config
+        #   debug:
+        #     msg: "{{ arc }}"
+        #     verbosity: 1
+
+        # - name: "setting runtime facts: space.base_domain"
+        #   set_fact:
+        #     arc: "{{ arc|combine({'space': {'base_domain': apollo_management_ip+'.xip.io' }}, recursive=True) }}"
+        #   when:
+        #     (arc['space']['base_domain'] is not defined)
+
+        # - name: "setting runtime facts: space.ingress_ip"
+        #   set_fact:
+        #     arc: "{{ arc|combine({'space': {'ingress_ip': apollo_ingress_ip }}, recursive=True) }}"
+        #   when:
+        #     (arc['space']['ingress_ip'] is not defined)
+
+        # - name: "setting runtime facts: space.management_ip"
+        #   set_fact:
+        #     arc: "{{ arc|combine({'space': {'management_ip': apollo_management_ip }}, recursive=True) }}"
+        #   when:
+        #     (arc['space']['management_ip'] is not defined)
+
+        # - name: "setting runtime facts: space.space_domain"
+        #   set_fact:
+        #     arc: "{{ arc|combine({'space': {'space_domain': arc['space']['name'] + '.' + arc['space']['base_domain'] }}, recursive=True) }}"
+        #   when:
+        #     (arc['space']['space_domain'] is not defined)
 
 
             #gitlab_runner_registration_token: "{{ gitlab.runner.token }}"
@@ -94,8 +99,7 @@
   
 - name: "@node-facts"
   hosts: 
-    - manager
-    - worker
+    - cluster
   gather_facts: False
   become: true
   strategy: linear
@@ -105,7 +109,7 @@
         - name: asserting nodes are up
           wait_for_connection:
 
-        - name: asserting facts.d directory exists
+        - name: asserting facts.d directory is removed
           file:
             path: "/etc/ansible/facts.d"
             state: absent
@@ -113,12 +117,6 @@
         - name: setting node facts
           setup:
             filter: "*"
-
-        - name: asserting missing configuration
-          fail: msg="{{ item }} is not defined"
-          when: not item
-          with_items:
-            - "{{ apollo_required_vars }}"
 
         - name: setting apollo facts
           set_fact:
@@ -132,7 +130,9 @@
           set_fact:  
             apollo_manager: "{{ hostvars[groups['manager'][0]]['apollo_cluster_ip'] }}"
             cluster_ip: "{{  hostvars[inventory_hostname]['apollo_cluster_ip'] }}"
-          when: apollo_wireguard_enabled|bool
+          when: 
+            - arc['cluster']['encryption']['enabled']|bool
+            - arc['cluster']['encryption']['provider'] == "wireguard"
 
         # - name: asserting facts.d directory exists
         #   file:
@@ -145,7 +145,6 @@
         #     dest: "/etc/ansible/facts.d/apollo.fact"
         #     content: |
         #       [apollo]
-        #       version={{ apollo_version }}
         #       space={{ apollo_space }}
         #       space_version={{ apollo_space_version }}  
         #     backup: false
@@ -155,6 +154,4 @@
 
         
         
-          #when: apollo_space_version | version_compare('2.0.0', '<')
-      when:
-        - "'manager' in groups"  
+          #when: apollo_space_version | version_compare('2.0.0', '<') 

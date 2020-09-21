@@ -1,0 +1,11 @@
+---
+wireguard_port: "5888"
+wireguard_path: "/etc/wireguard"
+wireguard_network_name: "private"
+debian_enable_testing: true
+debian_pin_packages: true
+client_vpn_ip: ""
+client_wireguard_path: "~/wg.conf"
+wireguard_additional_peers: false
+wireguard_post_up: false
+wireguard_post_down: false

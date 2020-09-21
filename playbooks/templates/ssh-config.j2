@@ -1,4 +1,4 @@
 Host {{ arc['space']['space_domain'] }}
-    HostName {{ arc['space']['management_ip'] }}
+    HostName {{ apollo_management_ip }}
     User root
     IdentityFile ~/.apollo/.spaces/{{ arc['space']['name'] }}.space/.ssh/id_rsa

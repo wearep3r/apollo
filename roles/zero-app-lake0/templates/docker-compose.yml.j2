@@ -4,18 +4,18 @@ services:
   lake0:
     image: "{{ images.lake0 }}"
     environment:
-      RESTIC_REPOSITORY: "{{ restic_repository }}"
-      RESTIC_PASSWORD: "{{ restic_password }}"
-      RESTIC_TAG: "{{ apollo_space }}"
-      BACKUP_CRON: "{{ restic_backup_cron }}"
-      RESTIC_FORGET_ARGS: "{{ restic_forget_args }}"
-      RESTIC_JOB_ARGS: "{{ restic_job_args }}"
-      AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
-      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+      RESTIC_REPOSITORY: "{{ arc['backups']['restic_repository'] }}"
+      RESTIC_PASSWORD: "{{ arc['backups']['restic_password'] }}"
+      RESTIC_TAG: "{{ arc['space']['name'] }}"
+      BACKUP_CRON: "{{ arc['backups']['restic_backup_cron'] }}"
+      RESTIC_FORGET_ARGS: "{{ arc['backups']['restic_forget_args'] }}"
+      RESTIC_JOB_ARGS: "{{ arc['backups']['restic_job_args'] }}"
+      AWS_ACCESS_KEY_ID: "{{ arc['backups']['aws_access_key_id'] }}"
+      AWS_SECRET_ACCESS_KEY: "{{ arc['backups']['aws_secret_access_key'] }}"
     networks: 
       - monitoring
     volumes: 
-{% if apollo_data == "storidge" %}
+{% if arc['data']['provider'] == "storidge" %}
       - /cio/volumes:/data
 {% else %}
       - /var/lib/docker/volumes:/data

@@ -110,10 +110,8 @@ class ZeroInventory(object):
             except:
                 pass
         else:
-            if0_environment = os.getenv('IF0_ENVIRONMENT', 'apollo')
-            apollo_space = os.getenv('APOLLO_SPACE', if0_environment)
-            zero_provider = os.getenv('ZERO_PROVIDER', 'generic')
-            apollo_provider = os.getenv('APOLLO_PROVIDER', zero_provider)
+            apollo_space = os.getenv('APOLLO_SPACE', 'apollo')
+            apollo_provider = os.getenv('APOLLO_PROVIDER', 'generic')
             worker_os_family = os.getenv('TF_VAR_worker_os_family', 'ubuntu')
 
             # Create cluster group

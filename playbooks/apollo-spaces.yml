@@ -53,7 +53,7 @@
         - name: creating docker context for space
           template:
             src: "docker-context.j2"
-            dest: "/root/.docker/contexts/{{ space_domain }}"
+            dest: "/root/.docker/contexts/{{ arc['space']['name'] }}"
             owner: root
             group: root
             mode: 0755
@@ -70,18 +70,3 @@
         owner: root
         group: root
         mode: 0755
-
-    # - name: Setup DNS
-    #   block: 
-    #     - name: "Set A Record for {{ space_domain }}"
-    #       digital_ocean_domain:
-    #         state: present
-    #         name: "{{ space_domain }}"
-    #         ip: "{{ ingress_ip }}"
-
-    #     - name: "Set Wildcard Record for {{ space_domain }}"
-    #       digital_ocean_domain:
-    #         state: present
-    #         name: "*.{{ space_domain }}"
-    #         ip: "{{ ingress_ip }}"
-    #   when: apollo_dns_enabled|bool

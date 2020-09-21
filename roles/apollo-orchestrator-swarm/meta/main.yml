@@ -1,9 +1,0 @@
-galaxy_info:
-  author: Fabian Peter
-  description: Apollo Orchestrator Swarm
-  company: Peter.SAARLAND
-  issue_tracker_url: https://gitlab.com/peter.saarland/apollo/-/issues
-  license: MIT
-  min_ansible_version: 2.9
-  galaxy_tags: []
-dependencies: []

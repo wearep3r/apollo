@@ -1,0 +1,20 @@
+[Unit]
+Description=Victoria Metrics
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart={{ _victoria_binary_install_dir }}/victoria-metrics \
+    -storageDataPath="{{ arc['data']['volumes_dir'] }}/{{ app_name }}" \
+    -retentionPeriod=1 \
+    -memory.allowedPercent=20
+
+SyslogIdentifier=vmagent
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

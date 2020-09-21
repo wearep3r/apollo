@@ -12,14 +12,14 @@
         
         - name: Make sure space federation directory exists
           file:
-            path: "{{ apollo_federation_dir }}/{{ apollo_space }}"
+            path: "{{ apollo_federation_dir }}/{{ arc['space']['name'] }}"
             state: directory
             mode: '0755'
 
         - name: Clone Spaces
           git:
             repo: "{{ apollo_federation_space }}"
-            dest: "{{ apollo_federation_dir }}/{{ apollo_space }}/federation-space-{{ apollo_federation_space_index }}"
+            dest: "{{ apollo_federation_dir }}/{{ arc['space']['name'] }}/federation-space-{{ apollo_federation_space_index }}"
             key_file: "{{ ansible_ssh_private_key_file }}"
           register: apollo_federation_spaces_directories
           with_items:

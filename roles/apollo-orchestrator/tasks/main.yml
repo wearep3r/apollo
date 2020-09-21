@@ -1,3 +1,0 @@
-- name: "Provision {{ apollo_orchestrator }}"
-  include_role: 
-    name: "apollo-orchestrator-{{ apollo_orchestrator }}"

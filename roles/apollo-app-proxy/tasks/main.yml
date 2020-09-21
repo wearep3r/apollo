@@ -117,16 +117,3 @@
         compose:
           - "{{ app_dir }}/docker-compose.yml"
       register: proxy_provision
-
-    # - name: "Wait for http://proxy.{{ space_domain }} to become ready"
-    #   uri:
-    #     url: "http://proxy.{{ space_domain }}"
-    #     method: GET
-    #     status_code: 200
-    #     user: "{{admin_user}}"
-    #     password: "{{admin_password}}"
-    #     validate_certs: no
-    #   register: _result
-    #   until: _result.status == 200
-    #   retries: 30 # retry X times  
-    #   delay: 10 # pause for X sec b/w each call 

@@ -5,78 +5,36 @@
   tags:
     - always
     - facts
-
-# # Setup infrastructure with Terraform
-# - name: "@apollo-infrastructure"
-#   import_playbook: playbooks/apollo-infrastructure.yml
-#   tags:
-#     - provision_infrastructure
-#   when: apollo_provider != "generic"
   
 # If on AWS: fix login user (ubuntu)
 - name: "AWS: Enable root access"
   import_playbook: playbooks/aws.yml
   tags:
     - provider_aws
-  when: apollo_provider == "aws"
+  when: 
+    - arc['infrastructure']['enabled']|bool
+    - arc['infrastructure']['provider'] == "aws"
 
 # Setup local space configuration (ssh config, docker context, readme)
-- name: "@apollo-spaces"
+- name: "spaces"
   import_playbook: playbooks/apollo-spaces.yml
   tags:
     - spaces
-  when: not apollo_in_ci|bool
+  when: not in_ci|bool
 
 # Setup federation (WIP)
-- name: "@apollo-federation"
+- name: "federation"
   import_playbook: playbooks/apollo-federation.yml
   tags:
     - federation
-  when: apollo_federation_enabled|bool
+  when: arc['federation']['enabled']|bool
 
-# Setup core configuration (packages, MOTD, ...)
-- name: "@apollo-core"
-  import_playbook: playbooks/apollo-core.yml
+- name: "deploy"
+  import_playbook: playbooks/deploy.yml
   tags:
-    - core
-
-# Setup security configuration (devsec.hardening, ...)
-- name: "@apollo-security"
-  import_playbook: playbooks/apollo-security.yml
-  tags:
-    - security
-
-# Setup network configuration (firewall, wireguard, ...)
-- name: "@apollo-network"
-  import_playbook: playbooks/apollo-network.yml
-  tags:
-    - network
-
-# Setup engine configuration (install docker, configure logging, ...)
-- name: "@apollo-engine"
-  import_playbook: playbooks/apollo-engine.yml
-  tags:
-    - engine
-
-# Setup orchestrator configuration (initialize swarm, ...)
-- name: "@apollo-orchestrator"
-  import_playbook: playbooks/apollo-orchestrator.yml
-  tags:
-    - orchestrator
+    - deploy
 
 # Setup controlplane configuration (logging, metrics, visualization, ...)
-- name: "@apollo-controlplane"
-  import_playbook: playbooks/apollo-controlplane.yml
-  #when: apollo_controlplane_enabled|bool
-  when: arc['controlplane']['enabled']|bool
-  tags:
-    - controlplane
-
-# Setup storage configuration (nfs, storidge, ...)
-- name: "@apollo-data"
-  import_playbook: playbooks/apollo-data.yml
-  tags:
-    - data
 
 # Setup backplane configuration (portainer, proxy, ...)
 - name: "@apollo-backplane"
@@ -99,3 +57,7 @@
   tags:
     - runner
 
+- name: "@apollo-recap"
+  import_playbook: playbooks/apollo-recap.yml
+  tags:
+    - recap

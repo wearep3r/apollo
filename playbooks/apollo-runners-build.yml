@@ -16,7 +16,7 @@
 
     - name: Creating storage directory
       file:
-        path: "{{ apollo_data_volumes_dir }}/gitlab-runner-build/cache"
+        path: "{{ arc['data']['volumes_dir'] }}/gitlab-runner-build/cache"
         state: directory
         mode: '0755'
         owner: "root"
@@ -37,7 +37,7 @@
         run_untagged: True
         docker_privileged: True
         docker_volumes:
-          - "{{ apollo_data_volumes_dir }}/gitlab-runner-build/cache:/cache"
+          - "{{ arc['data']['volumes_dir'] }}/gitlab-runner-build/cache:/cache"
           #- "/var/run/docker.sock:/var/run/docker.sock"
         extra_configs:
           runners.custom_build_dir: 

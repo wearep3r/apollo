@@ -5,6 +5,9 @@ import os
 import subprocess
 import yaml
 import json
+import re
+from enum import Enum
+import anyconfig
 
 app = typer.Typer(help="apollo CLI")
 arc = {
@@ -13,36 +16,104 @@ arc = {
 
 spacefile = {}
 
+# HELPER COMMANDS
+
+class InfrastructureProviders(str, Enum):
+    generic = "generic"
+    hcloud = "hcloud"
+    digitalocean = "digitalocean"
+
+def checkSpaceconfig(config: dict):
+  print("ss")
+
+def checkSpaceName(name: str):
+  """
+  Check if spaceName matches the required syntax
+  """
+  pattern = re.compile("^([a-z0-9-]+)$")
+  
+  if pattern.match(name):
+    return True
+  
+  return False
+
+def checkSpaceVersion(version: str):
+  """
+  Check if spaceVersion matches the required syntax
+  """
+  pattern = re.compile("^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
+  
+  if pattern.match(version):
+    return True
+  
+  return False
+
+def checkSpaceBaseDomain(base_domain: str):
+  """
+  Check if spaceBaseDomain matches the required syntax
+  """
+  pattern = re.compile("^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$")
+  
+  if pattern.match(base_domain):
+    return True
+  
+  return False
+
+def checkSpaceMail(mail: str):
+  """
+  Check if spaceBaseDomain matches the required syntax
+  """
+  pattern = re.compile("^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$")
+  
+  if pattern.match(mail):
+    return True
+  
+  return False
+
 def loadConfig():
   spacefile = loadSpacefile()
 
   if spacefile:
     os.environ["APOLLO_SPACE"] = spacefile['space']['name']
-    return {**arc, **spacefile}
+    return spacefile
   else:
     typer.echo(f"Can't find Spacefile.yml in {arc['space_dir']}", err=True)
     raise typer.Exit(code=1)
 
+def loadDefaults():
+  try:
+    defaults = anyconfig.load(["/apollo/defaults.yml"])
+    # with open('/apollo/defaults.yml','r') as file:
+    #   defaults = yaml.load(file, Loader=yaml.FullLoader)
+    return defaults
+  except Exception as e:
+    typer.secho(f"Error loading defaults.yml: {e}", err=True, bold=False, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
+
 def loadSpacefile():
   try:
-    with open(arc['space_dir']+'/Spacefile.yml','r') as file:
-      spacefile = yaml.load(file, Loader=yaml.FullLoader)
-      return spacefile
-  except:
-    return False
+    spacefile = anyconfig.load(["/apollo/defaults.yml",arc['space_dir']+'/Spacefile.yml'])
+    # with open(arc['space_dir']+'/Spacefile.yml','r') as file:
+    #   spacefile = yaml.load(file, Loader=yaml.FullLoader)
+    return spacefile
+  except Exception as e:
+    typer.secho(f"Error loading Spacefile.yml: {e}", err=True, bold=False, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
 
 def loadNodesfile():
   try:
-    with open(arc['space_dir']+'/Nodesfile.yml','r') as file:
-      nodesfile = yaml.load(file, Loader=yaml.FullLoader)
-      return nodesfile
-  except:
-    return False
+    nodesfile = anyconfig.load([arc['space_dir']+'/Nodesfile.yml'])
+    # with open(arc['space_dir']+'/Nodesfile.yml','r') as file:
+    #   nodesfile = yaml.load(file, Loader=yaml.FullLoader)
+    return nodesfile
+  except Exception as e:
+    typer.secho(f"Error loading Nodesfile.yml: {e}", err=True, bold=False, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
 
-def deployInfrastructure(arc):
-  if arc['infrastructure']['provider'] != "":
+def deployInfrastructure(spacefile):
+  if spacefile['infrastructure']['provider'] != "":
     extra_vars = {
-      "apollo_infrastructure_provider": arc['infrastructure']['provider']
+      "apollo_infrastructure_provider": spacefile['infrastructure']['provider']
     }
 
     infrastructure = subprocess.run([
@@ -57,13 +128,13 @@ def deployInfrastructure(arc):
     typer.echo(f"Spacefile.infrastructure.provider is empty. Exiting.", err=True)
     raise typer.Exit(code=1)
 
-def destroyInfrastructure(arc):
+def destroyInfrastructure(spacefile):
   extra_vars = {
     "apollo_terraform_destroy": 1,
-    "apollo_infrastructure_provider": arc['infrastructure']['provider']
+    "apollo_infrastructure_provider": spacefile['infrastructure']['provider']
   }
 
-  if arc['infrastructure']['provider'] != "":
+  if spacefile['infrastructure']['provider'] != "":
     infrastructure = subprocess.run([
       "ansible-playbook",
       "--extra-vars",
@@ -77,12 +148,14 @@ def destroyInfrastructure(arc):
     typer.echo(f"Spacefile.infrastructure.provider is empty. Exiting.", err=True)
     raise typer.Exit(code=1)
 
+# APP COMMANDS
+
 @app.command()
 def exec(where: str, what: str):
   """
   Exec command on cluster
   """
-  arc = loadConfig()
+  nodesfile = loadNodesfile()
 
   typer.echo(f"Executing {what} on {where}")
 
@@ -104,12 +177,12 @@ def enter(where: str):
   """
   Enter cluster node
   """
-  arc = loadConfig()
+  spacefile = loadSpacefile()
   nodesfile = loadNodesfile()
   ssh_config = "-o LogLevel=ERROR -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
   if not nodesfile:
-    typer.echo(f"Can't find Nodesfile.yml in {arc['space_dir']}", err=True)
+    typer.echo(f"Can't find Nodesfile.yml in {spacefile['space_dir']}", err=True)
     raise typer.Exit(code=1)
 
   nodes = {}
@@ -124,7 +197,7 @@ def enter(where: str):
 
   apollo_user = nodes.get(where,{}).get('user','root')
   apollo_ipv4 = nodes.get(where,{}).get('ipv4','')
-  command = "ssh {} -i {}/.ssh/id_rsa -l {} {}".format(ssh_config,arc['space_dir'],apollo_user,apollo_ipv4)
+  command = "ssh {} -i {}/.ssh/id_rsa -l {} {}".format(ssh_config,spacefile['space_dir'],apollo_user,apollo_ipv4)
 
   try:
     enter = subprocess.call(command, shell=True)
@@ -146,48 +219,76 @@ def deploy(what: str = typer.Argument("all")):
   """
   Deploy apollo
   """
-  arc = loadConfig()
+  spacefile = loadSpacefile()
   
   if what == "infrastructure":
-    if arc['infrastructure']['enabled'] == True:
-      infrastructure = deployInfrastructure(arc)
+    if spacefile['infrastructure']['enabled'] == True:
+      infrastructure = deployInfrastructure(spacefile)
       return infrastructure
     else:
       typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
       raise typer.Exit(code=1)
-  elif what != "all":
-    deployment = subprocess.run([
-      "ansible-playbook",
-      "--flush-cache", 
-      "--tags", 
-      f"{what},always", 
-      "provision.yml"], cwd="/apollo")
-    return deployment
   else:
-    deployment = subprocess.run([
-      "ansible-playbook",
-      "--skip-tags",
-      "provision_infrastructure",
-      "--flush-cache", 
-      "provision.yml"], cwd="/apollo")
-    return deployment
+    nodesfile = loadNodesfile()
+    if what != "all":
+      if nodesfile:
+        ansible_spacefile = {
+          "apollo_space_dir": arc['space_dir'],
+          "arc": spacefile
+        }
+        command = [
+          "ansible-playbook",
+          "--extra-vars",
+          f"{json.dumps(ansible_spacefile)}",
+          #'{"arc":'+f"{json.dumps(spacefile)}"+'}',
+          "--flush-cache", 
+          "--tags", 
+          f"{what},always", 
+          "provision.yml"
+        ]
+
+        if arc['verbosity'] > 0:
+          typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+
+        deployment = subprocess.run(command, cwd="/apollo")
+          
+        return deployment
+    else:
+      if nodesfile:
+        ansible_spacefile = {
+          "apollo_space_dir": arc['space_dir'],
+          "arc": spacefile
+        }
+        command = [
+          "ansible-playbook",
+          "--extra-vars",
+          f"{json.dumps(ansible_spacefile)}",
+          "--flush-cache", 
+          "provision.yml"
+        ]
+
+        if arc['verbosity'] > 0:
+          typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+
+        deployment = subprocess.run(command, cwd="/apollo")
+        return deployment
 
 @app.command()
 def destroy():
   """
   Destroy apollo
   """
-  arc = loadConfig()
+  spacefile = loadSpacefile()
   
-  if arc['infrastructure']['enabled'] == True:
-    infrastructure = destroyInfrastructure(arc)
+  if spacefile['infrastructure']['enabled'] == True:
+    infrastructure = destroyInfrastructure(spacefile)
   else:
     typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
     raise typer.Exit(code=1)
 
 @app.command()
 def show(what: str):
-  arc = loadConfig()
+  spacefile = loadSpacefile()
 
   if what in ["inventory","nodes"]:
     inventory = json.loads(subprocess.check_output([
@@ -199,14 +300,14 @@ def show(what: str):
     typer.echo(json.dumps(inventory,sort_keys=True, indent=4))
 
   if what == "config":    
-    typer.echo(json.dumps(arc,sort_keys=True, indent=4))
+    typer.echo(json.dumps(spacefile,sort_keys=True, indent=4))
 
 @app.command()
 def check(what: str):
   """
   Check parts of the system
   """
-  arc = loadConfig()
+  spacefile = loadSpacefile()
 
   typer.echo(f"Checking {what}")
   check = subprocess.run([
@@ -219,16 +320,108 @@ def check(what: str):
       "provision.yml"], cwd="/apollo")
   return check
 
+def validateSpacefile():
+  spacefile = loadSpacefile()
+  schema = anyconfig.load("/apollo/Spacefile.schema.json")
+  #scm4 = anyconfig.gen_schema(spacefile)
+  #scm4_s = anyconfig.dumps(scm4, "json")
+
+  rc, err = anyconfig.validate(spacefile, schema)
+  
+  if not rc:
+    typer.secho(f"Could not validate Spacefile: {err}", err=True, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
+  else:
+    typer.secho(f"Spacefile is valid", fg=typer.colors.GREEN)
+    return spacefile
+  
+@app.command()
+def validate():
+  defaults = loadDefaults()
+
+  spacefile = validateSpacefile()
+
+  # Check for defaults
+  if spacefile['auth']['admin_password'] == defaults['auth']['admin_password']:
+    typer.secho(f"admin_password set to default", fg=typer.colors.BRIGHT_BLACK)
+
+@app.command()
+def create(
+    space_name: str = typer.Option("", help="URL-conform name of the space", show_default=False),
+    space_version: str = typer.Option("latest", help="apollo version to deploy to the space")
+  ):
+  """
+  Create a space from command line
+  """
+
+@app.command()
+def init():
+  """
+  Initialize configuration
+  """
+
+  typer.secho(f"Initializing apollo config", bold=True, fg=typer.colors.BRIGHT_BLACK)
+
+  # Load /apollo/defaults.yml
+  with open('/apollo/defaults.yml','r') as file:
+    config = yaml.load(file, Loader=yaml.FullLoader)
+
+  # base_domain
+  while config['space']['base_domain'] == "":
+    space_base_domain = typer.prompt("Base Domain")
+    
+    if checkSpaceBaseDomain(space_base_domain):
+      config['space']['base_domain'] = space_base_domain
+    else:
+      typer.secho(f"Incorrect format: {space_base_domain}", err=True, fg=typer.colors.RED)
+
+  # mail
+  while config['space']['mail'] == "":
+    space_mail = typer.prompt("E-mail")
+    
+    if checkSpaceMail(space_mail):
+      config['space']['mail'] = space_mail
+    else:
+      typer.secho(f"Incorrect format: {space_mail}", err=True, fg=typer.colors.RED)
+
+  # space_domain
+  config['space']['space_domain'] = f"{config['space']['name']}.{config['space']['base_domain']}"
+
+  # infrastructure
+  infrastructure_enabled = typer.confirm("Enable infrastructure")
+  if infrastructure_enabled:
+        config['infrastructure']['enabled'] = True
+
+        # provider
+        InfrastructureProvider = InfrastructureProviders.generic
+        infrastructure_provider = typer.prompt("Provider")
+
+        typer.secho(f"Configure managers", bold=True, fg=typer.colors.BRIGHT_BLACK)
+        manager = typer.prompt("Managers")
+
+  # Save Spacefile.yml
+  try:
+    with open(arc['space_dir']+'/Spacefile.yml','w') as file:
+      _arc = yaml.dump(config, file, sort_keys=True)
+      
+      message = typer.style("Config saved to ", fg=typer.colors.BRIGHT_BLACK)
+      message = message + typer.style(f"{arc['space_dir']+'/Spacefile.yml'}", fg=typer.colors.GREEN)
+      typer.echo(message)
+  except Exception as e:
+    typer.secho(f"Could not save Spacefile.yml: {e}", err=True, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
+
 @app.callback()
 def callback(
     verbosity: int = 0,
-    space_dir: str = os.environ.get('PWD')
+    space_dir: str = os.environ.get('PWD'),
+    debug: int = 0
   ):
   os.environ["APOLLO_CONFIG_VERSION"] = "2"
   os.environ["APOLLO_SPACE_DIR"] = space_dir
   os.environ["ANSIBLE_VERBOSITY"] = str(verbosity)
 
-  if verbosity > 0:
+  if verbosity > 3 or debug:
     os.environ["ANSIBLE_DEBUG"] = "1"
 
   arc['space_dir'] = space_dir

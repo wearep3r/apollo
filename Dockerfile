@@ -14,7 +14,7 @@ ENV APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 
 ENV TERM=xterm-256color 
 
-RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh /root/.local/share/fonts /root/.config /usr/local/share/fonts
+RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh /root/.local/share/fonts /root/.config /usr/local/share/fonts /cargo
 # silversearcher-ag
 RUN apt-get update --allow-releaseinfo-change \
     && apt-get -y --no-install-recommends install zsh less man sudo rsync qrencode python3-jmespath fonts-firacode procps wget fontconfig mosh \
@@ -22,7 +22,7 @@ RUN apt-get update --allow-releaseinfo-change \
     && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
     && ~/.fzf/install --all --key-bindings --completion \
     && curl -fsSL https://starship.rs/install.sh | bash -s -- --yes \
-    && pip install jmespath typer[all] \
+    && pip install jmespath typer[all] anyconfig \
     && wget https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip \
     && unzip Hack-v3.003-ttf.zip \
     && mv ttf/*.ttf /usr/local/share/fonts/. \

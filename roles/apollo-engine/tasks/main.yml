@@ -1,3 +1,0 @@
-- name: "Provision {{ apollo_engine }}"
-  include_role: 
-    name: "apollo-engine-{{ apollo_engine }}"

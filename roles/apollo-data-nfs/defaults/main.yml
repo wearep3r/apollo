@@ -1,6 +1,0 @@
----
-nfs_exports: 
-  - "{{ apollo_data_nfs_directory }} *(rw,sync,no_root_squash)"
-
-nfs_rpcbind_state: started
-nfs_rpcbind_enabled: true

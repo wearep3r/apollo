@@ -1,2 +1,0 @@
-- name: "@apollo-orchestrator-swarm"
-  include_tasks: "setup-{{ ansible_os_family }}.yml"

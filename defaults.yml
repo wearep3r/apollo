@@ -1,138 +1,154 @@
 # static config
 version: 2
-apollo:
-  version: "{{ lookup('env','APOLLO_VERSION') }}"
-  spaces_dir: "~/.apollo/.spaces/"
-apps: "{{ lookup('env','APOLLO_APPS').split(',') }}"
+apps: ""
+addons:
+  - proxy:
+      enabled: true
+      ssl:
+        enabled: true
+        provider: "letsencrypt"
+  - portainer:
+      enabled: true
+  - gitlab:
+      gl_token: ""
+      token: ""
+      shared_runners_token: "z7e3r2o0"
+      registry:
+        url: "registry.gitlab.com"
+        user: ""
+        password: ""
+      runner:
+        enabled: false
+        deploy:
+          enabled: true
+        build:
+          enabled: true
+        token: ""
+        coordinator_url: "https://gitlab.com"
+      repository:
+        sync:
+          enabled: false
 auth:  
-  admin_user: "{{ lookup('env','APOLLO_ADMIN_USER') | default('admin', true) }}"
-  admin_password: "{{ lookup('env','APOLLO_ADMIN_PASSWORD') | default('insecure', true) }}"
-  admin_password_hash: "{{ lookup('env','APOLLO_ADMIN_PASSWORD_HASH') | default('$2y$05$MjKXERLDVgQIgzbHqiPlruU5j2di9W7Se0WTsvs98WJfMQTHkvlmO', true) }}"
-backplane:
-  enabled: "{{ lookup('env','APOLLO_BACKPLANE_ENABLED') | default(1, true) }}"
-caas:
   enabled: true
-  ssl:
-    enabled: "{{ lookup('env','APOLLO_CAAS_SSL_ENABLED') | default(1, true) }}"
-    provider: "letsencrypt"
-  proxy:
-    enabled: true
-  portainer:
-    enabled: true
-controlplane:
+  provider: basic
+  admin_user: "apollo"
+  admin_password: "apollo"
+  admin_password_hash: "$2y$05$pEGrJCtK3fsOJKfkTCZbueiPdclYdP39nDRHvMoNOnUASuxh4Fgf2"
+  users: []
+backplane:
   enabled: true
 backups:
-  enabled: "{{ lookup('env','APOLLO_BACKUPS_ENABLED') | default(0, true) }}"
-  aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') | default('', true) }}"
-  aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') | default('', true) }}"
-  restic_repository: "{{ lookup('env','RESTIC_REPOSITORY') | default('', true) }}"
-  restic_password: "{{ lookup('env','RESTIC_PASSWORD') | default('', true) }}"
-  restic_backup_cron: "{{ lookup('env','RESTIC_BACKUP_CRON') | default('30 * * * *', true) }}"
-  restic_forget_args: "{{ lookup('env','RESTIC_FORGET_ARGS') | default('--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1', true) }}"
-  restic_job_args: "{{ lookup('env','RESTIC_JOB_ARGS') | default('--exclude minio_minio-data', true) }}"
+  provider: generic
+  enabled: false
+  aws_access_key_id: ""
+  aws_secret_access_key: ""
+  restic_repository: ""
+  restic_password: ""
+  restic_backup_cron: "30 * * * *"
+  restic_forget_args: "--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1"
+  restic_job_args: "--exclude minio_minio-data"
+cluster:
+  encryption:
+    enabled: true
+    provider: wireguard
+  firewall:
+    enabled: true
+    provider: generic
+management:
+  enabled: true
+  provider: traefik
+controlplane:
+  enabled: true
 gc:
   enabled: false
-  cleanup_volumes: "{{ lookup('env','APOLLO_GC_CLEANUP_VOLUMES') | default(0, true) }}"
+  cleanup_volumes: false
 alerts:
-  enabled: "{{ lookup('env','APOLLO_ALERTS_ENABLED') | default(0, true) }}"
+  provider: alertmanager
+  enabled: false
   mail:
     enabled: true
-    to: "{{ lookup('env','APOLLO_ALERTS_MAIL_TO') | default('', true) }}"
+    to: ""
   slack:
     enabled: false
-    user: "{{ lookup('env','APOLLO_ALERTS_SLACK_USER') | default('', true) }}"
-    channel: "{{ lookup('env','APOLLO_ALERTS_SLACK_CHANNEL') | default('', true) }}"
-    api_url: "{{ lookup('env','APOLLO_ALERTS_SLACK_API_URL') | default('', true) }}"
+    user: ""
+    channel: ""
+    api_url: ""
 logs:
   enabled: true
+  provider: loki
 metrics:
   enabled: true
+  provider: victoria
 analytics:
   enabled: true
+  provider: grafana
 data:
-  provider: "{{ lookup('env','APOLLO_DATA') | default('generic', true) }}"
-  volumes_dir: "{{ lookup('env','APOLLO_DATA_VOLUMES_DIR') | default('/srv/.apollo/volumes', true) }}"
-  nfs_source: "{{ lookup('env','APOLLO_DATA_NFS_SOURCE') | default('manager-0', true) }}"
-  nfs_directory: "{{ lookup('env','APOLLO_DATA_NFS_DIRECTORY') | default('/srv/.apollo/volumes', true) }}"
+  enabled: true
+  provider: generic
+  volumes_dir: "/srv/.apollo/volumes"
+  nfs_source: "manager-0"
+  nfs_directory: "/srv/.apollo/volumes"
 dns:
   enabled: false
-  challenge_provider: "{{ lookup('env','APOLLO_DNS_CHALLENGE_PROVIDER') | default('generic', true) }}"
-  custom_resolvers: "{{ lookup('env','APOLLO_DNS_CUSTOM_RESOLVERS').split(',') | default([], true) }}"
+  custom_resolvers: ""
+  provider: "generic"
 engine:
   enabled: true
-  provider: "{{ lookup('env','APOLLO_ENGINE') | default('docker', true) }}"
+  provider: "docker"
 federation:
-  enabled: "{{ lookup('env','APOLLO_FEDERATION_ENABLED') | default(0, true) }}"
-  dir: "{{ lookup('env','APOLLO_FEDERATION_DIR') | default('/tmp/federation', true) }}"
-  username: "{{ lookup('env','APOLLO_FEDERATION_USERNAME') | default('apollo-federation', true) }}"
-  password: "{{ lookup('env','APOLLO_FEDERATION_PASSWORD') | default('', true) }}"
-  spaces: "{{ lookup('env','APOLLO_FEDERATION_SPACES').split(',') | default([], true) }}"
-gitlab:
-  gl_token: "{{ lookup('env','GL_TOKEN') }}"
-  token: "{{ lookup('env','APOLLO_GITLAB_TOKEN') | default('') }}"
-  shared_runners_token: "{{ lookup('env','APOLLO_GITLAB_SHARED_RUNNERS_TOKEN') | default('z7e3r2o0', true) }}"
-  registry:
-    url: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_URL') | default('registry.gitlab.com', true) }}"
-    user: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_USER') }}"
-    password: "{{ lookup('env','APOLLO_GITLAB_REGISTRY_PASSWORD') | default('', true) }}"
-  runner:
-    enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_ENABLED') | default(0, true) }}"
-    deploy:
-      enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_DEPLOY_ENABLED') | default(1, true) }}"
-    build:
-      enabled: "{{ lookup('env','APOLLO_GITLAB_RUNNER_BUILD_ENABLED') | default(1, true) }}"
-    token: "{{ lookup('env','APOLLO_GITLAB_RUNNER_TOKEN') | default('', true) }}"
-    coordinator_url: "{{ lookup('env','APOLLO_GITLAB_RUNNER_COORDINATOR_URL') | default('https://gitlab.com', true) }}"
-  repository:
-    sync:
-      enabled: false
+  enabled: false
+  dir: "/srv/.apollo/federation"
+  username: "apollo-federation"
+  password: ""
+  spaces: []
+
 infrastructure:
-  enabled: "{{ lookup('env','APOLLO_INFRASTRUCTURE_ENABLED') | default(0, true) }}"
+  enabled: false
   path: "."
-  provider: "{{ lookup('env','APOLLO_INFRASTRUCTURE_PROVIDER') | default('generic', true) }}"
+  provider: "generic"
   manager:
-    os_family: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_OS_FAMILY') | default('ubuntu-18.04', true) }}"
+    os_family: "ubuntu-18.04"
     interface:
-      private: "{{ lookup('env','APOLLO_INFRASTRUCTURE_MANAGER_PRIVATE_INTERFACE') | default('eth0', true) }}"
-      public: "{{ lookup('env','APOLLO_INFRASTRUCTURE_MANAGER_PUBLIC_INTERFACE') | default('eth1', true) }}"
-    size: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_SIZE') }}"
-    count: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_COUNT') | default(1, true) }}"
-    volume_count: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_VOLUME_COUNT') | default(0, true) }}"
-    volume_size: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_MANAGER_VOLUME_SIZE') | default(30, true) }}"
+      private: "eth0"
+      public: "eth1"
+    size: ""
+    count: 1
+    volume_count: 0
+    volume_size: 30
   worker:
-    os_family: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_OS_FAMILY') | default('ubuntu-18.04', true) }}"
+    os_family: "ubuntu-18.04"
     interface:
-      private: "{{ lookup('env','APOLLO_INFRASTRUCTURE_WORKER_PRIVATE_INTERFACE') | default('eth0', true) }}"
-      public: "{{ lookup('env','APOLLO_INFRASTRUCTURE_WORKER_PUBLIC_INTERFACE') | default('eth1', true) }}"
-    size: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_SIZE') }}"
-    count: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_COUNT') | default(0, true) }}"
-    volume_count: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_VOLUME_COUNT') | default(0, true) }}"
-    volume_size: "{{ lookup('env', 'APOLLO_INFRASTRUCTURE_WORKER_VOLUME_SIZE') | default(30, true) }}"
-letsencrypt:
-  mail: "{{ lookup('env','APOLLO_LETSENCRYPT_MAIL') | default('', true) }}"
-misc:
-  force_reboot: 0
-  in_ci: "{{ lookup('env','CI') | default(0, true) }}"
-  ci: "{{ lookup('env','CI') | default(0, true) }}"
+      private: "eth0"
+      public: "eth1"
+    size: ""
+    count: 0
+    volume_count: 0
+    volume_size: 30  
 orchestrator:
   enabled: true
-  provider: "{{ lookup('env','APOLLO_ORCHESTRATOR') | default('swarm', true) }}"
-security:
-  wireguard:
-    enabled: "{{ lookup('env','APOLLO_SECURITY_WIREGUARD_ENABLED') | default(1, true) }}"
-  firewall:
-    enabled: "{{ lookup('env','APOLLO_SECURITY_FIREWALL_ENABLED') | default(1, true) }}"
+  provider: "swarm"
+providers:
+  digitalocean:
+    auth:
+      token: ""
+  hcloud:
+    auth:
+      token: ""
+  letsencrypt:
+    mail: ""
+    challenge:
+      provider: "generic"
 smtp:
-  server: "{{ lookup('env','APOLLO_SMTP_SERVER') | default('') }}"
-  username: "{{ lookup('env','APOLLO_SMTP_USERNAME') | default('', true) }}"
-  password: "{{ lookup('env','APOLLO_SMTP_PASSWORD') | default('', true) }}"
-  port: "{{ lookup('env','APOLLO_SMTP_PORT') | default('', true) }}"
+  server: ""
+  username: ""
+  password: ""
+  port: ""
 space:
-  name: "{{ lookup('env','APOLLO_SPACE') | default(whitelabel.name, true) }}"
-  version: "{{ lookup('env','APOLLO_SPACE_VERSION') }}"
-  dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default('~/.apollo/.spaces/'+lookup('env', 'APOLLO_SPACE'), true) }}"
-  base_domain: "{{ lookup('env','APOLLO_BASE_DOMAIN') | default('', true) }}"
-  space_domain: "{{ lookup('env','APOLLO_SPACE_DOMAIN') | default('', true) }}"
+  name: "apollo"
+  version: "latest"
+  base_domain: ""
+  space_domain: ""
+  mail: ""
 whitelabel:
-  name: "{{ lookup('env','APOLLO_WHITELABEL_NAME') | default('apollo', true) }}"
-  logo: "{{ lookup('env', 'APOLLO_WHITELABEL_LOGO') | default('https://gitlab.com/p3r.one/apollo/-/raw/master/logo.png', true) }}"
+  name: "apollo"
+  logo: "https://gitlab.com/p3r.one/apollo/-/raw/master/logo.png"

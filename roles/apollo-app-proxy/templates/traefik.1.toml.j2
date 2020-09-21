@@ -2,7 +2,7 @@ debug = false
 logLevel = "INFO"
 checkNewVersion = false
 
-{% if letsencrypt_enabled|bool %} 
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %} 
 defaultEntryPoints = ["https","http"] 
 {% else %}
 defaultEntryPoints = ["http"] 
@@ -16,7 +16,7 @@ insecureSkipVerify = true
   [entryPoints.http] 
   address = ":80"
   compress = true
-{% if letsencrypt_enabled|bool %} 
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %} 
     [entryPoints.http.redirect]
     entryPoint = "https" 
   [entryPoints.https] 
@@ -39,11 +39,11 @@ insecureSkipVerify = true
 [backends]
 	[backends.grafana]
 		[backends.grafana.servers.grafana]
-			url = "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3000"
+			url = "http://{{ apollo_manager }}:3000"
 
 	[backends.loki]
 		[backends.loki.servers.loki]
-			url = "http://{{ hostvars[groups['manager'][0]]['cluster_ip'] }}:3100"
+			url = "http://{{ apollo_manager }}:3100"
 
 [frontends]
 	[frontends.grafana]
@@ -54,13 +54,13 @@ insecureSkipVerify = true
       [frontends.grafana.auth.basic]
         removeHeader = true
         users = [
-          "{{ admin_user }}:{{ admin_password_hash | replace('$$','$') }}"
+          "{{  arc['auth']['admin_user'] }}:{{ admin_password_hash }}"
         ]
     [frontends.grafana.routes]
       [frontends.grafana.routes.grafana]
-        rule = "Host:grafana.{{ space_domain }}"
+        rule = "Host:grafana.{{ arc['space']['space_domain'] }}"
     [frontends.grafana.headers]
-      customFrameOptionsValue = "allow-from https://dashboard.{{ space_domain }}"
+      customFrameOptionsValue = "allow-from https://dashboard.{{ arc['space']['space_domain'] }}"
       SSLRedirect = true
 
 [api]
@@ -72,12 +72,12 @@ dashboard = true
 
 [docker] 
 endpoint = "unix:///var/run/docker.sock" 
-domain = "{{ space_domain }}" 
+domain = "{{ arc['space']['space_domain'] }}" 
 watch = true 
 exposedByDefault = false 
 
 [acme] 
-email = "{{ letsencrypt_mail }}" 
+email = "{{ arc['providers'][arc['addons']['proxy']['ssl']['provider']]['mail'] }}" 
 storage = "/etc/traefik/acme.json" 
 entryPoint = "https" 
 onHostRule = true
@@ -89,7 +89,7 @@ onHostRule = true
     deleayBeforeCheck = 0
     resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
 [[acme.domains]]
-  main = "*.{{ space_domain }}"
-  sans = "{{ space_domain }}"
+  main = "*.{{ arc['space']['space_domain'] }}"
+  sans = "{{ arc['space']['space_domain'] }}"
 {% endif %}
 

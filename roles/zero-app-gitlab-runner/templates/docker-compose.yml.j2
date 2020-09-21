@@ -60,7 +60,7 @@ networks:
 
 volumes:
   gitlab-runner-data:
-{% if apollo_data == "storidge" %}
+{% if arc['data']['provider'] == "storidge" %}
     driver: cio
     driver_opts: 
       profile: "SNAPSHOT"
