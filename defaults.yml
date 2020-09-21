@@ -87,6 +87,9 @@ logs:
 metrics:
   enabled: true
   provider: victoria
+  blackbox_exporter:
+    enabled: true
+    custom_probes: []
 analytics:
   enabled: true
   provider: grafana

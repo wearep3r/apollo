@@ -58,7 +58,8 @@
               runners.docker:
                 privileged: True
                 disable_cache: False
-      loop: "{{ groups['cluster'] }}"
+      with_items: 
+        - "{{ groups['cluster'] }}"
       loop_control:
         loop_var: "node"
       when:
@@ -112,7 +113,7 @@
               runners.docker:
                 privileged: True
                 disable_cache: False
-      loop: "{{ groups['cluster'] }}"
+      loop: "{{ groups['manager'] }}"
       loop_control:
         loop_var: "node"
       when:

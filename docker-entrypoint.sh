@@ -2,6 +2,12 @@
 #set -e
 set -Eeo pipefail
 
+if [ "$CI" = "1" ];
+then
+  # in CI
+  export SHELL ["/bin/bash", "-c"]
+fi
+
 if [ ! -d $HOME/.apollo/.spaces ];
 then
   mkdir -p $HOME/.apollo/.spaces
