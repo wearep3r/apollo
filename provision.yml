@@ -37,11 +37,11 @@
 # Setup controlplane configuration (logging, metrics, visualization, ...)
 
 # Setup backplane configuration (portainer, proxy, ...)
-- name: "@apollo-backplane"
-  import_playbook: playbooks/apollo-backplane.yml
-  when: arc['caas']['enabled']|bool
-  tags:
-    - backplane
+# - name: "@apollo-backplane"
+#   import_playbook: playbooks/apollo-backplane.yml
+#   when: arc['caas']['enabled']|bool
+#   tags:
+#     - backplane
   
 # Setup app configuration (gitlab, minio, ...)
 - name: "@apollo-apps"

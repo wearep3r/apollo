@@ -2,32 +2,36 @@
 version: 2
 apps: ""
 addons:
-  - proxy:
+  - name: proxy
+    enabled: true
+    ssl:
       enabled: true
-      ssl:
+      provider: "letsencrypt"
+  - name: portainer
+    enabled: true
+    ssl:
+      enabled: true
+      provider: proxy
+  - name: gitlab
+    enabled: false
+    gl_token: ""
+    token: ""
+    shared_runners_token: "z7e3r2o0"
+    registry:
+      url: "registry.gitlab.com"
+      user: ""
+      password: ""
+    runner:
+      enabled: false
+      deploy:
         enabled: true
-        provider: "letsencrypt"
-  - portainer:
-      enabled: true
-  - gitlab:
-      gl_token: ""
+      build:
+        enabled: true
       token: ""
-      shared_runners_token: "z7e3r2o0"
-      registry:
-        url: "registry.gitlab.com"
-        user: ""
-        password: ""
-      runner:
+      coordinator_url: "https://gitlab.com"
+    repository:
+      sync:
         enabled: false
-        deploy:
-          enabled: true
-        build:
-          enabled: true
-        token: ""
-        coordinator_url: "https://gitlab.com"
-      repository:
-        sync:
-          enabled: false
 auth:  
   enabled: true
   provider: basic

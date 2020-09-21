@@ -182,3 +182,26 @@
 
 # Todo
 # Backups, Garbage Collection
+
+- name: "Addons"
+  hosts: 
+    - manager[0]
+  become: true
+  gather_facts: False
+  tasks:
+    - debug:
+        msg: "{{ item.name }}"
+      with_items: "{{ arc['addons'] }}"
+      tags:
+        - addons
+
+    - include_role:
+        name: "addons/{{ addon.name }}"
+        allow_duplicates: no
+      tags:
+        - addons
+      with_items: "{{ arc['addons'] }}"
+      when: 
+        - addon['enabled']|bool
+      loop_control:
+        loop_var: addon

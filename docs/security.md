@@ -1,12 +1,14 @@
 # Security
 
-apollo has a number of security features:
+apllo follows a "shift left" approach to security, trying to secure the platform and its applications as early in the deployment process as possible.
 
 - Includes the [DevSec Hardening Framework](https://dev-sec.io/) which implements [Deutsche Telekom's Security Requirements](https://www.telekom.com/de/verantwortung/datenschutz-und-datensicherheit/sicherheit/details/privacy-and-security-assessment-verfahren-342724)
-- Encrypted networking with Wireguard backbone
-- Custom firewalling
-- A-rating for apollo's SSL ingress proxy: [SSL Labs](https://www.ssllabs.com/ssltest/analyze.html?d=portainer.apollo-demo-1.paas.p3r.engineering)
+- Encrypted inter-node networking with Wireguard backbone
+- application-centric firewalling
+- - central ingress proxy with state-of-the-art security settings ([SSL Labs](https://www.ssllabs.com/ssltest/analyze.html?d=portainer.apollo-demo-1.paas.p3r.engineering))
 - Ready to audit with **Inspec**
+- Optional: automatic SSL for applications
+- strict separation between controlplane and application platform
 - Infrastructure-as-Code design pattern
 - Continuous Replication design pattern to guarantee short recovery times
 - Implements cloud-native best practices
@@ -15,6 +17,14 @@ apollo has a number of security features:
 ## What does that mean
 
 apollo is built to last. We want to establish a rolling release workflow that introduces no backwards compatibility issues. This is hard to achieve considering the many parts that need to be moved to provide a secure container platform.
+
+### Platform security
+
+apollo is being configured with yml-config and sensitive credentials that (by best-practice) is kept in a git-repository. All deployments should be done through CI/CD pipelines with rigorous validation of configuration to minimize downtimes.
+
+An apollo space can easily be replciated and cloned with a differend base domain to validate upgrades in a safe sandbox.
+
+Configuration files can optionally be encrypted with `Ansible Vault`.
 
 ### Node security
 
@@ -31,8 +41,8 @@ apollo runs on linux nodes - Ubuntu and Debian specifically. We're planning to s
 Container security implementation depends on the orchestrator in place. For our default, Docker Swarm, the following measures will be taken to ensure safe operations:
 
 - regular garbage collection to free unused resources
-- network-tracing is possible
-- the ingress proxy enables SSL by default for all connected services
+- optional network-tracing
+- the ingress proxy optinally enables SSL by default for all connected services
 - continuous replication ensures regular, automated backups of important data
 
 ### Deployment security
