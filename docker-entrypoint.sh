@@ -1,15 +1,6 @@
 #!/bin/zsh
-set -e
+#set -e
 set -Eeo pipefail
-
-# source /apollo/apollo.plugin.zsh
-
-# if [ -f $HOME/.apollo/apollo.env ];
-# then
-#   set -o allexport
-#   export $(grep -hv '^#' $HOME/.apollo/apollo.env | xargs)
-#   set +o allexport
-# fi
 
 if [ ! -d $HOME/.apollo/.spaces ];
 then
@@ -30,6 +21,9 @@ if [ "$1" = 'enter' ];
 then
   cd /cargo
   exec "/bin/zsh"
+elif [ "$1" = 'apollo' ];
+then
+  exec "$@"
 else
   #export APOLLO_SPACE_DIR=/cargo
   #set -- /usr/local/bin/apollo --space-dir /cargo "$@"
