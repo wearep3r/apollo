@@ -199,12 +199,34 @@ def enter(where: str):
     raise typer.Exit(code=1)
 
 @app.command()
-def commit():
-  print("commit")
+def commit(message: str):
+  command = [
+    "git",
+    "commit",
+    "-am",
+    f"{message}"
+  ]
+
+  if arc['verbosity'] > 0:
+    typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+
+  commit = subprocess.run(command)
+    
+  return commit
 
 @app.command()
 def push():
-  print("push")
+  command = [
+    "git",
+    "push"
+  ]
+
+  if arc['verbosity'] > 0:
+    typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+
+  push = subprocess.run(command)
+    
+  return push
 
 @app.command()
 def build():
@@ -230,6 +252,24 @@ def deploy(what: str = typer.Argument("all")):
     "apollo_space_dir": arc['space_dir'],
     "arc": spacefile
   }
+
+  # Check if in CI
+  # gitlab-runner throws an error if ssh-key
+  # permissions are bad
+  # https://gitlab.com/gitlab-org/gitlab-runner/-/issues/3749
+  in_ci = bool(os.getenv('CI'))
+
+  if in_ci:
+    typer.secho(f"Running in CI", fg=typer.colors.BRIGHT_BLACK)
+
+    try:
+      subprocess.run(['chmod', '0700', '.ssh'])
+      subprocess.run(['chmod', '600', '.ssh/id_rsa'])
+      subprocess.run(['chmod', '644', '.ssh/id_rsa.pub'])
+      typer.secho(f"Corrected ssh key permissions", fg=typer.colors.BRIGHT_BLACK)
+    except Exception as e:
+      typer.echo(f"Failed to correct ssh key permissions: {e}", err=True)
+      raise typer.Exit(code=1)
   
   nodesfile = loadNodesfile()
   if what != "all":
