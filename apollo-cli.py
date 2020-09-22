@@ -383,6 +383,15 @@ def init():
   with open('/apollo/defaults.yml','r') as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
 
+  # name
+  while config['space']['name'] == "apollo":
+    space_name = typer.prompt("Name")
+
+    if checkSpaceName(space_name):
+      config['space']['name'] = space_name
+    else:
+      typer.secho(f"Incorrect format: {space_name}", err=True, fg=typer.colors.RED)
+
   # base_domain
   while config['space']['base_domain'] == "":
     space_base_domain = typer.prompt("Base Domain")
@@ -409,15 +418,41 @@ def init():
   if infrastructure_enabled:
         config['infrastructure']['enabled'] = True
 
-        # provider
-        InfrastructureProvider = InfrastructureProviders.generic
-        infrastructure_provider = typer.prompt("Provider")
+        # # provider
+        # InfrastructureProvider = InfrastructureProviders.generic
+        # infrastructure_provider = typer.prompt("Provider")
 
-        typer.secho(f"Configure managers", bold=True, fg=typer.colors.BRIGHT_BLACK)
-        manager = typer.prompt("Managers")
+        # typer.secho(f"Configure managers", bold=True, fg=typer.colors.BRIGHT_BLACK)
+        # manager = typer.prompt("Managers")
 
   # Save Spacefile.yml
   try:
+    # Create space_dir
+    arc['space_dir'] = arc['spaces_dir']+'/'+config['space']['name']+'.space'
+
+    os.mkdir(arc['space_dir'])
+
+    # Generate SSH Keys
+    os.mkdir(arc['space_dir']+'/.ssh')
+
+    command = [
+      "ssh-keygen",
+      "-b",
+      "4096",
+      "-t",
+      "rsa",
+      "-q",
+      "-N",
+      "''",
+      "-f",
+      arc['space_dir']+"/.ssh/id_rsa"
+    ]
+
+    if arc['verbosity'] > 0:
+      typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+
+    ssh_dir = subprocess.run(command)
+
     with open(arc['space_dir']+'/Spacefile.yml','w') as file:
       _arc = yaml.dump(config, file, sort_keys=True)
       
@@ -435,13 +470,17 @@ def callback(
     debug: int = 0
   ):
   os.environ["APOLLO_CONFIG_VERSION"] = "2"
+  os.environ["APOLLO_CONFIG_DIR"] = "/root/.apollo"
   os.environ["APOLLO_SPACE_DIR"] = space_dir
+  os.environ["APOLLO_SPACES_DIR"] = "/root/.apollo/.spaces"
   os.environ["ANSIBLE_VERBOSITY"] = str(verbosity)
 
   if verbosity > 3 or debug:
     os.environ["ANSIBLE_DEBUG"] = "1"
 
+  arc['config_dir'] = "/root/.apollo"
   arc['space_dir'] = space_dir
+  arc['spaces_dir'] = "/root/.apollo/.spaces"
   arc['verbosity'] = verbosity
 
 

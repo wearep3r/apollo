@@ -6,6 +6,7 @@ After=network-online.target
 Type=simple
 User=apollo
 Group=apollo
+WorkingDirectory={{ app_dir }}
 ExecStart={{ apollo_binary_dir }}/alertmanager --web.listen-address="{{ cluster_ip }}:9093" \
     --config.file="{{ app_dir }}/alertmanager.yml"
 

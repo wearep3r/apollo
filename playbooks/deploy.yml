@@ -111,6 +111,7 @@
         name: "{{ item }}"
       when: 
         - "'docker-ce' in ansible_facts.packages"
+        - arc['orchestrator']['provider'] == "swarm"
       with_items:
         - cadvisor
         - alertmanager

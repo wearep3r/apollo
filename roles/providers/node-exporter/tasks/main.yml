@@ -257,6 +257,7 @@
     minute: "0"
     hour: "*"
     job: "/usr/local/bin/apt.sh | sponge {{ node_exporter_textfile_dir }}/apt.prom"
+    user: apollo
 
 - name: Make sure service is started
   service:
