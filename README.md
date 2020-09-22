@@ -1,6 +1,8 @@
-# 🚀 apollo - a DevOps platform
+# What is apollo?
 
-**apollo** helps you to get from idea to production fast and safe - you'll be up & running quickly with a cloud-native tech-stack and great operational stability. It's made for developers and operators alike.
+apollo is an extensible Docker-based Platform as a Service (PaaS) that helps to get from idea to production fast and safe. 
+
+With apollo, you’re up & running quickly with a cloud-native tech-stack and great operational stability.
 
 Use this repository as a boilerplate for your own platform or manage your [apollo spaces](#-) using our batteries-included [Docker image](#-).
 
@@ -12,6 +14,79 @@ Use this repository as a boilerplate for your own platform or manage your [apoll
 [!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
 [!["Docker Hub Downloads"](https://img.shields.io/docker/pulls/wearep3r/apollo?label=Downloads&logo=docker)](https://hub.docker.com/r/wearep3r/apollo)
 [!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
+
+## Features
+
+### Get going fast
+
+```yaml
+apollo deploy
+- output ...
+```
+
+Get started with a simple development environment, grow with your requirements. 
+
+### Run anything
+
+**Some screenshot**
+
+apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes. 
+
+Learn more
+
+### Deploy fast and safe
+
+```yaml
+docker stack deploy node-app
+```
+
+Use standard tooling, no need to learn new workflows. Hook up your Repo, git push and deploy. 
+
+Learn more
+
+### Scale
+
+**Portainer screenshot** 
+
+Grow your application dynamically allocating resources as needed from a user-friendly dashboard. 
+
+Learn more
+
+### Monitor everything
+
+**Grafana Screenshot**
+
+apollo delivers real-time metrics and logs from your applications out-of-the-box. Dashboards included!
+
+Learn more
+
+### Production-ready
+
+apollo keeps your apps running by rebalancing resources and recovering failed containers and nodes automatically.
+
+Learn more
+
+### IaaS integrated
+
+```yaml
+apollo build
+- running terraform validate OK
+- running terraform plan OK
+- running terraform apply OK
+- creating Nodesfile.yml OK
+```
+
+apollo is integrated with Terraform which makes auto-provisioning infrastructure simple, painless and fast.
+
+Learn more
+
+## Extensible
+
+```yaml
+custom ansible
+```
+
+apollo can easily be extended with Ansible, a proven automation framework.
 
 ## What's inside
 
@@ -29,7 +104,7 @@ apollo manages the full **life-cycle of a container platform**:
 
 We call those platforms **spaces**.
 
-### Features
+### More features
 
 - Distributed container platform (**Docker Swarm** or **Kubernetes**)
 - Git-versioned configuration method tailored to CI/CD 

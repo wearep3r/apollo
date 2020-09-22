@@ -1,6 +1,6 @@
 #!/bin/zsh
-#set -e
-set -Eeo pipefail
+set -e
+#set -Eeo pipefail
 
 if [ "$CI" = "1" ];
 then
