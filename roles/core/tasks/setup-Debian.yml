@@ -11,7 +11,7 @@
     group: apollo
     home: "{{ apollo_remote_dir }}"
     append: yes
-    #groups: adm
+    groups: sudo
     password: "{{ arc['auth']['admin_password'] | password_hash('sha512', arc['auth']['admin_password_hash'] ) }}"
     shell: "/bin/zsh"
 
@@ -80,6 +80,11 @@
 
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
+  with_file:
+    - "{{ ansible_ssh_public_key_file }}"
+
+- name: Set up authorized keys for user apollo
+  authorized_key: user=apollo key="{{ item }}"
   with_file:
     - "{{ ansible_ssh_public_key_file }}"
 
@@ -224,7 +229,7 @@
           - "Hack-Regular.ttf"
         when: not ansible_check_mode
 
-- name: installing zsh
+- name: installing zsh root
   block:
     - name: Check if .zshrc exists
       stat:
@@ -241,9 +246,6 @@
         repo=https://github.com/robbyrussell/oh-my-zsh
         dest=~/.oh-my-zsh
       when: not stat_oh_my_zsh_result.stat.exists
-
-    #- name: installing starship prompt
-    #  command: "curl -fsSL https://starship.rs/install.sh | bash -s -- --yes"
 
     - name: Cloning zsh-autosuggestions
       git:
@@ -282,6 +284,81 @@
         mode: 0644
   ignore_errors: yes
 
+- name: installing zsh apollo
+  block:
+    - name: Check if .zshrc exists
+      stat:
+        path: ~/.zshrc
+      register: stat_rc_result
+      become: yes
+      become_user: apollo
+
+
+    - name: Check if .oh-my-zsh exists
+      stat:
+        path: ~/.oh-my-zsh
+      register: stat_oh_my_zsh_result
+      become: yes
+      become_user: apollo
+
+    - name: Cloning oh-my-zsh
+      git:
+        repo=https://github.com/robbyrussell/oh-my-zsh
+        dest=~/.oh-my-zsh
+      when: not stat_oh_my_zsh_result.stat.exists
+      become: yes
+      become_user: apollo
+
+    - name: Cloning zsh-autosuggestions
+      git:
+        repo=https://github.com/zsh-users/zsh-autosuggestions
+        dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
+      become: yes
+      become_user: apollo
+
+    - name: Cloning zsh-completions
+      git:
+        repo=https://github.com/zsh-users/zsh-completions
+        dest=~/.oh-my-zsh/plugins/zsh-completions
+      become: yes
+      become_user: apollo
+    
+    - name: Cloning zsh-syntax-highlighting
+      git:
+        repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
+      become: yes
+      become_user: apollo
+        
+    - name: downloading fzf
+      git:
+        repo: 'https://github.com/junegunn/fzf.git'
+        dest: ~/.fzf
+      become: yes
+      become_user: apollo
+
+    - name: installing fzf
+      command: "~/.fzf/install --all --key-bindings --completion"
+      become: yes
+      become_user: apollo
+
+    - name: Cloning fzf-tab-completion
+      git:
+        repo=https://github.com/lincheney/fzf-tab-completion.git
+        dest=~/.oh-my-zsh/plugins/fzf-tab-completion
+      become: yes
+      become_user: apollo
+      
+    - name: Create ~/.zshrc
+      template:
+        src: templates/zshrc.j2
+        dest: ~/.zshrc
+        group: apollo
+        owner: apollo
+        mode: 0644
+      become: yes
+      become_user: apollo
+  ignore_errors: yes
 
 - name: Provision Postfix
   block:
@@ -422,15 +499,67 @@
     reboot_timeout: 180
   when: ku_update_grub_changed is defined and ku_update_grub_changed and kernel_version|bool
 
-- name: handling DNS
-  block:
-    - name:
-      digital_ocean_domain:
-        state: present
-        name: "{{ arc['space']['space_domain'] }}"
-        ip: "{{ apollo_management_ip }}"
-        oauth_token: "{{ arc['dns']['auth']['token'] }}"
-  when:
-    - arc['dns']['enabled']|bool
-    - arc['dns']['provider'] == "digitalocean"
-    - ansible_hostname == "manager-0"
+# - name: handling DNS
+#   block:
+#     # - name:
+#     #   digital_ocean_domain:
+#     #     state: present
+#     #     name: "{{ arc['space']['space_domain'] }}"
+#     #     ip: "{{ apollo_management_ip }}"
+#     #     oauth_token: "{{ arc['providers']['digitalocean']['token'] }}"
+#     - uri:
+#         url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
+#         headers:
+#           accept: application/json
+#           authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
+#         return_content: yes
+#       register: domain_records_resp
+
+#     - debug:
+#         msg: "{{ domain_records_resp }}"
+  
+#     - when: "arc['space']['name'] not in (domain_records_resp.json.domain_records | map(attribute='name') | list)"
+#       uri:
+#         method: POST
+#         url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
+#         headers:
+#           authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
+#         body: '{{ create_record | to_json }}'
+#         body_format: json
+#         return_content: yes
+#       vars:
+#         create_record:
+#             data: "{{ apollo_management_ip }}"
+#             flags: null
+#             name: "{{ arc['space']['space_name'] }}"
+#             port: null
+#             priority: null
+#             tag: null
+#             ttl: 1800
+#             type: A
+#             weight: null
+
+#     - when: "\*.arc['space']['name'] not in (domain_records_resp.json.domain_records | map(attribute='name') | list)"
+#       uri:
+#         method: POST
+#         url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
+#         headers:
+#           authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
+#         body: '{{ create_record | to_json }}'
+#         body_format: json
+#         return_content: yes
+#       vars:
+#         create_record:
+#             data: "{{ apollo_management_ip }}"
+#             flags: null
+#             name: "*.{{ arc['space']['space_name'] }}"
+#             port: null
+#             priority: null
+#             tag: null
+#             ttl: 1800
+#             type: A
+#             weight: null    
+#   when:
+#     - arc['dns']['enabled']|bool
+#     - arc['dns']['provider'] == "digitalocean"
+#     - ansible_hostname == "manager-0"

@@ -1,6 +1,6 @@
 # What is apollo?
 
-apollo is an extensible Docker-based Platform as a Service (PaaS) that helps to get from idea to production fast and safe. 
+apollo is an extensible Docker-based Platform as a Service (PaaS) that helps to get from idea to production fast and safe.
 
 With apollo, you’re up & running quickly with a cloud-native tech-stack and great operational stability.
 
@@ -19,34 +19,29 @@ Use this repository as a boilerplate for your own platform or manage your [apoll
 
 ### Get going fast
 
-```yaml
-apollo deploy
-- output ...
-```
+![apollo deploy](docs/images/apollo-deploy.png)
 
 Get started with a simple development environment, grow with your requirements. 
 
 ### Run anything
 
-**Some screenshot**
+![apollo apps](docs/images/apollo-apps.png)
 
-apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes. 
+apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes.
 
 Learn more
 
 ### Deploy fast and safe
 
-```yaml
-docker stack deploy node-app
-```
+![apollo shipments](docs/images/apollo-ship.png)
 
-Use standard tooling, no need to learn new workflows. Hook up your Repo, git push and deploy. 
+Use standard tooling, no need to learn new workflows. Hook up your Repo, git push and deploy.
 
 Learn more
 
 ### Scale
 
-**Portainer screenshot** 
+![apollo portainer](docs/images/apollo-portainer.png)
 
 Grow your application dynamically allocating resources as needed from a user-friendly dashboard. 
 
@@ -54,27 +49,23 @@ Learn more
 
 ### Monitor everything
 
-**Grafana Screenshot**
+![apollo grafana](docs/images/apollo-grafana.png)
 
 apollo delivers real-time metrics and logs from your applications out-of-the-box. Dashboards included!
 
 Learn more
 
-### Production-ready
+### GitOps Workflows
 
-apollo keeps your apps running by rebalancing resources and recovering failed containers and nodes automatically.
+![apollo ci](docs/images/apollo-ci.png)
+
+apollo spaces can be built, versioned and deployed just like your apps - automate your platform operations with [GitLab](https://docs.gitlab.com/ee/ci/) and [shipmate](https://gitlab.com/peter.saarland/shipmate).
 
 Learn more
 
 ### IaaS integrated
 
-```yaml
-apollo build
-- running terraform validate OK
-- running terraform plan OK
-- running terraform apply OK
-- creating Nodesfile.yml OK
-```
+![apollo build](docs/images/apollo-build.png)
 
 apollo is integrated with Terraform which makes auto-provisioning infrastructure simple, painless and fast.
 
@@ -82,9 +73,7 @@ Learn more
 
 ## Extensible
 
-```yaml
-custom ansible
-```
+![apollo extend](docs/images/apollo-extend.png)
 
 apollo can easily be extended with Ansible, a proven automation framework.
 

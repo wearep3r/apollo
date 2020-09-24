@@ -112,7 +112,6 @@ federation:
   username: "apollo-federation"
   password: ""
   spaces: []
-
 infrastructure:
   enabled: false
   path: "."

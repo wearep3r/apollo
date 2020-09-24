@@ -24,8 +24,11 @@ source $ZSH/oh-my-zsh.sh
 source $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
 source $ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-#eval "$(starship init zsh)"
-source /apollo/apollo.plugin.zsh
+_apollo_completion() {
+  eval $(env _TYPER_COMPLETE_ARGS="${words[1,$CURRENT]}" _APOLLO_COMPLETE=complete_zsh apollo)
+}
+
+#source /apollo/apollo.plugin.zsh
 
 # Generic commands
 alias reload="source ~/.zshrc"
@@ -39,5 +42,5 @@ export PROMPT='%{$fg[green]%}%m%{$reset_color%}@%{$fg_bold[cyan]%}${APOLLO_VERSI
 export ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[cyan]%}"
 export ZSH_THEME_GIT_PROMPT_SUFFIX=" %{$reset_color%}"
 
-apollo::echo "Welcome to ${bold}apollo${normal} ($APOLLO_VERSION). Type ${bold}apollo --help${normal} to see your options"
-apollo::echo "If you need support, please visit ${bold}https://gitlab.com/p3r.one/apollo${normal}"
+#apollo::echo "Welcome to ${bold}apollo${normal} ($APOLLO_VERSION). Type ${bold}apollo --help${normal} to see your options"
+#apollo::echo "If you need support, please visit ${bold}https://gitlab.com/p3r.one/apollo${normal}"

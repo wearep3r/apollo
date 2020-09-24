@@ -216,3 +216,9 @@
       mode: '0644'
     notify: restart docker
   become: True
+
+- name: adding apollo to group docker
+  user:
+    name: 'apollo'
+    groups: docker
+    append: yes

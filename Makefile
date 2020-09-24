@@ -50,72 +50,6 @@ SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}-$(shell git rev-parse --short 
 help:
 >	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: load
-load: /tmp/.loaded.sentinel
-
-/tmp/.loaded.sentinel: $(shell find ${ENVIRONMENT_DIR} -type f -name '*.env') ## help
-> @if [ ! -z $$APOLLO_SPACE ]; then echo "Loading Environment ${APOLLO_SPACE}"; fi
-> @touch /tmp/.loaded.sentinel
-
-# INFRASTRUCTURE
-modules/${APOLLO_PROVIDER}/.terraform: /tmp/.loaded.sentinel
-> @cd modules/${APOLLO_PROVIDER}
->	@terraform init -compact-warnings -input=false
-
-/tmp/.validated.sentinel: modules/${APOLLO_PROVIDER}/.terraform
->	@cd modules/${APOLLO_PROVIDER}
-> echo "ENV: ${TF_VAR_environment}"
->	@terraform validate > /dev/null
-> @touch /tmp/.validated.sentinel
-
-.PHONY: plan
-plan: ${TF_PLAN_PATH} ## Plan
-
-# Plan
-${TF_PLAN_PATH}: /tmp/.validated.sentinel
-> @cd modules/${APOLLO_PROVIDER}
-> @terraform plan -lock=true -compact-warnings -input=false -out=${TF_PLAN_PATH} -state=${TF_STATE_PATH} 
-
-.PHONY: apply
-apply: plan ${TF_STATE_PATH}
-
-${TF_STATE_PATH}: ${TF_PLAN_PATH}
-> @cd modules/${APOLLO_PROVIDER}
-> terraform apply -compact-warnings -state=${TF_STATE_PATH} -auto-approve ${TF_PLAN_PATH}
-
-.PHONY: destroy
-destroy: 
-> @cd modules/${APOLLO_PROVIDER}
-> @terraform destroy -compact-warnings -state=${TF_STATE_PATH} -auto-approve 
-> @rm -rf /tmp/.*.sentinel
-> @rm -rf ${TF_STATE_PATH} ${TF_STATE_PATH}.backup ${TF_PLAN_PATH} ${APOLLO_SPACE_DIR}/nodes.apollo.env ${APOLLO_SPACE_DIR}/.ssh/config
-
-.PHONY: infrastructure
-infrastructure: ${ENVIRONMENT_DIR}/nodes.apollo.env ## apollo IaaS
-
-${ENVIRONMENT_DIR}/nodes.apollo.env: ${TF_STATE_PATH}
-> @cd modules/${APOLLO_PROVIDER}
-> @terraform output -state=${TF_STATE_PATH} | tr -d ' ' > ${ENVIRONMENT_DIR}/nodes.apollo.env
-
-.PHONY: output
-output:
-> @cd modules/${APOLLO_PROVIDER}
-> terraform output -state=${TF_STATE_PATH} | tr -d ' '
-
-.PHONY: show
-show:
-> @cd modules/${APOLLO_PROVIDER}
-> @terraform show ${TF_STATE_PATH}
-
-# PLATFORM
-.PHONY: platform
-platform: ## apollo PaaS
->	@ansible-playbook provision.yml --flush-cache
-
-.PHONY: check
-check: /tmp/.loaded.sentinel
->	@ansible-playbook provision.yml --flush-cache --check
-
 # Development
 .PHONY: build
 build:
@@ -127,20 +61,3 @@ dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
 dev: SHELL := docker
 dev:
 > @enter
-
-.PHONY: ssh
-ssh: ${ENVIRONMENT_DIR}/.ssh/id_rsa ${ENVIRONMENT_DIR}/.ssh/id_rsa.pub
-
-${ENVIRONMENT_DIR}/.ssh/:
-> @mkdir ${ENVIRONMENT_DIR}/.ssh/
-
-${ENVIRONMENT_DIR}/.ssh/id_rsa ${ENVIRONMENT_DIR}/.ssh/id_rsa.pub: ${ENVIRONMENT_DIR}/.ssh/
-> @ssh-keygen -b 4096 -t rsa -q -N "" -f ${ENVIRONMENT_DIR}/.ssh/id_rsa 
-
-.PHONY: inventory
-inventory:
-> @python inventory/apollo.py --list | jq
-
-.PHONY: setup
-setup:
-> @ansible -i inventory/apollo.py all -m setup -e "ansible_ssh_private_key_file=${ENVIRONMENT_DIR}/.ssh/id_rsa"

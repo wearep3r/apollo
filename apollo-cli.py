@@ -107,7 +107,7 @@ def loadNodesfile():
     raise typer.Exit(code=1)
 
 def deployInfrastructure(spacefile):
-  if spacefile['infrastructure']['provider'] != "":
+  if spacefile['infrastructure']['provider'] not in ["generic", ""]:
     extra_vars = {
       "apollo_infrastructure_provider": spacefile['infrastructure']['provider']
     }
@@ -121,7 +121,7 @@ def deployInfrastructure(spacefile):
     ], cwd="/apollo")
     return infrastructure
   else:
-    typer.echo(f"Spacefile.infrastructure.provider is empty. Exiting.", err=True)
+    typer.secho(f"Infrastructure provider missing:", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
 
 def destroyInfrastructure(spacefile):
@@ -141,7 +141,7 @@ def destroyInfrastructure(spacefile):
       "playbooks/cli-infrastructure.yml"
     ], cwd="/apollo")
   else:
-    typer.echo(f"Spacefile.infrastructure.provider is empty. Exiting.", err=True)
+    typer.secho(f"Infrastructure provider missing", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
 
 # APP COMMANDS
@@ -153,7 +153,7 @@ def exec(where: str, what: str):
   """
   nodesfile = loadNodesfile()
 
-  typer.echo(f"Executing {what} on {where}")
+  typer.secho(f"Executing {what} on {where}", fg=typer.colors.BRIGHT_BLACK)
 
   try:
     exec = subprocess.run([
@@ -165,7 +165,7 @@ def exec(where: str, what: str):
         f"{what}"
       ], cwd="/apollo")
   except Exception as e:
-    typer.echo(f"Failed to execute {what} on {where}.", err=True)
+    typer.secho(f"Failed to execture {what} on {where}", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
 
 @app.command()
@@ -194,12 +194,17 @@ def enter(where: str):
   try:
     enter = subprocess.call(command, shell=True)
   except Exception as e:
-    typer.echo(f"Failed to enter {where}.", err=True)
-    typer.echo(f"{command}", err=True)
+    typer.secho(f"Failed to enter {where}", err=True, fg=typer.colors.RED)
+
+    if arc['verbosity'] > 0:
+      typer.secho(f"{command}", err=False, fg=typer.colors.BRIGHT_BLACK)
     raise typer.Exit(code=1)
 
 @app.command()
 def commit(message: str):
+  """
+  Commit configuration changes to the space (requires git)
+  """
   command = [
     "git",
     "commit",
@@ -216,6 +221,9 @@ def commit(message: str):
 
 @app.command()
 def push():
+  """
+  Push configuration changes to the space repository (requires git)
+  """
   command = [
     "git",
     "push"
@@ -231,7 +239,7 @@ def push():
 @app.command()
 def build():
   """
-  Build apollo
+  Build apollo infrastructure
   """
   spacefile = loadSpacefile()
 
@@ -239,7 +247,7 @@ def build():
     infrastructure = deployInfrastructure(spacefile)
     return infrastructure
   else:
-    typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
+    typer.secho(f"Infrastructure disabled", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
 
 @app.command()
@@ -268,7 +276,7 @@ def deploy(what: str = typer.Argument("all")):
       subprocess.run(['chmod', '644', '.ssh/id_rsa.pub'])
       typer.secho(f"Corrected ssh key permissions", fg=typer.colors.BRIGHT_BLACK)
     except Exception as e:
-      typer.echo(f"Failed to correct ssh key permissions: {e}", err=True)
+      typer.secho(f"Failed to correct ssh key permissions: {e}", err=True, fg=typer.colors.RED)
       raise typer.Exit(code=1)
   
   nodesfile = loadNodesfile()
@@ -317,11 +325,17 @@ def destroy():
   if spacefile['infrastructure']['enabled'] == True:
     infrastructure = destroyInfrastructure(spacefile)
   else:
-    typer.echo(f"Spacefile.infrastructure.enabled is false. Exiting.", err=True)
+    typer.secho(f"Infrastructure disabled", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
+  
+  return infrastructure
 
 @app.command()
 def show(what: str):
+  """
+  Show apollo config
+  """
+
   spacefile = loadSpacefile()
 
   if what in ["inventory","nodes"]:
@@ -331,28 +345,11 @@ def show(what: str):
       "--list"
       ], cwd="/apollo"))
     
-    typer.echo(json.dumps(inventory,sort_keys=True, indent=4))
+    typer.secho(json.dumps(inventory, sort_keys=True, indent=4), err=False, fg=typer.colors.BRIGHT_BLACK)
 
-  if what == "config":    
-    typer.echo(json.dumps(spacefile,sort_keys=True, indent=4))
+  if what == "config": 
+    typer.secho(json.dumps(spacefile,sort_keys=True, indent=4), err=False, fg=typer.colors.BRIGHT_BLACK)
 
-@app.command()
-def check(what: str):
-  """
-  Check parts of the system
-  """
-  spacefile = loadSpacefile()
-
-  typer.echo(f"Checking {what}")
-  check = subprocess.run([
-      "ansible-playbook",
-      "--flush-cache", 
-      "--skip-tags", 
-      "provision_infrastructure", 
-      "--tags", 
-      f"provision_{what},always", 
-      "provision.yml"], cwd="/apollo")
-  return check
 
 def validateSpacefile():
   spacefile = loadSpacefile()
@@ -394,6 +391,10 @@ def validateNodesfile():
   
 @app.command()
 def validate():
+  """
+  Validate apollo config
+  """
+  
   defaults = loadDefaults()
 
   spacefile = validateSpacefile()
@@ -483,7 +484,7 @@ def init():
       "rsa",
       "-q",
       "-N",
-      "''",
+      "\"\"",
       "-f",
       arc['space_dir']+"/.ssh/id_rsa"
     ]

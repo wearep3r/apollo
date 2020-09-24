@@ -21,7 +21,6 @@ RUN apt-get update --allow-releaseinfo-change \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
     && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
     && ~/.fzf/install --all --key-bindings --completion \
-    && curl -fsSL https://starship.rs/install.sh | bash -s -- --yes \
     && pip install jmespath typer[all] anyconfig \
     && wget https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip \
     && unzip Hack-v3.003-ttf.zip \
@@ -55,8 +54,6 @@ RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
 COPY .zshrc /root/.zshrc
 
-COPY starship.toml /root/.config/starship.toml
-
 #COPY apollo.zsh /usr/local/bin/apollo
 
 COPY apollo-cli.py /usr/local/bin/apollo
@@ -72,6 +69,8 @@ WORKDIR ${APOLLO_SPACES_DIR}
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 SHELL ["/bin/zsh", "-c"]
+
+RUN ["/bin/zsh", "-c", "/usr/local/bin/apollo", "--install-completion", "zsh"]
 
 CMD ["/usr/local/bin/apollo"]
 
