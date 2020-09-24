@@ -41,6 +41,3 @@ alias less="bat"
 export PROMPT='%{$fg[green]%}%m%{$reset_color%}@%{$fg_bold[cyan]%}${APOLLO_VERSION}%{$reset_color%}%{${fg_bold[magenta]}%} :: %{$reset_color%}%{${fg[green]}%}%c $(git_prompt_info)%{${fg_bold[$CARETCOLOR]}%}%#%{${reset_color}%} '
 export ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[cyan]%}"
 export ZSH_THEME_GIT_PROMPT_SUFFIX=" %{$reset_color%}"
-
-#apollo::echo "Welcome to ${bold}apollo${normal} ($APOLLO_VERSION). Type ${bold}apollo --help${normal} to see your options"
-#apollo::echo "If you need support, please visit ${bold}https://gitlab.com/p3r.one/apollo${normal}"

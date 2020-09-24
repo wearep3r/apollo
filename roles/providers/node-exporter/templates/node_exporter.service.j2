@@ -4,8 +4,8 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=apollo
-Group=apollo
+User=root
+Group=root
 ExecStart={{ apollo_binary_dir }}/node_exporter \
 {% for collector in node_exporter_enabled_collectors -%}
 {%   if not collector is mapping %}

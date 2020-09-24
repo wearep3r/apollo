@@ -54,13 +54,9 @@ RUN ansible-galaxy install --ignore-errors -r requirements.yml
 
 COPY .zshrc /root/.zshrc
 
-#COPY apollo.zsh /usr/local/bin/apollo
-
 COPY apollo-cli.py /usr/local/bin/apollo
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-
-COPY motd /etc/motd
 
 COPY . .
 
