@@ -25,7 +25,7 @@ Get started with a simple development environment, grow with your requirements.
 
 ### Run anything
 
-apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes.
+apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes using standard tooling like `docker-compose`.
 
 ![apollo apps](docs/images/apollo-apps.png)
 
@@ -33,7 +33,7 @@ Learn more
 
 ### Deploy fast and safe
 
-Use standard tooling, no need to learn new workflows. Hook up your Repo, git push and deploy.
+Use the tooling you already mastered, no need to learn new workflows. Hook up your Repo, git push and deploy.
 
 ![apollo shipments](docs/images/apollo-ship.png)
 
