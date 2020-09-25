@@ -251,6 +251,20 @@ def build():
     raise typer.Exit(code=1)
 
 @app.command()
+def version():
+  """
+  Show apollo's version
+  """
+      
+  version = os.getenv('APOLLO_VERSION')
+
+  if not version:
+    typer.secho(f"No version found", err=True, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
+
+  typer.secho(f"{version}", err=False, fg=typer.colors.GREEN)
+
+@app.command()
 def deploy(what: str = typer.Argument("all")):
   """
   Deploy apollo
@@ -394,7 +408,7 @@ def validate():
   """
   Validate apollo config
   """
-  
+
   defaults = loadDefaults()
 
   spacefile = validateSpacefile()
