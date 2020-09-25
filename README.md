@@ -98,11 +98,10 @@ We call those platforms **spaces**.
 - Distributed container platform (**Docker Swarm** or **Kubernetes**)
 - Git-versioned configuration method tailored to CI/CD 
 - Automated infrastructure (currently only **DigitalOcean** and **HETZNER Cloud** supported)
-- Ready-to-rock, auto-ssl ingress proxy by **Traefik**
+- Ready-to-rock, auto-ssl ingress proxy with **Traefik**
 - Cluster-wide metrics & logs with **Victoria Metrics** and **Grafana Loki**
-- Secure networking through **Wireguard**
+- Secure cluster networking through **Wireguard**
 - Beautiful dashboards thanks to **Grafana**
-- Configured almost entirely by **environment variables**
 - Distributed storage (**Storidge**, **NFS** or **Longhorn**)
 - **Single-node clusters are possible** and can be scaled up
 - Integrated with [GitLab](https://gitlab.com) (CI/CD, registry, environments, metrics, kubernetes)
@@ -134,12 +133,11 @@ Check the [Getting Started](#getting-started) section to start your journey with
 
 ## Philosophy
 
-These are the design principles we base our work on apollo on. It's heavily inspired by DevOps and Clean Code practices and the works and arts of Martin Fowler who brought us immutable infrastructure.
+These are the design principles we base our work on apollo on. It's heavily inspired by DevOps and Clean Code practices and the works and arts of Martin Fowler who brought us immutable infrastructure. Still a long way to go. 
 
 - Developers and operators should be able to trust their infrastructure and platform
 - Every **space** should be versioned in a repository
 - Configuration should be declarative
-- There should be no bootstrapping step
 - There should be one workflow for installation and deployment that applies to all spaces
 - No manual actions on the platform - everything must be code
 - Every change to infrastructure should be code-reviewed to:
@@ -152,17 +150,16 @@ These are the design principles we base our work on apollo on. It's heavily insp
   - understand the whole infrastructure
   - propose modifications to the infrastructure, while being able to test them
 - apollo is a boilerplate and a framework - it should be customizable but still predictable
-- The CLI is written in Bash so it is easy to understand what a command does, and it is easy to modify command behaviors or to add new ones
 
 apollo is tailored to development teams. It's made by seasoned operators and contains everything a DevOps-enabled team needs to start changing the world.
 
-apollo runs on every major and minor cloud provider, as well as directly on bare-metal. IoT devices or platforms like Proxmox and VMWare are currently on the roadmap.
+It runs on every major and minor cloud provider or directly on bare-metal. IoT devices or platforms like Proxmox and VMWare are currently on the roadmap.
 
 apollo is based on the latest technologies and design patterns. We're working hard to make it fully automated but it already reduces lots of the operational overhead in organizations. It's a DevOps platform, doing ops work automagically for you, so you can do developer magic on top of it.
 
 ## Knowledge prerequisites
 
-If you just want to use apollo to manage your container platforms, you just need to know:
+If you want to use apollo to manage your container platforms, you just need to know:
 
 - Docker
 
@@ -183,7 +180,7 @@ If you want to build upon this repository, you'll need to be very proficient wit
 
 apollo requires a manager- or control-node. We call this `manager-0`. This node runs the entire controlplane and monitoring stack for a cluster and should be sized appropriately (8GB Memory, 2-4 vCPUs).
 
-apollo can manage additional managers (not more than 3, it doesn't make sense) as well as an arbitrary number of workers to deal with your workloads. Make sure to adjust manager-size to your number of workers. The more nodes your cluster has, the more resources operations will need.
+apollo can have additional managers (up to 3 in total) as well as an arbitrary number of workers to deal with your workloads. Make sure to adjust manager-size to your number of workers. The more nodes your cluster has, the more resources cluster-operations will need.
 
 ## Getting started
 
@@ -199,7 +196,7 @@ mkdir -p $HOME/.apollo
 
 ### Installing apollo
 
-Download apollo's Docker Image from the Docker Hub:
+Download apollo's Docker Image from our registry:
 
 ```bash
 docker pull registry.gitlab.com/p3r.one/apollo:latest
@@ -251,7 +248,7 @@ From here, you can adjust `Spacefile.yml` to your needs. You should also setup i
 
 1. configure the `infrastructure` section in `Spacefile.yml` to spin up resources at a cloud provider (currently only `hcloud` and `digitalocean` are supported), then invoke `apollo build` to create the infrastructure
 2. provide a manual `Nodesfile.yml` pointing to your existing infrastructure. Make sure you add the generated ssh-key to your nodes so apollo can provision them
-3. integrate with Terraform and generate `Nodesfile.yml` in `outputs.tf` from [this](playbooks/templates/infrastructure/hcloud/output.tf) template
+3. integrate with Terraform and generate `Nodesfile.yml` in `output.tf` from [this](playbooks/templates/infrastructure/hcloud/output.tf) template
 
 ### Deploy a space
 
