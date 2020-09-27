@@ -1,6 +1,5 @@
 #!/bin/zsh
 set -e
-#set -Eeo pipefail
 
 if [ "$CI" = "1" ];
 then
@@ -31,8 +30,6 @@ elif [ "$1" = 'apollo' ];
 then
   exec "$@"
 else
-  #export APOLLO_SPACE_DIR=/cargo
-  #set -- /usr/local/bin/apollo --space-dir /cargo "$@"
   set -- /usr/local/bin/apollo "$@"
   cd /cargo
 fi

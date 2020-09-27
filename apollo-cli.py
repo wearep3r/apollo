@@ -140,6 +140,7 @@ def destroyInfrastructure(spacefile):
       "--flush-cache",
       "playbooks/cli-infrastructure.yml"
     ], cwd="/apollo")
+    return infrastructure
   else:
     typer.secho(f"Infrastructure provider missing", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
@@ -338,11 +339,10 @@ def destroy():
   
   if spacefile['infrastructure']['enabled'] == True:
     infrastructure = destroyInfrastructure(spacefile)
+    return infrastructure
   else:
     typer.secho(f"Infrastructure disabled", err=True, fg=typer.colors.RED)
-    raise typer.Exit(code=1)
-  
-  return infrastructure
+    raise typer.Exit(code=1)  
 
 @app.command()
 def show(what: str):

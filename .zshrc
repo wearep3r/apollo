@@ -28,8 +28,6 @@ _apollo_completion() {
   eval $(env _TYPER_COMPLETE_ARGS="${words[1,$CURRENT]}" _APOLLO_COMPLETE=complete_zsh apollo)
 }
 
-#source /apollo/apollo.plugin.zsh
-
 # Generic commands
 alias reload="source ~/.zshrc"
 alias ls='lsd'
