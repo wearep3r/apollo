@@ -49,3 +49,4 @@ terraform.rc
 **/infrastructure.apollo.env
 **/nodes.apollo.env
 **/*.env
+_modules
