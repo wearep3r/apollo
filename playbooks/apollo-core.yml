@@ -1,7 +1,0 @@
-- name: "@apollo-core"
-  hosts: 
-    - manager
-    - worker
-  become: true
-  roles:
-    - apollo-core
