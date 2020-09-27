@@ -6,13 +6,6 @@ global:
     monitor: 'victoria'
     space: '{{ arc['space']['name'] }}'
 
-#remote_write:
-#  - url: http://{{ apollo_manager }}:8428/api/v1/write
-
-# rule_files:
-#   - "swarm_node.rules.yml"
-#   - "swarm_task.rules.yml"
-
 alerting:
   alertmanagers:
   - static_configs:
@@ -20,10 +13,94 @@ alerting:
       - alertmanager:9093
 
 scrape_configs:
-  # - job_name: 'prometheus'
-  #   static_configs:
-  #     - targets: ['localhost:9090']
-  
+# - job_name: kubernetes-cadvisor
+#   scrape_interval: 30s
+#   scrape_timeout: 10s
+#   metrics_path: /metrics
+#   scheme: https
+#   kubernetes_sd_configs:
+#   - api_server: <URL to you k8s API>
+#     role: node
+#     tls_config:
+#       ca_file: ca.pem
+#       cert_file: cert.pem
+#       key_file: kay.pem
+#       insecure_skip_verify: false
+#   tls_config:
+#     ca_file: ca.pem
+#     cert_file: cert.pem
+#     key_file: kay.pem
+#     insecure_skip_verify: false
+#   relabel_configs:
+#   - separator: ;
+#     regex: __meta_kubernetes_node_label_(.+)
+#     replacement: $1
+#     action: labelmap
+#   - separator: ;
+#     regex: (.*)
+#     target_label: __address__
+#     replacement: <URL to you k8s API>
+#     action: replace
+#   - source_labels: [__meta_kubernetes_node_name]
+#     separator: ;
+#     regex: (.+)
+#     target_label: __metrics_path__
+#     replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+#     action: replace
+# Check: https://github.com/prometheus/prometheus/issues/4633
+{% if arc['orchestrator']['provider'] in ['k3s', 'kubernetes'] %}
+  - job_name: 'kubelet'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true  # Required with Minikube.
+  - job_name: 'cadvisor'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true  # Required with Minikube.
+      metrics_path: /metrics/cadvisor
+  - job_name: 'k8apiserver'
+      kubernetes_sd_configs:
+      - role: endpoints
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true  # Required if using Minikube.
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+   - job_name: 'k8services'
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - source_labels:
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_service_name
+        action: drop
+        regex: default;kubernetes
+      - source_labels:
+          - __meta_kubernetes_namespace
+        regex: default
+        action: keep
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: job
+    - job_name: 'k8pods'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        regex: metrics
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        target_label: job
+{% endif %}
   - job_name: 'blackbox-exporter'
     metrics_path: /probe
     params:
