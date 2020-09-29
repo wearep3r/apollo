@@ -1,0 +1,14 @@
+---
+postfix_config_file: /etc/postfix/main.cf
+
+postfix_service_state: started
+postfix_service_enabled: true
+
+postfix_inet_interfaces: private
+postfix_inet_protocols: all
+
+# https://github.com/locationlabs/ansible-role_kernel-update/blob/master/tasks/set-grub-default_14_04.yml
+kernel_version: 0
+kernel_update_grub_requested_kernel_version: 4.15.0-99-generic
+kernel_update_config_prefix_grub_default: 99
+kernel_update_kernel_version_file: /var/lib/misc/ansible_kernel-update_old-kernel-version.txt

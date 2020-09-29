@@ -1,0 +1,8 @@
+---
+app_name: "minio"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+app_domain: "{{ lookup('env','APOLLO_APP_MINIO_APP_DOMAIN') | default(app_name+'.'+arc['space']['space_domain'], true) }}"
+
+images:
+  minio: "{{ lookup('env','APOLLO_APP_MINIO_IMAGES_MINIO') | default('minio/minio:RELEASE.2020-07-24T22-43-05Z', true) }}"
+  

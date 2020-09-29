@@ -1,0 +1,5 @@
+---
+app_name: "loki"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+loki_version: "1.6.1"

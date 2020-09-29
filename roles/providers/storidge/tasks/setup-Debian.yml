@@ -1,0 +1,426 @@
+- name: asserting we're on ubuntu
+  fail:
+    msg: "storidge can only be installed on ubuntu"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: installing apt dependencies
+  apt:
+    name:
+      - linux-headers-{{ ansible_kernel }}
+    state: present
+    update_cache: False
+  register: storidge_dependencies_installed
+
+- name: rebooting nodes
+  reboot:
+    reboot_timeout: 180
+  when: storidge_dependencies_installed.changed
+  
+- name: creating storidge_nodes group
+  group_by:
+    key: storidge_nodes
+  changed_when: False
+
+- name: retrieving install status
+  stat:
+    path: /usr/bin/cio
+  register: cio_installed
+  changed_when: False
+
+- name: showing install status
+  debug:
+    msg: "storidge is already installed"
+    verbosity: 1
+  when: cio_installed.stat is succeeded and cio_installed.stat.exists
+
+- name: retrieving cio version
+  command: cio version
+  register: cio_version
+  changed_when: False
+  when: cio_installed.stat is succeeded and cio_installed.stat.exists
+
+- name: showing cio version
+  debug:
+    msg: "Storidge Version: {{  cio_version.stdout.split('-')[1] | lower }}"
+    verbosity: 1
+  when: cio_installed.stat is succeeded and cio_installed.stat.exists
+
+- name: provisioning sysctl configuration
+  sysctl:
+    name: net.ipv4.tcp_window_scaling
+    value: '0'
+    state: present
+  tags:
+    - storidge
+
+- name: downloading installer
+  get_url: 
+    url: ftp://download.storidge.com/pub/ce/cio-ce
+    dest: /tmp/cio-installer.sh
+    mode: 0700
+  when: cio_installed.stat is succeeded and not cio_installed.stat.exists
+  tags:
+    - storidge
+  
+# Install Logs can be found in /var/lib/storidge/installed_packages on the nodes
+- name: installing storidge
+  shell: /tmp/cio-installer.sh -r {{ storidge_install_version }}
+  register: cio_installation
+  when: cio_installed.stat is succeeded and not cio_installed.stat.exists
+  async: 1000
+  poll: 0
+  tags:
+    - storidge
+
+- name: asserting installation has finished
+  async_status:
+    jid: "{{ cio_installation.ansible_job_id }}"
+  register: cio_installer
+  until: cio_installer.finished
+  when: cio_installed.stat is succeeded and not cio_installed.stat.exists
+  retries: 60
+  delay: 10
+
+- name: removing installer
+  file: 
+    path: /tmp/cio-installer.sh 
+    state: absent
+  when: cio_installed.stat is succeeded and not cio_installed.stat.exists
+  tags:
+    - storidge
+
+- name: rebooting nodes
+  reboot:
+    reboot_timeout: 180
+  when: "'skipped' not in cio_installer"
+  tags:
+    - storidge
+
+- name: provisioning SNAPSHOT profile
+  template:
+    src: templates/storidge-profile-snapshot.j2
+    dest: /etc/storidge/profiles/SNAPSHOT
+    owner: root
+    group: root
+    mode: '0644'
+  register: storidge_profile
+
+- name: loading SNAPSHOT profile
+  command: cio profile add /etc/storidge/profiles/SNAPSHOT
+  register: cio_profile
+  when: storidge_profile is defined and storidge_profile.changed
+
+- name: setting node facts
+  set_fact:  
+    private_ip: "{{ hostvars[inventory_hostname]['cluster_ip'] }}"
+
+- name: retrieving cluster status
+  shell: >
+    cio info
+  register: cluster_init_status
+  tags:
+    - storidge
+  changed_when: False
+
+- name: showing cluster status
+  debug:
+    var: cluster_init_status
+    verbosity: 1
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: retrieving join-token
+  shell: >
+    cioctl join-token | awk '/cioctl node add/ {print $5}'
+  register: jointoken
+  changed_when: False
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: creating new cluster
+  shell: >
+    cioctl create --noportainer --ip {{ cluster_ip }} | awk '/cioctl join/ {print $4}'
+  register: clustertoken
+  when: >
+    inventory_hostname == groups['manager'][0] and
+    cluster_init_status is defined and
+    'Condition: normal' not in cluster_init_status.stdout
+  tags:
+    - storidge
+
+- name: showing cluster-token
+  debug:
+    var: clustertoken
+    verbosity: 1
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: showing join-token
+  debug:
+    var: jointoken
+    verbosity: 1
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: joining nodes to cluster
+  shell: "cioctl join {{ apollo_manager }} {{ hostvars[groups['manager'][0]]['clustertoken']['stdout'] }} --ip {{ cluster_ip }}"
+  register: result
+  when: "'Condition: normal' not in cluster_init_status.stdout and inventory_hostname != groups['manager'][0]"
+  retries: 6
+  delay: 10
+  until: result is succeeded
+  tags:
+    - storidge
+
+- name: showing join result
+  debug:
+    msg: "{{ result }}"
+    verbosity: 1
+  tags:
+    - storidge
+  when: "result.changed and inventory_hostname != hostvars[groups['manager'][0]]['inventory_hostname']"
+
+- name: showing initialization command
+  debug:
+    msg: "cioctl init {{ hostvars[groups['manager'][0]]['clustertoken'].stdout.split('-')[1] }}"
+
+- name: initializing cluster
+  shell: "cioctl init {{ hostvars[groups['manager'][0]]['clustertoken'].stdout.split('-')[1] }}"
+  register: clusterinit
+  when: "'skipped' not in hostvars[groups['manager'][0]]['clustertoken'] and inventory_hostname == groups['manager'][0]"
+  retries: 3
+  delay: 10
+  until: clusterinit is succeeded
+  tags:
+    - storidge
+
+- name: showing initialization ouput
+  debug: 
+    var: clusterinit
+    verbosity: 1
+  run_once: True
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: retrieving cluster status
+  shell: >
+    cio info
+  register: cluster_init_status
+  changed_when: false
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: showing cluster status
+  debug: 
+    var: cluster_init_status
+    verbosity: 1
+  run_once: True
+  tags:
+    - storidge
+  when: inventory_hostname == groups["manager"][0]
+
+- name: enabling k8s storidge driver
+  command: kubectl create -f https://raw.githubusercontent.com/Storidge/csi-cio/master/deploy/releases/csi-cio-v1.3.0.yaml
+  register: storige_k8s_driver
+  when: arc['orchestrator']['provider'] in ["k8s","k3s"] and inventory_hostname == groups["manager"][0]
+    
+# Upgrade Storidge
+# - name: Getting Storidge Nodes
+#   command: cio node list
+#   register: cio_nodes
+#   changed_when: False
+#   tags:
+#     - storidge
+#   when: inventory_hostname == groups["manager"][0]
+
+# - name: DEBUG | Storidge Nodes
+#   debug:
+#     var: cio_nodes
+#     verbosity: 1
+#   tags:
+#     - storidge
+#   when: inventory_hostname == groups["manager"][0]
+
+# - name: Getting Storidge Node Info
+#   set_fact:
+#     storidge_ip: "{{ item.split()[1] }}"
+#     storidge_node_id: "{{ item.split()[2] }}"
+#     storidge_role: "{{ item.split()[3] }}"
+#     storidge_status: "{{ item.split()[4] }}"
+#     storidge_version: "{{ item.split()[5] }}"
+#   delegate_to: "{{ item.split()[0] }}"
+#   delegate_facts: yes
+#   with_items: "{{ cio_nodes.stdout_lines }}"
+#   when: inventory_hostname == groups["manager"][0]
+
+# # Upgrade Storidge
+# - name: DEBUG | Storidge Node Info
+#   debug:
+#     msg: 
+#       - "Storidge Node ID: {{ storidge_node_id }}"
+#       - "Storidge Node IP: {{ storidge_ip }}"
+#       - "Storidge Node Role: {{ storidge_role }}"
+#       - "Storidge Node Status: {{ storidge_status }}"
+#       - "Storidge Node Version: {{ storidge_version.split('-')[1] }}"
+#       - "Storidge Install Version: {{ storidge_install_version }}"
+#     verbosity: 1
+#   changed_when: storidge_install_version|int != storidge_version.split('-')[1]|int
+#   tags:
+#     - storidge
+#   when: "'storidge_nodes' in group_names"
+
+# - name: Checking Storidge Upgrade Status
+#   set_fact: 
+#     storidge_upgradable: yes
+#   when: storidge_install_version|int > storidge_version.split('-')[1]|int and 'storidge_nodes' in group_names
+
+# - name: Creating storidge_role_* Group
+#   group_by:
+#     key: storidge_role_{{ storidge_role }}
+#   when: "'storidge_nodes' in group_names"
+
+# - name: DEBUG | storidge_role_* Group Members
+#   debug:
+#     var: "groups['storidge_role_{{ storidge_role }}']"
+#   when: 'storidge_nodes' in group_names
+
+# - name: Creating storidge_status_* Group
+#   group_by:
+#     key: storidge_status_{{ storidge_status }}
+#   when: 'storidge_nodes' in group_names
+
+# - name: DEBUG | storidge_status_* Group Members
+#   debug:
+#     var: "groups['storidge_status_{{ storidge_status }}']"
+#   when: 'storidge_nodes' in group_names
+
+# Upgrade Storidge
+# - hosts: localhos t
+# serial: 1
+# tasks:
+#   - name: Counting Storidge Nodes
+#     set_fact:
+#       storidge_node_count: "{{ groups['storidge_nodes']|length }}"
+
+#   - name: Counting Storidge Nodes with status "normal"
+#     set_fact:
+#       storidge_normal_count: "{{ groups['storidge_status_normal']|length }}"
+
+#   - name: "ATTENTION: Status Check failed"
+#     fail: 
+#       msg: "WARNING! Not all Nodes are in status 'normal'"
+#     when: storidge_node_count != storidge_normal_count
+
+# # Upgrade Storidge
+# # Start with Nodes of Role "storage"
+# - hosts: 
+#   - storidge_role_storage
+#   - storidge_role_backup2
+#   - storidge_role_backup1
+#   - storidge_role_sds
+# serial: 1
+# ignore_unreachable: True
+# ignore_errors: true
+# tasks:
+#   - name: Upgrade Storidge Node
+#     block:
+#       - name: "INFO | Current Node"
+#         debug:
+#           msg: "Going to Update Storidge on {{  ansible_hostname  }} from {{ storidge_version.split('-')[1] }} to {{ storidge_install_version }}"
+#         when: storidge_upgradable is defined and storidge_upgradable
+
+#       - name: "FAIL | Node Status Check Failed"
+#         fail: 
+#           msg: "WARNING! Node is not in status 'normal'"
+#         when: storidge_status != "normal"
+
+#       - name: Starting Update
+#         command: "cioctl node update" #  --no-reboot
+#         register: storidge_update 
+#         async: 1000
+#         poll: 0
+#         when: storidge_upgradable is defined and storidge_upgradable and storidge_status == "normal"
+#         #failed_when: 
+
+#       - name: Checking Update Status
+#         async_status:
+#           jid: "{{ storidge_update.ansible_job_id }}"
+#         register: update_result
+#         until: update_result.finished
+#         when: storidge_upgradable is defined and storidge_upgradable and storidge_status == "normal"
+#         retries: 300
+
+#       - name: Rebooting Nodes
+#         reboot:
+#           reboot_timeout: 180
+#         when: storidge_upgradable is defined and storidge_upgradable and update_result.finished
+#         tags:
+#           - storidge
+
+#       - name: Clearing Node Failure Status
+#         meta: clear_host_errors
+
+#       - name: Waiting for Node to come back after reboot
+#         wait_for_connection:
+#           delay: 60
+#           timeout: 300
+#         when: storidge_upgradable is defined and storidge_upgradable
+
+#       - name: Waiting for node to become uncordoned
+#         shell: "cio node list | grep {{ ansible_hostname }}"
+#         register: storidge_current_status
+#         retries: 12
+#         delay: 10
+#         until: storidge_current_status.stdout.split()[4] == "normal"
+#         when: storidge_upgradable is defined and storidge_upgradable
+#         tags:
+#           - storidge
+
+#       - name: DEBUG | Node List
+#         debug:
+#           var: storidge_current_status
+#           verbosity: 1
+#         when: storidge_upgradable is defined and storidge_upgradable
+#         tags:
+#           - storidge
+
+#       - name: Getting Storidge Nodes
+#         command: cio node list
+#         register: cio_nodes
+#         retries: 12
+#         delay: 10
+#         until: cio_nodes is succeeded
+#         changed_when: False
+#         delegate_to: "{{ groups['manager'][0] }}"
+#         when: storidge_upgradable is defined and storidge_upgradable
+#         tags:
+#           - storidge
+  
+#       - name: DEBUG | Storidge Nodes
+#         debug:
+#           var: cio_nodes
+#           verbosity: 1
+#         when: storidge_upgradable is defined and storidge_upgradable
+#         tags:
+#           - storidge
+  
+#       - name: Getting Storidge Node Info
+#         set_fact:
+#           storidge_ip: "{{ item.split()[1] }}"
+#           storidge_node_id: "{{ item.split()[2] }}"
+#           storidge_role: "{{ item.split()[3] }}"
+#           storidge_status: "{{ item.split()[4] }}"
+#           storidge_version: "{{ item.split()[5] }}"
+#         delegate_to: "{{ item.split()[0] }}"
+#         delegate_facts: yes
+#         when: storidge_upgradable is defined and storidge_upgradable
+#         with_items: "{{ cio_nodes.stdout_lines }}"
+#     rescue:
+#     - debug:
+#         msg: 'I caught an error, can do stuff here to fix it, :-)'

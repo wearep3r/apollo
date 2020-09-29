@@ -1,0 +1,12 @@
+---
+app_name: "alertmanager"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+# Slack
+slack_webhook: "{{ lookup('env','SLACK_WEBHOOK') }}"
+slack_channel: "{{ lookup('env','SLACK_CHANNEL') }}"
+slack_user: "{{ lookup('env','SLACK_USER') | default(arc['space']['space_domain'], true) }}"
+
+alertmanager_version: "0.21.0"
+karma_version: "0.70"
+vmalert_version: "1.40.1"

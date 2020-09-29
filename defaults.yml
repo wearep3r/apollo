@@ -1,0 +1,163 @@
+version: 2
+apps: ""
+addons:
+  proxy:
+    enabled: true
+    ssl:
+      enabled: true
+      provider: "letsencrypt"
+  portainer:
+    enabled: true
+    ssl:
+      enabled: true
+      provider: proxy
+  gitlab:
+    enabled: false
+    gl_token: ""
+    token: ""
+    shared_runners_token: "z7e3r2o0"
+    registry:
+      url: "registry.gitlab.com"
+      user: ""
+      password: ""
+    repository:
+      sync:
+        enabled: false
+  gitlab-runner:
+    enabled: false
+    deploy:
+      enabled: true
+    build:
+      enabled: true
+    token: ""
+    coordinator_url: "https://gitlab.com"
+    docker_image: "docker:19.03.12"
+    package_version: 13.4.0
+    registration_token: ""
+    package_name: 'gitlab-runner'
+auth:  
+  enabled: true
+  provider: basic
+  admin_user: "apollo"
+  admin_password: "apollo"
+  admin_password_hash: "$2y$05$pEGrJCtK3fsOJKfkTCZbueiPdclYdP39nDRHvMoNOnUASuxh4Fgf2"
+  users: []
+backplane:
+  enabled: true
+backups:
+  provider: generic
+  enabled: false
+  aws_access_key_id: ""
+  aws_secret_access_key: ""
+  restic_repository: ""
+  restic_password: ""
+  restic_backup_cron: "30 * * * *"
+  restic_forget_args: "--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1"
+  restic_job_args: "--exclude minio_minio-data"
+cluster:
+  encryption:
+    enabled: true
+    provider: wireguard
+  firewall:
+    enabled: true
+    provider: generic
+management:
+  enabled: true
+  provider: traefik
+controlplane:
+  enabled: true
+gc:
+  enabled: false
+  cleanup_volumes: false
+alerts:
+  provider: alertmanager
+  enabled: false
+  mail:
+    enabled: true
+    to: ""
+  slack:
+    enabled: false
+    user: ""
+    channel: ""
+    api_url: ""
+logs:
+  enabled: true
+  provider: loki
+metrics:
+  enabled: true
+  provider: victoria
+  blackbox_exporter:
+    enabled: true
+    custom_probes: []
+analytics:
+  enabled: true
+  provider: grafana
+data:
+  enabled: true
+  provider: generic
+  volumes_dir: "/srv/.apollo/volumes"
+  nfs_source: "manager-0"
+  nfs_directory: "/srv/.apollo/volumes"
+dns:
+  enabled: false
+  custom_resolvers: ""
+  provider: "generic"
+engine:
+  enabled: true
+  provider: "docker"
+federation:
+  enabled: false
+  dir: "/srv/.apollo/federation"
+  username: "apollo-federation"
+  password: ""
+  spaces: []
+infrastructure:
+  enabled: false
+  path: "."
+  provider: "generic"
+  manager:
+    os_family: "ubuntu-18.04"
+    interface:
+      private: "eth0"
+      public: "eth1"
+    size: ""
+    count: 1
+    volume_count: 0
+    volume_size: 30
+  worker:
+    os_family: "ubuntu-18.04"
+    interface:
+      private: "eth0"
+      public: "eth1"
+    size: ""
+    count: 0
+    volume_count: 0
+    volume_size: 30  
+orchestrator:
+  enabled: true
+  provider: "swarm"
+providers:
+  digitalocean:
+    auth:
+      token: ""
+  hcloud:
+    auth:
+      token: ""
+  letsencrypt:
+    mail: ""
+    challenge:
+      provider: "generic"
+smtp:
+  server: ""
+  username: ""
+  password: ""
+  port: ""
+space:
+  name: "apollo"
+  version: "latest"
+  base_domain: ""
+  space_domain: ""
+  mail: ""
+whitelabel:
+  name: "apollo"
+  logo: "https://gitlab.com/p3r.one/apollo/-/raw/master/logo.png"

@@ -1,23 +1,24 @@
-# {{ apollo_space }}
+# {{ arc['space']['name'] }}
 
 ## Details
 
-- Container-Engine: [{{ apollo_engine }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_engine }})
-- Container-Orchestrator: [{{ apollo_orchestrator }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_orchestrator }})
-- Data-Engine: [{{ apollo_data }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ apollo_data }})
-- Provider: {{ apollo_provider }}
-- Wireguard: {{ apollo_wireguard_enabled|bool }}
+- Container-Engine: [{{ arc['engine']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['engine']['provider'] }})
+- Container-Orchestrator: [{{ arc['orchestrator']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['orchestrator']['provider'] }})
+- Data-Engine: [{{ arc['data']['provider'] }}](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/features.md/#{{ arc['data']['provider'] }})
+- Provider: {{ arc['infrastructure']['provider'] }}
+- Wireguard: {{ arc['cluster']['encryption']['enabled']|bool }}
 - Get Help: [apollo docs](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/)
 
 ### Nodes
 
-{% for host in groups['all'] %}
-* {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% for host in groups['cluster'] %}
+- {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
+{% if arc['federation']['enabled']|bool %}
 
-{% if apollo_federation_enabled|bool %}
 ## Federation
 
+- Enabled: True
 - Federation-User: {{ apollo_federation_user }}
 - Federation-Password: {{ apollo_federation_password }}
 - Federation-Spaces:
@@ -26,37 +27,64 @@
 {% endfor %}
 {% endif %}
 
-{% if apollo_backups_enabled|bool %}
+
 ## Backups
 
-- Backup-User: {{ aws_access_key_id }}
-- Backup-Password: {{ aws_secret_access_key }}
-- Backup-Ziel: {{ restic_repository }}
-- Backup-Keyphrase: {{ restic_password }}
+{% if arc['backups']['enabled']|bool %}
+- Enabled: True
+- Backup-User: {{ arc['backups']['aws_access_key_id'] }}
+- Backup-Password: {{ arc['backups']['aws_secret_access_key'] }}
+- Backup-Ziel: {{ arc['backups']['restic_repository'] }}
+- Backup-Keyphrase: {{ arc['backups']['restic_password'] }}
+{% else %}
+- Enabled: False
 {% endif %}
 
 ## Authentication
 
 apollo uses **Basic Authentication** to authenticate access on backplane services:
 
-- Username: {{ admin_user }}
-- Password: {{ admin_password }}
+- Username: {{ arc['auth']['admin_user'] }}
+- Password: {{ arc['auth']['admin_password'] }}
 
 ## DNS Setup
 
-- Base Domain: {{ base_domain }}
-- Space Domain: {{ space_domain }}
+- Base Domain: {{ arc['space']['base_domain'] }}
+- Space Domain: {{ arc['space']['space_domain'] }}
 - Ingress IP: {{ apollo_ingress_ip }}
 - Management IP: {{ apollo_management_ip }}
 
 By default, apollo expects ingress traffic to land on the worker nodes which is why `INGRESS_IP` defaults to `worker-0`'s IP.
 
-To operate this space, please add the following records to your DNS zone (`{{ base_domain }}`):
+To operate this space, please add the following records to your DNS zone (`{{ arc['space']['base_domain'] }}`):
 
 ```
-{{ apollo_space }} IN A {{ apollo_management_ip }}
-*.{{ apollo_space }} IN A {{ apollo_management_ip }}
+{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
+*.{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
 ```
+
+## Deployment
+
+To deploy this space, run the following commands from this space directory:
+
+### if you use a cloud provider and did not yet spin up your infrastructure
+
+```bash
+apollo build
+apollo deploy
+```
+
+### if you use your own nodes and already prepared a Nodesfile.yml
+
+```bash
+apollo deploy
+``` 
+
+## How to enabled automated versioning for this space
+
+By default, this space includes [shipmate](https://gitlab.com/peter.saarland/shipmate/) pipelines that handle automatic versioning and more.
+
+Please refer to shipmate's README regarding necessary requirements for this to work with your GitLab repository (Personal Access Token).
 
 ## Access
 
@@ -64,15 +92,22 @@ To operate this space, please add the following records to your DNS zone (`{{ ba
 
 A set of SSH-Keys belonging to this space can be found in `.ssh/`. The keys can be used to connect as user **root** to any of the IPs in `APOLLO_NODES_MANAGER` or `APOLLO_NODES_WORKER`:
 
-{% for host in groups['all'] %}
-* {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% for host in groups['cluster'] %}
+- {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
 Assuming you cloned the repository and work from its local directory, you can connect via ssh like this:
 
-`ssh -l root -i .ssh/id_rsa {{ space_domain }}`
+`ssh -l root -i .ssh/id_rsa {{ arc['space']['space_domain'] }}`
 
-Once connected, you can reach any other node in the cluster by simply doing `ssh manager-0` etc.
+Once connected, you can reach any other node in the cluster by simply doing `ssh worker-0` etc.
+
+From within your space directory, you can also do this:
+
+```bash
+# replace manager-0 with any of the nodes you intend to enter
+apollo enter manager-0
+``` 
 
 ### VS Code Remote Development
 
@@ -80,18 +115,36 @@ Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remot
 
 - Clone this repo
 - cd into the repository directory
-- add your ssh-key to the apollo manager: `ssh-copy-id -i ~/.ssh/id_rsa -f -o "IdentityFile .ssh/id_rsa" root@{{ space_domain }}`
+- add your ssh-key to the apollo manager: `ssh-copy-id -i ~/.ssh/id_rsa -f -o "IdentityFile .ssh/id_rsa" root@{{ arc['space']['space_domain'] }}`
 - Setup [SSH](https://code.visualstudio.com/docs/remote/ssh-tutorial)
 - Click the "Open a remote window" button, select "Remote SSH: connect to host", then "+ Add new SSH Host"
-- Enter `ssh root@{{ space_domain }}`
+- Enter `ssh root@{{ arc['space']['space_domain'] }}`
 - Enjoy
 
-{% if backplane_enabled|bool %}
 ### Web
 
-You can reach any of the controlplane services through its webinterface. Use `{{ apollo_admin_user }}` and `{{ apollo_admin_password }}` to authenticate.
+You can reach any of the controlplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
 
-- [Portainer](http://portainer.{{ space_domain }})
-- [Grafana](https://grafana.{{ space_domain }}:8443)
-- [Traefik](https://traefik.{{ space_domain }}:8443)
-{% endif %}
+- [Analytics](https://grafana.{{ arc['space']['space_domain'] }}:8443)
+- [Traefik](https://traefik.{{ arc['space']['space_domain'] }}:8443)
+- [Alerts](https://alerts.{{ arc['space']['space_domain'] }}:8443)
+
+### CaaS
+
+You can reach any of the orchestrator-related services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
+
+- [Portainer](http://portainer.{{ arc['space']['space_domain'] }})
+- [Proxy](http://proxy.{{ arc['space']['space_domain'] }})
+
+
+## How to deploy apps to this space
+
+Ideally you deploy with [shipmate](https://gitlab.com/peter.saarland/shipmate). Ansible can be used to automate a few things around volumes and networks but you can also use `docker stack deploy` directly.
+
+The default mechanism (requires `arc.addons.gitlab-runner.deploy.enabled: true`) makes use of the special gitlab-runner with the `deploy` tag that has manager-0's docker socket mounted. Thus you'll be able to interface with the cluster's manager from within a shipmate container directly and can use standard tooling. 
+
+Also, you can deploy using the following techniques:
+
+- setup ssh to use this space's ssh-key for connections, then set `DOCKER_HOST=ssh://$SPACE_DOMAIN` when using `docker stack deploy`
+- ssh to manager-0 and deploy stuff locally (using `apollo enter manager-0`)
+- use the space with VSCode Remote Development which also gives you direct access to the Docker Socket

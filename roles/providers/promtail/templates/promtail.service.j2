@@ -1,0 +1,18 @@
+[Unit]
+Description=promtail
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart={{ apollo_binary_dir }}/promtail \
+        -config.file {{ app_dir }}/promtail-config.yml
+
+SyslogIdentifier=promtail
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

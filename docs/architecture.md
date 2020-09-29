@@ -10,17 +10,21 @@ apollo is structured in several parts dealing with different concerns of a clust
 
 ## Platform
 
-### Spaces
+### Metrics
 
 [More](spaces.md)
 
-### Federation
+### Logs
 
 [More](federation.md)
 
 ### Network
 
 [More](network.md)
+
+### Management
+
+[More](management.md)
 
 ### Core
 
@@ -37,10 +41,6 @@ apollo is structured in several parts dealing with different concerns of a clust
 ### Data
 
 [More](data.md)
-
-### Backplane
-
-[More](backplane.md)
 
 ### Apps
 

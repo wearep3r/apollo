@@ -1,0 +1,30 @@
+instance_name = {{ arc['space']['name'] }}
+
+[security]
+admin_user = {{ arc['auth']['admin_user'] }}
+admin_password = {{ arc['auth']['admin_password'] }}
+
+[users]
+allow_sign_up = false
+default_theme = light
+
+[panels]
+sanitize_html = true
+
+[server]
+domain = {{ app_domain }}
+
+[paths]
+provisioning = /etc/grafana/provisioning
+plugins = /var/lib/grafana/plugins
+logs = /var/log/grafana
+data = /var/lib/grafana
+
+;[dashboards]
+;default_home_dashboard_path = dashboards/apollo-nodes.json
+
+[auth]
+disable_login_form = false
+
+[auth.basic]
+enabled = false

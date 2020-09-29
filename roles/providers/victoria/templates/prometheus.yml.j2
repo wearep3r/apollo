@@ -1,0 +1,267 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+  external_labels:
+    monitor: 'victoria'
+    space: '{{ arc['space']['name'] }}'
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+scrape_configs:
+# - job_name: kubernetes-cadvisor
+#   scrape_interval: 30s
+#   scrape_timeout: 10s
+#   metrics_path: /metrics
+#   scheme: https
+#   kubernetes_sd_configs:
+#   - api_server: <URL to you k8s API>
+#     role: node
+#     tls_config:
+#       ca_file: ca.pem
+#       cert_file: cert.pem
+#       key_file: kay.pem
+#       insecure_skip_verify: false
+#   tls_config:
+#     ca_file: ca.pem
+#     cert_file: cert.pem
+#     key_file: kay.pem
+#     insecure_skip_verify: false
+#   relabel_configs:
+#   - separator: ;
+#     regex: __meta_kubernetes_node_label_(.+)
+#     replacement: $1
+#     action: labelmap
+#   - separator: ;
+#     regex: (.*)
+#     target_label: __address__
+#     replacement: <URL to you k8s API>
+#     action: replace
+#   - source_labels: [__meta_kubernetes_node_name]
+#     separator: ;
+#     regex: (.+)
+#     target_label: __metrics_path__
+#     replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+#     action: replace
+# Check: https://github.com/prometheus/prometheus/issues/4633
+{% if arc['orchestrator']['provider'] in ['k3s', 'kubernetes'] %}
+  - job_name: 'kubelet'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true  # Required with Minikube.
+  - job_name: 'cadvisor'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true  # Required with Minikube.
+      metrics_path: /metrics/cadvisor
+  - job_name: 'k8apiserver'
+      kubernetes_sd_configs:
+      - role: endpoints
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true  # Required if using Minikube.
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+   - job_name: 'k8services'
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - source_labels:
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_service_name
+        action: drop
+        regex: default;kubernetes
+      - source_labels:
+          - __meta_kubernetes_namespace
+        regex: default
+        action: keep
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: job
+    - job_name: 'k8pods'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        regex: metrics
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        target_label: job
+{% endif %}
+  - job_name: 'blackbox-exporter'
+    metrics_path: /probe
+    params:
+      module: [http_backplane]
+    static_configs:
+      - targets:
+        - http://portainer.{{ arc['space']['space_domain'] }}        
+        - http://proxy.{{ arc['space']['space_domain'] }}
+        - https://traefik.{{ arc['space']['space_domain'] }}:8443
+        - https://grafana.{{ arc['space']['space_domain'] }}:8443
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ apollo_manager }}:9115  # The blackbox exporter's real hostname:port.
+
+    
+{% if arc['metrics']['enabled']|bool %}
+  # - job_name: 'cadvisor'
+  #   dns_sd_configs:
+  #   - names:
+  #     # This A-Record is managed by Docker Swarm
+  #     - 'tasks.cadvisor'
+  #     type: 'A'
+  #     port: 9009
+
+  - job_name: 'cadvisor'
+    static_configs:
+    - targets:
+{% for host in groups['cluster'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9009"
+{% endfor %}
+    metrics_path: /metrics
+
+  - job_name: 'dockerd'
+    static_configs:
+    - targets:
+{% for host in groups['cluster'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9323"
+{% endfor %}
+    metrics_path: /metrics
+  
+  - job_name: 'victoria'
+    static_configs:
+    - targets:
+      - "{{ apollo_manager }}:8428"
+    metrics_path: /metrics
+  
+  - job_name: 'grafana'
+    static_configs:
+    - targets:
+      - "{{ apollo_manager }}:3000"
+    metrics_path: /metrics
+
+  - job_name: 'node-exporter'
+    static_configs:
+    - targets:
+{% for host in groups['cluster'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9100"
+{% endfor %}
+    metrics_path: /metrics
+
+  - job_name: 'process-exporter'
+    static_configs:
+    - targets:
+{% for host in groups['cluster'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9256"
+{% endfor %}
+    metrics_path: /metrics
+
+    # dns_sd_configs:
+    # - names:
+    #   # This A-Record is managed by Docker Swarm
+    #   - 'tasks.node-exporter'
+    #   type: 'A'
+    #   port: 9100
+
+  - job_name: 'traefik'
+    static_configs:
+    - targets:
+      - "{{ apollo_manager }}:8082"
+    metrics_path: /metrics
+
+  - job_name: 'proxy'
+    static_configs:
+    - targets:
+      - "{{ apollo_manager }}:8080"
+    metrics_path: /metrics
+
+  - job_name: 'loki'
+    static_configs:
+    - targets:
+      - "{{ apollo_manager }}:3100"
+    metrics_path: /metrics
+
+  - job_name: 'promtail'
+    static_configs:
+    - targets:
+{% for host in groups['cluster'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9080"
+{% endfor %}
+    metrics_path: /metrics
+
+{% endif %}
+
+{% if 'minio' in arc['addons'] %}
+  - job_name: 'minio'
+    dns_sd_configs:
+      - names:
+        # This A-Record is managed by Docker Swarm
+        - 'tasks.minio'
+        type: 'A'
+        port: 9000
+    metrics_path: /minio/prometheus/metrics
+{% endif %}
+
+{% if arc['addons']['gitlab-runner']['enabled']|bool %}
+  - job_name: 'giltlab-runner'
+    static_configs:
+    - targets:
+{% if arc['addons']['gitlab-runner']['build']['enabled']|bool %}
+{% for host in groups['cluster'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9252"
+{% endfor %}
+{% elif arc['addons']['gitlab-runner']['deploy']['enabled']|bool %}
+{% for host in groups['manager'] %}
+      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9252"
+{% endfor %}
+{% endif %}
+    metrics_path: /metrics
+{% endif %}
+
+{% if arc['data']['provider'] == "storidge" %}
+  - job_name: 'cio-exporter'
+    static_configs:
+    - targets:
+      - "{{ apollo_manager }}:16995"
+    metrics_path: /metrics
+{% endif %}
+
+{# {% if prometheus_federation_enabled|bool %}
+# {% for space in apollo_federation_spaces %}
+#   - job_name: 'federate-{{ space.apollo_space }}'
+#     scrape_interval: 15s
+#     scrape_timeout: 7s
+#     honor_labels: true
+#     metrics_path: '/federate'
+#     basic_auth:
+#       username: munfred
+#       password: D7psPWqVVT7toJf
+#     params:
+#       'match[]':
+#         - '{job="prometheus"}'
+#         - '{__name__=~"job:.*"}'
+#     static_configs:
+#       - targets:
+#       - '{{ space.prometheus_domain }}'
+#         labels:
+#           apollo_space: {{ space.apollo_space }}
+# {% endfor %}
+# {% endif %}
+#}

@@ -1,0 +1,210 @@
+---
+- name: Copying firewall config
+  template:
+    src: templates/iptables.conf.j2
+    dest: /etc/iptables.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart firewall
+  tags:
+    - firewall
+
+- name: Copying firewall service
+  template:
+    src: templates/iptables.service.j2
+    dest: /etc/systemd/system/iptables.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload systemd
+  tags:
+    - firewall
+
+- name: reload systemd
+  systemd:
+    daemon_reload: True
+
+- name: Enabling firewall service
+  service:
+    name: iptables
+    enabled: True
+    #state: started
+  tags:
+    - firewall
+
+- name: Install wireguard
+  block:
+    - name: Add wireguard ppa (Ubuntu)
+      apt_repository:
+        repo: 'ppa:wireguard/wireguard'
+      when:
+        - ansible_distribution == "Ubuntu"
+        - ansible_distribution_major_version|int < 20
+
+    - name: Install linux headers (Ubuntu)
+      apt:
+        update_cache: yes
+        state: present
+        name: linux-headers-generic
+      when:
+        - ansible_distribution == "Ubuntu"
+        - ansible_distribution_major_version|int < 20
+
+    - name: Add unstable repository (Debian)
+      copy:
+        src: templates/unstable.list
+        dest: /etc/apt/sources.list.d/unstable.list
+      when:
+        - ansible_distribution == "Debian" and debian_enable_testing
+
+    - name: Pin packages (Debian)
+      copy:
+        src: templates/limit-unstable
+        dest: /etc/apt/preferences.d/limit-unstable
+      when:
+        - ansible_distribution == "Debian" and debian_pin_packages
+
+    - name: Get kernel version (Debian)
+      command: uname -r
+      register: kernel
+      when:
+        - ansible_distribution == "Debian"
+
+    - name: Install kernel headers (Debian)
+      apt:
+        state: present
+        update_cache: true
+        name: linux-headers-{{ kernel.stdout }}
+      when:
+        - ansible_distribution == "Debian"
+
+    - name: Install wireguard (apt)
+      apt:
+        update_cache: yes
+        state: present
+        name: wireguard
+      when:
+        - ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+      register: wireguard_apt
+
+    # PLACE REBOOT HERE
+    - name: Rebooting Nodes
+      reboot:
+        reboot_timeout: 180
+      when: wireguard_apt.changed
+
+    - name: Add kernel modules
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - wireguard
+        - iptable_nat
+        - ip6table_nat
+
+    - name: Enable ipv4 forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        state: present
+        value: "1"
+
+    - name: Enable ipv6 forwarding
+      sysctl:
+        name: net.ipv6.conf.all.forwarding
+        state: present
+        value: "1"
+
+    - name: Read private key
+      stat:
+        path: "{{ wireguard_path }}/privatekey"
+      register: privatekey
+
+    - name: Generate wireguard keys
+      shell: "umask 077; wg genkey | tee {{ wireguard_path  }}/privatekey | wg pubkey > {{ wireguard_path }}/publickey"
+      when: not privatekey.stat.exists
+
+    - name: Read private key
+      slurp:
+        src: "{{ wireguard_path }}/privatekey"
+      register: private
+
+    - name: Read public key
+      slurp:
+        src: "{{ wireguard_path }}/publickey"
+      register: public
+
+    - name: Read private client's key
+      stat:
+        path: "{{ wireguard_path }}/client_privatekey"
+      register: client_privatekey
+      run_once: true
+      when: client_vpn_ip | length > 0
+
+    - name: Generate wireguard client's keys
+      shell: "umask 077; wg genkey | tee {{ wireguard_path  }}/client_privatekey | wg pubkey > {{ wireguard_path }}/client_publickey"
+      run_once: true
+      when:
+        - client_vpn_ip | length > 0
+        - not client_privatekey.stat.exists
+
+    - name: Read private client's key
+      slurp:
+        src: "{{ wireguard_path }}/client_privatekey"
+      register: client_privatekey
+      run_once: true
+      when: client_vpn_ip | length > 0
+
+    - name: Read public client's key
+      slurp:
+        src: "{{ wireguard_path }}/client_publickey"
+      register: client_publickey
+      run_once: true
+      when: client_vpn_ip | length > 0
+
+    - name: Generate configs
+      template:
+        src: interface.conf.j2
+        dest: "{{ wireguard_path }}/{{ wireguard_network_name }}.conf"
+        owner: root
+        group: root
+        mode: "u=rw,g=r,o="
+      register: config
+
+    - name: Generate client's config
+      template:
+        src: client.conf.j2
+        dest: "{{ client_wireguard_path }}"
+        mode: "u=rw,g=,o="
+      vars:
+        ansible_connection: local
+      become: no
+      run_once: true
+      when: client_vpn_ip | length > 0
+      delegate_to: localhost
+
+    - name: Start and enable wg-quick systemd service
+      systemd:
+        name: "wg-quick@{{ wireguard_network_name }}"
+        enabled: yes
+        state: started
+
+    - name: Restart wg-quick service if required
+      systemd:
+        name: "wg-quick@{{ wireguard_network_name }}"
+        state: restarted
+      when: config.changed
+  when: arc['cluster']['encryption']['enabled']|bool
+
+- name: Configure hcloud networking
+  block:
+    - name: Set network config
+      template:
+        src: templates/hcloud-network.cfg.j2
+        dest: /etc/network/interfaces.d/61-apollo-hcloud-network.cfg
+      register: hcloud_network_config
+      notify: restart networking
+  when: 
+    - arc['infrastructure']['provider'] == "hcloud"
+    - arc['infrastructure']['enabled']|bool
+

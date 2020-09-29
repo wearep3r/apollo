@@ -1,5 +1,0 @@
----
-# defaults file for zero-app-portainer
-images:
-  agent: "{{ lookup('env','APOLLO_APP_PORTAINER_IMAGES_AGENT') | default('portainer/agent:1.6.0', true) }}"
-  portainer: "{{ lookup('env','APOLLO_APP_PORTAINER_IMAGES_PORTAINER') | default('portainer/portainer:1.24.1', true) }}"

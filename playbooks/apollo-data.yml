@@ -1,7 +1,0 @@
-- name: "@apollo-data"
-  hosts: all
-  gather_facts: true
-  become: true
-  strategy: linear
-  roles:
-    - apollo-data

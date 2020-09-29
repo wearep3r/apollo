@@ -11,7 +11,6 @@ cache:
 variables:
   DOCKER_TLS_CERTDIR: ""
   DOCKER_BUILDKIT: 1
-  DOCKER_HOST: tcp://docker:2375
   IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   APOLLO_VERSION: latest
 
@@ -53,7 +52,7 @@ workflow:
 
 test:
   stage: test
-  image: "registry.gitlab.com/p3r.one/apollo:v$APOLLO_VERSION"
+  image: "registry.gitlab.com/p3r.one/apollo:$APOLLO_VERSION"
   script:
     - apollo test
   extends:
@@ -61,11 +60,10 @@ test:
 
 deploy:
   stage: deploy
-  image: "registry.gitlab.com/p3r.one/apollo:v$APOLLO_VERSION"
+  image: "registry.gitlab.com/p3r.one/apollo:$APOLLO_VERSION"
   variables:
     - ANSIBLE_VERBOSITY=2
   extends:
     - .apollo:rules:deploy
   script:
-    - load .
-    - deploy
+    - apollo deploy

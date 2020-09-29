@@ -1,9 +1,0 @@
-- import_playbook: apollo-facts.yml
-
-- name: "@apollo-network"
-  hosts: all
-  gather_facts: true
-  strategy: linear
-  become: true
-  roles:
-    - apollo-network

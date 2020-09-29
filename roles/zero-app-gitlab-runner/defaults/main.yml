@@ -1,9 +1,0 @@
----
-# defaults file for zero-app-gitlab-runner
-gitlab_runner_enabled: "{{ lookup('env','GITLAB_RUNNER_ENABLED') | default(1, true) }}"
-gitlab_runner_tokens: "{{ lookup('env','GITLAB_RUNNER_TOKENS') | default('SUCHSECRETMUCHWOW', true) }}"
-gitlab_runner_ci_docker_image: "docker:19.03.8"
-gitlab_runner_ci_dind_image: "docker:19.03.8-dind"
-gitlab_runner_environment: 
-    - "DOCKER_DRIVER=overlay2"
-    - "DOCKER_BUILDKIT=1"

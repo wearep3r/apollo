@@ -5,7 +5,9 @@ export PATH=$HOME/bin:/usr/local/bin:$GOPATH/bin:/usr/local/opt/make/libexec/gnu
 export ZSH="/root/.oh-my-zsh"
 export HISTFILE="/root/.apollo/.history"
 
-ZSH_THEME="alanpeabody"
+ZSH_THEME="flazz"
+
+#ZSH_THEME="alanpeabody"
 plugins=(
 	git
 	zsh-autosuggestions
@@ -22,8 +24,9 @@ source $ZSH/oh-my-zsh.sh
 source $ZSH/plugins/fzf-tab-completion/zsh/fzf-zsh-completion.sh
 source $ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-eval "$(starship init zsh)"
-source /apollo/apollo.plugin.zsh
+_apollo_completion() {
+  eval $(env _TYPER_COMPLETE_ARGS="${words[1,$CURRENT]}" _APOLLO_COMPLETE=complete_zsh apollo)
+}
 
 # Generic commands
 alias reload="source ~/.zshrc"
@@ -33,5 +36,6 @@ alias zshrc="nano ~/.zshrc"
 alias -g Z='| fzf'
 alias less="bat"
 
-apollo::echo "Welcome to ${bold}apollo${normal} ($APOLLO_VERSION). Use ${bold}load${normal} to select a space for deployment or ${bold}init${normal} to create a new space"
-apollo::echo "If you need support, please visit ${bold}https://gitlab.com/p3r.one/apollo${normal}"
+export PROMPT='%{$fg[green]%}%m%{$reset_color%}@%{$fg_bold[cyan]%}${APOLLO_VERSION}%{$reset_color%}%{${fg_bold[magenta]}%} :: %{$reset_color%}%{${fg[green]}%}%c $(git_prompt_info)%{${fg_bold[$CARETCOLOR]}%}%#%{${reset_color}%} '
+export ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[cyan]%}"
+export ZSH_THEME_GIT_PROMPT_SUFFIX=" %{$reset_color%}"

@@ -1,0 +1,22 @@
+- name: "@apollo-recap"
+  hosts: apollo
+  gather_facts: False
+  strategy: linear
+  tasks:
+    - name: showing apollo config
+      block:
+        - name: asserting config file exists
+          debug:
+            msg:
+              - "apollo successfully deployed"
+              - "this is what you got:"
+              - "space: {{ arc['space']['name'] }}"
+              - "space domain: {{ arc['space']['space_domain'] }}"
+              - "grafana: https://grafana.{{ arc['space']['space_domain'] }}:8443"
+              - "traefik: https://traefik.{{ arc['space']['space_domain'] }}:8443"
+              - "alerts: https://alerts.{{ arc['space']['space_domain'] }}:8443"
+
+
+# TODO
+# save arc to nodes
+#

@@ -1,0 +1,133 @@
+---
+- name: enable proxy
+  block:
+    - name: Create app group
+      group:
+        name: "{{ app_name }}"
+        state: present
+
+    - name: Create app user
+      user:
+        name: "{{ app_name }}"
+        comment: "apollo-app-{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.{{ traefik_version }}.yml.j2
+        dest: "{{ app_dir }}/docker-compose.yml"
+        mode: '0644'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      register: stack_file
+
+    - name: Create config directories
+      file:
+        path: "{{ app_dir }}/{{ config_dir.path }}"
+        state: directory
+        mode: '{{ config_dir.mode }}'
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      with_filetree:
+        - "files/"
+      when: config_dir.state == 'directory'
+      loop_control:
+        label: "{{ config_dir.path }}"
+        loop_var: config_dir
+
+    - name: Copy config files
+      copy:
+        src: "{{ config_file.src }}"
+        dest: "{{ app_dir }}/{{ config_file.path }}"
+        mode: "{{ config_file.mode }}"
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+      with_filetree:
+        - "files/"
+      when: config_file.state == 'file'
+      loop_control:
+        label: "{{ config_file.path }}"
+        loop_var: config_file
+
+    # - name: Copy Docker Traefik config
+    #   template:
+    #     src: templates/traefik.{{ traefik_version }}.toml.j2
+    #     dest: "{{ app_dir }}/traefik.toml"
+    #     owner: "{{ app_name }}"
+    #     group: "{{ app_name }}"
+    #     mode: '0644'
+
+    - name: Remove Docker Traefik config
+      file:
+        path: "{{ app_dir }}/traefik.toml"
+        state: absent
+
+    - name: Check for legacy Docker volume
+      stat:
+        path: "/var/lib/docker/volumes/traefik_traefik-data/_data"
+      register: volume_stat_result
+
+    - name: Check if volume is already migrated
+      stat:
+        path: "{{ app_dir }}/acme.json"
+      register: stat_result
+
+    - name: Migrate volume
+      copy:
+        src: /var/lib/docker/volumes/traefik_traefik-data/_data
+        dest: "{{ app_dir }}"
+        remote_src: yes
+      when: 
+        - stat_result is defined
+        - not stat_result.stat.exists
+        - volume_stat_result.stat.exists
+
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+
+    - name: Teardown legacy Traefik stack
+      docker_stack:
+        state: absent
+        name: traefik
+        prune: yes
+
+    - name: Create proxy network
+      docker_network:
+        name: proxy
+        driver: overlay
+    
+    - name: enable proxy
+      docker_stack:
+        state: present
+        name: proxy
+        prune: yes
+        with_registry_auth: yes
+        compose:
+          - "{{ app_dir }}/docker-compose.yml"
+      register: proxy_provision
+  when:
+    - arc['addons']['proxy']['enabled']|bool
+  tags:
+    - proxy
+
+- name: disable proxy
+  block:
+    - name: disable proxy
+      docker_stack:
+        state: absent
+        name: proxy
+  when:
+    - not arc['addons']['proxy']['enabled']|bool
+  tags:
+    - proxy

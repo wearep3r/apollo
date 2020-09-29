@@ -1,0 +1,72 @@
+- name: "@apollo-spaces"
+  hosts: apollo
+  become: True
+  strategy: linear
+  tasks:
+    - name: setting README
+      block:
+        - name: creating README.md for space
+          template:
+            src: "README.md.j2"
+            dest: "{{ apollo_space_dir }}/README.md"
+            owner: root
+            group: root
+            mode: 0755
+
+    - name: setting space QR code
+      block:
+        - name: creating QR code for portainer
+          command: "qrencode -o {{ apollo_space_dir }}/logo.png https://portainer.{{ arc['space']['space_domain'] }}"
+          args:
+            creates: "{{ apollo_space_dir }}/logo.png"
+
+    - name: setting ssh config
+      block:
+        - name: creating ssh config for space
+          template:
+            src: "ssh-config.j2"
+            dest: "{{ apollo_space_dir }}/.ssh/config"
+            owner: root
+            group: root
+            mode: 0755
+
+        - name: including space in local ssh config
+          lineinfile: 
+            dest: /root/.ssh/config
+            #regexp=".*Include$" 
+            line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
+            state: present
+
+    - name: asserting docker directory
+      stat:
+        path: /root/.docker
+      register: docker_directory
+
+    - name: setting docker contexts
+      block:
+        - name: creating docker contexts directory
+          file:
+            path: "/root/.docker/contexts"
+            state: directory
+            mode: '0755'
+
+        - name: creating docker context for space
+          template:
+            src: "docker-context.j2"
+            dest: "/root/.docker/contexts/{{ arc['space']['name'] }}"
+            owner: root
+            group: root
+            mode: 0755
+      when: docker_directory.stat.exists
+
+    - name: creating .gitignore
+      copy:
+        dest: "{{ apollo_space_dir }}/.gitignore"
+        content: |
+          .terraform
+          .terraform.tfstate.lock.info
+          terraform.tfstate.backup
+        backup: false
+        owner: root
+        group: root
+        mode: 0755

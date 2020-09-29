@@ -1,0 +1,25 @@
+[Unit]
+Description=Victoria Metrics Alerts
+After=network-online.target
+
+[Service]
+Type=simple
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/vmalert \
+    -rule="{{ app_dir }}/alerts.yml" \
+    -datasource.url="http://{{ apollo_manager }}:8428" \
+    -notifier.url="http://{{ apollo_manager }}:9093" \
+    -remoteWrite.url="http://{{ apollo_manager }}:8428" \
+    -remoteRead.url="http://{{ apollo_manager }}:8428" \
+    -external.label="space={{ arc['space']['name'] }}" \
+    -external.label="base_domain={{ arc['space']['base_domain'] }}" \
+    -evaluationInterval=3s        
+
+SyslogIdentifier=vmalert
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

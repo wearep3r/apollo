@@ -1,7 +1,0 @@
----
-app_name: "nodered"
-app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-app_domain: "{{ lookup('env','APOLLO_APP_NODERED_APP_DOMAIN') | default(app_name+'.'+space_domain, true) }}"
-
-images:
-  nodered: "{{ lookup('env','APOLLO_APP_NODERED_IMAGES_NODERED') | default('nodered/node-red', true) }}"

@@ -1,14 +1,10 @@
 #!/bin/zsh
 set -e
-setopt aliases
 
-source /apollo/apollo.plugin.zsh
-
-if [ -f $HOME/.apollo/apollo.env ];
+if [ "$CI" = "1" ];
 then
-  set -o allexport
-  export $(grep -hv '^#' $HOME/.apollo/apollo.env | xargs)
-  set +o allexport
+  # in CI
+  export SHELL ["/bin/bash", "-c"]
 fi
 
 if [ ! -d $HOME/.apollo/.spaces ];
@@ -24,6 +20,18 @@ if [ -d "$SSH_DIR" ]; then
         cp /.ssh/* /root/.ssh/. && chmod 0600 /root/.ssh/id_rsa
         echo "Copied SSH Keys to /root/.ssh"
     fi
+fi
+
+if [ "$1" = 'enter' ];
+then
+  cd /cargo
+  exec "/bin/zsh"
+elif [ "$1" = 'apollo' ];
+then
+  exec "$@"
+else
+  set -- /usr/local/bin/apollo "$@"
+  cd /cargo
 fi
 
 exec "$@"

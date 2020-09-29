@@ -17,10 +17,10 @@ terraform/variables.tf
 ./docker-compose.yml
 .DS_Store
 cio
-!roles/
-roles/*
-!roles/zero-*
-!roles/apollo-*
+# !roles/
+# roles/*
+# !roles/zero-*
+# !roles/apollo-*
 .vagrant
 inventory/windows
 terraform
@@ -49,3 +49,4 @@ terraform.rc
 **/infrastructure.apollo.env
 **/nodes.apollo.env
 **/*.env
+_modules

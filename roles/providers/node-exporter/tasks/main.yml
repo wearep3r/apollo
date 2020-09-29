@@ -1,0 +1,266 @@
+---     
+- name: Assert usage of systemd as an init system
+  assert:
+    that: ansible_service_mgr == 'systemd'
+    msg: "This role only works with systemd"
+
+- name: Get systemd version
+  command: systemctl --version
+  changed_when: false
+  check_mode: false
+  register: __systemd_version
+  tags:
+    - skip_ansible_lint
+
+- name: setting systemd facts
+  set_fact:
+    node_exporter_systemd_version: "{{ __systemd_version.stdout_lines[0] | regex_replace('^systemd\\s(\\d+).*$', '\\1') }}"
+
+- name: Naive assertion of proper listen address
+  assert:
+    that:
+      - "':' in node_exporter_web_listen_address"
+
+- name: Assert collectors are not both disabled and enabled at the same time
+  assert:
+    that:
+      - "item not in node_exporter_enabled_collectors"
+  with_items: "{{ node_exporter_disabled_collectors }}"
+
+- block:
+    - name: Assert that TLS key and cert path are set
+      assert:
+        that:
+          - "node_exporter_tls_server_config.cert_file is defined"
+          - "node_exporter_tls_server_config.key_file is defined"
+
+    - name: Check existence of TLS cert file
+      stat:
+        path: "{{ node_exporter_tls_server_config.cert_file }}"
+      register: __node_exporter_cert_file
+
+    - name: Check existence of TLS key file
+      stat:
+        path: "{{ node_exporter_tls_server_config.key_file }}"
+      register: __node_exporter_key_file
+
+    - name: Assert that TLS key and cert are present
+      assert:
+        that:
+          - "{{ __node_exporter_cert_file.stat.exists }}"
+          - "{{ __node_exporter_key_file.stat.exists }}"
+  when: node_exporter_tls_server_config | length > 0
+
+- name: Check if node_exporter is installed
+  stat:
+    path: "{{ apollo_binary_dir }}/node_exporter"
+  register: __node_exporter_is_installed
+  check_mode: false
+  tags:
+    - node_exporter_install
+
+- name: Gather currently installed node_exporter version (if any)
+  command: "{{ apollo_binary_dir }}/node_exporter --version"
+  args:
+    warn: false
+  changed_when: false
+  register: __node_exporter_current_version_output
+  check_mode: false
+  when: __node_exporter_is_installed.stat.exists
+  tags:
+    - node_exporter_install
+    - skip_ansible_lint
+
+- block:
+    - name: setting checksums
+      set_fact:
+        _checksums: "{{ lookup('url', 'https://github.com/prometheus/node_exporter/releases/download/v' + node_exporter_version + '/sha256sums.txt', wantlist=True) | list }}"
+      run_once: true
+
+    - name: "setting checksum for {{ go_arch }} architecture"
+      set_fact:
+        node_exporter_checksum: "{{ item.split(' ')[0] }}"
+      with_items: "{{ _checksums }}"
+      when:
+        - "('linux-' + go_arch + '.tar.gz') in item"
+  when: node_exporter_binary_local_dir | length == 0
+
+- block:
+    - name: Download node_exporter binary to local folder
+      become: false
+      get_url:
+        url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+        checksum: "sha256:{{ node_exporter_checksum }}"
+      register: _download_binary
+      until: _download_binary is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+    - name: Unpack node_exporter binary
+      become: false
+      unarchive:
+        remote_src: True
+        src: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "{{ apollo_downloads_dir }}"
+        creates: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
+      check_mode: false
+
+    - name: Propagate node_exporter binaries
+      copy:
+        src: "{{ apollo_downloads_dir }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
+        dest: "{{ apollo_binary_dir }}/node_exporter"
+        mode: 0755
+        owner: root
+        group: root
+        remote_src: True
+      notify: restart node_exporter
+      when: not ansible_check_mode
+  when: node_exporter_binary_local_dir | length == 0
+
+- name: Install selinux python packages [RHEL]
+  package:
+    name:
+      - "{{ ( (ansible_facts.distribution_major_version | int) < 8) | ternary('libselinux-python','python3-libselinux') }}"
+      - "{{ ( (ansible_facts.distribution_major_version | int) < 8) | ternary('policycoreutils-python','python3-policycoreutils') }}"
+    state: present
+  register: _install_selinux_packages
+  until: _install_selinux_packages is success
+  retries: 5
+  delay: 2
+  when:
+    - (ansible_distribution | lower == "redhat") or
+      (ansible_distribution | lower == "centos")
+
+- name: Install selinux python packages [Fedora]
+  package:
+    name:
+      - "{{ ( (ansible_facts.distribution_major_version | int) < 29) | ternary('libselinux-python','python3-libselinux') }}"
+      - "{{ ( (ansible_facts.distribution_major_version | int) < 29) | ternary('policycoreutils-python','python3-policycoreutils') }}"
+    state: present
+  register: _install_selinux_packages
+  until: _install_selinux_packages is success
+  retries: 5
+  delay: 2
+
+  when:
+    - ansible_distribution | lower == "fedora"
+
+- name: Install selinux python packages [clearlinux]
+  package:
+    name: sysadmin-basic
+    state: present
+  register: _install_selinux_packages
+  until: _install_selinux_packages is success
+  retries: 5
+  delay: 2
+  when:
+    - ansible_distribution | lower == "clearlinux"
+
+- name: Copy the node_exporter systemd service file
+  template:
+    src: templates/node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart node_exporter
+
+- block:
+    - name: Create node_exporter config directory
+      file:
+        path: "/etc/node_exporter"
+        state: directory
+        owner: root
+        group: root
+        mode: u+rwX,g+rwX,o=rX
+
+    - name: Copy the node_exporter config file
+      template:
+        src: templates/config.yaml.j2
+        dest: /etc/node_exporter/config.yaml
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart node_exporter
+  when:
+    ( node_exporter_tls_server_config | length > 0 ) or
+    ( node_exporter_http_server_config | length > 0 ) or
+    ( node_exporter_basic_auth_users | length > 0 )
+
+- name: Create textfile collector dir
+  file:
+    path: "{{ node_exporter_textfile_dir }}"
+    state: directory
+    owner: "apollo"
+    group: "apollo"
+    recurse: true
+    mode: u+rwX,g+rwX,o=rX
+  when: node_exporter_textfile_dir | length > 0
+
+- name: Allow node_exporter port in SELinux on RedHat OS family
+  seport:
+    ports: "{{ node_exporter_web_listen_address.split(':')[-1] }}"
+    proto: tcp
+    setype: http_port_t
+    state: present
+  when:
+    - ansible_version.full is version_compare('2.4', '>=')
+    - ansible_selinux.status == "enabled"
+
+- name: Setup node_exporter for Swarm
+  block:
+    - name: "Gather Package facts"
+      package_facts:
+        manager: "auto"
+
+    - name: Get Swarm Node Info
+      docker_node_info:
+        name: "{{ ansible_hostname }}"
+      register: docker_node_info
+      delegate_to: manager-0
+      when: 
+        - "'docker-ce' in ansible_facts.packages"
+
+    - name: Swarm Node ID
+      debug:
+        msg: "{{ docker_node_info.nodes[0].ID }}"
+
+    - name: Create apollo meta
+      copy:
+        dest: "{{ node_exporter_textfile_dir }}/node-meta.prom"
+        backup: false
+        owner: "apollo"
+        group: "apollo"
+        content: |
+          node_meta{node_id="{{ docker_node_info.nodes[0].ID }}",container_label_com_docker_swarm_node_id="{{ docker_node_info.nodes[0].ID }}",node_name="{{ ansible_hostname }}"} 1
+        mode: u+rwX,g+rwX,o=rX
+      notify: restart node_exporter
+      when: node_exporter_textfile_dir | length > 0
+  when: arc['orchestrator']['provider'] == "swarm"
+
+- name: Copy textfile-exporters
+  copy:
+    src: "files/textfile-exporters/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+    owner: "apollo"
+    group: "apollo"
+  when: not ansible_check_mode
+  with_items:
+    - "apt.sh"
+
+- name: Create textfile-exporter cronjob
+  cron:
+    name: "apollo-app-node-exporter-textfile-exporter-apt"
+    minute: "0"
+    hour: "*"
+    job: "/usr/local/bin/apt.sh | sponge {{ node_exporter_textfile_dir }}/apt.prom"
+    user: apollo
+
+- name: Make sure service is started
+  service:
+    name: node_exporter
+    state: started
+    enabled: true

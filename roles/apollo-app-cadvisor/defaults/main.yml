@@ -1,9 +1,0 @@
----
-_cadvisor_binary_install_dir: "/usr/local/bin"
-_cadvisor_system_group: "root"
-_cadvisor_system_user: "root"
-# 0.36.0 for k3s
-# 0.32.0 for swarm
-cadvisor_version: "0.32.0"
-
-  

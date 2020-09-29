@@ -1,0 +1,18 @@
+[Unit]
+Description=loki
+After=network-online.target
+
+[Service]
+Type=simple
+User=apollo
+Group=apollo
+ExecStart={{ apollo_binary_dir }}/loki \
+        -config.file {{ app_dir }}/loki-config.yml
+
+SyslogIdentifier=loki
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

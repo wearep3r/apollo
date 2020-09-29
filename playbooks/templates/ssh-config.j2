@@ -1,4 +1,4 @@
-Host {{ space_domain }}
-    HostName {{ ingress_ip }}
-    User root
-    IdentityFile ~/.apollo/.spaces/{{ space_domain }}.space/.ssh/id_rsa
+Host {{ arc['space']['space_domain'] }}
+    HostName {{ apollo_management_ip }}
+    User apollo
+    IdentityFile ~/.apollo/.spaces/{{ apollo_space_dir.split('/')[-1] }}/.ssh/id_rsa

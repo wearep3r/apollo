@@ -1,4 +1,0 @@
----
-# defaults file for zero-app-smtp
-images:
-  smtp: "{{ lookup('env','APOLLO_APP_SMTP_IMAGES_SMTP') | default('maildev/maildev', true) }}"
