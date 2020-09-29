@@ -70,15 +70,21 @@ To deploy this space, run the following commands from this space directory:
 ### if you use a cloud provider and did not yet spin up your infrastructure
 
 ```bash
-apollo deploy infrastructure
-apollo deploy all
+apollo build
+apollo deploy
 ```
 
-### if you use your own nodes and already prepared Nodesfile.yml
+### if you use your own nodes and already prepared a Nodesfile.yml
 
 ```bash
-apollo deploy all
+apollo deploy
 ``` 
+
+## How to enabled automated versioning for this space
+
+By default, this space includes [shipmate](https://gitlab.com/peter.saarland/shipmate/) pipelines that handle automatic versioning and more.
+
+Please refer to shipmate's README regarding necessary requirements for this to work with your GitLab repository (Personal Access Token).
 
 ## Access
 
@@ -94,7 +100,7 @@ Assuming you cloned the repository and work from its local directory, you can co
 
 `ssh -l root -i .ssh/id_rsa {{ arc['space']['space_domain'] }}`
 
-Once connected, you can reach any other node in the cluster by simply doing `ssh manager-0` etc.
+Once connected, you can reach any other node in the cluster by simply doing `ssh worker-0` etc.
 
 From within your space directory, you can also do this:
 
@@ -119,13 +125,26 @@ Read up on [VS Code Remote Development](https://code.visualstudio.com/docs/remot
 
 You can reach any of the controlplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
 
-- [Grafana](https://grafana.{{ arc['space']['space_domain'] }}:8443)
+- [Analytics](https://grafana.{{ arc['space']['space_domain'] }}:8443)
 - [Traefik](https://traefik.{{ arc['space']['space_domain'] }}:8443)
 - [Alerts](https://alerts.{{ arc['space']['space_domain'] }}:8443)
 
-### Web
+### CaaS
 
-You can reach any of the backplane services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
+You can reach any of the orchestrator-related services through its webinterface. Use `{{ arc['auth']['admin_user'] }}` and `{{ arc['auth']['admin_password'] }}` to authenticate.
 
 - [Portainer](http://portainer.{{ arc['space']['space_domain'] }})
 - [Proxy](http://proxy.{{ arc['space']['space_domain'] }})
+
+
+## How to deploy apps to this space
+
+Ideally you deploy with [shipmate](https://gitlab.com/peter.saarland/shipmate). Ansible can be used to automate a few things around volumes and networks but you can also use `docker stack deploy` directly.
+
+The default mechanism (requires `arc.addons.gitlab-runner.deploy.enabled: true`) makes use of the special gitlab-runner with the `deploy` tag that has manager-0's docker socket mounted. Thus you'll be able to interface with the cluster's manager from within a shipmate container directly and can use standard tooling. 
+
+Also, you can deploy using the following techniques:
+
+- setup ssh to use this space's ssh-key for connections, then set `DOCKER_HOST=ssh://$SPACE_DOMAIN` when using `docker stack deploy`
+- ssh to manager-0 and deploy stuff locally (using `apollo enter manager-0`)
+- use the space with VSCode Remote Development which also gives you direct access to the Docker Socket

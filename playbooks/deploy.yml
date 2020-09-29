@@ -265,8 +265,10 @@
         apply:
           tags:
             - "{{ arc['analytics']['provider'] }}"
+            - analytics
       tags:
         - "{{ arc['analytics']['provider'] }}"
+        - analytics
 
 # Todo
 # Backups, Garbage Collection

@@ -11,7 +11,7 @@ images:
 _grafana_binary_install_dir: "/usr/local/bin"
 _grafana_system_group: "root"
 _grafana_system_user: "root"
-grafana_version: "7.1.5"
+grafana_version: "7.2.0"
 
 grafana_yum_repo_template: etc/yum.repos.d/grafana.repo.j2
 grafana_manage_repo: true

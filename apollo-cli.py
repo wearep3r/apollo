@@ -312,8 +312,14 @@ def deploy(what: str = typer.Argument("all")):
         typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
       deployment = subprocess.run(command, cwd="/apollo")
-        
-      return deployment
+      
+      if deployment.returncode == 0:
+        typer.secho(f"Deployment successful", err=False, fg=typer.colors.GREEN)
+        return deployment
+      else:
+        typer.secho(f"Deployment failed", err=True, fg=typer.colors.RED)
+        raise typer.Exit(code=deployment.returncode)
+
   else:
     if nodesfile:
       command = [
@@ -328,7 +334,13 @@ def deploy(what: str = typer.Argument("all")):
         typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
       deployment = subprocess.run(command, cwd="/apollo")
-      return deployment
+      
+      if deployment.returncode == 0:
+        typer.secho(f"Deployment successful", err=False, fg=typer.colors.GREEN)
+        return deployment
+      else:
+        typer.secho(f"Deployment failed", err=True, fg=typer.colors.RED)
+        raise typer.Exit(code=deployment.returncode)
 
 @app.command()
 def destroy():

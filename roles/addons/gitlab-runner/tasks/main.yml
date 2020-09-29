@@ -80,7 +80,7 @@
         apply:
           tags:
             - gitlab-runner
-            - build
+            - deploy
           delegate_to: "{{ node }}"
       vars:
         gitlab_runner_concurrent: 1
