@@ -334,7 +334,7 @@ def deploy(what: str = typer.Argument("all")):
         typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
       deployment = subprocess.run(command, cwd="/apollo")
-      
+
       if deployment.returncode == 0:
         typer.secho(f"Deployment successful", err=False, fg=typer.colors.GREEN)
         return deployment
@@ -484,6 +484,25 @@ def init():
   infrastructure_enabled = typer.confirm("Enable infrastructure")
   if infrastructure_enabled:
         config['infrastructure']['enabled'] = True
+
+        # provider
+        while config['infrastructure']['provider'] == "generic":
+          infrastructure_provider = typer.prompt("Provider (hcloud, digitalocean")
+          
+          if infrastructure_provider in ["hcloud", "digitalocean"]:
+            config['infrastructure']['provider'] = infrastructure_provider
+          else:
+            typer.secho(f"Unsupported provider: {infrastructure_provider}", err=True, fg=typer.colors.RED)
+
+        # provider
+        while config['provider'][config['infrastructure']['provider']]['auth']['token'] == "":
+          auth_token = typer.prompt("API Token")
+          
+          if auth_token != "":
+            config['provider'][config['infrastructure']['provider']]['auth']['token'] = auth_token
+          else:
+            typer.secho(f"Incorrect format: {auth_token}", err=True, fg=typer.colors.RED)
+
 
         # # provider
         # InfrastructureProvider = InfrastructureProviders.generic
