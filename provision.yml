@@ -40,3 +40,8 @@
   import_playbook: playbooks/deploy.yml
   tags:
     - deploy
+
+- name: "recap"
+  import_playbook: playbooks/recap.yml
+  tags:
+    - recap
