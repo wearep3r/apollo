@@ -1,4 +1,4 @@
-- name: "@apollo-recap"
+- name: "recap"
   hosts: apollo
   gather_facts: False
   strategy: linear
