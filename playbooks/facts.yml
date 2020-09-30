@@ -97,7 +97,7 @@
     #     #   when: not apollo_nodesfile.stat.exists
     #     #   delegate_to: localhost
   
-- name: "@node-facts"
+- name: "node facts"
   hosts: 
     - cluster
   gather_facts: False
