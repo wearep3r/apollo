@@ -148,6 +148,37 @@ def destroyInfrastructure(spacefile):
 # APP COMMANDS
 
 @app.command()
+def report(what: str):
+  """
+  Report
+  """
+  spacefile = loadSpacefile()
+
+  # TODO
+  # - generate & download storidge report (with option to upload to pastebin?)
+  if what == "storidge":
+    exec("manager-0", "cioctl report")
+
+  try:
+    command = [
+        "ansible",
+        "-i", 
+        "/apollo/inventory/apollo-inventory.py", 
+        f"manager-0", 
+        "-m",
+        "synchronize",
+        "-a",
+        "'src=/var/lib/storidge/report.txz dest="+arc['space_dir']+"/storidge-report.txz mode=pull'"
+      ]
+    if arc['verbosity'] > 0:
+      typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+    
+    report = subprocess.run(command, cwd="/apollo")
+  except Exception as e:
+    typer.secho(f"Failed to execture copy storidge report: {e}", err=True, fg=typer.colors.RED)
+    raise typer.Exit(code=1)
+
+@app.command()
 def exec(where: str, what: str):
   """
   Exec command on cluster
