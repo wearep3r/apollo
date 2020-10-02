@@ -43,7 +43,7 @@
     - cluster
   become: true
   gather_facts: False
-  strategy: linear
+  strategy: free
   tasks:
     - include_role:
         name: "cluster"
@@ -126,7 +126,7 @@
   hosts: 
     - manager[0]
   become: true
-  strategy: linear
+  strategy: free
   gather_facts: False
   tasks:
     - include_role:
@@ -144,7 +144,7 @@
   hosts: 
     - cluster
   become: true
-  strategy: linear
+  strategy: free
   gather_facts: False
   tasks:
     - include_role:

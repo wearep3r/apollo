@@ -2,7 +2,7 @@
   hosts: all
   gather_facts: False
   become: true
-  strategy: linear
+  strategy: free
   tasks:
     - name: loading apollo config
       block:
@@ -103,7 +103,7 @@
     - cluster
   gather_facts: False
   become: true
-  strategy: linear
+  strategy: free
   tasks:
     - name: asserting node facts
       block:

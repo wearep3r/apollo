@@ -48,6 +48,7 @@
             tags:
               - "{{ arc['space']['name'] }}"
               - build
+              - shipmate
             run_untagged: True
             docker_privileged: True
             docker_volumes:
@@ -102,6 +103,7 @@
             tags:
               - "{{ arc['space']['name'] }}"
               - deploy
+              - shipmate
             run_untagged: False
             docker_privileged: True
             docker_volumes:
