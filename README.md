@@ -213,7 +213,7 @@ docker run --rm -it \
   -v ${HOME}/.gitconfig:/root/.gitconfig \
   -v ${HOME}/.apollo:/root/.apollo \
   -v ${PWD}:/cargo \
-  registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest} zsh
+  registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}
 ```
 
 From inside the image, you can use the apollo CLI to manage your spaces.
