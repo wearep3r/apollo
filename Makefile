@@ -26,7 +26,7 @@ VERBOSITY ?= 0
 export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 export DOCKER_BUILDKIT=1
 SHIPMATE_BRANCH_NAME= "$(shell git rev-parse --abbrev-ref HEAD)"
-SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}-$(shell git rev-parse --short HEAD)"
+SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}:$(shell git rev-parse HEAD)"
 
 .PHONY: help
 help:
