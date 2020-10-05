@@ -1,7 +1,7 @@
 - name: "@apollo-infrastructure"
   hosts: localhost
   become: True
-  strategy: linear
+  #strategy: linear
   gather_facts: false
   tasks:
     - name: loading apollo config

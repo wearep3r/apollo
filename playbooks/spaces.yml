@@ -1,7 +1,6 @@
 - name: "@apollo-spaces"
   hosts: apollo
   become: True
-  strategy: linear
   tasks:
     - name: setting README
       block:

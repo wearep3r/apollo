@@ -499,67 +499,69 @@
     reboot_timeout: 180
   when: ku_update_grub_changed is defined and ku_update_grub_changed and kernel_version|bool
 
-# - name: handling DNS
-#   block:
-#     # - name:
-#     #   digital_ocean_domain:
-#     #     state: present
-#     #     name: "{{ arc['space']['space_domain'] }}"
-#     #     ip: "{{ apollo_management_ip }}"
-#     #     oauth_token: "{{ arc['providers']['digitalocean']['token'] }}"
-#     - uri:
-#         url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
-#         headers:
-#           accept: application/json
-#           authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
-#         return_content: yes
-#       register: domain_records_resp
+- name: handling DNS
+  block:
+    # - name:
+    #   digital_ocean_domain:
+    #     state: present
+    #     name: "{{ arc['space']['space_domain'] }}"
+    #     ip: "{{ apollo_management_ip }}"
+    #     oauth_token: "{{ arc['providers']['digitalocean']['token'] }}"
+    - uri:
+        url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
+        headers:
+          accept: application/json
+          authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
+        return_content: yes
+      register: domain_records_resp
 
-#     - debug:
-#         msg: "{{ domain_records_resp }}"
+    - debug:
+        msg: "{{ domain_records_resp }}"
   
-#     - when: "arc['space']['name'] not in (domain_records_resp.json.domain_records | map(attribute='name') | list)"
-#       uri:
-#         method: POST
-#         url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
-#         headers:
-#           authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
-#         body: '{{ create_record | to_json }}'
-#         body_format: json
-#         return_content: yes
-#       vars:
-#         create_record:
-#             data: "{{ apollo_management_ip }}"
-#             flags: null
-#             name: "{{ arc['space']['space_name'] }}"
-#             port: null
-#             priority: null
-#             tag: null
-#             ttl: 1800
-#             type: A
-#             weight: null
+    - when: "arc['space']['name'] not in (domain_records_resp.json.domain_records | map(attribute='name') | list)"
+      uri:
+        method: POST
+        url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
+        headers:
+          authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
+        body: '{{ create_record | to_json }}'
+        status_code: [200, 201]
+        body_format: json
+        return_content: yes
+      vars:
+        create_record:
+            data: "{{ apollo_management_ip }}"
+            flags: null
+            name: "{{ arc['space']['name'] }}"
+            port: null
+            priority: null
+            tag: null
+            ttl: 1800
+            type: A
+            weight: null
 
-#     - when: "\*.arc['space']['name'] not in (domain_records_resp.json.domain_records | map(attribute='name') | list)"
-#       uri:
-#         method: POST
-#         url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
-#         headers:
-#           authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
-#         body: '{{ create_record | to_json }}'
-#         body_format: json
-#         return_content: yes
-#       vars:
-#         create_record:
-#             data: "{{ apollo_management_ip }}"
-#             flags: null
-#             name: "*.{{ arc['space']['space_name'] }}"
-#             port: null
-#             priority: null
-#             tag: null
-#             ttl: 1800
-#             type: A
-#             weight: null    
-#   when:
-#     - arc['dns']['enabled']|bool
-#     - arc['dns']['provider'] == "digitalocean"
-#     - ansible_hostname == "manager-0"
+    - when: '(["*",arc["space"]["name"]] | join(".")) not in (domain_records_resp.json.domain_records | map(attribute="name") | list)'
+      uri:
+        method: POST
+        url: "https://api.digitalocean.com/v2/domains/{{ arc['space']['base_domain'] }}/records"
+        headers:
+          authorization: "Bearer {{ arc['providers']['digitalocean']['auth']['token'] }}"
+        body: '{{ create_record | to_json }}'
+        status_code: [200, 201]
+        body_format: json
+        return_content: yes
+      vars:
+        create_record:
+            data: "{{ apollo_management_ip }}"
+            flags: null
+            name: "*.{{ arc['space']['name'] }}"
+            port: null
+            priority: null
+            tag: null
+            ttl: 1800
+            type: A
+            weight: null    
+  when:
+    - arc['dns']['enabled']|bool
+    - arc['dns']['provider'] == "digitalocean"
+    - ansible_hostname == "manager-0"

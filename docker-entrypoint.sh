@@ -22,7 +22,7 @@ if [ -d "$SSH_DIR" ]; then
     fi
 fi
 
-if [ "$1" = 'enter' ];
+if [ "$1" = 'dev' ];
 then
   cd /cargo
   exec "/bin/zsh"

@@ -273,6 +273,16 @@ $ apollo deploy
 
 After successful deployment, a fresh and updated `README.md` can be found in your space directory. It contains valuable information and quick-links as well as troubleshooting information for your space.
 
+## Development
+
+To develop on apollo, clone the repository and, from inside the repo directory, run `make build` and then `make dev`.
+
+You will be working from inside the container now, with your repository mounted to `/apollo` so you can live-edit the source code and test functionality.
+
+You'll be able to use the `apollo` command from inside the development container just like usual and thus you'll be able to interface with your spaces by cd'ing to their space directory (`/root/.apollo/.spaces`) and invoking `apollo ...`.
+
+**PRO TIP**: spin up a development machine on Vagrant to test your code against. Simply make sure to add your space's ssh-keys to the machine and set up your Nodesfile.yml accordingly.
+
 ## Built With
 
 - Ansible

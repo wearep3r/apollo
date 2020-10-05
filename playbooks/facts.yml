@@ -2,7 +2,6 @@
   hosts: all
   gather_facts: False
   become: true
-  strategy: free
   tasks:
     - name: loading apollo config
       block:
@@ -97,13 +96,12 @@
     #     #   when: not apollo_nodesfile.stat.exists
     #     #   delegate_to: localhost
   
-    
 - name: "node facts"
   hosts: 
     - cluster
   gather_facts: False
+  strategy: linear
   become: true
-  strategy: free
   tasks:
     - name: asserting node facts
       block:
