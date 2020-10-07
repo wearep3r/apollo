@@ -2,139 +2,190 @@
 
 This document outlines a few standard use-cases and how to implement them with **apollo**. Each of the examples is the **mimimum viable configuration** for an apollo space catering to the outlined use-case.
 
-For the sake of simplicity, we assume a base config for all of the following examples:
+## Hetzner Cloud
+
+- Log in to [Hetzner Cloud Console](https://console.hetzner.cloud/projects)
+- Create a new project
+- Switch to the new project
+- Switch to "Security" in the right sidebar
+- Select tab "API-Tokens"
+- Generate a new API token (read+write)
+- Copy the API token to your Spacefile
+- Configure your Hetzner Cloud infrastructure inside your Spacefile
+
+## Single-node Docker Swarm Cluster on Hetzner Cloud
+
+Spacefile.yml:
 
 ```bash
-APOLLO_SPACE=apollo-demo-1
-APOLLO_NODES_MANAGER=192.168.178.187
+infrastructure:
+  enabled: true
+  manager:
+    count: 1
+    os_family: ubuntu-18.04
+    size: cpx31
+  provider: hcloud
+providers:
+  digitalocean:
+    auth:
+      token: $DO_TOKEN
+  hcloud:
+    auth:
+      token: $HCLOUD_TOKEN
+space:
+  base_domain: demo.example.com
+  mail: info@example.com
+  name: apollo-1
+  space_domain: apollo-1.demo.example.com
+  version: 2.1.1
 ```
 
-## We need a single-node Docker-Host
-
-**apollo.env**
+## Multi-Node Docker Swarm Cluster on Hetzner Cloud
 
 ```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
+infrastructure:
+  enabled: true
+  manager:
+    count: 1
+    os_family: ubuntu-18.04
+    size: cpx31
+  provider: hcloud
+  worker:
+    count: 3
+    os_family: ubuntu-18.04
+    size: cpx21
+providers:
+  digitalocean:
+    auth:
+      token: $DO_TOKEN
+  hcloud:
+    auth:
+      token: $HCLOUD_TOKEN
+space:
+  base_domain: demo.example.com
+  mail: info@example.com
+  name: apollo-1
+  space_domain: apollo-1.demo.example.com
+  version: 2.1.1
 ```
 
-**infrastructure.apollo.env**
+## Multi-Node Docker Swarm Cluster with high-available storage on Hetzner Cloud
 
 ```bash
-APOLLO_NODES_MANAGER=192.168.178.187
+data:
+  provider: storidge
+infrastructure:
+  enabled: true
+  manager:
+    count: 1
+    os_family: ubuntu-18.04
+    size: cpx31
+    volume_count: 3
+    volume_size: 30
+  provider: hcloud
+  worker:
+    count: 3
+    os_family: ubuntu-18.04
+    size: cpx21
+    volume_count: 3
+    volume_size: 30
+providers:
+  digitalocean:
+    auth:
+      token: $DO_TOKEN
+  hcloud:
+    auth:
+      token: $HCLOUD_TOKEN
+space:
+  base_domain: demo.example.com
+  mail: info@example.com
+  name: apollo-1
+  space_domain: apollo-1.demo.example.com
+  version: 2.1.1
 ```
 
-## We need a multi-node Docker-Cluster
-
-**apollo.env**
+## Multi-Node Kubernetes Cluster on Hetzner Cloud
 
 ```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
+orchestrator: k3s
+infrastructure:
+  enabled: true
+  manager:
+    count: 1
+    os_family: ubuntu-18.04
+    size: cpx41
+  provider: hcloud
+  worker:
+    count: 3
+    os_family: ubuntu-18.04
+    size: cpx31
+providers:
+  digitalocean:
+    auth:
+      token: $DO_TOKEN
+  hcloud:
+    auth:
+      token: $HCLOUD_TOKEN
+space:
+  base_domain: demo.example.com
+  mail: info@example.com
+  name: apollo-1
+  space_domain: apollo-1.demo.example.com
+  version: 2.1.1
 ```
 
-**infrastructure.apollo.env**
+## GitLab Runner cluster on Hetzner Cloud
+
+Get your Runner Registration Token (RUNNER_TOKEN) from your project's or group's CI/CD settings page.
 
 ```bash
-APOLLO_NODES_MANAGER=192.168.178.187,192.168.178.188,192.168.178.189
+addons:
+  gitlab-runner:
+    build:
+      enabled: true
+    coordinator_url: https://gitlab.com
+    deploy:
+      enabled: false
+    docker_image: docker:19.03.12
+    enabled: false
+    package_name: gitlab-runner
+    package_version: 13.4.0
+    registration_token: $RUNNER_TOKEN
+    token: $RUNNER_TOKEN
+infrastructure:
+  enabled: true
+  manager:
+    count: 1
+    os_family: ubuntu-18.04
+    size: cpx31
+    volume_count: 3
+    volume_size: 30
+  provider: hcloud
+  worker:
+    count: 3
+    os_family: ubuntu-18.04
+    size: cpx31
+    volume_count: 3
+    volume_size: 30
+providers:
+  digitalocean:
+    auth:
+      token: $DO_TOKEN
+  hcloud:
+    auth:
+      token: $HCLOUD_TOKEN
+space:
+  base_domain: demo.example.com
+  mail: info@example.com
+  name: apollo-1
+  space_domain: apollo-1.demo.example.com
+  version: 2.1.1
 ```
 
-## We need to run Kubernetes
+## Mltiple compute environments (staging, production)
 
-**apollo.env**
+Use one of the other examples and duplicate it with different values space.name
 
-```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
-APOLLO_ORCHESTRATOR=k3s
-APOLLO_BACKPLANE_ENABLED=0
-APOLLO_APPS=rancher
-```
-
-**infrastructure.apollo.env**
-
-```bash
-APOLLO_NODES_MANAGER=192.168.178.187
-APOLLO_NODES_WORKER=192.168.178.188,192.168.178.189
-```
-
-## We need hyperconverged storage for our applications
-
-**NOTE**: this configuration expects you to have 3 dedicated RAW disks (unformatted) per node that [Storidge](https://www.storidge.com) can use.
-
-**apollo.env**
-
-```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
-APOLLO_ORCHESTRATOR=swarm
-APOLLO_BACKPLANE_ENABLED=1
-APOLLO_DATA=storidge
-```
-
-**infrastructure.apollo.env**
-
-```bash
-APOLLO_NODES_MANAGER=192.168.178.187
-APOLLO_NODES_WORKER=192.168.178.188,192.168.178.189
-```
-
-## We need GitLab Runners. Lots of them. Cheap
-
-**apollo.env**
-
-```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
-RUNNER_ENABLED=1
-```
-
-**infrastructure.apollo.env**
-
-```bash
-APOLLO_NODES_MANAGER=192.168.178.187
-APOLLO_NODES_WORKER=192.168.178.188,192.168.178.189
-```
-
-## We need a stable backup solution based on S3
-
-**apollo.env**
-
-```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
-APOLLO_APPS=minio
-```
-
-**infrastructure.apollo.env**
-
-```bash
-APOLLO_NODES_MANAGER=192.168.178.187
-```
-
-## We need multiple compute environments (staging, production)
-
-Use one of the other examples and duplicate it with different values for:
-
-- APOLLO_SPACE
-- APOLLO_NODES_MANAGER / APOLLO_NODES_WORKER
-
-## We need a stable solution to self-host apps
-
-This gives you a single-node Docker Swarm.
-
-**apollo.env**
-
-```bash
-APOLLO_PROVIDER=generic
-APOLLO_SPACE=apollo-demo-1
-```
-
-**infrastructure.apollo.env**
-
-```bash
-APOLLO_NODES_MANAGER=192.168.178.187
-```
 
 ## We need to spin up ephemeral clusters in CI/CD
 
