@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ hcloud_resource_prefix }}-csi-node-metrics
+  namespace: {{ hcloud_namespace }}
+  labels:
+    app: {{ hcloud_resource_prefix }}-csi
+spec:
+  selector:
+    app: {{ hcloud_resource_prefix }}-csi
+  ports:
+    - port: 9189
+      name: metrics
+      targetPort: metrics

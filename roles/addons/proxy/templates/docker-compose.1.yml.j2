@@ -12,12 +12,12 @@ services:
       --docker.watch 
       --docker.exposedbydefault=false 
       --insecureSkipVerify 
-      --entrypoints="Name:http Address::80 Compress:true" 
+      --entrypoints="Name:http Address::80 Compress:{{ 'true' if arc['addons']['proxy']['compression']['enabled'] else 'false' }}"
       --metrics
       --metrics.prometheus
       --accessLog
 {% if arc['addons']['proxy']['ssl']['enabled']|bool %}
-      --entrypoints="Name:https Address::443 TLS TLS.MinVersion:VersionTLS12 Compress:true TLS.CipherSuites:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      --entrypoints="Name:https Address::443 TLS TLS.MinVersion:VersionTLS12 Compress:{{ 'true' if arc['addons']['proxy']['compression']['enabled'] else 'false' }} TLS.CipherSuites:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
       --acme 
       --acme.email={{ arc['providers'][arc['addons']['proxy']['ssl']['provider']]['mail'] }} 
       --acme.storage="/etc/traefik/acme.json" 

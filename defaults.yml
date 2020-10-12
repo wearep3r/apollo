@@ -6,6 +6,8 @@ addons:
     ssl:
       enabled: true
       provider: "letsencrypt"
+    compression:
+      enabled: true
   portainer:
     enabled: true
     ssl:

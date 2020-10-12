@@ -1,0 +1,107 @@
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: {{ hcloud_resource_prefix }}-csi-node
+  namespace: {{ hcloud_namespace }}
+  labels:
+    app: {{ hcloud_resource_prefix }}-csi
+spec:
+  selector:
+    matchLabels:
+      app: {{ hcloud_resource_prefix }}-csi
+  template:
+    metadata:
+      labels:
+        app: {{ hcloud_resource_prefix }}-csi
+    spec:
+      tolerations:
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+        - key: CriticalAddonsOnly
+          operator: Exists
+      serviceAccount: {{ hcloud_resource_prefix }}-csi
+      containers:
+        - name: csi-node-driver-registrar
+          image: quay.io/k8scsi/csi-node-driver-registrar:v{{ hcloud_csi_node_driver_registrar }}
+          args:
+            - --v=5
+            - --csi-address=/csi/csi.sock
+            - --kubelet-registration-path={{ k8s_worker_kubelet_conf_dir }}/plugins/csi.hetzner.cloud/csi.sock
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /csi
+            - name: registration-dir
+              mountPath: /registration
+          securityContext:
+            privileged: true
+        - name: hcloud-csi-driver
+          image: hetznercloud/hcloud-csi-driver:{{ hcloud_csi_driver }}
+          imagePullPolicy: Always
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///csi/csi.sock
+            - name: METRICS_ENDPOINT
+              value: 0.0.0.0:9189
+            - name: HCLOUD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hcloud-csi
+                  key: token
+          volumeMounts:
+            - name: kubelet-dir
+              mountPath: {{ k8s_worker_kubelet_conf_dir }}
+              mountPropagation: "Bidirectional"
+            - name: plugin-dir
+              mountPath: /csi
+            - name: device-dir
+              mountPath: /dev
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 9189
+              name: metrics
+            - name: healthz
+              containerPort: 9808
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+            periodSeconds: 2
+        - name: liveness-probe
+          imagePullPolicy: Always
+          image: quay.io/k8scsi/livenessprobe:v{{ hcloud_csi_livenessprobe }}
+          args:
+            - --csi-address=/csi/csi.sock
+          volumeMounts:
+            - mountPath: /csi
+              name: plugin-dir
+      volumes:
+        - name: kubelet-dir
+          hostPath:
+            path: {{ k8s_worker_kubelet_conf_dir }}
+            type: Directory
+        - name: plugin-dir
+          hostPath:
+            path: {{ k8s_worker_kubelet_conf_dir }}/plugins/csi.hetzner.cloud/
+            type: DirectoryOrCreate
+        - name: registration-dir
+          hostPath:
+            path: {{ k8s_worker_kubelet_conf_dir }}/plugins_registry/
+            type: Directory
+        - name: device-dir
+          hostPath:
+            path: /dev
+            type: Directory

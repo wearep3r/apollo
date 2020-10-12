@@ -225,7 +225,7 @@ From inside the image, you can use the apollo CLI to manage your spaces.
 **PRO TIP**: Save this **alias** to the `.zshrc` or `.bashrc` file on your local machine to get quick access to **apollo** from your local terminal:
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
+alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --hostname apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
 ```
 
 From now on we will assume you created the alias for quick access to apollo.

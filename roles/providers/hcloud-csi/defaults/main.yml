@@ -2,3 +2,52 @@
 version: "1.4.0"
 app_name: "hcloud-csi"
 app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+# The namespace where all CSI resources should be installed:
+hcloud_namespace: "kube-system"
+
+# The playbook installes a few resources like:
+# Secret, StorageClass, ServiceAccount, ClusterRole,
+# ClusterRoleBinding, StatefulSet and DaemonSet
+# All this resources have names and the names will be prefixed
+# with the prefix defined here:
+hcloud_resource_prefix: "hcloud"
+
+# Make {{ hcloud_resource_prefix }}-volumes the default
+# storageClass. If you only have this storageClass then
+# just set it to "true". If you've other storageClass'es
+# already then "false" might be your choise.
+hcloud_is_default_class: "true"
+
+# The "volumeBindingMode" field controls when volume binding and
+# dynamic provisioning should occur. The default value is "Immediate".
+# The "Immediate" mode indicates that volume binding and dynamic
+# provisioning occurs once the "PersistentVolumeClaim" is created.
+# The "WaitForFirstConsumer" mode which will delay the binding and
+# provisioning of a "PersistentVolume" until a Pod using the
+# "PersistentVolumeClaim" is created. "PersistentVolumes" will be
+# selected or provisioned conforming to the topology that is specified
+# by the Pod’s scheduling constraints. These include, but are not
+# limited to, resource requirements, node selectors, pod affinity
+# and anti-affinity, and taints and tolerations.
+hcloud_volume_binding_mode: "Immediate"
+
+# Directory where kubelet configuration is located
+k8s_worker_kubelet_conf_dir: "/var/lib/kubelet"
+
+# Versions/tags for the various container images needed. Besides
+# the "csi_driver" you can find out about the recommened version
+# of the container to use for a specific Kubernetes release in the
+# CSI documentation: https://kubernetes-csi.github.io
+
+# DaemonSet:
+hcloud_csi_node_driver_registrar: "1.3.0"
+
+# StatefulSet:
+hcloud_csi_attacher: "2.2.0"
+hcloud_csi_provisioner: "1.6.0"
+hcloud_csi_resizer: "0.3.0"
+hcloud_csi_livenessprobe: "1.1.0"
+
+# Hetzner CSI driver
+hcloud_csi_driver: "1.4.0"

@@ -1,60 +1,122 @@
-# Include variables and define needed variables.
-- name: Include OS-specific variables.
-  include_vars: "{{ ansible_os_family }}.yml"
-
-- name: Include overrides specific to RHEL 6 and below
-  include_vars: RedHat-6.yml
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version < "7"
-
-- name: Include overrides specific to Fedora.
-  include_vars: Fedora.yml
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution == "Fedora"
-
-- name: Debug
-  debug:
-    msg: 
-      - "ansible_hostname: {{ ansible_hostname }}"
-      - "inventory_hostname: {{ inventory_hostname }}"
-      - "apollo_data_nfs_source: {{ apollo_data_nfs_source }}"
-    verbosity: 1
-
-- include_tasks: "setup-{{ ansible_os_family }}.yml"
-
-- name: Ensure directories to export exist
+- name: Creating app directory
   file:
-    path: "{{ item.strip().split()[0] }}"
+    path: "{{ app_dir }}"
     state: directory
-    mode: 0755
-  with_items: "{{ nfs_exports }}"
+    mode: '0755'
+    owner: "apollo"
+    group: "apollo"
 
-- name: Copy exports file.
-  template:
-    src: templates/exports.j2
-    dest: /etc/exports
-    owner: root
-    group: root
-    mode: 0644
-  notify: reload nfs
-  when: ansible_hostname == apollo_data_nfs_source.ansible_hostname
+- name: setting up hcloud-csi
+  vars:
+    
+  block:
+    - name: Create hcloud-csi secret
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/secret.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-secret
 
-- name: Ensure exports exists
-  meta: flush_handlers
+    - name: Install CSIDriver CRD
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/csidriver-crd.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-csidriver-crd
 
-- name: Ensure nfs is running.
-  service: "name={{ nfs_server_daemon }} state=started enabled=yes"
-  when: nfs_exports|length and ansible_hostname == apollo_data_nfs_source.ansible_hostname
+    - name: Install StorageClass
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/storageclass.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-storageclass
 
-- name: Ensure nfs is mounted on all nodes
-  mount:
-    fstype: nfs
-    opts: defaults
-    dump: "0"
-    passno: "0"
-    state: mounted
-    src: "{{ apollo_data_nfs_source.ansible_hostname }}:{{ apollo_data_nfs_directory }}"
-    path: "{{ apollo_data_nfs_directory }}"
-  when: ansible_hostname != apollo_data_nfs_source.ansible_hostname
+    - name: Install ServiceAccount
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/serviceaccount.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-serviceaccount
+
+    - name: Install ClusterRole
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/clusterrole.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-clusterrole
+
+    - name: Install ClusterRoleBinding
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/clusterrolebinding.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-clusterrolebinding
+
+    - name: Install StatefulSet
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/statefulset.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-statefulset
+
+    - name: Install DaemonSet
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/daemonset.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-daemonset
+
+    - name: Install Service for controller metrics
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/service-controller-metrics.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-service-controller-metrics
+
+    - name: Install Service for node metrics
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'templates/service-node-metrics.yml.j2') | from_yaml }}"
+        kubeconfig: "{{ apollo_space_dir }}/kubectl-config.yml"
+      delegate_to: localhost
+      tags:
+        - install-service-node-metrics
+  when: ansible_hostname == "manager-0"
+      
+
+# - name: setting up hcloud-csi
+#   block:
+#     - name: copying hcloud-csi secret
+#       template:
+#         src: templates/secret.yml.j2
+#         dest: "{{ app_dir }}/secret.yml"
+
+#     - name: adding hcloud-csi secret
+#       command: "kubectl apply -f {{ app_dir }}/secret.yml"
+
+#     - name: removing default storage class
+#       command: "kubectl patch storageclass local-path -p '{\"metadata\": {\"annotations\": {\"storageclass.kubernetes.io/is-default-class\": \"false\"}}}'"
+
+#     - name: setting up hcloud-csi driver
+#       command: "kubectl apply -f https://raw.githubusercontent.com/hetznercloud/csi-driver/v{{ version }}/deploy/kubernetes/hcloud-csi.yml"
+#   when: ansible_hostname == "manager-0"
+
+  # https://github.com/githubixx/ansible-kubernetes-playbooks/tree/master/hetzner-csi
