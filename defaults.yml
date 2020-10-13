@@ -1,6 +1,9 @@
 version: 2
 apps: ""
 addons:
+  healthcheck:
+    enabled: false
+    provider: healthchecksio
   proxy:
     enabled: true
     ssl:
@@ -149,6 +152,11 @@ providers:
     mail: ""
     challenge:
       provider: "generic"
+  healthchecksio:
+    api:
+      url: https://healthchecks.io/api/v1
+    auth:
+      token:
 smtp:
   server: ""
   username: ""

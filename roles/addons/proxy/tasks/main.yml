@@ -1,32 +1,29 @@
 ---
 - name: enable proxy
   block:
-    - name: Create app group
-      group:
-        name: "{{ app_name }}"
-        state: present
-
-    - name: Create app user
-      user:
-        name: "{{ app_name }}"
-        comment: "apollo-app-{{ app_name }}"
-        group: "{{ app_name }}"
-
     - name: Creating app directory
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: "apollo"
+        group: "apollo"
+
+    - name: Creating storage directory
+      file:
+        path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
+        state: directory
+        mode: '0755'
+        owner: "apollo"
+        group: "apollo"
 
     - name: Copy Stack-File
       template:
         src: templates/docker-compose.{{ traefik_version }}.yml.j2
         dest: "{{ app_dir }}/docker-compose.yml"
         mode: '0644'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: apollo
+        group: apollo
       register: stack_file
 
     - name: Create config directories
@@ -34,8 +31,8 @@
         path: "{{ app_dir }}/{{ config_dir.path }}"
         state: directory
         mode: '{{ config_dir.mode }}'
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: apollo
+        group: apollo
       with_filetree:
         - "files/"
       when: config_dir.state == 'directory'
@@ -48,8 +45,8 @@
         src: "{{ config_file.src }}"
         dest: "{{ app_dir }}/{{ config_file.path }}"
         mode: "{{ config_file.mode }}"
-        owner: "{{ app_name }}"
-        group: "{{ app_name }}"
+        owner: apollo
+        group: apollo
       with_filetree:
         - "files/"
       when: config_file.state == 'file'
