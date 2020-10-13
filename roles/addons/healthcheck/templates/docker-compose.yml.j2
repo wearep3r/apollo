@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  healthcheck:
+    image: "{{ images.healthcheck }}"
+    command: ash -c "apk add curl; while true; do echo 'Pinging {{ ping_url }}'; curl -fsS --retry 5 -o /dev/null {{ ping_url }}; sleep 600; done"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any

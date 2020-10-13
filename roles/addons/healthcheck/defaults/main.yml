@@ -1,0 +1,6 @@
+---
+app_name: "healthcheck"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+
+images:
+  healthcheck: "{{ lookup('env','APOLLO_APP_LAKE0_IMAGES_LAKE0') | default('alpine', true) }}"

@@ -58,7 +58,7 @@ By default, apollo expects ingress traffic to land on the worker nodes which is 
 
 To operate this space, please add the following records to your DNS zone (`{{ arc['space']['base_domain'] }}`):
 
-```
+```bash
 {{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
 *.{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
 ```
@@ -78,7 +78,7 @@ apollo deploy
 
 ```bash
 apollo deploy
-``` 
+```
 
 ## How to enabled automated versioning for this space
 
@@ -107,7 +107,7 @@ From within your space directory, you can also do this:
 ```bash
 # replace manager-0 with any of the nodes you intend to enter
 apollo enter manager-0
-``` 
+```
 
 ### VS Code Remote Development
 

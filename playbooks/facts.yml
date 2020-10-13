@@ -2,7 +2,6 @@
   hosts: all
   gather_facts: False
   become: true
-  strategy: free
   tasks:
     - name: loading apollo config
       block:
@@ -97,13 +96,12 @@
     #     #   when: not apollo_nodesfile.stat.exists
     #     #   delegate_to: localhost
   
-    
 - name: "node facts"
   hosts: 
     - cluster
   gather_facts: False
+  strategy: linear
   become: true
-  strategy: free
   tasks:
     - name: asserting node facts
       block:
@@ -123,7 +121,7 @@
           set_fact:
             apollo_manager: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
             cluster_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-            apollo_public_ip: "{{  hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
+            apollo_public_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
             apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
             apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
 

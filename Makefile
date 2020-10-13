@@ -41,4 +41,4 @@ build:
 dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
 dev: SHELL := docker
 dev:
-> @enter
+> @dev

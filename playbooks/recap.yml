@@ -1,7 +1,6 @@
 - name: "recap"
   hosts: apollo
   gather_facts: False
-  strategy: linear
   tasks:
     - name: showing apollo config
       block:

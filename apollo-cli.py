@@ -154,54 +154,72 @@ def report(what: str):
   """
   spacefile = loadSpacefile()
 
+  if what == "vars":
+    try:
+      command = [
+          "ansible",
+          "-i", 
+          "/apollo/inventory/apollo-inventory.py", 
+          f"cluster", 
+          "-m",
+          "setup"
+        ]
+      if arc['verbosity'] > 0:
+        typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+      
+      report = subprocess.run(command, cwd="/apollo")
+    except Exception as e:
+      typer.secho(f"Failed to report {what}: {e}", err=True, fg=typer.colors.RED)
+      raise typer.Exit(code=1)
+
   # TODO
   # - generate & download storidge report (with option to upload to pastebin?)
   if what == "storidge":
     exec("manager-0", "cioctl report")
 
-  try:
-    command = [
-        "ansible",
-        "-i", 
-        "/apollo/inventory/apollo-inventory.py", 
-        f"manager-0", 
-        "-m",
-        "synchronize",
-        "-a",
-        "'src=/var/lib/storidge/report.txz dest="+arc['space_dir']+"/storidge-report.txz mode=pull'"
-      ]
-    if arc['verbosity'] > 0:
-      typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
-    
-    report = subprocess.run(command, cwd="/apollo")
-  except Exception as e:
-    typer.secho(f"Failed to execture copy storidge report: {e}", err=True, fg=typer.colors.RED)
-    raise typer.Exit(code=1)
+    try:
+      command = [
+          "ansible",
+          "-i", 
+          "/apollo/inventory/apollo-inventory.py", 
+          f"manager-0", 
+          "-m",
+          "synchronize",
+          "-a",
+          "'src=/var/lib/storidge/report.txz dest="+arc['space_dir']+"/storidge-report.txz mode=pull'"
+        ]
+      if arc['verbosity'] > 0:
+        typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
+      
+      report = subprocess.run(command, cwd="/apollo")
+    except Exception as e:
+      typer.secho(f"Failed to execture copy storidge report: {e}", err=True, fg=typer.colors.RED)
+      raise typer.Exit(code=1)
 
 @app.command()
-def exec(where: str, what: str):
+def exec(target: str, command: str):
   """
   Exec command on cluster
   """
   nodesfile = loadNodesfile()
 
-  typer.secho(f"Executing {what} on {where}", fg=typer.colors.BRIGHT_BLACK)
+  typer.secho(f"Executing {command} on {target}", fg=typer.colors.BRIGHT_BLACK)
 
   try:
     exec = subprocess.run([
         "ansible",
         "-i", 
         "/apollo/inventory/apollo-inventory.py", 
-        f"{where}", 
+        f"{target}", 
         "-a",
-        f"{what}"
+        f"{command}"
       ], cwd="/apollo")
   except Exception as e:
-    typer.secho(f"Failed to execture {what} on {where}", err=True, fg=typer.colors.RED)
+    typer.secho(f"Failed to execture {command} on {target}", err=True, fg=typer.colors.RED)
     raise typer.Exit(code=1)
 
 @app.command()
-def enter(where: str):
+def enter(node: str):
   """
   Enter cluster node
   """
@@ -219,14 +237,14 @@ def enter(where: str):
     for worker in nodesfile['worker']:
       nodes[worker['name']] = worker
 
-  apollo_user = nodes.get(where,{}).get('user','root')
-  apollo_ipv4 = nodes.get(where,{}).get('ipv4','')
+  apollo_user = nodes.get(node,{}).get('user','root')
+  apollo_ipv4 = nodes.get(node,{}).get('ipv4','')
   command = "ssh {} -i {}/.ssh/id_rsa -l {} {}".format(ssh_config,arc['space_dir'],apollo_user,apollo_ipv4)
 
   try:
     enter = subprocess.call(command, shell=True)
   except Exception as e:
-    typer.secho(f"Failed to enter {where}", err=True, fg=typer.colors.RED)
+    typer.secho(f"Failed to enter {node}", err=True, fg=typer.colors.RED)
 
     if arc['verbosity'] > 0:
       typer.secho(f"{command}", err=False, fg=typer.colors.BRIGHT_BLACK)
@@ -587,9 +605,9 @@ def init():
 
 @app.callback()
 def callback(
-    verbosity: int = 0,
-    space_dir: str = os.environ.get('PWD'),
-    debug: int = 0
+    verbosity: int = typer.Option(0, "--verbosity", "-v", help="Verbosity"),
+    space_dir: str = typer.Option(os.environ.get('PWD'),"--space_dir","-s", help="The directory of the space you want to act on"),
+    debug: bool = typer.Option(False, "--debug", "-d", help="Enable Debugging")
   ):
   os.environ["APOLLO_CONFIG_VERSION"] = "2"
   os.environ["APOLLO_CONFIG_DIR"] = "/root/.apollo"
@@ -597,7 +615,7 @@ def callback(
   os.environ["APOLLO_SPACES_DIR"] = "/root/.apollo/.spaces"
   os.environ["ANSIBLE_VERBOSITY"] = str(verbosity)
 
-  if verbosity > 3 or debug:
+  if debug:
     os.environ["ANSIBLE_DEBUG"] = "1"
 
   arc['config_dir'] = "/root/.apollo"

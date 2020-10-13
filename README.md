@@ -225,7 +225,7 @@ From inside the image, you can use the apollo CLI to manage your spaces.
 **PRO TIP**: Save this **alias** to the `.zshrc` or `.bashrc` file on your local machine to get quick access to **apollo** from your local terminal:
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --name apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
+alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --hostname apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
 ```
 
 From now on we will assume you created the alias for quick access to apollo.
@@ -283,6 +283,18 @@ After successful deployment, a fresh and updated `README.md` can be found in you
 - make
 - python
 - docker-compose
+
+## Development
+
+To develop apollo itself, clone the repository and, from inside the repo directory, run `make build` and then `make dev`.
+
+You will be working from inside the container now, with your repository mounted to `/apollo` so you can live-edit the source code and test functionality.
+
+You'll be able to use the `apollo` CLI from inside the development container just like usual and thus you'll be able to interface with your spaces by cd'ing to their space directory (`/root/.apollo/.spaces`) and invoking `apollo ...`.
+
+**PRO TIP**: spin up a development machine on Vagrant to test your code against. Simply make sure to add your space's ssh-keys to the machine and set up your Nodesfile.yml accordingly.
+
+Follow one of the [examples](docs/examples.md) to get yourself a machine to deploy apollo to.
 
 ## Contributing
 

@@ -1,5 +1,41 @@
 {
-"editor.formatOnSave": false,
-"restructuredtext.confPath": "",
-"editor.tabSize": 2
+  "workbench.colorTheme": "One Dark Pro",
+  "editor.tabSize": 2,
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.testing.pytestArgs": [
+      "tests"
+  ],
+  "python.formatting.provider": "black",
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestEnabled": true,
+  // Set the default
+  "editor.formatOnSave": false,
+  // Enable per-language
+  "[python]": {
+      "editor.formatOnSave": true,
+      "editor.formatOnPaste": false
+  }
+  
+  "go.useLanguageServer": false,
+  "terraform.indexing": {
+    "enabled": false,
+    "liveIndexing": false,
+    "delay": 500,
+    "exclude": [
+        ".terraform/**/*",
+        "**/.terraform/**/*"
+    ]
+  },
+  "terraform.languageServer": {
+    "enabled": false,
+    "args": []
+  },
+  "git.autofetch": true,
+  "window.zoomLevel": 0,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "go.formatTool": "goimports",
 }
