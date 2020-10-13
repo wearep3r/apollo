@@ -29,7 +29,7 @@
             tags: "{{ arc['space']['name'] }} apollo"
             timeout: 3600 
             grace: 300
-            schedule: "0,10 * * * *"
+            schedule: "0/10 * * * *"
             desc: "apollo healtcheck for {{ arc['space']['name'] }}"
             unique:
               - name
