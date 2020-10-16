@@ -8,13 +8,19 @@ ENV TERRAFORM_INVENTORY_VERSION=0.9
 
 ENV APOLLO_WHITELABEL_NAME=apollo
 
-ENV APOLLO_CONFIG_DIR=/home/gitpod/.${APOLLO_WHITELABEL_NAME}
+ENV APOLLO_CONFIG_DIR=$HOME/.${APOLLO_WHITELABEL_NAME}
 
 ENV APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 
 ENV TERM=xterm-256color 
 
 ENV ANSIBLE_STRATEGY=mitogen_linear
+
+ARG UNAME=gitpod
+ARG UID=33333
+ARG GROUP=sudo
+ARG HOME=/home/gitpod
+USER $UNAME
 
 ARG DOCKER_IMAGE
 ARG SHIPMATE_AUTHOR_URL
@@ -31,7 +37,7 @@ LABEL org.label-schema.url="$SHIPMATE_AUTHOR_URL"
 LABEL org.label-schema.version="$SHIPMATE_CARGO_VERSION"
 LABEL org.label-schema.vcs-ref="$SHIPMATE_COMMIT_ID"
 
-RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /home/gitpod/.ssh /home/gitpod/.config /home/gitpod/.ansible/tmp /home/gitpod/.ansible/cache /home/gitpod/.ssh \
+RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} $HOME/.ssh $HOME/.config $HOME/.ansible/tmp $HOME/.ansible/cache $HOME/.ssh \
     && sudo mkdir -p /${APOLLO_WHITELABEL_NAME} /cargo /etc/ansible \
     && sudo chown gitpod:gitpod /cargo -R \
     && sudo chown gitpod:gitpod /apollo -R
@@ -67,15 +73,11 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 COPY . .
 
-RUN sudo ln -sf /workspace/apollo/apollo-cli.py /usr/local/bin/apollo
-
 WORKDIR ${APOLLO_SPACES_DIR}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 SHELL ["/bin/bash", "-c"]
-
-RUN ["/bin/bash", "-c", "/usr/local/bin/apollo", "--install-completion"]
 
 CMD ["/usr/local/bin/apollo"]
 

@@ -16,6 +16,12 @@ ENV TERM=xterm-256color
 
 ENV ANSIBLE_STRATEGY=mitogen_linear
 
+ARG UNAME=apollo
+ARG UID=33333
+ARG GROUP=sudo
+ARG HOME=/home/apollo
+USER $UNAME
+
 ARG DOCKER_IMAGE
 ARG SHIPMATE_AUTHOR_URL
 ARG SHIPMATE_AUTHOR
@@ -30,6 +36,9 @@ LABEL org.label-schema.vendor="$SHIPMATE_AUTHOR"
 LABEL org.label-schema.url="$SHIPMATE_AUTHOR_URL"
 LABEL org.label-schema.version="$SHIPMATE_CARGO_VERSION"
 LABEL org.label-schema.vcs-ref="$SHIPMATE_COMMIT_ID"
+
+RUN useradd -l -u $UID -G sudo -md $HOME -s /bin/bash -p $UNAME $UNAME \
+    && sed -i.bkp -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers
 
 RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh /root/.local/share/fonts /root/.config /usr/local/share/fonts /cargo /root/.ansible/tmp /root/.ansible/cache /ansible /ansible/roles /inventory /roles /collections /etc/ansible /root/.ssh
 # silversearcher-ag
