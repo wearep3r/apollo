@@ -38,7 +38,7 @@ RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /home/gitpod/.ssh /home/g
 
 RUN sudo apt-get update --allow-releaseinfo-change \
     && sudo apt-get -y --no-install-recommends install less man sudo rsync qrencode python3-jmespath fonts-firacode procps wget fontconfig mosh  git curl tar unzip make openssh-client sshpass nano jq apache2-utils \
-    && pip install jmespath typer[all] anyconfig openshift  ansible==2.9 jsondiff docker ansible-lint molecule[lint] docker-compose \
+    && pip install pytest black jmespath typer[all] anyconfig openshift  ansible==2.9 jsondiff docker ansible-lint molecule[lint] docker-compose \
     && sudo rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local
@@ -67,7 +67,7 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 COPY . .
 
-RUN sudo ln -sf /apollo/apollo-cli.py /usr/local/bin/apollo
+RUN sudo ln -sf /workspace/apollo/apollo-cli.py /usr/local/bin/apollo
 
 WORKDIR ${APOLLO_SPACES_DIR}
 

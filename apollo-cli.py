@@ -709,7 +709,7 @@ def callback(
     ),
     debug: bool = typer.Option(False, "--debug", "-d", help="Enable Debugging"),
 ):
-    home = os.environ.get["HOME"]
+    home = os.environ.get("HOME")
     os.environ["APOLLO_CONFIG_VERSION"] = "2"
     os.environ["APOLLO_CONFIG_DIR"] = f"{home}/.apollo"
     os.environ["APOLLO_SPACE_DIR"] = space_dir
