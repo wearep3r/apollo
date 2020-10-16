@@ -1,5 +1,5 @@
 image:
-  file: Dockerfile
+  file: .gitpod.Dockerfile
 vscode:
   extensions:
     - eamodio.gitlens@10.2.1:WIWu3zHU4VPT8r/v866LUw==
