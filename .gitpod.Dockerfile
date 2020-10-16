@@ -31,7 +31,7 @@ LABEL org.label-schema.url="$SHIPMATE_AUTHOR_URL"
 LABEL org.label-schema.version="$SHIPMATE_CARGO_VERSION"
 LABEL org.label-schema.vcs-ref="$SHIPMATE_COMMIT_ID"
 
-RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /home/gitpod/.ssh /home/gitpod/.local/share/fonts /home/gitpod/.config /usr/local/share/fonts /cargo /home/gitpod/.ansible/tmp /home/gitpod/.ansible/cache /ansible /ansible/roles /inventory /roles /collections /etc/ansible /home/gitpod/.ssh
+RUN sudo mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /home/gitpod/.ssh /home/gitpod/.local/share/fonts /home/gitpod/.config /usr/local/share/fonts /cargo /home/gitpod/.ansible/tmp /home/gitpod/.ansible/cache /ansible /ansible/roles /inventory /roles /collections /etc/ansible /home/gitpod/.ssh
 # silversearcher-ag
 RUN sudo apt-get update --allow-releaseinfo-change \
     && sudo apt-get -y --no-install-recommends install less man sudo rsync qrencode python3-jmespath fonts-firacode procps wget fontconfig mosh  git curl tar unzip make openssh-client sshpass nano jq apache2-utils \
