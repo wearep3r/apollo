@@ -1,2 +1,8 @@
 image:
   file: Dockerfile
+vscode:
+  extensions:
+    - eamodio.gitlens@10.2.1:WIWu3zHU4VPT8r/v866LUw==
+    - hashicorp.terraform@2.2.3:bBQoMVR7TCwCZWURotrh3w==
+    - wholroyd.jinja@0.0.8:C3zsj1nZxSJZh/EcV6Hjlg==
+    - yzhang.markdown-all-in-one@3.3.0:fRpb0skkyto7j5ibdwKGTA==
