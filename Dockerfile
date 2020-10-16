@@ -38,7 +38,7 @@ RUN apt-get update --allow-releaseinfo-change \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
     && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
     && ~/.fzf/install --all --key-bindings --completion \
-    && pip install jmespath typer[all] anyconfig openshift  ansible==2.9 jsondiff docker ansible-lint molecule[lint] docker-compose \
+    && pip install jmespath black typer[all] pytest anyconfig openshift ansible==2.9 jsondiff docker ansible-lint molecule[lint] docker-compose \
     && wget https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip \
     && unzip Hack-v3.003-ttf.zip \
     && mv ttf/*.ttf /usr/local/share/fonts/. \
