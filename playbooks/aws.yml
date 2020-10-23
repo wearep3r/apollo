@@ -10,7 +10,7 @@
           - "SSH User: {{ ansible_user }}"
     - name: Fixing AWS root SSH access
       replace:
-        path: /root/.ssh/authorized_keys
+        path: /home/apollo/.ssh/authorized_keys
         regexp: "^.*(?=(ssh-rsa))"
         replace: ""
       when: ansible_os_family != "Windows"

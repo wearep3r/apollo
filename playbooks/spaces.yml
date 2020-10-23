@@ -31,28 +31,28 @@
 
         - name: including space in local ssh config
           lineinfile: 
-            dest: /root/.ssh/config
+            dest: /home/apollo/.ssh/config
             #regexp=".*Include$" 
-            line: "Include {{ apollo_space_dir | replace('/root', '~') }}/.ssh/config" 
+            line: "Include {{ apollo_space_dir | replace('/home/apollo', '~') }}/.ssh/config" 
             state: present
 
     - name: asserting docker directory
       stat:
-        path: /root/.docker
+        path: /home/apollo/.docker
       register: docker_directory
 
     - name: setting docker contexts
       block:
         - name: creating docker contexts directory
           file:
-            path: "/root/.docker/contexts"
+            path: "/home/apollo/.docker/contexts"
             state: directory
             mode: '0755'
 
         - name: creating docker context for space
           template:
             src: "docker-context.j2"
-            dest: "/root/.docker/contexts/{{ arc['space']['name'] }}"
+            dest: "/home/apollo/.docker/contexts/{{ arc['space']['name'] }}"
             owner: root
             group: root
             mode: 0755

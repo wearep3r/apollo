@@ -88,7 +88,7 @@ def loadConfig():
 
 def loadDefaults():
     try:
-        defaults = anyconfig.load(["/apollo/defaults.yml"])
+        defaults = anyconfig.load(["/home/apollo/app/defaults.yml"])
         # with open('/apollo/defaults.yml','r') as file:
         #   defaults = yaml.load(file, Loader=yaml.FullLoader)
         return defaults
@@ -105,7 +105,7 @@ def loadDefaults():
 def loadSpacefile():
     try:
         spacefile = anyconfig.load(
-            ["/apollo/defaults.yml", arc["space_dir"] + "/Spacefile.yml"]
+            ["/home/apollo/app/defaults.yml", arc["space_dir"] + "/Spacefile.yml"]
         )
         # with open(arc['space_dir']+'/Spacefile.yml','r') as file:
         #   spacefile = yaml.load(file, Loader=yaml.FullLoader)
@@ -150,7 +150,7 @@ def deployInfrastructure(spacefile):
                 "--flush-cache",
                 "playbooks/cli-infrastructure.yml",
             ],
-            cwd="/apollo",
+            cwd="/home/apollo/app",
         )
         return infrastructure
     else:
@@ -175,7 +175,7 @@ def destroyInfrastructure(spacefile):
                 "--flush-cache",
                 "playbooks/cli-infrastructure.yml",
             ],
-            cwd="/apollo",
+            cwd="/home/apollo/app",
         )
         return infrastructure
     else:
@@ -198,7 +198,7 @@ def report(what: str):
             command = [
                 "ansible",
                 "-i",
-                "/apollo/inventory/apollo-inventory.py",
+                "/home/apollo/app/inventory/apollo-inventory.py",
                 f"cluster",
                 "-m",
                 "setup",
@@ -206,7 +206,7 @@ def report(what: str):
             if arc["verbosity"] > 0:
                 typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
-            report = subprocess.run(command, cwd="/apollo")
+            report = subprocess.run(command, cwd="/home/apollo/app")
         except Exception as e:
             typer.secho(f"Failed to report {what}: {e}", err=True, fg=typer.colors.RED)
             raise typer.Exit(code=1)
@@ -220,7 +220,7 @@ def report(what: str):
             command = [
                 "ansible",
                 "-i",
-                "/apollo/inventory/apollo-inventory.py",
+                "/home/apollo/app/inventory/apollo-inventory.py",
                 f"manager-0",
                 "-m",
                 "synchronize",
@@ -232,7 +232,7 @@ def report(what: str):
             if arc["verbosity"] > 0:
                 typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
-            report = subprocess.run(command, cwd="/apollo")
+            report = subprocess.run(command, cwd="/home/apollo/app")
         except Exception as e:
             typer.secho(
                 f"Failed to execture copy storidge report: {e}",
@@ -256,12 +256,12 @@ def exec(target: str, command: str):
             [
                 "ansible",
                 "-i",
-                "/apollo/inventory/apollo-inventory.py",
+                "/home/apollo/app/inventory/apollo-inventory.py",
                 f"{target}",
                 "-a",
                 f"{command}",
             ],
-            cwd="/apollo",
+            cwd="/home/apollo/app",
         )
     except Exception as e:
         typer.secho(
@@ -412,7 +412,7 @@ def deploy(what: str = typer.Argument("all")):
             if arc["verbosity"] > 0:
                 typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
-            deployment = subprocess.run(command, cwd="/apollo")
+            deployment = subprocess.run(command, cwd="/home/apollo/app")
 
             if deployment.returncode == 0:
                 typer.secho(f"Deployment successful", err=False, fg=typer.colors.GREEN)
@@ -434,7 +434,7 @@ def deploy(what: str = typer.Argument("all")):
             if arc["verbosity"] > 0:
                 typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
 
-            deployment = subprocess.run(command, cwd="/apollo")
+            deployment = subprocess.run(command, cwd="/home/apollo/app")
 
             if deployment.returncode == 0:
                 typer.secho(f"Deployment successful", err=False, fg=typer.colors.GREEN)
@@ -470,7 +470,8 @@ def show(what: str):
     if what in ["inventory", "nodes"]:
         inventory = json.loads(
             subprocess.check_output(
-                ["python", "inventory/apollo-inventory.py", "--list"], cwd="/apollo"
+                ["python", "inventory/apollo-inventory.py", "--list"],
+                cwd="/home/apollo/app",
             )
         )
 
@@ -490,7 +491,7 @@ def show(what: str):
 
 def validateSpacefile():
     spacefile = loadSpacefile()
-    schema = anyconfig.load("/apollo/Spacefile.schema.json")
+    schema = anyconfig.load("/home/apollo/app/Spacefile.schema.json")
 
     # defaults = loadDefaults()
     # scm4 = anyconfig.gen_schema(defaults)
@@ -570,7 +571,7 @@ def init():
     typer.secho(f"Initializing apollo config", bold=True, fg=typer.colors.BRIGHT_BLACK)
 
     # Load /apollo/defaults.yml
-    with open("/apollo/defaults.yml", "r") as file:
+    with open("/home/apollo/app/defaults.yml", "r") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     # name

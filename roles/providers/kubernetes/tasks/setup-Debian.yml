@@ -207,6 +207,6 @@
 - name: Copy "kubectl-config" to Apollo Space
   fetch:
     src: /etc/kubernetes/admin.conf
-    dest: /root/.apollo/.environments/apollo/kubectl-config.yml
+    dest: "{{apollo_space_dir }}/kubectl-config.yml
     flat: yes
   ignore_errors: True

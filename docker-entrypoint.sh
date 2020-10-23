@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 set -e
 
 if [ "$CI" = "1" ];
@@ -17,7 +17,7 @@ SSH_DIR=${SSH_DIR:-/.ssh}
 if [ -d "$SSH_DIR" ]; then
     if [ "$(ls -A $SSH_DIR)" ]; then
         echo "Found SSH Keys in $SSH_DIR"
-        cp /.ssh/* /root/.ssh/. && chmod 0600 /root/.ssh/id_rsa
+        cp /.ssh/* /home/apollo/.ssh/. && chmod 0600 /home/apollo/.ssh/id_rsa
         echo "Copied SSH Keys to /root/.ssh"
     fi
 fi
@@ -25,7 +25,7 @@ fi
 if [ "$1" = 'dev' ];
 then
   cd /cargo
-  exec "/bin/zsh"
+  exec "/bin/bash"
 elif [ "$1" = 'apollo' ];
 then
   exec "$@"
