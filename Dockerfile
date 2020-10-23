@@ -8,7 +8,9 @@ ENV TERRAFORM_INVENTORY_VERSION=0.9
 
 ENV APOLLO_WHITELABEL_NAME=apollo
 
-ENV APOLLO_CONFIG_DIR=/root/.${APOLLO_WHITELABEL_NAME}
+ENV APOLLO_APP_DIR=/home/apollo/app
+
+ENV APOLLO_CONFIG_DIR=/home/apollo/.${APOLLO_WHITELABEL_NAME}
 
 ENV APOLLO_SPACES_DIR=${APOLLO_CONFIG_DIR}/.spaces
 
@@ -31,71 +33,55 @@ LABEL org.label-schema.url="$SHIPMATE_AUTHOR_URL"
 LABEL org.label-schema.version="$SHIPMATE_CARGO_VERSION"
 LABEL org.label-schema.vcs-ref="$SHIPMATE_COMMIT_ID"
 
-RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /${APOLLO_WHITELABEL_NAME} /root/.ssh /root/.local/share/fonts /root/.config /usr/local/share/fonts /cargo /root/.ansible/tmp /root/.ansible/cache /ansible /ansible/roles /inventory /roles /collections /etc/ansible /root/.ssh
-# silversearcher-ag
 RUN apt-get update --allow-releaseinfo-change \
-    && apt-get -y --no-install-recommends install zsh less man sudo rsync qrencode python3-jmespath fonts-firacode procps wget fontconfig mosh  git curl tar unzip make openssh-client sshpass nano jq apache2-utils \
-    && sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
-    && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
-    && ~/.fzf/install --all --key-bindings --completion \
-    && pip install jmespath black typer[all] pytest anyconfig openshift ansible==2.9 jsondiff docker ansible-lint molecule[lint] docker-compose \
-    && wget https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip \
-    && unzip Hack-v3.003-ttf.zip \
-    && mv ttf/*.ttf /usr/local/share/fonts/. \
-    && rm -rf ttf Hack-v3.003-ttf.zip \
-    && fc-cache -f \
-    && wget https://github.com/Peltoche/lsd/releases/download/0.18.0/lsd_0.18.0_amd64.deb \
-    && wget https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb \
-    && dpkg -i lsd_0.18.0_amd64.deb \
-    && dpkg -i bat_0.15.4_amd64.deb \
-    && rm bat_0.15.4_amd64.deb \
-    && rm lsd_0.18.0_amd64.deb \
-    && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/plugins/zsh-autosuggestions \
-    && git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/plugins/zsh-completions \
-    && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/plugins/zsh-syntax-highlighting \
-    && git clone https://github.com/lincheney/fzf-tab-completion.git ~/.oh-my-zsh/plugins/fzf-tab-completion \
-    && rm -rf /var/lib/apt/lists/* \
-    && chsh -s /bin/zsh
+    && apt -y --no-install-recommends install less man sudo rsync qrencode wget fontconfig git curl tar unzip make openssh-client sshpass nano jq apache2-utils  \
+    && useradd -l -u 33333 -G sudo -md /home/apollo -s /bin/bash -p $UNAME apollo apollo \
+    && sed -i.bkp -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /usr/local
-
-RUN curl -fsSL https://networkgenomics.com/try/mitogen-0.2.9.tar.gz -o mitogen-0.2.9.tar.gz \
-    && tar xvzf mitogen-0.2.9.tar.gz
-
-RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
-    && unzip terraform.zip \
-    && rm terraform.zip \
-    && chmod +x terraform \
-    && mv terraform /usr/local/bin/
+USER apollo
 
 COPY ansible.cfg /etc/ansible/ansible.cfg
 
-WORKDIR /${APOLLO_WHITELABEL_NAME}
+RUN mkdir -p ${APOLLO_CONFIG_DIR} ${APOLLO_SPACES_DIR} /home/apollo/.ssh /home/apollo/.local/bin ${APOLLO_APP_DIR} /home/apollo/.config /home/apollo/.ansible/tmp /home/apollo/.ansible/cache \
+    && sudo mkdir -p /etc/ansible /cargo \
+    && sudo chown apollo:apollo /cargo -R
+
+ENV PATH="$PATH:/home/apollo/.local/bin"
+
+WORKDIR /home/apollo
+
+RUN curl -fsSL https://networkgenomics.com/try/mitogen-0.2.9.tar.gz -o mitogen-0.2.9.tar.gz \
+    && tar xvzf mitogen-0.2.9.tar.gz \
+    && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
+    && unzip terraform.zip \
+    && rm terraform.zip \
+    && chmod +x terraform \
+    && sudo mv terraform /home/apollo/.local/bin/
+
+WORKDIR ${APOLLO_APP_DIR}
+
+COPY ansible-requirements.yml ansible-requirements.yml
+COPY requirements.txt requirements.txt
+
+RUN sudo pip install -r requirements.txt \
+    && sudo ansible-galaxy install --ignore-errors -r ansible-requirements.yml
 
 RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \
     && chmod -v 700 $(pwd)
 
-COPY requirements.yml requirements.yml
-
-RUN ansible-galaxy install --ignore-errors -r requirements.yml
-
-COPY .zshrc /root/.zshrc
-
-COPY apollo-cli.py /usr/local/bin/apollo
-
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-
 COPY . .
+
+COPY --chown=apollo:apollo docker-entrypoint.sh /docker-entrypoint.sh
+COPY --chown=apollo:apollo apollo-cli.py /home/apollo/.local/bin/apollo
+
+RUN chmod +x /home/apollo/.local/bin/apollo
 
 WORKDIR ${APOLLO_SPACES_DIR}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-SHELL ["/bin/zsh", "-c"]
-
-RUN ["/bin/zsh", "-c", "/usr/local/bin/apollo", "--install-completion", "zsh"]
-
-CMD ["/usr/local/bin/apollo"]
+CMD ["/home/apollo/.local/bin/apollo"]
 
 ARG BUILD_DATE
 
