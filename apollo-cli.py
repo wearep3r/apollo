@@ -363,6 +363,7 @@ def version():
         raise typer.Exit(code=1)
 
     typer.secho(f"{version}", err=False, fg=typer.colors.GREEN)
+    return version
 
 
 @app.command()
@@ -371,6 +372,12 @@ def deploy(what: str = typer.Argument("all")):
   Deploy apollo
   """
     spacefile = loadSpacefile()
+
+    apollo_version = version()
+
+    if arc["dev"]:
+        spacefile["space"]["version"] = apollo_version
+
     ansible_spacefile = {"apollo_space_dir": arc["space_dir"], "arc": spacefile}
 
     # Check if in CI
@@ -709,6 +716,7 @@ def callback(
         help="The directory of the space you want to act on",
     ),
     debug: bool = typer.Option(False, "--debug", "-d", help="Enable Debugging"),
+    dev: bool = typer.Option(False, "--dev", help="Enable Development Mode"),
 ):
     home = os.environ.get("HOME")
     os.environ["APOLLO_CONFIG_VERSION"] = "2"
@@ -724,6 +732,7 @@ def callback(
     arc["space_dir"] = space_dir
     arc["spaces_dir"] = f"{home}/.apollo/.spaces"
     arc["verbosity"] = verbosity
+    arc["dev"] = dev
 
 
 if __name__ == "__main__":

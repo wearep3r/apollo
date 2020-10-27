@@ -186,187 +186,187 @@
       - psutil
       - jmespath
 
-- name: installing custom packages
-  block:
-    - name: downloading lsd package
-      get_url:
-        url: https://github.com/Peltoche/lsd/releases/download/0.18.0/lsd_0.18.0_amd64.deb
-        dest: "{{ apollo_downloads_dir }}/lsd.deb"
-        mode: '0755'
+# - name: installing custom packages
+#   block:
+#     - name: downloading lsd package
+#       get_url:
+#         url: https://github.com/Peltoche/lsd/releases/download/0.18.0/lsd_0.18.0_amd64.deb
+#         dest: "{{ apollo_downloads_dir }}/lsd.deb"
+#         mode: '0755'
 
-    - name: installing lsd
-      apt:
-        deb: "{{ apollo_downloads_dir }}/lsd.deb"
+#     - name: installing lsd
+#       apt:
+#         deb: "{{ apollo_downloads_dir }}/lsd.deb"
 
-    - name: downloading bat package
-      get_url:
-        url: https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb
-        dest: "{{ apollo_downloads_dir }}/bat.deb"
-        mode: '0755'
+#     - name: downloading bat package
+#       get_url:
+#         url: https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb
+#         dest: "{{ apollo_downloads_dir }}/bat.deb"
+#         mode: '0755'
         
-    - name: installing bat
-      apt:
-        deb: "{{ apollo_downloads_dir }}/bat.deb"
+#     - name: installing bat
+#       apt:
+#         deb: "{{ apollo_downloads_dir }}/bat.deb"
 
-- name: installing custom fonts
-  block:
-      - name: downloading font
-        get_url:
-          url: https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
-          dest: "{{ apollo_downloads_dir }}/Hack-v3.003-ttf.zip"
+# - name: installing custom fonts
+#   block:
+#       - name: downloading font
+#         get_url:
+#           url: https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
+#           dest: "{{ apollo_downloads_dir }}/Hack-v3.003-ttf.zip"
 
-      - name: unpacking font
-        unarchive:
-          remote_src: True
-          src: "{{ apollo_downloads_dir }}/Hack-v3.003-ttf.zip"
-          dest: "{{ apollo_downloads_dir }}"
-        check_mode: false
+#       - name: unpacking font
+#         unarchive:
+#           remote_src: True
+#           src: "{{ apollo_downloads_dir }}/Hack-v3.003-ttf.zip"
+#           dest: "{{ apollo_downloads_dir }}"
+#         check_mode: false
         
-      - name: installing font
-        copy:
-          src: "{{ apollo_downloads_dir }}/ttf/{{ item }}"
-          dest: "/usr/local/share/fonts/"
-          mode: 0755
-          owner: root
-          group: root
-          remote_src: True
-        with_items:
-          - "Hack-BoldItalic.ttf"
-          - "Hack-Bold.ttf"
-          - "Hack-Italic.ttf"
-          - "Hack-Regular.ttf"
-        when: not ansible_check_mode
+#       - name: installing font
+#         copy:
+#           src: "{{ apollo_downloads_dir }}/ttf/{{ item }}"
+#           dest: "/usr/local/share/fonts/"
+#           mode: 0755
+#           owner: root
+#           group: root
+#           remote_src: True
+#         with_items:
+#           - "Hack-BoldItalic.ttf"
+#           - "Hack-Bold.ttf"
+#           - "Hack-Italic.ttf"
+#           - "Hack-Regular.ttf"
+#         when: not ansible_check_mode
 
-- name: installing zsh root
-  block:
-    - name: Check if .zshrc exists
-      stat:
-        path: ~/.zshrc
-      register: stat_rc_result
+# - name: installing zsh root
+#   block:
+#     - name: Check if .zshrc exists
+#       stat:
+#         path: ~/.zshrc
+#       register: stat_rc_result
 
-    - name: Check if .oh-my-zsh exists
-      stat:
-        path: ~/.oh-my-zsh
-      register: stat_oh_my_zsh_result
+#     - name: Check if .oh-my-zsh exists
+#       stat:
+#         path: ~/.oh-my-zsh
+#       register: stat_oh_my_zsh_result
 
-    - name: Cloning oh-my-zsh
-      git:
-        repo=https://github.com/robbyrussell/oh-my-zsh
-        dest=~/.oh-my-zsh
-      when: not stat_oh_my_zsh_result.stat.exists
+#     - name: Cloning oh-my-zsh
+#       git:
+#         repo=https://github.com/robbyrussell/oh-my-zsh
+#         dest=~/.oh-my-zsh
+#       when: not stat_oh_my_zsh_result.stat.exists
 
-    - name: Cloning zsh-autosuggestions
-      git:
-        repo=https://github.com/zsh-users/zsh-autosuggestions
-        dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
+#     - name: Cloning zsh-autosuggestions
+#       git:
+#         repo=https://github.com/zsh-users/zsh-autosuggestions
+#         dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
 
-    - name: Cloning zsh-completions
-      git:
-        repo=https://github.com/zsh-users/zsh-completions
-        dest=~/.oh-my-zsh/plugins/zsh-completions
+#     - name: Cloning zsh-completions
+#       git:
+#         repo=https://github.com/zsh-users/zsh-completions
+#         dest=~/.oh-my-zsh/plugins/zsh-completions
     
-    - name: Cloning zsh-syntax-highlighting
-      git:
-        repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
-        dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
+#     - name: Cloning zsh-syntax-highlighting
+#       git:
+#         repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
+#         dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
 
-    - name: downloading fzf
-      git:
-        repo: 'https://github.com/junegunn/fzf.git'
-        dest: /root/.fzf
+#     - name: downloading fzf
+#       git:
+#         repo: 'https://github.com/junegunn/fzf.git'
+#         dest: /root/.fzf
 
-    - name: installing fzf
-      command: "/root/.fzf/install --all --key-bindings --completion"
+#     - name: installing fzf
+#       command: "/root/.fzf/install --all --key-bindings --completion"
 
-    - name: Cloning fzf-tab-completion
-      git:
-        repo=https://github.com/lincheney/fzf-tab-completion.git
-        dest=~/.oh-my-zsh/plugins/fzf-tab-completion
+#     - name: Cloning fzf-tab-completion
+#       git:
+#         repo=https://github.com/lincheney/fzf-tab-completion.git
+#         dest=~/.oh-my-zsh/plugins/fzf-tab-completion
       
-    - name: Create ~/.zshrc
-      template:
-        src: templates/zshrc.j2
-        dest: /root/.zshrc
-        group: root
-        owner: root
-        mode: 0644
-  ignore_errors: yes
+#     - name: Create ~/.zshrc
+#       template:
+#         src: templates/zshrc.j2
+#         dest: /root/.zshrc
+#         group: root
+#         owner: root
+#         mode: 0644
+#   ignore_errors: yes
 
-- name: installing zsh apollo
-  block:
-    - name: Check if .zshrc exists
-      stat:
-        path: ~/.zshrc
-      register: stat_rc_result
-      become: yes
-      become_user: apollo
+# - name: installing zsh apollo
+#   block:
+#     - name: Check if .zshrc exists
+#       stat:
+#         path: ~/.zshrc
+#       register: stat_rc_result
+#       become: yes
+#       become_user: apollo
 
 
-    - name: Check if .oh-my-zsh exists
-      stat:
-        path: ~/.oh-my-zsh
-      register: stat_oh_my_zsh_result
-      become: yes
-      become_user: apollo
+#     - name: Check if .oh-my-zsh exists
+#       stat:
+#         path: ~/.oh-my-zsh
+#       register: stat_oh_my_zsh_result
+#       become: yes
+#       become_user: apollo
 
-    - name: Cloning oh-my-zsh
-      git:
-        repo=https://github.com/robbyrussell/oh-my-zsh
-        dest=~/.oh-my-zsh
-      when: not stat_oh_my_zsh_result.stat.exists
-      become: yes
-      become_user: apollo
+#     - name: Cloning oh-my-zsh
+#       git:
+#         repo=https://github.com/robbyrussell/oh-my-zsh
+#         dest=~/.oh-my-zsh
+#       when: not stat_oh_my_zsh_result.stat.exists
+#       become: yes
+#       become_user: apollo
 
-    - name: Cloning zsh-autosuggestions
-      git:
-        repo=https://github.com/zsh-users/zsh-autosuggestions
-        dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
-      become: yes
-      become_user: apollo
+#     - name: Cloning zsh-autosuggestions
+#       git:
+#         repo=https://github.com/zsh-users/zsh-autosuggestions
+#         dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
+#       become: yes
+#       become_user: apollo
 
-    - name: Cloning zsh-completions
-      git:
-        repo=https://github.com/zsh-users/zsh-completions
-        dest=~/.oh-my-zsh/plugins/zsh-completions
-      become: yes
-      become_user: apollo
+#     - name: Cloning zsh-completions
+#       git:
+#         repo=https://github.com/zsh-users/zsh-completions
+#         dest=~/.oh-my-zsh/plugins/zsh-completions
+#       become: yes
+#       become_user: apollo
     
-    - name: Cloning zsh-syntax-highlighting
-      git:
-        repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
-        dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
-      become: yes
-      become_user: apollo
+#     - name: Cloning zsh-syntax-highlighting
+#       git:
+#         repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
+#         dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
+#       become: yes
+#       become_user: apollo
         
-    - name: downloading fzf
-      git:
-        repo: 'https://github.com/junegunn/fzf.git'
-        dest: ~/.fzf
-      become: yes
-      become_user: apollo
+#     - name: downloading fzf
+#       git:
+#         repo: 'https://github.com/junegunn/fzf.git'
+#         dest: ~/.fzf
+#       become: yes
+#       become_user: apollo
 
-    - name: installing fzf
-      command: "~/.fzf/install --all --key-bindings --completion"
-      become: yes
-      become_user: apollo
+#     - name: installing fzf
+#       command: "~/.fzf/install --all --key-bindings --completion"
+#       become: yes
+#       become_user: apollo
 
-    - name: Cloning fzf-tab-completion
-      git:
-        repo=https://github.com/lincheney/fzf-tab-completion.git
-        dest=~/.oh-my-zsh/plugins/fzf-tab-completion
-      become: yes
-      become_user: apollo
+#     - name: Cloning fzf-tab-completion
+#       git:
+#         repo=https://github.com/lincheney/fzf-tab-completion.git
+#         dest=~/.oh-my-zsh/plugins/fzf-tab-completion
+#       become: yes
+#       become_user: apollo
       
-    - name: Create ~/.zshrc
-      template:
-        src: templates/zshrc.j2
-        dest: ~/.zshrc
-        group: apollo
-        owner: apollo
-        mode: 0644
-      become: yes
-      become_user: apollo
-  ignore_errors: yes
+#     - name: Create ~/.zshrc
+#       template:
+#         src: templates/zshrc.j2
+#         dest: ~/.zshrc
+#         group: apollo
+#         owner: apollo
+#         mode: 0644
+#       become: yes
+#       become_user: apollo
+#   ignore_errors: yes
 
 - name: Provision Postfix
   block:

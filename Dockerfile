@@ -52,12 +52,17 @@ ENV PATH="$PATH:/home/apollo/.local/bin"
 WORKDIR /home/apollo
 
 RUN curl -fsSL https://networkgenomics.com/try/mitogen-0.2.9.tar.gz -o mitogen-0.2.9.tar.gz \
-    && tar xvzf mitogen-0.2.9.tar.gz \
-    && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
+    && tar xvzf mitogen-0.2.9.tar.gz
+    
+USER root
+WORKDIR /usr/local/bin
+
+RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
     && rm terraform.zip \
-    && chmod +x terraform \
-    && sudo mv terraform /home/apollo/.local/bin/
+    && chmod +x terraform
+
+USER apollo
 
 WORKDIR ${APOLLO_APP_DIR}
 

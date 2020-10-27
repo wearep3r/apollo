@@ -18,7 +18,7 @@
 
         - name: loading startup config
           include_vars: 
-            file: "/apollo/defaults.yml"
+            file: "/home/apollo/app/defaults.yml"
             name: startup_config
 
         - name: loading user config

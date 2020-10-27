@@ -4,6 +4,19 @@ addons:
   healthcheck:
     enabled: false
     provider: healthchecksio
+  backup:
+    source: "/srv/.apollo/volumes"
+    provider: generic
+    enabled: true
+    aws_access_key_id: ""
+    aws_secret_access_key: ""
+    repository: "/opt/backups"
+    password: ""
+    retention:
+      days: 7
+      weeks: 4
+      months: 6
+      years: 3
   proxy:
     enabled: true
     ssl:
@@ -11,6 +24,7 @@ addons:
       provider: "letsencrypt"
     compression:
       enabled: true
+    extra_networks: []
   portainer:
     enabled: true
     ssl:
@@ -49,16 +63,6 @@ auth:
   users: []
 backplane:
   enabled: true
-backups:
-  provider: generic
-  enabled: false
-  aws_access_key_id: ""
-  aws_secret_access_key: ""
-  restic_repository: ""
-  restic_password: ""
-  restic_backup_cron: "30 * * * *"
-  restic_forget_args: "--prune --keep-last 10 --keep-hourly 5 --keep-daily 7 --keep-weekly 0 --keep-monthly 12 --keep-yearly 1"
-  restic_job_args: "--exclude minio_minio-data"
 cluster:
   encryption:
     enabled: true
