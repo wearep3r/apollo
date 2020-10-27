@@ -30,7 +30,7 @@ elif [ "$1" = 'apollo' ];
 then
   exec "$@"
 else
-  set -- /usr/local/bin/apollo "$@"
+  set -- /home/apollo/.local/bin/apollo "$@"
   cd /cargo
 fi
 

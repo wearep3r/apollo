@@ -96,6 +96,7 @@
               - "DOCKER_BUILDKIT=1"
               - "APOLLO_INGRESS_IP={{ apollo_ingress_ip }}"
               - "APOLLO_MANAGEMENT_IP={{ apollo_management_ip }}"
+              - "APOLLO_VOLUMES_DIR={{ arc['data']['volumes_dir'] }}"
             token: "{{ arc['addons']['gitlab-runner']['token'] }}"
             executor: docker
             cache_dir: "{{ arc['data']['volumes_dir'] }}/gitlab-runner/cache"
@@ -109,6 +110,7 @@
             docker_volumes:
               - "{{ arc['data']['volumes_dir'] }}/gitlab-runner/cache:/cache"
               - "/var/run/docker.sock:/var/run/docker.sock"
+              - "{{ arc['data']['volumes_dir'] }}:{{ arc['data']['volumes_dir'] }}"
             extra_configs:
               runners.custom_build_dir: 
                 enabled: True

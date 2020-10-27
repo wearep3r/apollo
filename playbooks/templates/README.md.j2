@@ -9,11 +9,22 @@
 - Wireguard: {{ arc['cluster']['encryption']['enabled']|bool }}
 - Get Help: [apollo docs](https://gitlab.com/p3r.one/apollo/-/blob/master/docs/)
 
-### Nodes
+## Nodes
 
 {% for host in groups['cluster'] %}
 - {{ host }}: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
+
+## Data
+
+{% if arc['data']['provider'] == "nfs" %}
+apollo runs with NFS as data provider. This means:
+
+- manager-0 exports {{ arc['data']['volumes_dir'] }} to all workers to the same directory via NFS
+- manager-0 exports `$APOLLO_VOLUMES_DIR={{ arc['data']['volumes_dir'] }}` to the `deploy` gitlab-runner's environment
+- {{ arc['data']['volumes_dir'] }} should be used to create volume-directories and bind-mount them into services
+- volume-directories need to be created first; this can be done in the `deploy` stage in CI by using this command: `docker run --rm -v ${APOLLO_VOLUMES_DIR}:${APOLLO_VOLUMES_DIR} alpine:latest mkdir -p ${APOLLO_VOLUMES_DIR}/service-volume`
+{%endif%}
 {% if arc['federation']['enabled']|bool %}
 
 ## Federation
@@ -27,22 +38,24 @@
 {% endfor %}
 {% endif %}
 
-
 ## Backups
 
-{% if arc['backups']['enabled']|bool %}
+By default, backups of {{ arc['addons']['backup']['source'] }} will be saved to {{ arc['addons']['backup']['repository'] }} every 30 minutes.
+
+{% if arc['addons']['backup']['enabled']|bool %}
 - Enabled: True
-- Backup-User: {{ arc['backups']['aws_access_key_id'] }}
-- Backup-Password: {{ arc['backups']['aws_secret_access_key'] }}
-- Backup-Ziel: {{ arc['backups']['restic_repository'] }}
-- Backup-Keyphrase: {{ arc['backups']['restic_password'] }}
+- Source: {{ arc['addons']['backup']['source'] }}
+- Storage-User: {{ arc['addons']['backup']['aws_access_key_id'] }}
+- Storage-Password: {{ arc['addons']['backup']['aws_secret_access_key'] }}
+- Storage (Repository): {{ arc['addons']['backup']['repository'] }}
+- Backup-Keyphrase: {{ arc['addons']['backup']['password'] }}
 {% else %}
 - Enabled: False
 {% endif %}
 
 ## Authentication
 
-apollo uses **Basic Authentication** to authenticate access on backplane services:
+apollo uses **Basic Authentication** to authenticate access on controlplane services:
 
 - Username: {{ arc['auth']['admin_user'] }}
 - Password: {{ arc['auth']['admin_password'] }}
@@ -61,6 +74,13 @@ To operate this space, please add the following records to your DNS zone (`{{ ar
 ```bash
 {{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
 *.{{ arc['space']['name'] }} IN A {{ apollo_management_ip }}
+```
+
+To point a domain (e.g. {{ arc['space']['base_domain'] }}) to the cluster, use `INGRESS_IP`:
+
+```bash
+{{ arc['space']['base_domain'] }} IN A {{ apollo_ingress_ip }}
+*.{{ arc['space']['base_domain'] }} IN A {{ apollo_ingress_ip }}
 ```
 
 ## Deployment

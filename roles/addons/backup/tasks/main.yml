@@ -1,0 +1,232 @@
+---
+
+#   In my case I only export stats from restic stats, duration and exit codes to prometheus (with node-exporter’s textfile collector). So I can have a dashboard and alerts (if the backup size drops more than some percent, if it didn’t run last night…).
+
+# I use jq to format restic stats’s data:
+# restic stats --json latest | jq -r '"restic_stats_total_size_bytes \(.total_size)\nrestic_stats_total_file_count \(.total_file_count)"' > restic.prom.
+
+# and for the snapshots:
+# snapshots --json | jq -r 'max_by(.time) | .time | sub(".[0-9]+Z$"; "Z") | fromdate | "restic_stats_last_snapshot_timestamp \(.)"' >> restic.prom
+
+# https://forum.restic.net/t/restic-grafana-dashboard/1662
+
+- name: "enable {{ app_name }}"
+  block:
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "apollo"
+        group: "apollo"
+
+    - name: Creating storage directory
+      file:
+        path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
+        state: directory
+        mode: '0755'
+        owner: "apollo"
+        group: "apollo"
+
+    - name: Creating backup target directory
+      file:
+        path: "{{ arc['addons']['backup']['repository'] }}"
+        state: directory
+        mode: '0755'
+        owner: "apollo"
+        group: "apollo"
+      when: arc['addons']['backup']['provider'] == "generic"
+
+    - name: Installing apt dependencies
+      apt:
+        name:
+          - jq
+
+    - name: Download restic binary
+      become: false
+      get_url:
+        url: "https://github.com/restic/restic/releases/download/v{{ restic_version }}/restic_{{ restic_version }}_linux_amd64.bz2"
+        dest: "{{ apollo_downloads_dir }}/restic-v{{ restic_version }}.bz2"
+      register: _download_binary
+      until: _download_binary is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+    - name: Unpack restic binary
+      become: false
+      command: "bzip2 --force -d restic-v{{ restic_version }}.bz2"
+      args:
+        chdir: "{{ apollo_downloads_dir }}"
+      check_mode: false
+
+    - name: Propagate restic binary
+      copy:
+        src: "{{ apollo_downloads_dir }}/restic-v{{ restic_version }}"
+        dest: "{{ apollo_binary_dir }}/restic"
+        mode: 0755
+        owner: root
+        group: root
+        remote_src: True
+      when: not ansible_check_mode
+    
+
+    - name: Propagate restic config
+      template:
+        src: templates/restic-config.cfg.j2
+        dest: "{{ app_dir }}/restic-config.cfg"
+        owner: apollo
+        group: apollo
+        mode: '0644'
+
+    - name: Check restic repository exists
+      command: "restic --repo {{ arc['addons']['backup']['repository'] }} cat config"
+      register: restic_repo_config
+      environment: 
+        RESTIC_PASSWORD: "{{ arc['addons']['backup']['password'] | default( arc['auth']['admin_password']) }}"
+        AWS_ACCESS_KEY_ID: "{{ arc['addons']['backup']['aws_access_key_id'] }}"
+        AWS_SECRET_ACCESS_KEY: "{{ arc['addons']['backup']['aws_secret_access_key'] }}"
+      failed_when: false
+      changed_when: false
+
+    - name:  Show restic respository config
+      debug:
+        msg: "restic: {{ restic_repo_config }}"
+        verbosity: 1
+      when: restic_repo_config.rc == 0
+
+    - name: Create restic repository
+      command: "restic init --repo {{ arc['addons']['backup']['repository'] }}"
+      environment: 
+        RESTIC_PASSWORD: "{{ arc['addons']['backup']['password'] | default( arc['auth']['admin_password']) }}"
+        AWS_ACCESS_KEY_ID: "{{ arc['addons']['backup']['aws_access_key_id'] }}"
+        AWS_SECRET_ACCESS_KEY: "{{ arc['addons']['backup']['aws_secret_access_key'] }}"
+      when: restic_repo_config.rc != 0
+
+    - name: integrate with healthcheck addon
+      block:
+        - name: creating healthcheck at provider
+          uri:
+            url: "{{ arc['providers'][arc['addons']['healthcheck']['provider']]['api']['url'] }}/checks/"
+            #headers:
+            #  X-Api-Key: "{{ arc['providers'][arc['addons']['healthcheck']['provider']]['auth']['token'] }}"
+            method: POST
+            body:
+              api_key: "{{ arc['providers'][arc['addons']['healthcheck']['provider']]['auth']['token'] }}"
+              name: "{{ arc['space']['space_domain'] }}-backup"
+              tags: "{{ arc['space']['name'] }} apollo"
+              timeout: 3600 
+              grace: 300
+              schedule: "0/45 * * * *"
+              desc: "apollo backup healtcheck for {{ arc['space']['name'] }}"
+              unique:
+                - name
+            status_code: 
+              - 201
+              - 200
+            body_format: json
+          register: healthcheck_api
+          
+        - name: debug healthcheck ping url
+          debug:
+            msg: "healthcheck ping url: {{ healthcheck_api }}"
+            verbosity: 1
+
+        - name: expose ping_url
+          set_fact:
+            ping_url: "{{ healthcheck_api.json.ping_url }}" 
+      when: 
+        - arc['addons']['healthcheck']['enabled']|bool
+
+    - name: Copy the restic systemd service file
+      template:
+        src: templates/restic.service.j2
+        dest: /etc/systemd/system/restic.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Copy the restic-prune systemd service file
+      template:
+        src: templates/restic-prune.service.j2
+        dest: /etc/systemd/system/restic-prune.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Copy the restic systemd timer file
+      template:
+        src: templates/restic.timer.j2
+        dest: /etc/systemd/system/restic.timer
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Copy the restic-prune systemd timer file
+      template:
+        src: templates/restic-prune.timer.j2
+        dest: /etc/systemd/system/restic-prune.timer
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Enable restic service
+      systemd:
+        name: "restic"
+        enabled: true
+
+    - name: Enable restic-prune service
+      systemd:
+        name: "restic-prune"
+        enabled: true
+
+    - name: Enable restic timer
+      systemd:
+        name: "restic.timer"
+        state: started
+        enabled: true
+
+    - name: Enable restic-prune timer
+      systemd:
+        name: "restic-prune.timer"
+        state: started
+        enabled: true
+
+    - name: restart systemd
+      become: true
+      systemd:
+        daemon_reload: true
+    
+  when:
+    - arc['addons']['backup']['enabled']|bool
+
+- name: disable backup
+  block:
+    - name: Stop and disable restic
+      systemd:
+        name: "restic"
+        enabled: false
+        state: stopped
+
+    - name: Stop and disable restic-prune
+      systemd:
+        name: "restic-prune"
+        enabled: false
+        state: stopped
+
+    - name: Stop and disable restic timer
+      systemd:
+        name: "restic.timer"
+        enabled: false
+        state: stopped
+
+    - name: Stop and disable restic-prune timer
+      systemd:
+        name: "restic-prune.timer"
+        enabled: false
+        state: stopped
+        daemon_reload: yes
+  when:
+    - not arc['addons']['backup']['enabled']|bool
+  tags:
+    - proxy

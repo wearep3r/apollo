@@ -1,0 +1,6 @@
+[Unit]
+Description=apollo backup pruning
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/restic prune
+EnvironmentFile={{ app_dir }}/restic-config.cfg

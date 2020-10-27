@@ -1,0 +1,3 @@
+RESTIC_PASSWORD={{ arc['addons']['backup']['password'] | default( arc['auth']['admin_password']) }}
+AWS_ACCESS_KEY_ID={{ arc['addons']['backup']['aws_access_key_id'] }}
+AWS_SECRET_ACCESS_KEY={{ arc['addons']['backup']['aws_secret_access_key'] }}
