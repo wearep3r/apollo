@@ -45,3 +45,4 @@
   import_playbook: playbooks/recap.yml
   tags:
     - recap
+    - always

@@ -29,7 +29,7 @@
             tags: "{{ arc['space']['name'] }} apollo"
             timeout: 3600 
             grace: 300
-            schedule: "0/15 * * * *"
+            schedule: "0/10 * * * *"
             desc: "apollo healtcheck for {{ arc['space']['name'] }}"
             unique:
               - name
@@ -48,29 +48,66 @@
         set_fact:
           ping_url: "{{ healthcheck_api.json.ping_url }}"
   
-      - name: Copy Stack-File
-        template:
-          src: templates/docker-compose.yml.j2
-          dest: "{{ app_dir }}/docker-compose.yml"
-          mode: '0644'
-          owner: apollo
-          group: apollo
-        register: stack_file
+      # - name: Copy Stack-File
+      #   template:
+      #     src: templates/docker-compose.yml.j2
+      #     dest: "{{ app_dir }}/docker-compose.yml"
+      #     mode: '0644'
+      #     owner: apollo
+      #     group: apollo
+      #   register: stack_file
   
-      - name: Pull images
-        docker_image:
-          name: "{{ item.value }}"
-          source: pull
-        with_dict: "{{ images }}"
+      # - name: Pull images
+      #   docker_image:
+      #     name: "{{ item.value }}"
+      #     source: pull
+      #   with_dict: "{{ images }}"
       
-      - name: enable healthcheck
+      # - name: enable healthcheck
+      #   docker_stack:
+      #     state: present
+      #     name: healthcheck
+      #     prune: yes
+      #     with_registry_auth: yes
+      #     compose:
+      #       - "{{ app_dir }}/docker-compose.yml"
+      - name: Copy the healthcheck systemd service file
+        template:
+          src: templates/healthcheck.service.j2
+          dest: /etc/systemd/system/healthcheck.service
+          owner: root
+          group: root
+          mode: 0644
+
+      - name: Copy the healthcheck systemd timer file
+        template:
+          src: templates/healthcheck.timer.j2
+          dest: /etc/systemd/system/healthcheck.timer
+          owner: root
+          group: root
+          mode: 0644
+      
+      - name: Enable healthcheck service
+        systemd:
+          name: "healthcheck"
+          enabled: true
+
+      - name: Enable healthcheck timer
+        systemd:
+          name: "healthcheck.timer"
+          state: started
+          enabled: true
+
+      - name: restart systemd
+        become: true
+        systemd:
+          daemon_reload: true
+
+      - name: remove legacy healthcheck
         docker_stack:
-          state: present
+          state: absent
           name: healthcheck
           prune: yes
-          with_registry_auth: yes
-          compose:
-            - "{{ app_dir }}/docker-compose.yml"
     when:
       - arc['addons']['healthcheck']['enabled']|bool
     tags:
@@ -78,10 +115,18 @@
   
   - name: disable healthcheck
     block:
-      - name: disable healthcheck
-        docker_stack:
-          state: absent
-          name: healtcheck
+      - name: Stop and disable healthcheck
+        systemd:
+          name: "healthcheck"
+          enabled: false
+          state: stopped
+
+      - name: Stop and disable healthcheck timer
+        systemd:
+          name: "healthcheck.timer"
+          enabled: false
+          state: stopped
+
     when:
       - not arc['addons']['healthcheck']['enabled']|bool
     tags:
