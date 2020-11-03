@@ -24,7 +24,6 @@
         mode: '0644'
         owner: apollo
         group: apollo
-      register: stack_file
 
     - name: Create config directories
       file:

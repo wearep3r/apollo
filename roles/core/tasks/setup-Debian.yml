@@ -46,18 +46,24 @@
     name: "{{ inventory_hostname }}"
   ignore_errors: true
 
-- name: Disabling Ubuntu motd-news
-  shell: "chmod -x *"
-  args:
-    chdir: /etc/update-motd.d
-    warn: false
-  changed_when: false
+# - name: Disabling Ubuntu motd-news
+#   shell: "chmod -x *"
+#   args:
+#     chdir: /etc/update-motd.d
+#     warn: false
+#   changed_when: false
   
-- name: Setting apollo motd
+# - name: Setting apollo motd
+#   template:
+#     src: "motd.j2"
+#     dest: "/etc/motd"
+#     mode: 0700
+
+- name: Setting apollo environment
   template:
-    src: "motd.j2"
-    dest: "/etc/motd"
-    mode: 0700
+    src: "apollo_env.sh.j2"
+    dest: "/etc/profile.d/apollo_env.sh"
+    mode: 0755
 
 - name: $node A-Records
   lineinfile: 
@@ -378,7 +384,7 @@
         mode: 0644
       with_items:
         - name: inet_interfaces
-          value: "{{ apollo_manager }}"
+          value: "all"
         - name: inet_protocols
           value: "{{ postfix_inet_protocols }}"
         - name: myorigin

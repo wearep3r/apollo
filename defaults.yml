@@ -17,6 +17,8 @@ addons:
       weeks: 4
       months: 6
       years: 3
+  registry:
+    enabled: false
   proxy:
     enabled: true
     ssl:
@@ -54,6 +56,11 @@ addons:
     package_version: 13.4.0
     registration_token: ""
     package_name: 'gitlab-runner'
+  gc:
+    enabled: false
+    cleanup_volumes: false
+  minio:
+    enabled: false
 auth:  
   enabled: true
   provider: basic
@@ -75,9 +82,6 @@ management:
   provider: traefik
 controlplane:
   enabled: true
-gc:
-  enabled: false
-  cleanup_volumes: false
 alerts:
   provider: alertmanager
   enabled: false

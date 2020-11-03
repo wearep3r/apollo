@@ -1,0 +1,49 @@
+---
+# tasks file for zero-app-cadvisor
+- name: Provision garbage-collector
+  block:
+    - name: Creating app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "apollo"
+        group: "apollo"
+
+    - name: Creating storage directory
+      file:
+        path: "{{ arc['data']['volumes_dir'] }}/{{ app_name }}"
+        state: directory
+        mode: '0755'
+        owner: "apollo"
+        group: "apollo"
+
+    - name: Copy Stack-File
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: "{{ app_dir }}/docker-compose.yml"
+        owner: apollo
+        group: apollo
+        mode: '0644'
+      notify: restart garbage-collector
+
+    - name: Pull images
+      docker_image:
+        name: "{{ item.value }}"
+        source: pull
+      with_dict: "{{ images }}"
+  
+    - name: "Copy {{ app_name }} systemd service file"
+      template:
+        src: templates/garbage-collector.service.j2
+        dest: /etc/systemd/system/garbage-collector.service
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart garbage-collector
+
+    - name: Make sure service is started
+      service:
+        name: garbage-collector
+        state: started
+        enabled: true

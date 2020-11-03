@@ -375,6 +375,12 @@ def deploy(what: str = typer.Argument("all")):
 
     apollo_version = version()
 
+    dry = ""
+
+    if arc["dry"]:
+        typer.secho(f"Running in check mode", fg=typer.colors.BRIGHT_BLACK)
+        dry = "--check"
+
     if arc["dev"]:
         spacefile["space"]["version"] = apollo_version
 
@@ -622,6 +628,18 @@ def init():
     # space_version
     config["space"]["version"] = os.getenv("APOLLO_VERSION")
 
+    # auth
+    while config["auth"]["admin_password"] == "apollo":
+        auth_admin_password = typer.prompt("Admin Password")
+
+        if auth_admin_password != "":
+            config["auth"]["admin_password"] = auth_admin_password
+        else:
+            typer.secho(f"Password can't be empty", err=True, fg=typer.colors.RED)
+
+    # backup password
+    config["backup"]["password"] = config["auth"]["admin_password"]
+
     # infrastructure
     infrastructure_enabled = typer.confirm("Enable infrastructure")
     if infrastructure_enabled:
@@ -717,6 +735,7 @@ def callback(
     ),
     debug: bool = typer.Option(False, "--debug", "-d", help="Enable Debugging"),
     dev: bool = typer.Option(False, "--dev", help="Enable Development Mode"),
+    dry: bool = typer.Option(False, "--dry", help="Enable dry run"),
 ):
     home = os.environ.get("HOME")
     os.environ["APOLLO_CONFIG_VERSION"] = "2"
@@ -733,6 +752,7 @@ def callback(
     arc["spaces_dir"] = f"{home}/.apollo/.spaces"
     arc["verbosity"] = verbosity
     arc["dev"] = dev
+    arc["dry"] = dry
 
 
 if __name__ == "__main__":
