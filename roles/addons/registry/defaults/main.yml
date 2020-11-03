@@ -1,0 +1,6 @@
+---
+app_name: "registry"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
+  
+images:
+  registry: "registry:2"

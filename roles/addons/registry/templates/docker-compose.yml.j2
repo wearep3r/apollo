@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  registry:
+    image: "{{ images.registry }}"
+    environment:
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+      - REGISTRY_HTTP_SECRET={{arc['auth']['admin_password']}}
+    volumes:
+      - "{{ app_dir }}:/var/lib/registry"
+    networks:
+      - proxy
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+      placement:
+        constraints: 
+          - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.port: "5000"
+        traefik.frontend.rule: "Host:registry.{{ arc['space']['space_domain'] }}"
+        traefik.backend: "apollo-addon-registry"
+        traefik.protocol: "http"
+        traefik.backend.loadbalancer.stickiness: "true"
+        traefik.frontend.passHostHeader: "true"
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+        traefik.frontend.entryPoints: "http,https"
+        traefik.frontend.headers.SSLRedirect: "true"
+        traefik.frontend.headers.STSSeconds: "31536000"
+        traefik.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.frontend.headers.STSPreload: "true"
+{% else %}
+        traefik.frontend.entryPoints: "http"
+{%endif%}
+        traefik.frontend.auth.basic.users: "{{arc['auth']['admin_user']}}:{{ arc['auth']['admin_password_hash'] | replace('$','$$') }}"
+
+networks:
+  proxy:
+    driver: overlay
+    external: true
+    name: proxy
