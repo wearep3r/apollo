@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  minio:
+    image: "{{ images.minio }}"
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: "{{  arc['auth']['admin_user'] }}"
+      MINIO_SECRET_KEY: "{{  arc['auth']['admin_password'] }}"
+      MINIO_DOMAIN: "minio.{{ arc['space']['space_domain'] }}"
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+    networks: 
+      - proxy
+    volumes: 
+      - "{{ app_dir }}:/data"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+      placement:
+        constraints: 
+{% if hostvars[groups['worker'][0]] %}
+        - "node.hostname == {{ hostvars[groups['worker'][0]]['ansible_hostname'] }}"
+{% else %}
+        - "node.hostname == {{ hostvars[groups['manager'][0]]['ansible_hostname'] }}"
+{% endif %}
+      labels:
+        traefik.enable: "true"
+        traefik.tags: "proxy"
+        traefik.docker.network: "proxy"
+        traefik.port: "9000"
+        traefik.frontend.rule: "Host:minio.{{ arc['space']['space_domain'] }}"
+        traefik.backend: "apollo-addon-minio"
+        traefik.protocol: "http"
+        traefik.backend.loadbalancer.stickiness: "true"
+        traefik.frontend.passHostHeader: "true"
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+        traefik.frontend.entryPoints: "http,https"
+        traefik.frontend.headers.SSLRedirect: "true"
+        traefik.frontend.headers.STSSeconds: "31536000"
+        traefik.frontend.headers.STSIncludeSubdomains: "true"
+        traefik.frontend.headers.STSPreload: "true"
+{% else %}
+        traefik.frontend.entryPoints: "http"
+{%endif%}
+
+networks:
+  proxy:
+    driver: overlay
+    external: true
