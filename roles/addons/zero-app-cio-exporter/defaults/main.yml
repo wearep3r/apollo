@@ -1,4 +1,0 @@
----
-# defaults file for zero-app-alertmanager
-images:
-  cio_prom: "{{ lookup('env','APOLLO_APP_ALERTMANAGER_IMAGES_CIO_PROM') | default('storidge/cio-prom:latest', true) }}"

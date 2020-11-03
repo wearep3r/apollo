@@ -52,6 +52,7 @@
       retries: 5
       delay: 2
       check_mode: false
+      changed_when: false
 
     - name: Unpack restic binary
       become: false
@@ -59,6 +60,7 @@
       args:
         chdir: "{{ apollo_downloads_dir }}"
       check_mode: false
+      changed_when: false
 
     - name: Propagate restic binary
       copy:
@@ -69,7 +71,6 @@
         group: root
         remote_src: True
       when: not ansible_check_mode
-    
 
     - name: Propagate restic config
       template:
@@ -117,7 +118,7 @@
               tags: "{{ arc['space']['name'] }} apollo"
               timeout: 3600 
               grace: 300
-              schedule: "0/45 * * * *"
+              schedule: "0/30 * * * *"
               desc: "apollo backup healtcheck for {{ arc['space']['name'] }}"
               unique:
                 - name
@@ -138,6 +139,14 @@
       when: 
         - arc['addons']['healthcheck']['enabled']|bool
 
+    - name: Copy the restic stats collector
+      template:
+        src: templates/apollo-backup-stats.sh.j2
+        dest: /usr/local/bin/apollo-backup-stats.sh
+        owner: root
+        group: root
+        mode: 0755
+        
     - name: Copy the restic systemd service file
       template:
         src: templates/restic.service.j2

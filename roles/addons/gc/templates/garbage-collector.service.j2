@@ -1,0 +1,19 @@
+[Unit]
+Description=garbage-collector
+Requires=docker.service network-online.target
+After=docker.service network-online.target
+
+[Service]
+WorkingDirectory={{ app_dir }}
+Type=oneshot
+TimeoutStartSec=15min
+User=root
+Group=root
+ExecStart=/usr/bin/docker deploy -c docker-compose.yml garbage-collector
+ExecStop=/usr/bin/docker stack rm garbage-collector
+ExecReload=/usr/bin/docker deploy -c docker-compose.yml garbage-collector
+
+SyslogIdentifier=garbage-collector
+
+[Install]
+WantedBy=multi-user.target

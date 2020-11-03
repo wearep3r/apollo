@@ -1,0 +1,5 @@
+[Unit]
+Description=apollo healthcheck
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/curl -fsS --retry 5 -o /dev/null {{ ping_url }}
