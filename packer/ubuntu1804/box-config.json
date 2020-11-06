@@ -1,0 +1,40 @@
+{
+  "variables": {
+    "version": "{{user `version`}}",
+    "hcloud_token": "{{env `HCLOUD_TOKEN`}}"
+  },
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "Nodesfile.yml.tpl",
+      "destination": "/tmp/app.tar.gz"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "hostname -I | awk '{ print $1 }' > /tmp/IP",
+        "cat /tmp/IP"
+      ]
+    },
+    {
+      "type": "shell-local",
+      "inline": ["./apollo-cli.py deploy"]
+    }
+  ],
+  "builders": [{
+    "type": "hcloud",
+    "token": "{{user `hcloud_token`}}",
+    "image": "ubuntu-18.04",
+    "location": "nbg1",
+    "server_type": "cx11",
+    "ssh_username": "root"
+  }],
+  "post-processors": [
+    [
+      {
+        "output": "builds/{{.Provider}}-ubuntu1804.box",
+        "type": "vagrant"
+      }
+    ]
+  ]
+}
