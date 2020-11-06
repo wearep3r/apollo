@@ -2,7 +2,11 @@
 Description=apollo backup
 [Service]
 Type=oneshot
+EnvironmentFile={{ app_dir }}/restic-config.env
+User=root
+Group=root
 ExecStart=/usr/local/bin/restic -r {{ arc['addons']['backup']['repository'] }} backup --one-file-system --tag {{ arc['space']['name'] }} {{ arc['addons']['backup']['source'] }}
 ExecStartPost=/usr/local/bin/restic -r {{ arc['addons']['backup']['repository'] }} forget --tag {{ arc['space']['name'] }} --group-by "paths,tags" --keep-daily {{ arc['addons']['backup']['retention']['days'] }} --keep-weekly {{ arc['addons']['backup']['retention']['weeks'] }} --keep-monthly {{ arc['addons']['backup']['retention']['months'] }} --keep-yearly {{ arc['addons']['backup']['retention']['years'] }}
-ExecStop = /usr/local/bin/apollo-backup-stats.sh{% if arc['addons']['healthcheck']['enabled']|bool %} && /usr/bin/curl -fsS --retry 5 -o /dev/null {{ ping_url }}{% endif %}
-EnvironmentFile={{ app_dir }}/restic-config.cfg
+{% if arc['addons']['healthcheck']['enabled']|bool %}
+ExecStartPost=/usr/bin/curl -fsS --retry 5 -o /dev/null {{ ping_url }}
+{% endif %}

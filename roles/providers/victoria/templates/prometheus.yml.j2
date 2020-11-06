@@ -208,7 +208,7 @@ scrape_configs:
 
 {% endif %}
 
-{% if 'minio' in arc['addons'] %}
+{% if arc['addons']['minio']['enabled'] %}
   - job_name: 'minio'
     dns_sd_configs:
       - names:
@@ -223,15 +223,9 @@ scrape_configs:
   - job_name: 'giltlab-runner'
     static_configs:
     - targets:
-{% if arc['addons']['gitlab-runner']['build']['enabled']|bool %}
-{% for host in groups['cluster'] %}
-      - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9252"
-{% endfor %}
-{% elif arc['addons']['gitlab-runner']['deploy']['enabled']|bool %}
 {% for host in groups['manager'] %}
       - "{{ hostvars[host].ansible_hostname }}.{{ arc['space']['space_domain'] }}:9252"
 {% endfor %}
-{% endif %}
     metrics_path: /metrics
 {% endif %}
 

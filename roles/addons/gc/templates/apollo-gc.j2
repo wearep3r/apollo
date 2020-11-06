@@ -1,0 +1,21 @@
+#!/bin/sh
+
+EXCLUDE=clockworksoul/docker-gc-cron:latest,e61267dbe31b
+
+echo "[$(date)] apollo garbage collection starting."
+
+{{ apollo_binary_dir }}/docker-gc
+
+if [ "$CLEAN_UP_VOLUMES" -eq "1" ]
+then 
+   if [ $(docker volume ls -qf dangling=true | wc -l) -gt 0 ]
+   then
+      echo "Cleaning up dangling volumes."
+      docker volume rm $(docker volume ls -qf dangling=true)
+   else
+      echo "No dangling volumes found."
+   fi
+fi
+
+echo "[$(date)] Docker GC has completed."
+

@@ -21,43 +21,39 @@
     append: yes
     groups: sudo
     password: "{{ arc['auth']['admin_password'] | password_hash('sha512', arc['auth']['admin_password_hash'] ) }}"
-    shell: "/bin/zsh"
+    shell: "/bin/bash"
 
 - name: Change shell for root
   user:
     name: "root"
-    shell: /bin/zsh
+    shell: /bin/bash
+
+- name: Copy bashrc
+  template:
+    src: "bashrc.j2"
+    dest: "/root/.bashrc"
+    owner: root
+    group: root
+    mode: 0755
 
 - name: Creating apollo directories
   file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: '0775'
     owner: "apollo"
     group: "apollo"
   with_items:
     - "{{ apollo_remote_dir }}"
+    - "{{ apollo_remote_dir }}/.ssh"
     - "{{ apollo_app_dir }}"
     - "{{ apollo_downloads_dir }}"
-    - "{{ apollo_volumes_dir }}"
+    - "{{ arc['data']['volumes_dir'] }}"
 
 - name: Setting Hostname
   hostname:
     name: "{{ inventory_hostname }}"
   ignore_errors: true
-
-# - name: Disabling Ubuntu motd-news
-#   shell: "chmod -x *"
-#   args:
-#     chdir: /etc/update-motd.d
-#     warn: false
-#   changed_when: false
-  
-# - name: Setting apollo motd
-#   template:
-#     src: "motd.j2"
-#     dest: "/etc/motd"
-#     mode: 0700
 
 - name: Setting apollo environment
   template:
@@ -83,15 +79,6 @@
   when: hostvars[item]['cluster_ip'] is defined
   with_items: "{{ groups['cluster'] }}"
 
-- name: nodes.apollo A-Record
-  lineinfile: 
-    dest=/etc/hosts 
-    regexp=".*logs.{{ arc['space']['space_domain'] }}$" 
-    line="{{ hostvars[item]['cluster_ip'] }} nodes.apollo" 
-    state=present
-  when: hostvars[item]['cluster_ip'] is defined
-  with_items: "{{ groups['cluster'] }}"
-
 - name: Set up authorized keys for user root
   authorized_key: user=root key="{{ item }}"
   with_file:
@@ -101,14 +88,15 @@
   authorized_key: user=apollo key="{{ item }}"
   with_file:
     - "{{ ansible_ssh_public_key_file }}"
+    - "/home/apollo/.ssh/id_rsa.pub"
 
-- name: Set root SSH Pem key
-  copy:
-    src="{{ ansible_ssh_private_key_file }}"
-    dest=/root/id_rsa.pem
-    owner=root
-    group=root
-    mode=0600
+# - name: Set root SSH Pem key
+#   copy:
+#     src="{{ ansible_ssh_private_key_file }}"
+#     dest=/root/id_rsa.pem
+#     owner=root
+#     group=root
+#     mode=0600
 
 - name: Set root SSH Private key
   copy:
@@ -174,15 +162,6 @@
     state: present
     update_cache: False
 
-# - name: Setting up Cockpit config
-#   template:
-#     src: "cockpit-machines.j2"
-#     dest: "/etc/cockpit/machines.d/05-apollo-nodes.json"
-#     owner: root
-#     group: root
-#     mode: 0755
-#   when: ansible_hostname == "manager-0"
-
 - name: Installing pip dependencies
   pip:
     name:
@@ -191,188 +170,8 @@
       - docker
       - psutil
       - jmespath
-
-# - name: installing custom packages
-#   block:
-#     - name: downloading lsd package
-#       get_url:
-#         url: https://github.com/Peltoche/lsd/releases/download/0.18.0/lsd_0.18.0_amd64.deb
-#         dest: "{{ apollo_downloads_dir }}/lsd.deb"
-#         mode: '0755'
-
-#     - name: installing lsd
-#       apt:
-#         deb: "{{ apollo_downloads_dir }}/lsd.deb"
-
-#     - name: downloading bat package
-#       get_url:
-#         url: https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb
-#         dest: "{{ apollo_downloads_dir }}/bat.deb"
-#         mode: '0755'
-        
-#     - name: installing bat
-#       apt:
-#         deb: "{{ apollo_downloads_dir }}/bat.deb"
-
-# - name: installing custom fonts
-#   block:
-#       - name: downloading font
-#         get_url:
-#           url: https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
-#           dest: "{{ apollo_downloads_dir }}/Hack-v3.003-ttf.zip"
-
-#       - name: unpacking font
-#         unarchive:
-#           remote_src: True
-#           src: "{{ apollo_downloads_dir }}/Hack-v3.003-ttf.zip"
-#           dest: "{{ apollo_downloads_dir }}"
-#         check_mode: false
-        
-#       - name: installing font
-#         copy:
-#           src: "{{ apollo_downloads_dir }}/ttf/{{ item }}"
-#           dest: "/usr/local/share/fonts/"
-#           mode: 0755
-#           owner: root
-#           group: root
-#           remote_src: True
-#         with_items:
-#           - "Hack-BoldItalic.ttf"
-#           - "Hack-Bold.ttf"
-#           - "Hack-Italic.ttf"
-#           - "Hack-Regular.ttf"
-#         when: not ansible_check_mode
-
-# - name: installing zsh root
-#   block:
-#     - name: Check if .zshrc exists
-#       stat:
-#         path: ~/.zshrc
-#       register: stat_rc_result
-
-#     - name: Check if .oh-my-zsh exists
-#       stat:
-#         path: ~/.oh-my-zsh
-#       register: stat_oh_my_zsh_result
-
-#     - name: Cloning oh-my-zsh
-#       git:
-#         repo=https://github.com/robbyrussell/oh-my-zsh
-#         dest=~/.oh-my-zsh
-#       when: not stat_oh_my_zsh_result.stat.exists
-
-#     - name: Cloning zsh-autosuggestions
-#       git:
-#         repo=https://github.com/zsh-users/zsh-autosuggestions
-#         dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
-
-#     - name: Cloning zsh-completions
-#       git:
-#         repo=https://github.com/zsh-users/zsh-completions
-#         dest=~/.oh-my-zsh/plugins/zsh-completions
-    
-#     - name: Cloning zsh-syntax-highlighting
-#       git:
-#         repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
-#         dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
-
-#     - name: downloading fzf
-#       git:
-#         repo: 'https://github.com/junegunn/fzf.git'
-#         dest: /root/.fzf
-
-#     - name: installing fzf
-#       command: "/root/.fzf/install --all --key-bindings --completion"
-
-#     - name: Cloning fzf-tab-completion
-#       git:
-#         repo=https://github.com/lincheney/fzf-tab-completion.git
-#         dest=~/.oh-my-zsh/plugins/fzf-tab-completion
-      
-#     - name: Create ~/.zshrc
-#       template:
-#         src: templates/zshrc.j2
-#         dest: /root/.zshrc
-#         group: root
-#         owner: root
-#         mode: 0644
-#   ignore_errors: yes
-
-# - name: installing zsh apollo
-#   block:
-#     - name: Check if .zshrc exists
-#       stat:
-#         path: ~/.zshrc
-#       register: stat_rc_result
-#       become: yes
-#       become_user: apollo
-
-
-#     - name: Check if .oh-my-zsh exists
-#       stat:
-#         path: ~/.oh-my-zsh
-#       register: stat_oh_my_zsh_result
-#       become: yes
-#       become_user: apollo
-
-#     - name: Cloning oh-my-zsh
-#       git:
-#         repo=https://github.com/robbyrussell/oh-my-zsh
-#         dest=~/.oh-my-zsh
-#       when: not stat_oh_my_zsh_result.stat.exists
-#       become: yes
-#       become_user: apollo
-
-#     - name: Cloning zsh-autosuggestions
-#       git:
-#         repo=https://github.com/zsh-users/zsh-autosuggestions
-#         dest=~/.oh-my-zsh/plugins/zsh-autosuggestions
-#       become: yes
-#       become_user: apollo
-
-#     - name: Cloning zsh-completions
-#       git:
-#         repo=https://github.com/zsh-users/zsh-completions
-#         dest=~/.oh-my-zsh/plugins/zsh-completions
-#       become: yes
-#       become_user: apollo
-    
-#     - name: Cloning zsh-syntax-highlighting
-#       git:
-#         repo=https://github.com/zsh-users/zsh-syntax-highlighting.git
-#         dest=~/.oh-my-zsh/plugins/zsh-syntax-highlighting
-#       become: yes
-#       become_user: apollo
-        
-#     - name: downloading fzf
-#       git:
-#         repo: 'https://github.com/junegunn/fzf.git'
-#         dest: ~/.fzf
-#       become: yes
-#       become_user: apollo
-
-#     - name: installing fzf
-#       command: "~/.fzf/install --all --key-bindings --completion"
-#       become: yes
-#       become_user: apollo
-
-#     - name: Cloning fzf-tab-completion
-#       git:
-#         repo=https://github.com/lincheney/fzf-tab-completion.git
-#         dest=~/.oh-my-zsh/plugins/fzf-tab-completion
-#       become: yes
-#       become_user: apollo
-      
-#     - name: Create ~/.zshrc
-#       template:
-#         src: templates/zshrc.j2
-#         dest: ~/.zshrc
-#         group: apollo
-#         owner: apollo
-#         mode: 0644
-#       become: yes
-#       become_user: apollo
-#   ignore_errors: yes
+      - python-dotenv
+      - docker-compose
 
 - name: Provision Postfix
   block:
@@ -396,7 +195,7 @@
         - name: mynetworks_style
           value: "host"
         - name: mynetworks
-          value: 10.0.0/8
+          value: 10.0.0.0/8
         - name: mydestination
           value: ""
       notify: restart postfix
@@ -407,111 +206,6 @@
         state: "{{ postfix_service_state }}"
         enabled: "{{ postfix_service_enabled }}"
   when: ansible_hostname == "manager-0"
-
-- name: Setting up Kernel (Ubuntu)
-  block:
-    - name: Installing Kernel
-      apt:
-        name:
-          - "linux-image-{{ kernel_update_grub_requested_kernel_version }}"
-          - "linux-headers-{{ kernel_update_grub_requested_kernel_version }}"
-        state: present
-        update_cache: False
-      tags:
-        - packages
-
-    - name: Pinning packages
-      dpkg_selections:
-        name: "{{ item }}"
-        selection: hold
-      with_items:
-        - "linux-image-{{ kernel_update_grub_requested_kernel_version }}"
-        - linux-image-virtual
-        - "linux-headers-{{ kernel_update_grub_requested_kernel_version }}"
-    
-    - name: Getting Kernel Releases in sorted order
-      shell: 'cat /boot/grub/grub.cfg | grep menuentry | grep -oP \\d+\\.\\d+\\.\\d+-\\d+-\\w+ | sort -V -r | uniq'
-      register: ku_kernel_releases
-      check_mode: no
-      changed_when: False
-
-    - name: DEBUG | Kernel Releases
-      debug: 
-        msg: "{{ ku_kernel_releases }}"
-        verbosity: 1
-
-    - name: setting kernel_update_grub_latest_kernel_version to the latest kernel
-      set_fact:
-        kernel_update_grub_kernel_versions: "{{ ku_kernel_releases.stdout.splitlines() }}"
-        kernel_update_grub_latest_kernel_version: "{{ ku_kernel_releases.stdout.splitlines()[0] }}"
-
-    - name: Checking that kernel_update_grub_requested_kernel_version is in the list of available kernels if defined
-      fail: msg="kernel_update_grub_requested_kernel_version is not a valid kernel"
-      when: kernel_update_grub_requested_kernel_version is defined
-        and kernel_update_grub_requested_kernel_version not in kernel_update_grub_kernel_versions
-
-    - name: Getting menuentry_id_option from /boot/grub/grub.cfg for {{ kernel_update_grub_requested_kernel_version }}
-      shell: "awk '/\\$menuentry_id_option/ {print $(NF-1) }' /boot/grub/grub.cfg | sed s/\\'//g | grep -v recovery | grep -F {{ kernel_update_grub_requested_kernel_version }}"
-      when: kernel_update_grub_requested_kernel_version is defined
-      register: ku_set_grub_vars_kernel_id
-      check_mode: no
-      changed_when: False
-
-    - name: Escaping the kernel_update_grub_requested_kernel_version to assist with generating parent id
-      set_fact:
-        kernel_update_grub_requested_kernel_version_escaped: "{{ kernel_update_grub_requested_kernel_version|regex_replace('\\.', '\\.') }}"
-
-    - name: Getting the parent menu id for the kernel
-      set_fact:
-        ku_set_grub_vars_kernel_parent_id: "{{ ku_set_grub_vars_kernel_id.stdout|regex_replace(kernel_update_grub_requested_kernel_version_escaped+'-', '') }}"
-
-    - name: Setting a value for kernel_update_grub_default
-      set_fact:
-        kernel_update_grub_default: "{{ ku_set_grub_vars_kernel_parent_id }}>{{ ku_set_grub_vars_kernel_id.stdout }}"
-
-    - name: Creating /etc/default/grub.d
-      file:
-        dest: /etc/default/grub.d
-        group: root
-        owner: root
-        mode: 0755
-        state: directory
-
-    - name: Rendering grub default configuration
-      template:
-        src: grub_default.j2
-        dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
-        group: root
-        owner: root
-        mode: 0644
-      register: ku_render_grub_default_result
-      when: kernel_update_grub_default is defined
-
-    - name: Removing grub default configuration if kernel_update_grub_default isn't set
-      file:
-        dest: "/etc/default/grub.d/{{ kernel_update_config_prefix_grub_default }}-grub-default.cfg"
-        state: absent
-      register: ku_remove_grub_default_result
-      when: kernel_update_grub_default is not defined
-
-    - name: Getting Configuration Status
-      set_fact:
-        ku_grub_configuration_changed: "{{ ku_render_grub_default_result.changed or ku_remove_grub_default_result.changed }}"
-
-    - name: Updating grub
-      command: update-grub
-      register: ku_update_grub_result
-      when: ku_grub_configuration_changed
-
-    - name: Getting Grub Update Status
-      set_fact:
-        ku_update_grub_changed: "{{ ku_update_grub_result.changed }}"
-  when: kernel_version|bool
-
-- name: Rebooting Nodes
-  reboot:
-    reboot_timeout: 180
-  when: ku_update_grub_changed is defined and ku_update_grub_changed and kernel_version|bool
 
 - name: handling DNS
   block:

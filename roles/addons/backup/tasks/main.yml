@@ -75,7 +75,7 @@
     - name: Propagate restic config
       template:
         src: templates/restic-config.cfg.j2
-        dest: "{{ app_dir }}/restic-config.cfg"
+        dest: "{{ app_dir }}/restic-config.env"
         owner: apollo
         group: apollo
         mode: '0644'
@@ -90,7 +90,7 @@
       failed_when: false
       changed_when: false
 
-    - name:  Show restic respository config
+    - name: Show restic respository config
       debug:
         msg: "restic: {{ restic_repo_config }}"
         verbosity: 1

@@ -302,5 +302,6 @@
       with_items: "{{ arc['addons'] }}"
       when: 
         - arc['addons'][addon]['enabled']|bool
+        - subsets == "all" or addon in subsets
       loop_control:
         loop_var: addon

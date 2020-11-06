@@ -367,7 +367,7 @@ def version():
 
 
 @app.command()
-def deploy(what: str = typer.Argument("all")):
+def deploy(what: str = typer.Argument("all"), subset: str = typer.Argument("all")):
     """
   Deploy apollo
   """
@@ -375,16 +375,18 @@ def deploy(what: str = typer.Argument("all")):
 
     apollo_version = version()
 
-    dry = ""
-
-    if arc["dry"]:
-        typer.secho(f"Running in check mode", fg=typer.colors.BRIGHT_BLACK)
-        dry = "--check"
-
     if arc["dev"]:
         spacefile["space"]["version"] = apollo_version
 
-    ansible_spacefile = {"apollo_space_dir": arc["space_dir"], "arc": spacefile}
+    subsets = subset
+    if subset != "all":
+        subsets = subset.split(",")
+
+    ansible_spacefile = {
+        "apollo_space_dir": arc["space_dir"],
+        "arc": spacefile,
+        "subsets": subsets,
+    }
 
     # Check if in CI
     # gitlab-runner throws an error if ssh-key
@@ -421,6 +423,10 @@ def deploy(what: str = typer.Argument("all")):
                 f"{what},always",
                 "provision.yml",
             ]
+
+            if arc["dry"]:
+                typer.secho(f"Running in check mode", fg=typer.colors.BRIGHT_BLACK)
+                command.append("--check")
 
             if arc["verbosity"] > 0:
                 typer.secho(f"{command}", fg=typer.colors.BRIGHT_BLACK)
