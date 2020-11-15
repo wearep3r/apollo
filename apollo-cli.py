@@ -29,8 +29,8 @@ def checkSpaceconfig(config: dict):
 
 def checkSpaceName(name: str):
     """
-  Check if spaceName matches the required syntax
-  """
+    Check if spaceName matches the required syntax
+    """
     pattern = re.compile("^([a-z0-9-]+)$")
 
     if pattern.match(name):
@@ -41,8 +41,8 @@ def checkSpaceName(name: str):
 
 def checkSpaceVersion(version: str):
     """
-  Check if spaceVersion matches the required syntax
-  """
+    Check if spaceVersion matches the required syntax
+    """
     pattern = re.compile(
         "^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
     )
@@ -55,8 +55,8 @@ def checkSpaceVersion(version: str):
 
 def checkSpaceBaseDomain(base_domain: str):
     """
-  Check if spaceBaseDomain matches the required syntax
-  """
+    Check if spaceBaseDomain matches the required syntax
+    """
     pattern = re.compile(
         "^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$"
     )
@@ -69,8 +69,8 @@ def checkSpaceBaseDomain(base_domain: str):
 
 def checkSpaceMail(mail: str):
     """
-  Check if spaceBaseDomain matches the required syntax
-  """
+    Check if spaceBaseDomain matches the required syntax
+    """
     pattern = re.compile("^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$")
 
     if pattern.match(mail):
@@ -189,8 +189,8 @@ def destroyInfrastructure(spacefile):
 @app.command()
 def report(what: str):
     """
-  Report
-  """
+    Report
+    """
     spacefile = loadSpacefile()
 
     if what == "vars":
@@ -245,8 +245,8 @@ def report(what: str):
 @app.command()
 def exec(target: str, command: str):
     """
-  Exec command on cluster
-  """
+    Exec command on cluster
+    """
     nodesfile = loadNodesfile()
 
     typer.secho(f"Executing {command} on {target}", fg=typer.colors.BRIGHT_BLACK)
@@ -273,8 +273,8 @@ def exec(target: str, command: str):
 @app.command()
 def enter(node: str):
     """
-  Enter cluster node
-  """
+    Enter cluster node
+    """
     spacefile = loadSpacefile()
     nodesfile = loadNodesfile()
     ssh_config = "-o LogLevel=ERROR -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
@@ -308,8 +308,8 @@ def enter(node: str):
 @app.command()
 def commit(message: str):
     """
-  Commit configuration changes to the space (requires git)
-  """
+    Commit configuration changes to the space (requires git)
+    """
     command = ["git", "commit", "-am", f"{message}"]
 
     if arc["verbosity"] > 0:
@@ -323,8 +323,8 @@ def commit(message: str):
 @app.command()
 def push():
     """
-  Push configuration changes to the space repository (requires git)
-  """
+    Push configuration changes to the space repository (requires git)
+    """
     command = ["git", "push"]
 
     if arc["verbosity"] > 0:
@@ -338,8 +338,8 @@ def push():
 @app.command()
 def build():
     """
-  Build apollo infrastructure
-  """
+    Build apollo infrastructure
+    """
     spacefile = loadSpacefile()
 
     if spacefile["infrastructure"]["enabled"] == True:
@@ -353,8 +353,8 @@ def build():
 @app.command()
 def version():
     """
-  Show apollo's version
-  """
+    Show apollo's version
+    """
 
     version = os.getenv("APOLLO_VERSION")
 
@@ -369,8 +369,8 @@ def version():
 @app.command()
 def deploy(what: str = typer.Argument("all"), subset: str = typer.Argument("all")):
     """
-  Deploy apollo
-  """
+    Deploy apollo
+    """
     spacefile = loadSpacefile()
 
     apollo_version = version()
@@ -466,8 +466,8 @@ def deploy(what: str = typer.Argument("all"), subset: str = typer.Argument("all"
 @app.command()
 def destroy():
     """
-  Destroy apollo
-  """
+    Destroy apollo
+    """
     spacefile = loadSpacefile()
 
     if spacefile["infrastructure"]["enabled"] == True:
@@ -481,8 +481,8 @@ def destroy():
 @app.command()
 def show(what: str):
     """
-  Show apollo config
-  """
+    Show apollo config
+    """
 
     spacefile = loadSpacefile()
 
@@ -555,8 +555,8 @@ def validateNodesfile():
 @app.command()
 def validate():
     """
-  Validate apollo config
-  """
+    Validate apollo config
+    """
 
     defaults = loadDefaults()
 
@@ -577,15 +577,15 @@ def create(
     ),
 ):
     """
-  Create a space from command line
-  """
+    Create a space from command line
+    """
 
 
 @app.command()
 def init():
     """
-  Initialize configuration
-  """
+    Initialize configuration
+    """
 
     typer.secho(f"Initializing apollo config", bold=True, fg=typer.colors.BRIGHT_BLACK)
 
@@ -644,7 +644,7 @@ def init():
             typer.secho(f"Password can't be empty", err=True, fg=typer.colors.RED)
 
     # backup password
-    config["backup"]["password"] = config["auth"]["admin_password"]
+    config["addons"]["backup"]["password"] = config["auth"]["admin_password"]
 
     # infrastructure
     infrastructure_enabled = typer.confirm("Enable infrastructure")
