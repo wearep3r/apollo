@@ -4,6 +4,8 @@ LABEL maintainer="Fabian Peter <fabian@peter.saarland>"
 
 ENV TERRAFORM_VERSION=0.12.26
 
+ENV PACKER_VERSION=1.6.5
+
 ENV TERRAFORM_INVENTORY_VERSION=0.9
 
 ENV APOLLO_WHITELABEL_NAME=apollo
@@ -60,7 +62,11 @@ WORKDIR /usr/local/bin
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip \
     && unzip terraform.zip \
     && rm terraform.zip \
-    && chmod +x terraform
+    && chmod +x terraform \
+    && curl -fsSL "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip" -o packer.zip \
+    && unzip packer.zip \
+    && rm packer.zip \
+    && chmod +x packer
 
 USER apollo
 

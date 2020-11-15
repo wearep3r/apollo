@@ -5,11 +5,6 @@
   },
   "provisioners": [
     {
-      "type": "file",
-      "source": "Nodesfile.yml.tpl",
-      "destination": "/tmp/app.tar.gz"
-    },
-    {
       "type": "shell",
       "inline": [
         "hostname -I | awk '{ print $1 }' > /tmp/IP",
@@ -18,7 +13,7 @@
     },
     {
       "type": "shell-local",
-      "inline": ["./apollo-cli.py deploy"]
+      "inline": ["cd packer/ubuntu1804","../../apollo-cli.py --dev deploy"]
     }
   ],
   "builders": [{
