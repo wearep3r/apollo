@@ -61,6 +61,8 @@ addons:
     cleanup_volumes: false
   minio:
     enabled: false
+  git:
+    enabled: true
 auth:  
   enabled: true
   provider: basic

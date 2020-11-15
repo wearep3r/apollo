@@ -12,7 +12,7 @@ receivers:
       text: '{{ .CommonAnnotations.description }}'
       html: '{{ template "email.default.html" . }}'{% endraw %}
       
-{% if arc['alerts']['slack']['enabled']|bool %}}
+{% if arc['alerts']['slack']['enabled']|bool %}
   slack_configs:
   - send_resolved: true{% raw %}  
     text: '{{ .CommonAnnotations.description }}'{% endraw %}

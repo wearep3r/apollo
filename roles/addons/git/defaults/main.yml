@@ -1,0 +1,3 @@
+---
+app_name: "git"
+app_dir: "{{ apollo_app_dir }}/{{ app_name }}"

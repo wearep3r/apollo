@@ -1,0 +1,1 @@
+journalctl -f  | grep -v -e firewall -e textfile -e NetworkDB -e SYSCALL -e completed -e preauth -e info -e "authentication failure" -e NETFILTER_CFG -e PROCTITLE

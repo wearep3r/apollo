@@ -9,10 +9,8 @@ Type=oneshot
 TimeoutStartSec=15min
 User=root
 Group=root
-ExecStart=/usr/bin/docker deploy -c docker-compose.yml garbage-collector
-ExecStop=/usr/bin/docker stack rm garbage-collector
-ExecReload=/usr/bin/docker deploy -c docker-compose.yml garbage-collector
-
+ExecStart={{ app_dir }}/apollo-gc
+EnvironmentFile={{ app_dir }}/docker-gc.env
 SyslogIdentifier=garbage-collector
 
 [Install]

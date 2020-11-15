@@ -10,6 +10,8 @@ services:
       - "{{ app_dir }}:/var/lib/registry"
     networks:
       - proxy
+    ports:
+      - "5000:5000"
     deploy:
       mode: replicated
       replicas: 1
