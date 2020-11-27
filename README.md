@@ -212,7 +212,7 @@ docker run --rm -it \
   --name apollo \
   -v ${HOME}/.ssh:/root/.ssh \
   -v ${HOME}/.gitconfig:/root/.gitconfig \
-  -v ${HOME}/.apollo:/root/.apollo \
+  -v ${HOME}/.apollo:/home/apollo/.apollo \
   -v ${PWD}:/cargo \
   registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}
 ```
@@ -222,7 +222,7 @@ From inside the image, you can use the apollo CLI to manage your spaces.
 **PRO TIP**: Save this **alias** to the `.zshrc` or `.bashrc` file on your local machine to get quick access to **apollo** from your local terminal:
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --hostname apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/root/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
+alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --hostname apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/home/apollo/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
 ```
 
 From now on we will assume you created the alias for quick access to apollo.
@@ -248,7 +248,7 @@ Your first space has been created and should contain a few files:
 
 Now let's go to your space directory: `cd $HOME/.apollo/.spaces/demo-1.space`
 
-**HINT**: inside the apollo container everything runs as `root` this is why the CLI reports the created space to live in `/root/.apollo`. Assuming you copied the alias as-is, `/root/.apollo` inside the container is mounted from your local `$HOME/.apollo` so you'll find your apollo spaces in your local home directory.
+**HINT**: inside the apollo container everything runs as user `apollo` this is why the CLI reports the created space to live in `/home/apollo/.apollo`. Assuming you copied the alias as-is, `/home/apollo/.apollo` inside the container is mounted from your local `$HOME/.apollo` so you'll find your apollo spaces in your local home directory.
 
 From here, you can adjust `Spacefile.yml` to your needs. You should also setup infrastructure if not already done during `apollo init`. You got three options to provide infrastructure for apollo:
 
