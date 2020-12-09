@@ -35,6 +35,8 @@
           net.ipv6.conf.all.disable_ipv6: 0
       tags:
         - hardening
+      when:
+        - arc['cluster']['hardening']['enabled']|bool
   tags:
     - hardening
 
@@ -59,10 +61,9 @@
 - name: "engine"
   hosts: 
     - cluster
-  serial: 1
   become: true
   gather_facts: False
-  strategy: linear
+  #strategy: linear
   tasks:
     - include_role:
         name: "providers/{{ arc['engine']['provider'] }}"
@@ -140,6 +141,8 @@
       tags:
         - "{{ arc['management']['provider'] }}"
         - management
+      when:
+        - arc['management']['enabled']|bool
 
 - name: "data"
   hosts: 
@@ -177,6 +180,8 @@
       tags:
         - metrics
         - node-exporter
+      when:
+        - arc['metrics']['enabled']|bool
 
     - include_role:
         name: "providers/cadvisor"
@@ -188,6 +193,8 @@
       tags:
         - metrics
         - node-exporter
+      when:
+        - arc['metrics']['enabled']|bool
 
     - include_role:
         name: "providers/process-exporter"
@@ -195,6 +202,8 @@
       tags:
         - metrics
         - process-exporter
+      when:
+        - arc['metrics']['enabled']|bool
 
     - include_role:
         name: "providers/promtail"
@@ -202,6 +211,8 @@
       tags:
         - metrics
         - promtail
+      when:
+        - arc['metrics']['enabled']|bool
 
 - name: "metrics"
   hosts: 
@@ -219,6 +230,8 @@
       tags:
         - "{{ arc['metrics']['provider'] }}"
         - metrics
+      when:
+        - arc['metrics']['enabled']|bool
 
 - name: "logs"
   hosts: 
@@ -236,6 +249,8 @@
       tags:
         - "{{ arc['logs']['provider'] }}"
         - logs
+      when:
+        - arc['logs']['enabled']|bool
 
 - name: "alerts"
   hosts: 
@@ -253,6 +268,8 @@
       tags:
         - "{{ arc['alerts']['provider'] }}"
         - alerts
+      when:
+        - arc['alerts']['enabled']|bool
 
 - name: "analytics"
   hosts: 
@@ -270,6 +287,8 @@
       tags:
         - "{{ arc['analytics']['provider'] }}"
         - analytics
+      when:
+        - arc['analytics']['enabled']|bool
 
 # Todo
 # Backups, Garbage Collection
