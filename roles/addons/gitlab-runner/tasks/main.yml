@@ -17,7 +17,7 @@
   tags:
     - gitlab-runner
     - build
-  
+
 - name: "gitlab-runner: build"  
   block:
     - name: "enable gitlab-runner: build"
@@ -33,7 +33,7 @@
         gitlab_runner_concurrent: 4
         gitlab_runner_coordinator_url: "{{ arc['addons']['gitlab-runner']['coordinator_url'] }}"
         gitlab_runner_package_version: "{{ arc['addons']['gitlab-runner']['package_version'] }}"
-        gitlab_runner_listen_address: "{{ node['cluster_ip'] }}:9252"
+        gitlab_runner_listen_address: "{{ hostvars[node]['cluster_ip'] }}:9252"
         gitlab_runner_registration_token: "{{ arc['addons']['gitlab-runner']['registration_token'] }}"
         gitlab_runner_package_name: "{{ arc['addons']['gitlab-runner']['package_name'] }}"
         gitlab_runner_runners:
@@ -88,7 +88,7 @@
       vars:
         gitlab_runner_package_version: "{{ arc['addons']['gitlab-runner']['package_version'] }}"
         gitlab_runner_coordinator_url: "{{ arc['addons']['gitlab-runner']['coordinator_url'] }}"
-        gitlab_runner_listen_address: "{{ node['cluster_ip'] }}:9252"
+        gitlab_runner_listen_address: "{{ hostvars[node]['cluster_ip'] }}:9252"
         gitlab_runner_registration_token: "{{ arc['addons']['gitlab-runner']['registration_token'] }}"
         gitlab_runner_package_name: "{{ arc['addons']['gitlab-runner']['package_name'] }}"
         gitlab_runner_runners:
