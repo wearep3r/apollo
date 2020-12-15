@@ -37,6 +37,28 @@ build:
 > @docker image prune -f
 > @docker build --pull --build-arg SHIPMATE_CARGO_VERSION="${SHIPMATE_CARGO_VERSION}" -t ${APOLLO_WHITELABEL_NAME} .
 
+.PHONY: publish-sem-rel
+publish-sem-rel:
+> git push origin master
+> semantic-release publish
+
+.PHONY: build-docker
+build-docker:
+#> @docker image prune -f
+> docker build --build-arg BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg BUILD_VERSION=$(shell backplane --version) --build-arg VCS_REF=$(shell git rev-parse --short HEAD) -t wearep3r/apollo .
+
+.PHONY: publish-docker
+publish-docker: build-docker
+> docker tag wearep3r/apollo wearep3r/apollo:$(shell backplane --version)
+> docker push wearep3r/apollo:$(shell backplane --version)
+> docker tag wearep3r/apollo wearep3r/apollo:latest
+> docker push wearep3r/apollo:latest
+
+.PHONY: publish
+publish: publish-docker
+#> @docker image prune -f
+> echo "Publishing"
+
 .PHONY: dev
 dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
 dev: SHELL := docker

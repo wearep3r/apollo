@@ -1,12 +1,17 @@
 {
   "workbench.colorTheme": "One Dark Pro",
-  "editor.tabSize": 2,
+  "editor.tabSize": 4,
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": true,
   "python.testing.pytestArgs": [
-      "tests"
+    "tests"
   ],
+  "python.formatting.blackArgs": [
+    "--line-length",
+    "90"
+  ],
+  "python.venvPath": "~/Library/Caches/pypoetry/virtualenvs/",
   "python.formatting.provider": "black",
   "python.testing.unittestEnabled": false,
   "python.testing.nosetestsEnabled": false,
@@ -17,25 +22,10 @@
   "[python]": {
       "editor.formatOnSave": true,
       "editor.formatOnPaste": false
-  }
-  
-  "go.useLanguageServer": false,
-  "terraform.indexing": {
-    "enabled": false,
-    "liveIndexing": false,
-    "delay": 500,
-    "exclude": [
-        ".terraform/**/*",
-        "**/.terraform/**/*"
-    ]
-  },
-  "terraform.languageServer": {
-    "enabled": false,
-    "args": []
   },
   "git.autofetch": true,
   "window.zoomLevel": 0,
   "explorer.confirmDelete": false,
   "explorer.confirmDragAndDrop": false,
-  "go.formatTool": "goimports",
+  "python.pythonPath": "/Users/derfabianpeter/Library/Caches/pypoetry/virtualenvs/apollo-z5xr41Ot-py3.9/bin/python",
 }

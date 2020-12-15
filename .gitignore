@@ -1,5 +1,9 @@
 .ssh
-**/_*
+_modules
+_packer_test
+_packer
+.pytest_cache
+**/_apollo*
 tmp
 inventory/enventory.py
 _deprecated/
@@ -50,3 +54,8 @@ terraform.rc
 **/nodes.apollo.env
 **/*.env
 _modules
+.env
+**/data**/.user
+dist
+**/*pycache*
+.pytest*

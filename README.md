@@ -344,3 +344,8 @@ This software is maintained and commercially supported by [p3r.](https://www.p3r
 - [GitHub](https://github.com/wearep3r/)
 - [LinkedIn](https://www.linkedin.com/company/wearep3r)
 
+
+
+## Update Dependency Roles
+
+From `app/ansible` run: `ansible-galaxy install --roles-path roles/ -r requirements.yml`

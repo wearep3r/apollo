@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "apollo"
+version = "3.0.0"
+description = "An extensible Docker-based Platform as a Service (PaaS)"
+authors = ["Fabian Peter <fabian@p3r.link>"]
+license = "LICENSE.md"
+readme = "README.md"
+
+[tool.semantic_release]
+version_variable = [
+    "app/__init__.py:__version__",
+    "pyproject.toml:version"
+]
+build_command = "poetry build"
+#version_pattern = 'pyproject.toml:version = "{version}"(?m)'
+changelog_file = "CHANGELOG.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+typer = {extras = ["all"], version = "^0.3.2"}
+anyconfig = "^0.9.11"
+python-dotenv = "^0.15.0"
+PyYAML = "^5.3.1"
+packaging = "^20.4"
+read-version = "^0.3.1"
+validators = "^0.18.1"
+GitPython = "^3.1.11"
+python-semantic-release = "^7.3.0"
+jmespath = "^0.10.0"
+openshift = "^0.11.2"
+ansible = "^2.10.4"
+
+[tool.poetry.scripts]
+apollo = "app.main:app"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+pytest = "^6.1.2"
+flake8 = "^3.8.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
