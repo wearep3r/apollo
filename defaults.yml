@@ -79,6 +79,8 @@ cluster:
   firewall:
     enabled: true
     provider: generic
+  hardening:
+    enabled: false
 management:
   enabled: true
   provider: traefik

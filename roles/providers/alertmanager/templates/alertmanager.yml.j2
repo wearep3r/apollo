@@ -16,6 +16,7 @@ receivers:
   slack_configs:
   - send_resolved: true{% raw %}  
     text: '{{ .CommonAnnotations.description }}'{% endraw %}
+    
     username: "{{ arc['space']['space_domain'] }}"
     channel: "{{ arc['alerts']['slack']['channel'] }}"
     api_url: "{{  arc['alerts']['slack']['api_url'] }}"
