@@ -14,6 +14,10 @@
 -A INPUT -p icmp --icmp-type any -j ACCEPT
 -A INPUT -j FILTERS
 
+-A OUTPUT -p tcp --dport 22 -m state --state NEW -j LOG --log-prefix "Outgoing SSH connection established: "
+-A OUTPUT -p tcp --dport 22 --tcp-flags FIN FIN -j LOG --log-prefix "Outgoing SSH connection closed: "
+-A OUTPUT -p tcp --dport 22 --tcp-flags RST RST -j LOG --log-prefix "Outgoing SSH connection closed: "
+
 # Docker
 -A DOCKER-USER -i {{ hostvars[inventory_hostname]['apollo_public_interface'] }} -j FILTERS
 -A DOCKER-USER -i {{ hostvars[inventory_hostname]['apollo_private_interface'] }} -j FILTERS
