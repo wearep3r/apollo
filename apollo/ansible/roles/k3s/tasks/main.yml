@@ -1,0 +1,44 @@
+- name: handling prereqs
+  include_tasks:
+    - prereq.yml
+  tags:
+    - never
+    - deploy
+
+- name: downloading k3s
+  include_tasks:
+    - download.yml
+  tags:
+    - never
+    - deploy
+
+- name: handling raspberrypi
+  include_tasks:
+    - raspberrypi.yml
+  tags:
+    - never
+    - deploy
+
+- name: setting up master
+  include_tasks:
+    - master.yml
+  when: "'master' in group_names"
+  tags:
+    - never
+    - deploy
+
+- name: setting up node
+  include_tasks:
+    - node.yml
+  when: "'node' in group_names"
+  tags:
+    - never
+    - deploy
+
+- name: resetting cluster
+  include_tasks:
+    - reset.yml
+  tags:
+    - never
+    - reset
+  when: "'node' in group_names"

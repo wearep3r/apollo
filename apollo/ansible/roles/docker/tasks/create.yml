@@ -1,0 +1,64 @@
+- name: create container
+  community.general.docker_container:
+    name: "{{ blueprint['spec']['meta']['name'] + index|default(0)|string }}"
+    image: "{{ blueprint['spec']['image'] }}"
+    command: server
+    state: started
+    recreate: yes
+    privileged: yes
+    tmpfs:
+      - /run
+      - /var/run
+    exposed_ports:
+      - "6443"
+    ports:
+      - 6443:6443
+    volumes:
+      - k3s-server:/var/lib/rancher/k3s
+      - "{{ apollo_space_dir }}:/output"
+    labels: "{{ blueprint['spec']['meta']['labels'] }}"
+    env:
+      K3S_TOKEN: "{{ hostvars[inventory_hostname]['id'] | b64encode }}"
+      K3S_KUBECONFIG_OUTPUT: /output/kubeconfig.yml
+      K3S_KUBECONFIG_MODE: "666"
+  register: container
+  when:
+    - group == "master"
+
+- name: create container
+  community.general.docker_container:
+    name: "{{ blueprint['spec']['meta']['name'] + index|default(0)|string }}"
+    image: "{{ blueprint['spec']['image'] }}"
+    state: started
+    recreate: yes
+    privileged: yes
+    tmpfs:
+      - /run
+      - /var/run
+    labels: "{{ blueprint['spec']['meta']['labels'] }}"
+    env:
+      K3S_URL: "https://{{ groups['master'][0] }}:6443"
+      K3S_TOKEN: "{{ hostvars[inventory_hostname]['id'] | b64encode }}"
+  register: server
+  when:
+    - group == "node"
+
+- name: show server
+  debug:
+    var: server
+    verbosity: 1
+
+- name: add to inventory
+  add_host:
+    groups: 
+      - "{{ group }}"
+      - cluster
+    hostname: "{{ blueprint['spec']['meta']['name'] + index|default(0)|string }}"
+    ansible_connection: docker
+    ansible_host: "{{ blueprint['spec']['meta']['name'] + index|default(0)|string }}"
+    ansible_port: "22"
+
+- name: show inventory
+  debug:
+    var: hostvars
+    verbosity: 1

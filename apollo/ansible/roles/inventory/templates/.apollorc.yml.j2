@@ -1,0 +1,30 @@
+all:  
+  vars:
+    {{ apollorc['all']['vars'] | to_nice_yaml(indent=2) | indent(width=4) }}
+  hosts:
+{% for host in groups['cluster'] %}
+    {{ hostvars[host]['inventory_hostname'] }}:
+{% endfor %}
+  children:
+    cluster:
+      children:
+        master:
+        node:
+    master:
+      hosts:
+{% for host in groups['master'] %}
+        {{ hostvars[host]['inventory_hostname'] }}:
+          ansible_host: {{ hostvars[host]['ansible_host'] }}
+          ansible_connection: {{ hostvars[host]['ansible_connection'] }}
+          ansible_user: {{ hostvars[host]['ansible_user'] }}
+          ansible_port: {{ hostvars[host]['ansible_port'] }}
+{% endfor %}
+    node:
+      hosts:
+{% for host in groups['node'] %}
+        {{ hostvars[host]['inventory_hostname'] }}:
+          ansible_host: {{ hostvars[host]['ansible_host'] }}
+          ansible_user: {{ hostvars[host]['ansible_user'] }}
+          ansible_connection: {{ hostvars[host]['ansible_connection'] }}
+          ansible_user: {{ hostvars[host]['ansible_user'] }}
+{% endfor %}

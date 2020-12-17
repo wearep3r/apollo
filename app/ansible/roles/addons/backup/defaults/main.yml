@@ -1,4 +1,0 @@
----
-app_name: "backup"
-app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-restic_version: 0.10.0

@@ -1,0 +1,36 @@
+---
+- name: activating firewall
+  block:
+    - name: Copying firewall config
+      template:
+        src: templates/iptables.conf.j2
+        dest: /etc/iptables.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart firewall
+      tags:
+        - firewall
+
+    - name: Copying firewall service
+      template:
+        src: templates/iptables.service.j2
+        dest: /etc/systemd/system/iptables.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: reload systemd
+      tags:
+        - firewall
+
+    - name: reload systemd
+      systemd:
+        daemon_reload: True
+
+    - name: Enabling firewall service
+      service:
+        name: iptables
+        enabled: True
+        #state: started
+      tags:
+        - firewall

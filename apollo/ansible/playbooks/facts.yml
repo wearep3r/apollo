@@ -1,0 +1,33 @@
+- name: "facts"
+  hosts: all
+  gather_facts: False
+  become: true
+  tasks:
+    - name: loading apollo config
+      block:
+        - name: showing arc
+          debug:
+            msg: "{{ vars }}"
+            verbosity: 1
+  
+- name: "node facts"
+  hosts: 
+    - cluster
+  gather_facts: False
+  strategy: linear
+  become: true
+  tasks:
+    - name: asserting node facts
+      block:
+        - name: asserting nodes are up
+          wait_for_connection:
+
+        - name: setting node facts
+          setup:
+            filter: "*"
+
+        - name: setting apollo facts
+          set_fact:
+            apollo_public_ip: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+            apollo_public_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
+            apollo_private_interface: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"

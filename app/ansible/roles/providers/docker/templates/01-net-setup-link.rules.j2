@@ -1,4 +1,0 @@
-# Reason: https://github.com/systemd/systemd/issues/3374#issuecomment-493117109
-# Destination: /etc/udev/rules.d/01-net-setup-link.rules
-SUBSYSTEM=="net", ACTION=="add|change", ENV{INTERFACE}=="br-*", PROGRAM="/bin/sleep 0.5"
-SUBSYSTEM=="net", ACTION=="add|change", ENV{INTERFACE}=="docker[0-9]*", PROGRAM="/bin/sleep 0.5"

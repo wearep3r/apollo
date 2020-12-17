@@ -1,0 +1,23 @@
+# from apollo.py
+#apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default('/cargo', true) }}"
+become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
+become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"
+#ansible_python_interpreter: '/usr/bin/python3'
+
+# from environment
+in_ci: "{{ lookup('env','CI') | default(0, true) }}"
+apollo_in_ci: "{{ lookup('env','CI') | default(in_ci, true) }}"
+
+# from group_vars
+apollo_space: "{{ arc['space']['name'] }}"
+apollo_remote_dir: "/srv/.apollo"
+apollo_app_dir: "{{ apollo_remote_dir+'/apps' }}"
+apollo_addon_dir: "{{ apollo_remote_dir+'/addons' }}"
+apollo_downloads_dir: "{{ apollo_remote_dir+'/downloads' }}"
+apollo_volumes_dir: "{{ apollo_remote_dir+'/volumes' }}"
+apollo_binary_dir: "/usr/local/bin"
+
+# CHECK AGAIN
+apollo_terraform_destroy: "{{ lookup('env', 'APOLLO_TERRAFORM_DESTROY') | default(0,true) }}"
+apollo_data_nfs_source: "{{ hostvars[arc['data']['nfs_source']] }}"
+apollo_data_nfs_directory: "{{ arc['data']['nfs_directory'] }}"

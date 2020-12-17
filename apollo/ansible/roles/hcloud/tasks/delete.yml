@@ -1,0 +1,31 @@
+- name: delete server
+  hcloud_server:
+    name: "{{ blueprint['spec']['meta']['name'] + index|default(0)|string }}"
+    server_type: "{{ blueprint['spec']['size'] }}"
+    image: "{{ blueprint['spec']['image'] }}"
+    location: "{{ blueprint['spec']['location'] }}"
+    ssh_keys: "{{ lookup('env','SSH_KEYS', allow_undefined=false).split(',') }}"
+    labels: "{{ blueprint['spec']['meta']['labels'] }}"
+    api_token: "{{ lookup('env','HCLOUD_TOKEN', allow_undefined=false) }}"
+    state: present
+  register: server
+
+- name: show server
+  debug:
+    var: server
+    verbosity: 1
+
+- name: add to inventory
+  add_host:
+    groups: 
+      - "{{ group }}"
+      - cluster
+    hostname: "{{ server.hcloud_server['name'] }}"
+    ansible_host: "{{ server.hcloud_server['ipv4_address'] }}"
+    ansible_user: "root"
+    ansible_port: 22
+
+- name: show inventory
+  debug:
+    var: hostvars
+    verbosity: 1

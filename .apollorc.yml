@@ -1,0 +1,48 @@
+all:  
+  vars:
+    ansible_python_interpreter: /usr/bin/env python3
+    ansible_user: root
+    blueprint:
+      master:
+        count: 1
+        spec:
+          extra: ''
+          image: rancher/k3s:v1.19.5-k3s1
+          meta:
+            labels:
+              cluster: apollo
+            name: master
+          provider:
+            name: docker
+      node:
+        count: 0
+        spec:
+          extra: ''
+          image: rancher/k3s:v1.19.5-k3s1
+          meta:
+            labels:
+              cluster: apollo
+            name: node
+          provider:
+            name: docker
+    engine: containerd
+    experimental: false
+    firewall: false
+    hardening: false
+    id: apollo
+    orchestrator: k3s
+    version: 3.0.0
+    wireguard: false
+  hosts:
+    master1:
+      ansible_connection: docker
+  children:
+    cluster:
+      children:
+        master:
+        node:
+    master:
+      hosts:
+        master1:
+    node:
+      hosts:

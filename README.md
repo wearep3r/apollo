@@ -238,21 +238,21 @@ Name: demo-1
 Base Domain: example.com
 E-mail: info@example.com
 Enable infrastructure [y/N]:
-Config saved to /root/.apollo/.spaces/demo-1.space/Spacefile.yml
+Config saved to /root/.apollo/.spaces/demo-1.space/.apollorc
 ```
 
 Your first space has been created and should contain a few files:
 
-- `Spacefile.yml` based on your input and the [defaults](defaults.yml)
+- `.apollorc` based on your input and the [defaults](defaults.yml)
 - a `.ssh` directory containing an auto-generated ssh-keypair
 
 Now let's go to your space directory: `cd $HOME/.apollo/.spaces/demo-1.space`
 
 **HINT**: inside the apollo container everything runs as user `apollo` this is why the CLI reports the created space to live in `/home/apollo/.apollo`. Assuming you copied the alias as-is, `/home/apollo/.apollo` inside the container is mounted from your local `$HOME/.apollo` so you'll find your apollo spaces in your local home directory.
 
-From here, you can adjust `Spacefile.yml` to your needs. You should also setup infrastructure if not already done during `apollo init`. You got three options to provide infrastructure for apollo:
+From here, you can adjust `.apollorc` to your needs. You should also setup infrastructure if not already done during `apollo init`. You got three options to provide infrastructure for apollo:
 
-1. configure the `infrastructure` section in `Spacefile.yml` to spin up resources at a cloud provider (currently only `hcloud` and `digitalocean` are supported), then invoke `apollo build` to create the infrastructure
+1. configure the `infrastructure` section in `.apollorc` to spin up resources at a cloud provider (currently only `hcloud` and `digitalocean` are supported), then invoke `apollo build` to create the infrastructure
 2. provide a manual `Nodesfile.yml` pointing to your existing infrastructure. Make sure you add the auto-generated ssh-key of the `init` step to your nodes so apollo can provision them
 3. integrate with Terraform and generate `Nodesfile.yml` in `output.tf` from [this](playbooks/templates/infrastructure/hcloud/output.tf) template
 

@@ -1,0 +1,48 @@
+---
+- name: "boostrapping cluster"
+  hosts: localhost
+  gather_facts: yes
+  connection: local
+  tasks:
+    - set_fact:
+        blueprint: "{{ hostvars['localhost']['blueprint'] }}"
+      tags:
+        - create
+
+    - name: boostrapping master
+      include_role:
+        name: "{{ hostvars['localhost']['blueprint']['master']['spec']['provider']['name'] }}"
+        apply:
+          tags:
+            - create
+            - master
+      vars:
+        blueprint: "{{ hostvars['localhost']['blueprint']['master'] }}"
+        group: master
+      tags:
+        - create
+        - master
+
+    - name: boostrapping node
+      include_role:
+        name: "{{ hostvars['localhost']['blueprint']['node']['spec']['provider']['name'] }}"
+        apply:
+          tags:
+            - create
+            - node
+      vars:
+        blueprint: "{{ hostvars['localhost']['blueprint']['node'] }}"
+        group: node
+      tags:
+        - create
+        - node
+
+    - name: update inventory
+      include_role:
+        name: "inventory"
+        apply:
+          tags:
+            - create
+      tags:
+        - create
+        - save

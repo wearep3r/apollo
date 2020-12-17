@@ -15,7 +15,7 @@ This document outlines a few standard use-cases and how to implement them with *
 
 ## Single-node Docker Swarm Cluster on Hetzner Cloud
 
-Spacefile.yml:
+.apollorc:
 
 ```bash
 infrastructure:

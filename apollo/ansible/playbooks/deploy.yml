@@ -1,0 +1,101 @@
+---
+- name: "hardening"
+  hosts: 
+    - cluster
+  become: true
+
+  tasks:
+    - include_role:
+        name: "dev-sec.os-hardening"
+        allow_duplicates: no
+        apply:
+          tags:
+            - hardening
+      vars:
+        sysctl_overwrite:
+          net.ipv4.ip_forward: 1
+          net.ipv6.conf.all.forwarding: 1
+          net.ipv4.tcp_window_scaling: 0
+          net.ipv6.conf.all.disable_ipv6: 0
+      tags:
+        - hardening
+      when:
+        - hostvars[inventory_hostname]['hardening']|bool
+  tags:
+    - hardening
+
+- name: "firewall"
+  hosts: 
+    - cluster
+  become: true
+  strategy: linear
+  tasks:
+    - include_role:
+        name: "firewall"
+        allow_duplicates: no
+        apply:
+          tags:
+            - firewall
+      tags:
+        - firewall
+      when:
+        - hostvars[inventory_hostname]['firewall']|bool
+        - hostvars[inventory_hostname]['experimental']|bool
+  tags:
+    - firewall
+
+- name: "wireguard"
+  hosts: 
+    - cluster
+  become: true
+  strategy: linear
+  tasks:
+    - include_role:
+        name: "wireguard"
+        allow_duplicates: no
+        apply:
+          tags:
+            - wireguard
+      tags:
+        - wireguard
+      when:
+        - hostvars[inventory_hostname]['wireguard']|bool
+        - hostvars[inventory_hostname]['experimental']|bool
+  tags:
+    - wireguard
+
+- name: "engine"
+  hosts: 
+    - cluster
+  become: true
+  tasks:
+    - include_role:
+        name: "{{ hostvars[inventory_hostname]['engine'] }}"
+        allow_duplicates: no
+        apply:
+          tags:
+            - engine
+            - "{{ hostvars[inventory_hostname]['engine'] }}"
+      when:
+        - hostvars[inventory_hostname]['engine'] != "containerd"
+        - hostvars[inventory_hostname]['experimental']|bool
+      tags:
+        - engine
+        - "{{ hostvars[inventory_hostname]['engine'] }}"
+
+- name: "orchestrator"
+  hosts: 
+    - cluster
+  become: true
+  strategy: linear
+  tasks:
+    - include_role:
+        name: "{{ hostvars[inventory_hostname]['orchestrator'] }}"
+        allow_duplicates: no
+        apply:
+          tags:
+            - orchestrator
+            - "{{ hostvars[inventory_hostname]['orchestrator'] }}"
+      tags:
+        - orchestrator
+        - "{{ hostvars[inventory_hostname]['orchestrator'] }}"

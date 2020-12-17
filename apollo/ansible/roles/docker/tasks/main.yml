@@ -1,0 +1,26 @@
+---
+- name: debug
+  debug:
+    var: blueprint
+    verbosity: 1
+  tags:
+    - create
+
+- name: create server
+  include_tasks:
+    file: create.yml
+    apply:
+      tags:
+        - create
+  vars:
+    index: "{{ master_index }}"
+  loop: "{{ range(1, blueprint['count'] + 1 )|list }}"
+  loop_control:
+    loop_var: master_index
+  tags:
+    - create
+
+- name: delete server
+  include_tasks: delete.yml
+  tags:
+    - delete
