@@ -18,7 +18,6 @@ COPY . /app/
 
 RUN poetry install
 
-
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 WORKDIR /cluster
