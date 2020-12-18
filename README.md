@@ -1,7 +1,4 @@
-<div>
-  <img align="left" src="https://raw.githubusercontent.com/wearep3r/backplane/master/logo.png" width="175" alt="logo" />
-  <h1 align="left">apollo</h1>
-</div>
+[!["apollo"](https://gitlab.com/p3r.one/apollo/-/raw/v3.0.0/logo.png)](https://github.com/wearep3r/apollo)
 
 **[Website](https://www.p3r.one)** — **[Documentation](https://gitlab.com/p3r.one/apollo)** — **[Source Code](https://gitlab.com/p3r.one/apollo)**
 
@@ -14,12 +11,6 @@ A python CLI to create and manage k3s clusters. Get going with Kubernetes in Doc
 [!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
 
 ---
-
-apollo is an extensible Docker-based Platform as a Service (PaaS) that helps to get from idea to production fast and safe.
-
-With apollo, you’re up & running quickly with a cloud-native tech-stack and great operational stability.
-
-Use this repository as a boilerplate for your own platform or manage your [apollo spaces](#-) using our batteries-included [Docker image](#-).
 
 ## Features
 
