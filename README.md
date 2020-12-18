@@ -1,4 +1,19 @@
-# What is apollo?
+<div>
+  <img align="left" src="https://raw.githubusercontent.com/wearep3r/backplane/master/logo.png" width="175" alt="logo" />
+  <h1 align="left">apollo</h1>
+</div>
+
+**[Website](https://www.p3r.one)** — **[Documentation](https://gitlab.com/p3r.one/apollo)** — **[Source Code](https://gitlab.com/p3r.one/apollo)**
+
+A python CLI to create and manage k3s clusters. Get going with Kubernetes in Docker or on any of our supported infrastructure providers in under 5 minutes.
+
+[!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
+[!["GitLab Stars"](https://img.shields.io/badge/dynamic/json?color=orange&label=GitLab%20stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F17046783)](https://gitlab.com/p3r.one/apollo)
+[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
+[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
+[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
+
+---
 
 apollo is an extensible Docker-based Platform as a Service (PaaS) that helps to get from idea to production fast and safe.
 
@@ -6,107 +21,14 @@ With apollo, you’re up & running quickly with a cloud-native tech-stack and gr
 
 Use this repository as a boilerplate for your own platform or manage your [apollo spaces](#-) using our batteries-included [Docker image](#-).
 
-[!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
-[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
-[!["GitLab Stars"](https://img.shields.io/badge/dynamic/json?color=orange&label=GitLab%20stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F17046783)](https://gitlab.com/p3r.one/apollo)
-[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
-[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
-
-## Demo time!
-
-[![apollo Walk Through](https://img.youtube.com/vi/iT2PLSC0bwI/0.jpg)](https://www.youtube.com/watch?v=iT2PLSC0bwI)
-
 ## Features
 
-### Get going fast
-
-Get started with a simple development environment, grow with your requirements.
-
-![apollo deploy](docs/images/apollo-deploy.png)
-
-### Run anything
-
-apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes using standard tooling like `docker-compose`.
-
-![apollo apps](docs/images/apollo-apps.png)
-
-Learn more
-
-### Deploy fast and safe
-
-Use the tooling you already mastered, no need to learn new workflows. Hook up your Repo, git push and deploy.
-
-![apollo shipments](docs/images/apollo-ship.png)
-
-Learn more
-
-### Scale
-
-Grow your application dynamically allocating resources as needed from a user-friendly dashboard.
-
-![apollo portainer](docs/images/apollo-portainer.png)
-
-Learn more
-
-### Monitor everything
-
-apollo delivers real-time metrics and logs from your applications out-of-the-box. Dashboards included!
-
-![apollo grafana](docs/images/apollo-grafana.png)
-
-Learn more
-
-### GitOps Workflows
-
-apollo spaces can be built, versioned and deployed just like your apps - automate your platform operations with [GitLab](https://docs.gitlab.com/ee/ci/) and [shipmate](https://gitlab.com/peter.saarland/shipmate).
-
-![apollo ci](docs/images/apollo-ci.png)
-
-Learn more
-
-### IaaS integrated
-
-apollo is integrated with Terraform which makes auto-provisioning infrastructure simple, painless and fast.
-
-![apollo build](docs/images/apollo-build.png)
-
-Learn more
-
-## Extensible
-
-apollo can easily be extended with Ansible, a proven automation framework.
-
-![apollo extend](docs/images/apollo-extend.png)
-
-## What's inside
-
-apollo manages the full **life-cycle of a container platform**:
-
-- creation of infrastructure
-- provisioning of configuration
-- monitoring of resources
-- logging of events
-- alerting of incidents
-- visualization of metrics
-- management of operations
-- deployment of applications
-- elemination of waste
-
-We call those platforms **spaces**.
-
-### More features
-
-- Distributed container platform (**Docker Swarm** or **Kubernetes**)
-- Git-versioned configuration method tailored to CI/CD 
-- Automated infrastructure (currently only **DigitalOcean** and **HETZNER Cloud** supported)
-- Ready-to-rock, auto-ssl ingress proxy with **Traefik**
-- Cluster-wide metrics & logs with **Victoria Metrics** and **Grafana Loki**
-- Secure cluster networking through **Wireguard**
-- Beautiful dashboards thanks to **Grafana**
-- Distributed storage (**Storidge**, **NFS** or **Longhorn**)
-- **Single-node clusters are possible** and can be scaled up
-- Integrated with [GitLab](https://gitlab.com) (CI/CD, registry, environments, metrics, kubernetes)
-- Support for configuration encryption, auditing and Continuous Delivery
+- Works on macOS, Linux and Windows
+- Deploy a single-node k3s cluster in Docker (or Docker for Desktop) in less than a minute
+- Start with a simple development environment, grow into production with ease
+- Integrates with Ansible and Terraform
+- Integrates with any major infrastructure provider
+- Integrates with any major CI/CD system
 
 ## What you can do with it
 
@@ -125,10 +47,9 @@ We call those platforms **spaces**.
 
 ## How it works
 
-1. You supply [minimum configuration](#getting-started) to create a **space**
-2. apollo creates infrastructure if needed
-3. apollo configures the machines and sets up your container platform
-4. You check out the auto-generated README to know the next steps
+1. You supply [minimum configuration](#getting-started) to create a cluster (`apollo init`)
+2. apollo creates infrastructure if needed (`apollo create`)
+3. apollo configures the machines and sets up k3s (`apollo install`)
 
 Check the [Getting Started](#getting-started) section to start your journey with apollo.
 
@@ -158,36 +79,12 @@ It runs on every major and minor cloud provider or directly on bare-metal. IoT d
 
 apollo is based on the latest technologies and design patterns. We're working hard to make it fully automated but it already reduces lots of the operational overhead in organizations. It's a DevOps platform, doing ops work automagically for you, so you can do developer magic on top of it.
 
-## Knowledge prerequisites
-
-If you want to use apollo to manage your container platforms, you just need to know:
-
-- Docker
-
-If you want to build upon this repository, you'll need to be very proficient with the following tools:
-
-- Ansible
-- Terraform
-- Bash
-- Docker
-- Python
-- Docker Swarm
-- Kubernetes
-
 ## Technical prerequisites
 
-- Local machine: Docker
-- Remote machines: Ubuntu 18.04
+- python3 >= 3.9
+- Docker (optional)
 
-apollo requires a manager- or control-node. We call this `manager-0`. This node runs the entire controlplane and monitoring stack for a cluster and should be sized appropriately (8GB Memory, 2-4 vCPUs).
-
-apollo can have additional managers (up to 3 in total) as well as an arbitrary number of workers to deal with your workloads. Make sure to adjust manager-size to your number of workers. The more nodes your cluster has, the more resources cluster-operations will need.
-
-## Getting started
-
-The simplest way to use **apollo** is to run our [Docker Image](https://gitlab.com/p3r.one/apollo/container_registry/eyJuYW1lIjoicDNyLm9uZS9hcG9sbG8iLCJ0YWdzX3BhdGgiOiIvcDNyLm9uZS9hcG9sbG8vcmVnaXN0cnkvcmVwb3NpdG9yeS8xMjcwMTkyL3RhZ3M%2FZm9ybWF0PWpzb24iLCJpZCI6MTI3MDE5Mn0=).
-
-### Prerequisites
+## Prerequisites
 
 You need to install [Docker](https://docs.docker.com/get-docker/). Once done, create a directory that holds apollo's configuration and the [spaces](#-) apollo manages:
 
@@ -195,103 +92,47 @@ You need to install [Docker](https://docs.docker.com/get-docker/). Once done, cr
 mkdir -p $HOME/.apollo
 ```
 
-### Installing apollo
-
-Download apollo's Docker Image from our registry:
+## Installing apollo
 
 ```bash
-docker pull registry.gitlab.com/p3r.one/apollo:latest
+pip3 install apollo
 ```
 
-### Running apollo
+## Initalizing a cluster
 
-Run apollo's Docker Image (**apollo** needs access to a few local directories to work properly):
+This creates a configuration file (`.apollorc.yml`) from the defaults in your current directory. You can customize it to your needs before creating the cluster.
 
 ```bash
-docker run --rm -it \
-  --name apollo \
-  -v ${HOME}/.ssh:/root/.ssh \
-  -v ${HOME}/.gitconfig:/root/.gitconfig \
-  -v ${HOME}/.apollo:/home/apollo/.apollo \
-  -v ${PWD}:/cargo \
-  registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}
+apollo init
 ```
 
-From inside the image, you can use the apollo CLI to manage your spaces.
+## Creating a cluster
 
-**PRO TIP**: Save this **alias** to the `.zshrc` or `.bashrc` file on your local machine to get quick access to **apollo** from your local terminal:
+This bootstraps the necessary infrastructure resources (e.g. servers at a cloud provider of your choice; a local Docker container by default) to run k3s.
 
 ```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --hostname apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/home/apollo/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
+apollo create
 ```
 
 From now on we will assume you created the alias for quick access to apollo.
 
-### Create your first space
+## Installing k3s
 
-Open a new terminal and run `apollo init`. You will be presented with a prompt to fill in some configuration:
+This installs k3s and connects all the parts needed for a working cluster.
 
-```bash
-$ apollo init
-Initializing apollo config
-Name: demo-1
-Base Domain: example.com
-E-mail: info@example.com
-Enable infrastructure [y/N]:
-Config saved to /root/.apollo/.spaces/demo-1.space/.apollorc
-```
-
-Your first space has been created and should contain a few files:
-
-- `.apollorc` based on your input and the [defaults](defaults.yml)
-- a `.ssh` directory containing an auto-generated ssh-keypair
-
-Now let's go to your space directory: `cd $HOME/.apollo/.spaces/demo-1.space`
-
-**HINT**: inside the apollo container everything runs as user `apollo` this is why the CLI reports the created space to live in `/home/apollo/.apollo`. Assuming you copied the alias as-is, `/home/apollo/.apollo` inside the container is mounted from your local `$HOME/.apollo` so you'll find your apollo spaces in your local home directory.
-
-From here, you can adjust `.apollorc` to your needs. You should also setup infrastructure if not already done during `apollo init`. You got three options to provide infrastructure for apollo:
-
-1. configure the `infrastructure` section in `.apollorc` to spin up resources at a cloud provider (currently only `hcloud` and `digitalocean` are supported), then invoke `apollo build` to create the infrastructure
-2. provide a manual `Nodesfile.yml` pointing to your existing infrastructure. Make sure you add the auto-generated ssh-key of the `init` step to your nodes so apollo can provision them
-3. integrate with Terraform and generate `Nodesfile.yml` in `output.tf` from [this](playbooks/templates/infrastructure/hcloud/output.tf) template
-
-### Deploy a space
-
-Deploying apollo is easy.
-
-**HINT**: If you don't specify a custom space directory with `--space-dir $HOME/custom`, apollo assumes that your current working directory is your space directory and tries to load its configuration from there. apollo maps your `$PWD` to a special directory named `/cargo` inside the apollo container.
+> NOTE: this step is not necessary when running k3s in Docker (which is the default) as the Docker image has everything pre-installed
 
 ```bash
-$ apollo deploy
+apollo install
 ```
 
-**PRO TIP**: using the `apollo` alias on your local machine, you can specify the version to run this way: `export APOLLO_VERSION=v2.0.0; apollo deploy`
+## Using your cluster
 
-After successful deployment, a fresh and updated `README.md` can be found in your space directory. It contains valuable information and quick-links as well as troubleshooting information for your space.
+From inside your cluster's configuration directory, you can use apollo to invoke `kubectl` to interface with your cluster. apollo automatically creates a `kubeconfig.yml` in your cluster's configuration directory.
 
-## Built With
-
-- Ansible
-- Terraform
-- bash/zsh
-- GitLab
-- Docker
-- make
-- python
-- docker-compose
-
-## Development
-
-To develop apollo itself, clone the repository and, from inside the repo directory, run `make build` and then `make dev`.
-
-You will be working from inside the container now, with your repository mounted to `/apollo` so you can live-edit the source code and test functionality.
-
-You'll be able to use the `apollo` CLI from inside the development container just like usual and thus you'll be able to interface with your spaces by cd'ing to their space directory (`/root/.apollo/.spaces`) and invoking `apollo ...`.
-
-**PRO TIP**: spin up a development machine on Vagrant to test your code against. Simply make sure to add your space's ssh-keys to the machine and set up your Nodesfile.yml accordingly.
-
-Follow one of the [examples](docs/examples.md) to get yourself a machine to deploy apollo to.
+```bash
+apollo k get nodes
+```
 
 ## Contributing
 
