@@ -1,2 +1,0 @@
-#include:
-#  - remote: "https://gitlab.com/peter.saarland/shipmate/-/raw/master/shipmate.gitlab-ci.yml"
