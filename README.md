@@ -1,25 +1,36 @@
-[!["apollo"](https://gitlab.com/p3r.one/apollo/-/raw/v3.0.0/logo.png)](https://github.com/wearep3r/apollo)
-
-**[Website](https://www.p3r.one)** — **[Documentation](https://gitlab.com/p3r.one/apollo)** — **[Source Code](https://gitlab.com/p3r.one/apollo)**
-
-A python CLI to create and manage k3s clusters. Get going with Kubernetes in Docker or on any of our supported infrastructure providers in under 5 minutes.
-
-[!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
-[!["GitLab Stars"](https://img.shields.io/badge/dynamic/json?color=orange&label=GitLab%20stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F17046783)](https://gitlab.com/p3r.one/apollo)
-[!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
-[!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
-[!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
+<div style="text-align:center">
+  <img src="https://gitlab.com/p3r.one/apollo/-/raw/v3.0.0/logo.png" alt="apollo" />
+  <p><b><a href="https://www.p3r.one">Website</a></b> — <b><a href="https://gitlab.com/p3r.one/apollo">Documentation</a></b> — <b><a href="https://gitlab.com/p3r.one/apollo">Source Code</a></b></p>
+  <p><b>apollo</b> - a python CLI to create and manage k3s clusters. Get going with Kubernetes in Docker or on any of our supported infrastructure providers in under 5 minutes.</p>
+  <p>
+    <a href="https://github.com/wearep3r/apollo">
+      <img src="https://img.shields.io/github/v/tag/wearep3r/apollo?label=version" />
+    </a>
+    <a href="https://gitlab.com/p3r.one/apollo">
+      <img src="https://img.shields.io/badge/dynamic/json?color=orange&label=GitLab%20stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F17046783" />
+    </a>
+    <a href="https://github.com/wearep3r/apollo">
+      <img src="https://img.shields.io/github/stars/wearep3r/apollo?logo=github" />
+    </a>
+    <a href="https://hub.docker.com/r/wearep3r/apollo">
+      <img src="https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image" />
+    </a>
+    <a href="https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw">
+      <img src="https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack" />
+    </a>
+</div>
 
 ---
 
 ## Features
 
+- Create repeatable and portable Kubernetes clusters with k3s
 - Works on macOS, Linux and Windows
-- Deploy a single-node k3s cluster in Docker (or Docker for Desktop) in less than a minute
+- Create a single-node k3s cluster in Docker (or Docker for Desktop) in less than a minute
 - Start with a simple development environment, grow into production with ease
 - Integrates with Ansible and Terraform
-- Integrates with any major infrastructure provider
-- Integrates with any major CI/CD system
+- Works with any major infrastructure provider
+- Works with any major CI/CD system
 
 ## What you can do with it
 
