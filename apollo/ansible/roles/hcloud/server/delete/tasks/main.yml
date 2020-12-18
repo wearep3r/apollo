@@ -1,0 +1,28 @@
+- name: "deleting {{ server_name }}"
+  hcloud_server:
+    name: "{{ server_name }}"
+    api_token: "{{ lookup('env','HCLOUD_TOKEN', allow_undefined=false) }}"
+    state: absent
+  register: server
+  loop: "{{ range(1, blueprint['count'] + 1 )|list }}"
+  loop_control:
+    loop_var: master_index
+  vars:
+    server_name: "{{ blueprint['spec']['meta']['name'] + master_index|default(1)|string }}"
+
+- name: show server
+  debug:
+    var: server
+    verbosity: 1
+
+# - name: add to inventory
+#   add_host:
+#     groups: 
+#       - deleted_hosts
+#       - cluster
+#     hostname: "{{ server_name }}"
+
+# - name: show inventory
+#   debug:
+#     var: hostvars
+#     verbosity: 1

@@ -1,28 +1,26 @@
-- name: load current inventory
+- name: loading current inventory
   slurp:
     path: "{{ apollo_space_dir }}/.apollorc.yml"
   register: apollorc
   tags:
     - create
 
-- name: extract the data
+- name: extracting data
   set_fact:
     apollorc: "{{ apollorc['content'] | b64decode | from_yaml }}"
   tags:
     - create
 
-- name: show data
+- name: showing data
   debug:
     var: apollorc
     verbosity: 1
   tags:
     - create
 
-- name: update current inventory
+- name: updating current inventory
   template:
     src: ".apollorc.yml.j2"
     dest: "{{ apollo_space_dir }}/.apollorc.yml"
-    owner: "{{ ansible_user }}"
-    mode: "u=rwx,g=rx,o="
   tags:
     - create

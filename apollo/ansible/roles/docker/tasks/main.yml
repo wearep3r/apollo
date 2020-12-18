@@ -1,11 +1,4 @@
 ---
-- name: debug
-  debug:
-    var: blueprint
-    verbosity: 1
-  tags:
-    - create
-
 - name: create server
   include_tasks:
     file: create.yml

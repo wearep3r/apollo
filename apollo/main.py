@@ -235,13 +235,13 @@ def copy():
 
 
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def deploy(ctx: typer.Context):
+def install(ctx: typer.Context):
     """
     Deploy apollo
     """
 
     command = [
-        "deploy.yml",
+        "install.yml",
     ]
 
     custom_vars = {}
@@ -360,13 +360,13 @@ def init(force: bool = typer.Option(False, "--force", "-f")):
 
 def version_callback(value: bool):
     if value:
-        version = read_version(".", "__init__.py")
+        version = read_version(str(Path(__file__).parent / "__init__.py"))
         typer.echo(f"{version}")
         raise typer.Exit()
 
 
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def bootstrap(
+def create(
     ctx: typer.Context,
     list_tasks: bool = typer.Option(
         False, "--list-tasks", "-d", help="List Tasks, do not execute"
@@ -379,7 +379,7 @@ def bootstrap(
     command = [
         "--tags",
         "create",
-        "bootstrap.yml",
+        "create.yml",
     ]
 
     if list_tasks:
@@ -394,11 +394,53 @@ def bootstrap(
     result = runPlay(command)
 
     if result.returncode == 0:
-        typer.secho(f"Bootstrapping successful", err=False, fg=typer.colors.GREEN)
+        typer.secho(f"Cluster created.", err=False, fg=typer.colors.GREEN)
         return result
     else:
-        typer.secho(f"Bootstrapping failed", err=True, fg=typer.colors.RED)
-        raise typer.Exit(code=bootstrap.returncode)
+        typer.secho(f"Cluster creation failed.", err=True, fg=typer.colors.RED)
+        raise typer.Exit(code=result.returncode)
+
+    # Managers
+    # 1. Check if "nodes" list is empty
+    # 2. if so, fall back on group spec
+
+    raise typer.Exit()
+
+
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def delete(
+    ctx: typer.Context,
+    list_tasks: bool = typer.Option(
+        False, "--list-tasks", "-d", help="List Tasks, do not execute"
+    ),
+    list_tags: bool = typer.Option(
+        False, "--list-tags", "-d", help="List Tags, do not execute"
+    ),
+):
+
+    command = [
+        "--tags",
+        "delete",
+        "delete.yml",
+    ]
+
+    if list_tasks:
+        command.append("--list-tasks")
+
+    if list_tags:
+        command.append("--list-tags")
+
+    if ctx.args:
+        command = command + ctx.args
+
+    result = runPlay(command)
+
+    if result.returncode == 0:
+        typer.secho(f"Cluster deleted.", err=False, fg=typer.colors.GREEN)
+        return result
+    else:
+        typer.secho(f"Cluster deletion failed.", err=True, fg=typer.colors.RED)
+        raise typer.Exit(code=result.returncode)
 
     # Managers
     # 1. Check if "nodes" list is empty
@@ -432,6 +474,7 @@ def callback(
         "-e",
         help="A file containing environment variables to be used during command execution",
     ),
+    display_skipped_hosts: bool = typer.Option(False, "--display-skipped-hosts"),
     debug: bool = typer.Option(False, "--debug", "-d", help="Enable Debugging"),
     force: bool = typer.Option(False, "--force", help="Enable Development Mode"),
     dry: bool = typer.Option(False, "--dry", help="Enable dry run"),
@@ -445,7 +488,9 @@ def callback(
     home = os.environ.get("HOME")
 
     os.environ["APOLLO_CONFIG_VERSION"] = "3"
-    os.environ["APOLLO_VERSION"] = read_version(".", "__init__.py")
+    os.environ["APOLLO_VERSION"] = read_version(
+        str(Path(__file__).parent / "__init__.py")
+    )
 
     arc["config_dir"] = f"{home}/.apollo"
     os.environ["APOLLO_CONFIG_DIR"] = arc["config_dir"]
@@ -464,6 +509,9 @@ def callback(
 
     arc["verbosity"] = verbosity
     os.environ["ANSIBLE_VERBOSITY"] = str(verbosity)
+
+    arc["display_skipped_hosts"] = display_skipped_hosts
+    os.environ["ANSIBLE_DISPLAY_SKIPPED_HOSTS"] = str(arc["display_skipped_hosts"])
 
     arc["debug"] = debug
     os.environ["ANSIBLE_DEBUG"] = str(arc["debug"])

@@ -1,5 +1,5 @@
 ---
-- name: "boostrapping cluster"
+- name: "deleting cluster"
   hosts: localhost
   gather_facts: yes
   connection: local
@@ -7,42 +7,52 @@
     - set_fact:
         blueprint: "{{ hostvars['localhost']['blueprint'] }}"
       tags:
-        - create
+        - delete
+      
+    - debug:
+        var: blueprint
+      tags:
+        - delete
 
-    - name: boostrapping master
+    - debug:
+        var: hostvars['localhost']['blueprint']
+      tags:
+        - delete
+
+    - name: deleting master
       include_role:
-        name: "{{ hostvars['localhost']['blueprint']['master']['spec']['provider']['name'] }}"
+        name: "{{ hostvars['localhost']['blueprint']['master']['spec']['provider']['name'] }}/server/delete"
         apply:
           tags:
-            - create
+            - delete
             - master
       vars:
         blueprint: "{{ hostvars['localhost']['blueprint']['master'] }}"
         group: master
       tags:
-        - create
+        - delete
         - master
 
-    - name: boostrapping node
+    - name: deleting node
       include_role:
-        name: "{{ hostvars['localhost']['blueprint']['node']['spec']['provider']['name'] }}"
+        name: "{{ hostvars['localhost']['blueprint']['node']['spec']['provider']['name'] }}/server/delete"
         apply:
           tags:
-            - create
+            - delete
             - node
       vars:
         blueprint: "{{ hostvars['localhost']['blueprint']['node'] }}"
         group: node
       tags:
-        - create
+        - delete
         - node
 
-    - name: update inventory
+    - name: updating inventory
       include_role:
         name: "inventory"
         apply:
           tags:
-            - create
+            - delete
       tags:
-        - create
+        - delete
         - save

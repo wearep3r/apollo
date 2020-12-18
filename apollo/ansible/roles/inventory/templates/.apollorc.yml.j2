@@ -14,17 +14,33 @@ all:
       hosts:
 {% for host in groups['master'] %}
         {{ hostvars[host]['inventory_hostname'] }}:
+{% if 'ansible_host' in hostvars[host] %}
           ansible_host: {{ hostvars[host]['ansible_host'] }}
-          ansible_connection: {{ hostvars[host]['ansible_connection'] }}
+{% endif %}
+{% if 'ansible_user' in hostvars[host] %}
           ansible_user: {{ hostvars[host]['ansible_user'] }}
+{% endif %}
+{% if 'ansible_connection' in hostvars[host] %}
+          ansible_connection: {{ hostvars[host]['ansible_connection'] }}
+{% endif %}
+{% if 'ansible_port' in hostvars[host] %}
           ansible_port: {{ hostvars[host]['ansible_port'] }}
+{% endif %}
 {% endfor %}
     node:
       hosts:
 {% for host in groups['node'] %}
         {{ hostvars[host]['inventory_hostname'] }}:
+{% if 'ansible_host' in hostvars[host] %}
           ansible_host: {{ hostvars[host]['ansible_host'] }}
+{% endif %}
+{% if 'ansible_user' in hostvars[host] %}
           ansible_user: {{ hostvars[host]['ansible_user'] }}
+{% endif %}
+{% if 'ansible_connection' in hostvars[host] %}
           ansible_connection: {{ hostvars[host]['ansible_connection'] }}
-          ansible_user: {{ hostvars[host]['ansible_user'] }}
+{% endif %}
+{% if 'ansible_port' in hostvars[host] %}
+          ansible_port: {{ hostvars[host]['ansible_port'] }}
+{% endif %}
 {% endfor %}

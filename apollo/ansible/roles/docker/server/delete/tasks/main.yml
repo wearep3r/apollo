@@ -1,0 +1,21 @@
+- name: "deleting {{ server_name }}"
+  community.general.docker_container:
+    name: "{{ server_name }}"
+    state: absent
+  register: server
+  loop: "{{ range(1, blueprint['count'] + 1 )|list }}"
+  loop_control:
+    loop_var: master_index
+  tags:
+    - delete
+  vars:
+    server_name: "{{ blueprint['spec']['meta']['name'] + master_index|default(1)|string }}"
+    
+- name: showing server
+  debug:
+    var: server
+    verbosity: 1
+  tags:
+    - delete
+  when:
+    - server.changed

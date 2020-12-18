@@ -45,4 +45,3 @@ all:
       hosts:
         master1:
     node:
-      hosts:

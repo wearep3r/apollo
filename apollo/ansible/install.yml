@@ -1,0 +1,107 @@
+---
+- name: "checking conditions"
+  hosts: localhost
+  gather_facts: yes
+  vars:
+    apollo_runtime_version: "{{ lookup('env','APOLLO_VERSION') }}"
+  tasks:
+    - debug:
+        var: hostvars['master1']
+        verbosity: 1
+    - fail: 
+        msg: "You're running {{ apollo_runtime_version }} but specified version {{ version }} in .apollorc.yml"
+      when:
+        - hostvars[inventory_hostname]['version'] != ''
+        - apollo_runtime_version != hostvars[inventory_hostname]['version']
+        - not lookup('env','APOLLO_FORCE')|bool
+
+    - fail: 
+        msg: "Installation not needed because you've chosen 'docker' as provider. Run 'apollo create' to start your cluster."
+      when:
+        - hostvars[groups['master'][0]]['ansible_connection'] == 'docker'
+  tags:
+    - always
+    - version
+    - install
+
+- name: "installing cluster"
+  hosts: 
+    - cluster
+  become: true
+  tasks:
+    - include_role:
+        name: "dev-sec.os-hardening"
+        allow_duplicates: no
+        apply:
+          tags:
+            - hardening
+            - install
+      vars:
+        sysctl_overwrite:
+          net.ipv4.ip_forward: 1
+          net.ipv6.conf.all.forwarding: 1
+          net.ipv4.tcp_window_scaling: 0
+          net.ipv6.conf.all.disable_ipv6: 0
+      tags:
+        - hardening
+        - install
+      when:
+        - hostvars[inventory_hostname]['hardening']|bool
+
+    - include_role:
+        name: "firewall"
+        allow_duplicates: no
+        apply:
+          tags:
+            - firewall
+            - install
+      tags:
+        - firewall
+        - install
+      when:
+        - hostvars[inventory_hostname]['firewall']|bool
+        - hostvars[inventory_hostname]['experimental']|bool
+    
+    - include_role:
+        name: "wireguard"
+        allow_duplicates: no
+        apply:
+          tags:
+            - wireguard
+      tags:
+        - wireguard
+      when:
+        - hostvars[inventory_hostname]['wireguard']|bool
+        - hostvars[inventory_hostname]['experimental']|bool
+      tags:
+        - wireguard
+        - install
+
+    - include_role:
+        name: "{{ hostvars[inventory_hostname]['engine'] }}"
+        allow_duplicates: no
+        apply:
+          tags:
+            - engine
+            - "{{ hostvars[inventory_hostname]['engine'] }}"
+      when:
+        - hostvars[inventory_hostname]['engine'] != "containerd"
+        - hostvars[inventory_hostname]['experimental']|bool
+      tags:
+        - engine
+        - "{{ hostvars[inventory_hostname]['engine'] }}"
+        - install
+
+    - include_role:
+        name: "{{ hostvars[inventory_hostname]['orchestrator'] }}"
+        allow_duplicates: no
+        apply:
+          tags:
+            - orchestrator
+            - "{{ hostvars[inventory_hostname]['orchestrator'] }}"
+      tags:
+        - orchestrator
+        - "{{ hostvars[inventory_hostname]['orchestrator'] }}"
+        - install
+  tags:
+    - install

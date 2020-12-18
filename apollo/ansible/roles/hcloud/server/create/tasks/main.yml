@@ -1,6 +1,6 @@
-- name: delete server
+- name: creating server
   hcloud_server:
-    name: "{{ blueprint['spec']['meta']['name'] + index|default(0)|string }}"
+    name: "{{ blueprint['spec']['meta']['name'] + master_index|default(1)|string }}"
     server_type: "{{ blueprint['spec']['size'] }}"
     image: "{{ blueprint['spec']['image'] }}"
     location: "{{ blueprint['spec']['location'] }}"
@@ -9,13 +9,16 @@
     api_token: "{{ lookup('env','HCLOUD_TOKEN', allow_undefined=false) }}"
     state: present
   register: server
+  loop: "{{ range(1, blueprint['count'] + 1 )|list }}"
+  loop_control:
+    loop_var: master_index
 
-- name: show server
+- name: showing server
   debug:
     var: server
     verbosity: 1
 
-- name: add to inventory
+- name: adding server to inventory
   add_host:
     groups: 
       - "{{ group }}"

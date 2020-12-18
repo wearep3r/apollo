@@ -7,4 +7,3 @@ playbooks/_deprecated
 playbooks/_services.yml
 **/.terraform/*
 **/.vagrant
-**/_*
