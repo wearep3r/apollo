@@ -1,5 +1,5 @@
 # from apollo.py
-apollo_space_dir: "{{ lookup('env','APOLLO_SPACE_DIR') | default('/cargo', true) }}"
+apollo_space_dir: "{{ lookup('env','PWD') | default('.', true) }}"
 force_reboot: 0
 become: "{{ False if ansible_facts['os_family'] == 'Windows' else True }}"
 become_method: "{{ 'runas' if ansible_facts['os_family'] == 'Windows' else 'sudo' }}"

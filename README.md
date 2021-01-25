@@ -200,86 +200,22 @@ mkdir -p $HOME/.apollo
 Download apollo's Docker Image from our registry:
 
 ```bash
-docker pull registry.gitlab.com/p3r.one/apollo:latest
+pip3 install -r requirements.txt
+ansible-galaxy install --roles-path playbooks/roles/ -r ansible-requirements.yml
 ```
 
 ### Running apollo
 
-Run apollo's Docker Image (**apollo** needs access to a few local directories to work properly):
+Run apollo through Ansible:
 
 ```bash
-docker run --rm -it \
-  --name apollo \
-  -v ${HOME}/.ssh:/root/.ssh \
-  -v ${HOME}/.gitconfig:/root/.gitconfig \
-  -v ${HOME}/.apollo:/home/apollo/.apollo \
-  -v ${PWD}:/cargo \
-  registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}
+ansible-playbook -v -e "apollo_space_dir=~/.apollo/.spaces/dev.space" -i "~/.apollo/.spaces/dev.space/Nodesfile.yml" -e "@defaults.yml" -e "@~/.apollo/.spaces/dev.space/Spacefile.yml" provision.yml 
 ```
 
-From inside the image, you can use the apollo CLI to manage your spaces.
-
-**PRO TIP**: Save this **alias** to the `.zshrc` or `.bashrc` file on your local machine to get quick access to **apollo** from your local terminal:
-
-```bash
-alias apollo="mkdir -p $HOME/.apollo; docker run --rm -it --hostname apollo -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/cargo -v ${HOME}/.apollo:/home/apollo/.apollo registry.gitlab.com/p3r.one/apollo:${APOLLO_VERSION:-latest}"
-```
-
-From now on we will assume you created the alias for quick access to apollo.
-
-### Create your first space
-
-Open a new terminal and run `apollo init`. You will be presented with a prompt to fill in some configuration:
-
-```bash
-$ apollo init
-Initializing apollo config
-Name: demo-1
-Base Domain: example.com
-E-mail: info@example.com
-Enable infrastructure [y/N]:
-Config saved to /root/.apollo/.spaces/demo-1.space/Spacefile.yml
-```
-
-Your first space has been created and should contain a few files:
-
-- `Spacefile.yml` based on your input and the [defaults](defaults.yml)
-- a `.ssh` directory containing an auto-generated ssh-keypair
-
-Now let's go to your space directory: `cd $HOME/.apollo/.spaces/demo-1.space`
-
-**HINT**: inside the apollo container everything runs as user `apollo` this is why the CLI reports the created space to live in `/home/apollo/.apollo`. Assuming you copied the alias as-is, `/home/apollo/.apollo` inside the container is mounted from your local `$HOME/.apollo` so you'll find your apollo spaces in your local home directory.
-
-From here, you can adjust `Spacefile.yml` to your needs. You should also setup infrastructure if not already done during `apollo init`. You got three options to provide infrastructure for apollo:
-
-1. configure the `infrastructure` section in `Spacefile.yml` to spin up resources at a cloud provider (currently only `hcloud` and `digitalocean` are supported), then invoke `apollo build` to create the infrastructure
-2. provide a manual `Nodesfile.yml` pointing to your existing infrastructure. Make sure you add the auto-generated ssh-key of the `init` step to your nodes so apollo can provision them
-3. integrate with Terraform and generate `Nodesfile.yml` in `output.tf` from [this](playbooks/templates/infrastructure/hcloud/output.tf) template
-
-### Deploy a space
-
-Deploying apollo is easy.
-
-**HINT**: If you don't specify a custom space directory with `--space-dir $HOME/custom`, apollo assumes that your current working directory is your space directory and tries to load its configuration from there. apollo maps your `$PWD` to a special directory named `/cargo` inside the apollo container.
-
-```bash
-$ apollo deploy
-```
 
 **PRO TIP**: using the `apollo` alias on your local machine, you can specify the version to run this way: `export APOLLO_VERSION=v2.0.0; apollo deploy`
 
 After successful deployment, a fresh and updated `README.md` can be found in your space directory. It contains valuable information and quick-links as well as troubleshooting information for your space.
-
-## Built With
-
-- Ansible
-- Terraform
-- bash/zsh
-- GitLab
-- Docker
-- make
-- python
-- docker-compose
 
 ## Development
 
@@ -292,6 +228,10 @@ You'll be able to use the `apollo` CLI from inside the development container jus
 **PRO TIP**: spin up a development machine on Vagrant to test your code against. Simply make sure to add your space's ssh-keys to the machine and set up your Nodesfile.yml accordingly.
 
 Follow one of the [examples](docs/examples.md) to get yourself a machine to deploy apollo to.
+
+### Issues / Troubleshooting
+
+- `+[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead.`:  https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr
 
 ## Contributing
 
