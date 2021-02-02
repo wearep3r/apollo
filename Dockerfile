@@ -84,9 +84,9 @@ RUN echo 'Ansible refuses to read from a world-writeable folder, hence' \
 COPY . .
 
 COPY --chown=apollo:apollo docker-entrypoint.sh /docker-entrypoint.sh
-COPY --chown=apollo:apollo apollo-cli.py /home/apollo/.local/bin/apollo
+#COPY --chown=apollo:apollo apollo-cli.py /home/apollo/.local/bin/apollo
 
-RUN chmod +x /home/apollo/.local/bin/apollo
+#RUN chmod +x /home/apollo/.local/bin/apollo
 
 WORKDIR ${APOLLO_SPACES_DIR}
 
