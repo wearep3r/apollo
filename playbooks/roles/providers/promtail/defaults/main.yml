@@ -1,6 +1,0 @@
----
-app_name: "promtail"
-app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
-promtail_version: "1.6.1"
-
-  

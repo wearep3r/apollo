@@ -1,0 +1,4 @@
+ansible_ssh_user: root
+provider:
+  name: hcloud
+  csi: True

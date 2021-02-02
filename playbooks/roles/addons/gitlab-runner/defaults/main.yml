@@ -1,3 +1,0 @@
----
-app_name: "gitlab-runner"
-app_dir: "{{ apollo_app_dir }}/{{ app_name }}"
