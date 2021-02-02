@@ -1,9 +1,15 @@
-k3s_version: v1.20.2+k3s1
-ansible_user: root
-systemd_dir: /etc/systemd/system
+ansible_user: "{{ lookup('env', 'ANSIBLE_USER') | default('root', True) }}"
+
+in_ci: "{{ lookup('env', 'CI') | default(False, True) }}"
+
+k3s_extra_agent_args: "{{ lookup('env', 'K3S_EXTRA_AGENT_ARGS') | default('', True) }}"
+k3s_extra_server_args: "{{ lookup('env', 'K3S_EXTRA_SERVER_ARGS') | default('--disable traefik', True) }}"
+k3s_version: "{{ lookup('env', 'K3S_VERSION') | default('v1.20.2+k3s1', True) }}"
+
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
-extra_server_args: ""
-extra_agent_args: ""
+
 provider: 
-  name: "generic"
-  csi: False
+  name: "{{ lookup('env', 'PROVIDER_NAME') | default('generic', True) }}"
+  csi: "{{ lookup('env', 'PROVIDER_CSI') | default(False, True) }}"
+
+systemd_dir: "{{ lookup('env', 'SYSTEM_DIR') | default('/etc/systemd/system', True) }}"

@@ -1,12 +1,2 @@
-jmespath
-black
-typer[all]
-pytest
-anyconfig
 openshift
-ansible==2.9
-jsondiff
-docker
-ansible-lint
-molecule[lint]
-docker-compose
+ansible==2.10

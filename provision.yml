@@ -1,42 +1,36 @@
----
-# - name: "check version"
-#   hosts: apollo
-#   gather_facts: false
-#   vars:
-#     apollo_runtime_version: "{{ lookup('env','APOLLO_VERSION') }}"
-#   vars_files:
-#     - defaults.yml
-#     - Spacefile.yml
-#   tasks:
-#     - fail: msg="No no no! This is apollo {{ apollo_runtime_version }}, but you wanted to deploy {{ arc['space']['version'] }}"
-#       when:
-#         - arc['space']['version'] != ''
-#         - apollo_runtime_version != arc['space']['version']
-#   tags:
-#     - always
-#     - version
+- hosts: k3s_cluster
+  gather_facts: yes
+  become: yes
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: prereq
+    - role: download
+    - role: raspberrypi
 
-  # Setup facts and populate them for the following plays
-- name: "gather facts"
-  import_playbook: playbooks/facts.yml
-  tags:
-    - always
-    - facts
+- hosts: master
+  become: yes
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: k3s/master
+  tasks:
+    - name: Copy kubeconfig
+      fetch:
+        src: /root/.kube/config
+        dest: "{{ inventory_dir }}/kubeconfig.yml"
+        flat: yes
+      ignore_errors: False
 
-# Setup local space configuration (ssh config, docker context, readme)
-- name: "setup space"
-  import_playbook: playbooks/spaces.yml
-  tags:
-    - spaces
-  when: not in_ci|bool
+- hosts: master
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: "providers/{{ provider['name'] }}"
 
-- name: "deploy"
-  import_playbook: playbooks/deploy.yml
-  tags:
-    - deploy
-
-- name: "recap"
-  import_playbook: playbooks/recap.yml
-  tags:
-    - recap
-    - always
+- hosts: node
+  become: yes
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: k3s/node
