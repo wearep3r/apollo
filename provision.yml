@@ -1,17 +1,20 @@
 ---
-- name: "check version"
-  hosts: apollo
-  gather_facts: false
-  vars:
-    apollo_runtime_version: "{{ lookup('env','APOLLO_VERSION') }}"
-  tasks:
-    - fail: msg="No no no! This is apollo {{ apollo_runtime_version }}, but you wanted to deploy {{ arc['space']['version'] }}"
-      when:
-        - arc['space']['version'] != ''
-        - apollo_runtime_version != arc['space']['version']
-  tags:
-    - always
-    - version
+# - name: "check version"
+#   hosts: apollo
+#   gather_facts: false
+#   vars:
+#     apollo_runtime_version: "{{ lookup('env','APOLLO_VERSION') }}"
+#   vars_files:
+#     - defaults.yml
+#     - Spacefile.yml
+#   tasks:
+#     - fail: msg="No no no! This is apollo {{ apollo_runtime_version }}, but you wanted to deploy {{ arc['space']['version'] }}"
+#       when:
+#         - arc['space']['version'] != ''
+#         - apollo_runtime_version != arc['space']['version']
+#   tags:
+#     - always
+#     - version
 
   # Setup facts and populate them for the following plays
 - name: "gather facts"
@@ -19,15 +22,6 @@
   tags:
     - always
     - facts
-  
-# If on AWS: fix login user (ubuntu)
-- name: "AWS: Enable root access"
-  import_playbook: playbooks/aws.yml
-  tags:
-    - provider_aws
-  when: 
-    - arc['infrastructure']['enabled']|bool
-    - arc['infrastructure']['provider'] == "aws"
 
 # Setup local space configuration (ssh config, docker context, readme)
 - name: "setup space"

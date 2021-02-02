@@ -1,0 +1,71 @@
+version: '3.7'
+
+services:
+  portainer-agent:
+    image: "{{ images.agent }}"
+    environment:
+      - AGENT_CLUSTER_ADDR=tasks.portainer-agent
+      - CAP_HOST_MANAGEMENT=1
+    networks: 
+      - portainer
+    volumes: 
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.platform.os == linux
+
+  portainer:
+    image: "{{ images.portainer }}"
+    command: "-H tcp://tasks.portainer-agent:9001 --no-auth --tlsskipverify --logo '{{ arc['whitelabel']['logo'] }}' --no-analytics"
+    environment:
+      - AGENT_CLUSTER_ADDR=tasks.portainer-agent
+      - CAP_HOST_MANAGEMENT=1
+    networks:
+      - proxy
+      - portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - portainer-data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: 
+        - node.role == manager
+      labels:
+        - "traefik.docker.network=proxy"
+        - "traefik.enable=true"
+        - "traefik.http.routers.portainer.rule=Host(`portainer.{{ arc['space']['space_domain'] }}`)"
+        - "traefik.http.routers.portainer.entrypoints=http"
+        - "traefik.http.routers.portainer.service=portainer"
+        - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+        - "traefik.http.routers.portainer.middlewares=auth@docker"
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+        - "traefik.http.routers.portainer-secured.middlewares=auth@docker"
+        - "traefik.http.routers.portainer-secured.tls.certresolver=apollo"
+        - "traefik.http.routers.portainer-secured.entrypoints=https"
+        - "traefik.http.routers.portainer-secured.middlewares=https_redirect"
+        - "traefik.http.routers.portainer-secured.service=portainer"
+        - "traefik.http.services.portainer-secured.loadbalancer.server.port=9000"
+        - "traefik.http.routers.portainer-secured.rule=Host(`portainer.{{ arc['space']['space_domain'] }}`)"
+{%endif%}
+
+networks:
+  portainer:
+    driver: overlay
+    attachable: true
+    name: portainer
+  proxy:
+    driver: overlay
+    external: true
+
+volumes:
+  portainer-data:

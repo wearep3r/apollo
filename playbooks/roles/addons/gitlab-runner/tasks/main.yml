@@ -1,0 +1,134 @@
+---
+# - name: "deploying build runners"
+#   import_playbook: apollo-runners-build.yml
+#   when: arc['gitlab']['runner']['build']['enabled']|bool
+
+# - name: "deploying deploy runners"
+#   import_playbook: apollo-runners-deploy.yml
+#   when: arc['gitlab']['runner']['deploy']['enabled']|bool
+
+- name: create addon volume
+  file:
+    path: "{{ arc['data']['volumes_dir']+'/'+app_name }}"
+    state: directory
+    mode: '0755'
+    owner: "apollo"
+    group: "apollo"
+  tags:
+    - gitlab-runner
+    - build
+
+- name: "gitlab-runner: build"  
+  block:
+    - name: "enable gitlab-runner: build"
+      include_role:
+        name: "riemers.gitlab-runner"
+        allow_duplicates: no
+        apply:
+          tags:
+            - gitlab-runner
+            - build
+          delegate_to: "{{ node }}"
+      vars:
+        gitlab_runner_concurrent: 4
+        gitlab_runner_coordinator_url: "{{ arc['addons']['gitlab-runner']['coordinator_url'] }}"
+        gitlab_runner_package_version: "{{ arc['addons']['gitlab-runner']['package_version'] }}"
+        gitlab_runner_listen_address: "{{ hostvars[node]['cluster_ip'] }}:9252"
+        gitlab_runner_registration_token: "{{ arc['addons']['gitlab-runner']['registration_token'] }}"
+        gitlab_runner_package_name: "{{ arc['addons']['gitlab-runner']['package_name'] }}"
+        gitlab_runner_runners:
+          - name: "{{ arc['space']['name'] }}-build"
+            env_vars:
+              - "DOCKER_DRIVER=overlay2"
+              - "DOCKER_BUILDKIT=1"
+              - "APOLLO_INGRESS_IP={{ apollo_ingress_ip }}"
+              - "APOLLO_MANAGEMENT_IP={{ apollo_management_ip }}"
+            token: "{{ arc['addons']['gitlab-runner']['token'] }}"
+            executor: docker
+            cache_dir: "{{ arc['data']['volumes_dir'] }}/gitlab-runner/cache"
+            docker_image: "{{ arc['addons']['gitlab-runner']['docker_image'] }}"
+            tags:
+              - "{{ arc['space']['name'] }}"
+              - build
+              - shipmate
+            run_untagged: True
+            docker_privileged: True
+            docker_volumes:
+              - "{{ arc['data']['volumes_dir'] }}/gitlab-runner/cache:/cache"
+
+      with_items: 
+        - "{{ groups['manager'] }}"
+      loop_control:
+        loop_var: "node"
+      when:
+        - arc['addons']['gitlab-runner']['enabled']|bool
+        - arc['addons']['gitlab-runner']['build']['enabled']|bool
+  when:
+    - arc['addons']['gitlab-runner']['enabled']|bool
+    - arc['addons']['gitlab-runner']['build']['enabled']|bool
+  tags:
+    - gitlab-runner
+
+- name: "gitlab-runner: deploy"
+  block:
+    - name: "enable: gitlab-runner: deploy"
+      include_role:
+        name: "riemers.gitlab-runner"
+        allow_duplicates: no
+        apply:
+          tags:
+            - gitlab-runner
+            - deploy
+          delegate_to: "{{ node }}"
+      vars:
+        gitlab_runner_package_version: "{{ arc['addons']['gitlab-runner']['package_version'] }}"
+        gitlab_runner_coordinator_url: "{{ arc['addons']['gitlab-runner']['coordinator_url'] }}"
+        gitlab_runner_listen_address: "{{ hostvars[node]['cluster_ip'] }}:9252"
+        gitlab_runner_registration_token: "{{ arc['addons']['gitlab-runner']['registration_token'] }}"
+        gitlab_runner_package_name: "{{ arc['addons']['gitlab-runner']['package_name'] }}"
+        gitlab_runner_runners:
+          - name: "{{ arc['space']['name'] }}-deploy"
+            env_vars:
+              - "DOCKER_DRIVER=overlay2"
+              - "DOCKER_BUILDKIT=1"
+              - "APOLLO_INGRESS_IP={{ apollo_ingress_ip }}"
+              - "APOLLO_MANAGEMENT_IP={{ apollo_management_ip }}"
+              - "APOLLO_VOLUMES_DIR={{ arc['data']['volumes_dir'] }}"
+            token: "{{ arc['addons']['gitlab-runner']['token'] }}"
+            executor: docker
+            cache_dir: "{{ arc['data']['volumes_dir'] }}/gitlab-runner/cache"
+            docker_image: "{{ arc['addons']['gitlab-runner']['docker_image'] }}"
+            tags:
+              - "{{ arc['space']['name'] }}"
+              - deploy
+              - shipmate
+            run_untagged: False
+            docker_privileged: True
+            docker_volumes:
+              - "{{ arc['data']['volumes_dir'] }}/gitlab-runner/cache:/cache"
+              - "/var/run/docker.sock:/var/run/docker.sock"
+              - "{{ arc['data']['volumes_dir'] }}:{{ arc['data']['volumes_dir'] }}"
+      loop: "{{ groups['manager'] }}"
+      loop_control:
+        loop_var: "node"
+      when:
+        - arc['addons']['gitlab-runner']['enabled']|bool
+        - arc['addons']['gitlab-runner']['deploy']['enabled']|bool
+  when:
+    - arc['addons']['gitlab-runner']['enabled']|bool
+    - arc['addons']['gitlab-runner']['deploy']['enabled']|bool
+  tags:
+    - gitlab-runner
+
+# tasks file for zero-app-traefik
+- name: disable gitlab-runner
+  block:
+    - name: disable gitlab-runner
+      service:
+        name: gitlab-runner
+        state: stopped
+        enabled: false
+  when:
+    - not arc['addons']['gitlab-runner']['enabled']|bool
+  tags:
+    - gitlab-runner

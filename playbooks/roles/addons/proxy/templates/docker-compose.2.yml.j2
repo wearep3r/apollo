@@ -1,0 +1,87 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:v2.4
+    command: > 
+      --api.dashboard=true
+      --api.debug=true
+      --api.insecure=true
+      --global.checknewversion=false
+      --global.sendanonymoususage=false
+      --log.level=DEBUG
+      --metrics.prometheus
+      --metrics.prometheus.addentrypointslabels=true
+      --metrics.prometheus.addserviceslabels=true
+      --ping
+{% if arc['orchestrator']['provider'] == "swarm" %}
+      --providers.docker.swarmMode=true
+{% endif %}
+      --providers.docker=true
+      --providers.docker.exposedbydefault=false
+      --providers.docker.watch=true
+      --providers.docker.network=proxy
+      --entryPoints.http.address=:80
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+      --entryPoints.https.address=:443
+      --certificatesresolvers.apollo.acme.tlschallenge=true
+      --certificatesresolvers.apollo.acme.email={{ arc['space']['mail'] }}
+      --certificatesresolvers.apollo.acme.storage=/letsencrypt/acme.json
+      --certificatesresolvers.apollo.acme.caserver=https://acme-v02.api.letsencrypt.org/directory
+{% endif %}
+    environment:
+      - DOCKER_TLS_VERIFY=0
+    networks:
+      - proxy
+    ports:
+      - 80:80
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+      - 443:443
+{% endif %}
+    volumes: 
+      - traefik-data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+          parallelism: 1
+          delay: 30s
+          monitor: 30s
+          order: stop-first
+          failure_action: rollback
+      restart_policy:
+          condition: on-failure
+      placement:
+          constraints: 
+          - node.role == manager
+      labels:
+          traefik.enable: "true"
+
+          traefik.http.routers.proxy.service: "api@internal"
+          traefik.http.routers.proxy.rule: "Host(`proxy.{{ arc['space']['space_domain'] }}`)"
+          traefik.http.routers.proxy.entrypoints: http
+          traefik.http.services.proxy.loadbalancer.server.port: "8080"
+          traefik.http.routers.proxy.middlewares: "auth@docker"
+{% if arc['addons']['proxy']['ssl']['enabled']|bool %}
+          traefik.http.middlewares.https_redirect.redirectscheme.scheme: "https"
+          traefik.http.middlewares.https_redirect.redirectscheme.permanent: "true"
+          traefik.http.routers.proxy.middlewares: "https_redirect"
+          traefik.http.routers.proxy-secured.service: "api@internal"
+          traefik.http.routers.proxy-secured.rule: "Host(`proxy.{{ arc['space']['space_domain'] }}`)"
+          traefik.http.routers.proxy-secured.entrypoints: https
+          traefik.http.routers.proxy-secured.tls: "true"
+          traefik.http.routers.proxy-secured.tls.certresolver: "apollo"
+          traefik.http.routers.proxy-secured.middlewares: "auth@docker"
+{%endif%}
+          traefik.backend.loadbalancer.stickiness: "true"
+          traefik.http.middlewares.auth.basicauth.users: "{{ arc['auth']['admin_user'] }}:{{ arc['auth']['admin_password_hash'] | replace('$','$$')}}"
+
+networks:
+  proxy:
+    driver: overlay
+    external: true
+    name: proxy
+
+volumes:
+  traefik-data:

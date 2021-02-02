@@ -1,7 +1,0 @@
-ingress:
-  ipv4: INGRESS_IP
-management:
-  ipv4: MANAGEMENT_IP
-manager:
-  - name: manager-0
-    ipv4: MANAGER_IP
