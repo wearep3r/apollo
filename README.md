@@ -118,8 +118,7 @@ Default configuration options can be found in `defaults.yml`. This file will be 
 | `k3s_extra_agent_args` | Additional arguments for the k3s agent |    `K3S_EXTRA_AGENT_ARGS` | `` |
 | `k3s_extra_server_args` | Additional arguments for the k3s server |    `K3S_EXTRA_SERVER_ARGS` | `--disable traefik` |
 | `k3s_version` | k3s version |    `K3S_VERSION` | `v1.20.2+k3s1` |
-| `provider.name` | The name of the provider of the inventory hosts |    `PROVIDER_NAME` | `generic` |
-| `provider.csi` | Enable/Disable CSI integration for this provider |    `PROVIDER_CSI` | `False` |
+| `csi.provider` | Enable/Disable CSI integration for this provider |    `CSI_PROVIDER` | `longhorn` |
 | `systemd_dir` | The directory on the remote nodes where k3s service files should go to      |    `SYSTEM_DIR` | `/etc/systemd/system` |
 
 # Issues / Troubleshooting
