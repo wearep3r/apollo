@@ -22,15 +22,16 @@
         flat: yes
       ignore_errors: False
 
-- hosts: master
-  vars_files:
-     - defaults.yml
-  roles:
-    - role: "providers/{{ provider['name'] }}"
-
 - hosts: node
   become: yes
   vars_files:
      - defaults.yml
   roles:
     - role: k3s/node
+
+# CSI
+- hosts: k3s_cluster
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: "providers/{{ csi['provider'] }}/csi"

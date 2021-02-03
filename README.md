@@ -84,9 +84,8 @@ Setup your cluster configuration:
 ```bash
 # inventory/my-cluster/vars.yml
 ansible_ssh_user: root
-provider:
-  name: hcloud
-  csi: True
+csi:
+  provider: longhorn
 ```
 
 ## Run apollo
@@ -98,6 +97,7 @@ ansible-playbook provision.yml -e @inventory/default-cluster/vars.yml -i invento
 ```
 
 Upon completion, apollo will save your Kubernetes credentials in `$inventory_dir/kubeconfig.yml`. Use this file to connect to the cluster.
+
 # Configuration
 
 Default configuration options can be found in `defaults.yml`. This file will be loaded by `provision.yml`. Additional configuration options can be set in multiple ways:

@@ -8,8 +8,7 @@ k3s_version: "{{ lookup('env', 'K3S_VERSION') | default('v1.20.2+k3s1', True) }}
 
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
 
-provider: 
-  name: "{{ lookup('env', 'PROVIDER_NAME') | default('generic', True) }}"
-  csi: "{{ lookup('env', 'PROVIDER_CSI') | default(False, True) }}"
+csi: 
+  provider: "{{ lookup('env', 'CSI_PROVIDER') | default('generic', True) }}"
 
 systemd_dir: "{{ lookup('env', 'SYSTEM_DIR') | default('/etc/systemd/system', True) }}"
