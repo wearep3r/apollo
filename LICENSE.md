@@ -19,7 +19,7 @@ Condition notice.
 
 Software: apollo
 
-License: Apache 2.0 with Commons Clause
+License: Custom with Commons Clause
 
 Licensor: Fabian Peter, p3r.
 
@@ -27,9 +27,8 @@ Licensor: Fabian Peter, p3r.
 ---------------------------------------------------------------------
 
 
-                                 Apache License
+                                 Custom License
                            Version 2.0, January 2004
-                        http://www.apache.org/licenses/
 
    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -204,9 +203,9 @@ Licensor: Fabian Peter, p3r.
 
    END OF TERMS AND CONDITIONS
 
-   APPENDIX: How to apply the Apache License to your work.
+   APPENDIX: How to apply the Custom License to your work.
 
-      To apply the Apache License to your work, attach the following
+      To apply the Custom License to your work, attach the following
       boilerplate notice, with the fields enclosed by brackets "[]"
       replaced with your own identifying information. (Don't include
       the brackets!)  The text should be enclosed in the appropriate
@@ -217,11 +216,8 @@ Licensor: Fabian Peter, p3r.
 
    Copyright 2020 Fabian Peter
 
-   Licensed under the Apache License, Version 2.0 (the "License");
+   Licensed under the Custom License, (the "License");
    you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,

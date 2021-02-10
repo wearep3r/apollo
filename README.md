@@ -141,16 +141,11 @@ See also the list of contributors who participated in this project.
 
 # License
 
-apollo is [fair-code](http://faircode.io/) licensed under [Apache 2.0 with Commons Clause](LICENSE.).
-
-Additional information about license can be found in the FAQ.
-
-Which license does n8n use?
-n8n is fair-code licensed under Apache 2.0 with Commons Clause
+apollo is [fair-code](http://faircode.io/) licensed.
 
 ## Is apollo Open-Source
 
-No. The Commons Clause that is attached to the Apache 2.0 license takes away some rights. Hence, according to the definition of the Open Source Initiative (OSI), apollo is not open-source. Nonetheless, the source code is open and everyone (individuals and companies) can use it for free. However, it is not allowed to make money directly with apollo.
+No. The Commons Clause that is attached to the Custom license takes away some rights. Hence, according to the definition of the Open Source Initiative (OSI), apollo is not open-source. Nonetheless, the source code is open and everyone (individuals and companies) can use it for free. However, it is not allowed to make money directly with apollo.
 
 For instance, one cannot charge others to host or support apollo. However, to make things simpler, we grant everyone (individuals and companies) the right to offer consulting or support without prior permission as long as it is less than 20,000 EUR (€20k) per annum. If your revenue from services based on apollo is greater than €20k per annum, we'd invite you to become a partner and apply for a license. If you have any questions about this, feel free to reach out to us at info@p3r.one.
 
