@@ -11,6 +11,23 @@
       - libblkid1 
     state: present
     update_cache: yes
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Install Longhorn Requirements
+  become: yes
+  yum: 
+    name: 
+      - iscsi-initiator-utils
+      - curl
+    state: present
+    update_cache: yes
+  when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
+
+- name: Check if k3s zone already exists
+  ansible.builtin.systemd:
+    name: iscsid
+    state: started
+    enabled: yes
 
 - name: installing Longhorn
   block:
@@ -44,7 +61,7 @@
         kubeconfig: "{{ inventory_dir }}/kubeconfig.yml"
       run_once: true
       delegate_to: localhost
-  when: inventory_hostname == hostvars[groups['master'][0]]['ansible_hostname']
+  when: inventory_hostname == hostvars[groups['master'][0]]['inventory_hostname']
 
 # - name: Check for existing default storage class in Kubeadm
 #   shell: kubectl get storageclass | grep default | awk '{print $1}'

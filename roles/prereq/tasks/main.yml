@@ -1,4 +1,15 @@
 ---
+- name: Ensure hostname set
+  hostname:
+    name: "{{ inventory_hostname }}"
+  when: not inventory_hostname|trim is match('(\d{1,3}\.){3}\d{1,3}')
+
+- name: Ensure hostname is in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ ansible_default_ipv4.address }}.+$"
+    line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+
 - name: Set SELinux to disabled state
   selinux:
     state: disabled
@@ -50,4 +61,44 @@
     insertafter: EOF
     path: /etc/sudoers
     validate: 'visudo -cf %s'
+  when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
+
+- name: Update firewall
+  block:
+    - name: Check if k3s zone already exists
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Check if k3s zone already exists
+      command: firewall-cmd --permanent --zone=k3s --list-sources
+      register: fw_check
+      failed_when: false
+      changed_when: false
+
+    - name: Add k3s zone to firewalld and set rules
+      command: "firewall-cmd --permanent {{ item }}"
+      register: fw_set
+      with_items:
+        - --new-zone=k3s
+        - --zone=k3s --set-target=ACCEPT
+        - --zone=k3s --add-source=10.42.0.0/16
+        - --zone=k3s --add-interface=cni0
+        - --zone=k3s --add-interface=ens160
+        - --zone=k3s --add-port=6443/tcp --permanent
+        - --zone=k3s --add-port=2379/tcp --permanent
+        - --zone=k3s --add-port=2380/tcp --permanent
+        - --zone=k3s --add-port=10250/tcp --permanent
+        - --zone=k3s --add-port=8472/udp --permanent
+      when:
+        - fw_check is not skipped
+        - fw_check.rc != 0
+
+    - name: Reload firewalld to apply zone rules
+      service:
+        name: firewalld
+        state: reloaded
+      when:
+        - fw_set.results[0].skipped is not defined
   when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
