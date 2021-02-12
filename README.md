@@ -1,10 +1,10 @@
 # What is apollo?
 
-apollo is an extensible Docker-based Platform as a Service (PaaS) that helps to get from idea to production fast and safe.
+apollo builds k3s clusters from scratch.
 
-With apollo, you’re up & running quickly with a cloud-native tech-stack and great operational stability.
+It's Ansible-based and allows you to deploy Kubernetes clusters on any machine with a supported OS (Ubuntu, Debian, Centos) and architecture (x64, armhf, arm64) that you can access via SSH.
 
-Use this repository as a boilerplate for your own platform or manage your [apollo spaces](#-) using our batteries-included [Docker image](#-).
+Depending on the provider of your machines (bare-metal or a supported cloud-provider), additional enhancements like CSI-integration are available.
 
 [!["Version"](https://img.shields.io/github/v/tag/wearep3r/apollo?label=version)](https://github.com/wearep3r/apollo)
 [!["p3r. Slack"](https://img.shields.io/badge/slack-@wearep3r/general-purple.svg?logo=slack&label=Slack)](https://join.slack.com/t/wearep3r/shared_invite/zt-d9ao21f9-pb70o46~82P~gxDTNy_JWw)
@@ -12,257 +12,148 @@ Use this repository as a boilerplate for your own platform or manage your [apoll
 [!["GitHub Stars"](https://img.shields.io/github/stars/wearep3r/apollo?logo=github)](https://github.com/wearep3r/apollo)
 [!["Docker Image Size"](https://img.shields.io/docker/image-size/wearep3r/apollo?logo=docker&label=Image)](https://hub.docker.com/r/wearep3r/apollo)
 
-## Demo time!
+# Prerequisites
 
-[![apollo Walk Through](https://img.youtube.com/vi/iT2PLSC0bwI/0.jpg)](https://www.youtube.com/watch?v=iT2PLSC0bwI)
+- ansible >= 2.10
+- helm / kubectl
 
-## Features
-
-### Get going fast
-
-Get started with a simple development environment, grow with your requirements.
-
-![apollo deploy](docs/images/apollo-deploy.png)
-
-### Run anything
-
-apollo is built for 12 factor apps. Run any application written in any language or framework in Docker Swarm or Kubernetes using standard tooling like `docker-compose`.
-
-![apollo apps](docs/images/apollo-apps.png)
-
-Learn more
-
-### Deploy fast and safe
-
-Use the tooling you already mastered, no need to learn new workflows. Hook up your Repo, git push and deploy.
-
-![apollo shipments](docs/images/apollo-ship.png)
-
-Learn more
-
-### Scale
-
-Grow your application dynamically allocating resources as needed from a user-friendly dashboard.
-
-![apollo portainer](docs/images/apollo-portainer.png)
-
-Learn more
-
-### Monitor everything
-
-apollo delivers real-time metrics and logs from your applications out-of-the-box. Dashboards included!
-
-![apollo grafana](docs/images/apollo-grafana.png)
-
-Learn more
-
-### GitOps Workflows
-
-apollo spaces can be built, versioned and deployed just like your apps - automate your platform operations with [GitLab](https://docs.gitlab.com/ee/ci/) and [shipmate](https://gitlab.com/peter.saarland/shipmate).
-
-![apollo ci](docs/images/apollo-ci.png)
-
-Learn more
-
-### IaaS integrated
-
-apollo is integrated with Terraform which makes auto-provisioning infrastructure simple, painless and fast.
-
-![apollo build](docs/images/apollo-build.png)
-
-Learn more
-
-## Extensible
-
-apollo can easily be extended with Ansible, a proven automation framework.
-
-![apollo extend](docs/images/apollo-extend.png)
-
-## What's inside
-
-apollo manages the full **life-cycle of a container platform**:
-
-- creation of infrastructure
-- provisioning of configuration
-- monitoring of resources
-- logging of events
-- alerting of incidents
-- visualization of metrics
-- management of operations
-- deployment of applications
-- elemination of waste
-
-We call those platforms **spaces**.
-
-### More features
-
-- Distributed container platform (**Docker Swarm** or **Kubernetes**)
-- Git-versioned configuration method tailored to CI/CD 
-- Automated infrastructure (currently only **DigitalOcean** and **HETZNER Cloud** supported)
-- Ready-to-rock, auto-ssl ingress proxy with **Traefik**
-- Cluster-wide metrics & logs with **Victoria Metrics** and **Grafana Loki**
-- Secure cluster networking through **Wireguard**
-- Beautiful dashboards thanks to **Grafana**
-- Distributed storage (**Storidge**, **NFS** or **Longhorn**)
-- **Single-node clusters are possible** and can be scaled up
-- Integrated with [GitLab](https://gitlab.com) (CI/CD, registry, environments, metrics, kubernetes)
-- Support for configuration encryption, auditing and Continuous Delivery
-
-## What you can do with it
-
-1. Single-node Docker-Hosts for [Remote Development with VSCode](https://code.visualstudio.com/docs/remote/remote-overview)
-2. Multi-node Docker-Clusters for [SaaS apps](https://dockerswarm.rocks/)
-3. Single- or Multi-Node [Kubernetes clusters](https://k3s.io/)
-4. Auto-Managed [distributed storage](https://storidge.com/) for stateful applications
-5. Auto-Managed [GitLab Runners](https://docs.gitlab.com/runner/) on trusted hardware
-6. Stable and secure [S3 storage](https://min.io/)
-7. Multiple [environments](https://www.digitalocean.com/community/tutorials/an-introduction-to-ci-cd-best-practices) (staging, production)
-8. [GitLab Review Apps](https://docs.gitlab.com/ee/ci/review_apps/)
-9. [Self-hosting](https://geek-cookbook.funkypenguin.co.nz/) arbitrary apps
-10. One-shot ephemeral clusters for [testing in CI/CD](https://dev.to/katiatalhi/provision-ephemeral-kubernetes-clusters-on-aws-eks-using-terraform-and-gitlab-ci-cd-3f74)
-11. [Federated monitoring](https://banzaicloud.com/blog/prometheus-federation/) with Prometheus and Grafana
-12. [Hybrid clusters](https://www.packet.com/resources/guides/crosscloud-vpn-with-wireguard/) (thanks to Wireguard)
-
-## How it works
-
-1. You supply [minimum configuration](#getting-started) to create a **space**
-2. apollo creates infrastructure if needed
-3. apollo configures the machines and sets up your container platform
-4. You check out the auto-generated README to know the next steps
-
-Check the [Getting Started](#getting-started) section to start your journey with apollo.
-
-## Philosophy
-
-These are the design principles we base our work on apollo on. It's heavily inspired by DevOps and Clean Code practices and the works and arts of Martin Fowler who brought us immutable infrastructure. Still a long way to go. 
-
-- Developers and operators should be able to trust their infrastructure and platform
-- Every **space** should be versioned in a repository
-- Configuration should be declarative
-- There should be one workflow for installation and deployment that applies to all spaces
-- No manual actions on the platform - everything must be code
-- Every change to infrastructure should be code-reviewed to:
-  - avoid mistakes
-  - make other team members able to learn
-  - make sure everything stays portable and immutable
-- Everyone SHOULD be able to:
-  - create their development environment with minimum effort
-  - reproduce a production-like environment
-  - understand the whole infrastructure
-  - propose modifications to the infrastructure, while being able to test them
-- apollo is a boilerplate and a framework - it should be customizable but still predictable
-
-apollo is tailored to development teams. It's made by seasoned operators and contains everything a DevOps-enabled team needs to start changing the world.
-
-It runs on every major and minor cloud provider or directly on bare-metal. IoT devices or platforms like Proxmox and VMWare are currently on the roadmap.
-
-apollo is based on the latest technologies and design patterns. We're working hard to make it fully automated but it already reduces lots of the operational overhead in organizations. It's a DevOps platform, doing ops work automagically for you, so you can do developer magic on top of it.
-
-## Knowledge prerequisites
-
-If you want to use apollo to manage your container platforms, you just need to know:
-
-- Docker
-
-If you want to build upon this repository, you'll need to be very proficient with the following tools:
-
-- Ansible
-- Terraform
-- Bash
-- Docker
-- Python
-- Docker Swarm
-- Kubernetes
-
-## Technical prerequisites
-
-- Local machine: Docker
-- Remote machines: Ubuntu 18.04
-
-apollo requires a manager- or control-node. We call this `manager-0`. This node runs the entire controlplane and monitoring stack for a cluster and should be sized appropriately (8GB Memory, 2-4 vCPUs).
-
-apollo can have additional managers (up to 3 in total) as well as an arbitrary number of workers to deal with your workloads. Make sure to adjust manager-size to your number of workers. The more nodes your cluster has, the more resources cluster-operations will need.
-
-## Getting started
-
-The simplest way to use **apollo** is to run our [Docker Image](https://gitlab.com/p3r.one/apollo/container_registry/eyJuYW1lIjoicDNyLm9uZS9hcG9sbG8iLCJ0YWdzX3BhdGgiOiIvcDNyLm9uZS9hcG9sbG8vcmVnaXN0cnkvcmVwb3NpdG9yeS8xMjcwMTkyL3RhZ3M%2FZm9ybWF0PWpzb24iLCJpZCI6MTI3MDE5Mn0=).
-
-### Prerequisites
-
-You need to install [Docker](https://docs.docker.com/get-docker/). Once done, create a directory that holds apollo's configuration and the [spaces](#-) apollo manages:
-
-```bash
-mkdir -p $HOME/.apollo
-```
-
-### Installing apollo
-
-Download apollo's Docker Image from our registry:
+## Install with pip
 
 ```bash
 pip3 install -r requirements.txt
-ansible-galaxy install --roles-path playbooks/roles/ -r ansible-requirements.yml
 ```
 
-### Running apollo
+# Get started
 
-Run apollo through Ansible:
+## Create your inventory
+
+Your inventory defines the machines you want to build your cluster upon. The composition of the cluster is out of scope for apollo. apollo expects a minimum of 1 master node.
+
+Create a directory (the `inventory_dir`) for your new cluster:
 
 ```bash
-ansible-playbook -v -e "apollo_space_dir=~/.apollo/.spaces/dev.space" -i "~/.apollo/.spaces/dev.space/Nodesfile.yml" -e "@defaults.yml" -e "@~/.apollo/.spaces/dev.space/Spacefile.yml" provision.yml 
+mkdir -p inventory/my-cluster
 ```
 
+Create an inventory file for your new cluster:
 
-**PRO TIP**: using the `apollo` alias on your local machine, you can specify the version to run this way: `export APOLLO_VERSION=v2.0.0; apollo deploy`
+```bash
+edit inventory/my-cluster/hosts.yml
+```
 
-After successful deployment, a fresh and updated `README.md` can be found in your space directory. It contains valuable information and quick-links as well as troubleshooting information for your space.
+> NOTE: this must be a valid Ansible inventory; it doesn't matter if it's YAML, JSON or INI format
 
-## Development
+Setup your nodes:
 
-To develop apollo itself, clone the repository and, from inside the repo directory, run `make build` and then `make dev`.
+```bash
+# inventory/my-cluster/hosts.yml
+all:
+  hosts:
+    master-0:
+      ansible_host: 1.2.3.4
+    node-0:
+      ansible_host: 4.5.6.7
+    node-1:
+      ansible_host: 5.6.7.8
+  children:
+    master:
+      hosts:
+        master-0:
+    node:
+      hosts:
+        node-0:        
+        node-1:
+    k3s_cluster:
+      children:
+        master:
+        node:
+```
 
-You will be working from inside the container now, with your repository mounted to `/apollo` so you can live-edit the source code and test functionality.
+> NOTE: this is pure Ansible using the defaults. Depending on your setup your inventory might look more complex or you'll need to specify additional configuration for the SSH user or a specific SSH key file to use.
 
-You'll be able to use the `apollo` CLI from inside the development container just like usual and thus you'll be able to interface with your spaces by cd'ing to their space directory (`/root/.apollo/.spaces`) and invoking `apollo ...`.
+## Create your configuration files
 
-**PRO TIP**: spin up a development machine on Vagrant to test your code against. Simply make sure to add your space's ssh-keys to the machine and set up your Nodesfile.yml accordingly.
+In your `inventory_dir`, create a vars-file:
 
-Follow one of the [examples](docs/examples.md) to get yourself a machine to deploy apollo to.
+```bash
+edit inventory/my-cluster/vars.yml
+```
 
-### Issues / Troubleshooting
+Setup your cluster configuration:
+
+```bash
+# inventory/my-cluster/vars.yml
+ansible_ssh_user: root
+csi:
+  provider: longhorn
+```
+
+## Run apollo
+
+apollo consumes an inventory and optional configuration to build a k3s cluster:
+
+```bash
+ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml --flush-cache
+```
+
+Upon completion, apollo will save your Kubernetes credentials in `$inventory_dir/kubeconfig.yml`. Use this file to connect to the cluster.
+
+# Configuration
+
+Default configuration options can be found in `defaults.yml`. This file will be loaded by `apollo.yml`. Additional configuration options can be set in multiple ways:
+
+- changing the value in `defaults.yml`
+- creating an additional configuration file (e.g. `staging.yml`) containing your configuration and feeding it to ansible when executing the playbook: `ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/staging.yml --flush-cache`
+- setting environment variables (see table below) before running the playbook
+- overwriting variables directly in the playbooks or roles
+- injecting configuration by using ansible's `--extra-vars` flag: `ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml -e "k3s_version=v1.20.2+k3s1"`
+
+> NOTE: sensitive configuration options like secrets and credentials that don't have a default need to be set before executing the playbook - either via EnvVar or as an Ansible extra-var. The playbook fails when these are not set correctly. You need to specifiy these configs **EVERY TIME** you run the playbook - if you change values for a configuration option Ansible will reflect this by changing the data saved to Kubernetes. Make sure to keep configuration scoped and available each time you run the playbook or you might get unxepected results
+
+## Configuration options
+
+| Configuration Option        | Description | Environment Variable           | Default  |
+| ------------- |:-------------:| -----:|-----:|
+| `ansible_user` | The user Ansible should use to connect to the inventory hosts | `ANSIBLE_USER` | `root` |
+| `k3s_extra_agent_args` | Additional arguments for the k3s agent |    `K3S_EXTRA_AGENT_ARGS` | `` |
+| `k3s_extra_server_args` | Additional arguments for the k3s server |    `K3S_EXTRA_SERVER_ARGS` | `--disable traefik` |
+| `k3s_version` | k3s version |    `K3S_VERSION` | `v1.20.2+k3s1` |
+| `csi.provider` | Enable/Disable CSI integration for this provider |    `CSI_PROVIDER` | `longhorn` |
+| `systemd_dir` | The directory on the remote nodes where k3s service files should go to      |    `SYSTEM_DIR` | `/etc/systemd/system` |
+
+# Issues / Troubleshooting
 
 - `+[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead.`:  https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr
 
-## Contributing
+# Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull/merge requests to us. This software is primarily developed and maintained on [GitLab](https://gitlab.com/p3r.one/apollo).
 
-## Versioning
+# Versioning
 
-We use SemVer for versioning, automated by [shipmate](https://gitlab.com/peter.saarland/shipmate). For the versions available, see the tags on this repository.
+We use SemVer for versioning. For the versions available see the tags on this repository.
 
-## Authors
+## Older versions
+
+Versions below 3.0.0 have a different feature-set. apollo v3+ is backwards incompatible. If you're running clusters based on older versions of apollo, make sure to use the correct version.
+
+# Authors
 
 - Fabian Peter
 
 See also the list of contributors who participated in this project.
 
-## License
+# License
 
-apollo is [fair-code](http://faircode.io/) licensed under [Apache 2.0 with Commons Clause](LICENSE.).
+apollo is [fair-code](http://faircode.io/) licensed.
 
-Additional information about license can be found in the FAQ.
+## Is apollo Open-Source
 
-Which license does n8n use?
-n8n is fair-code licensed under Apache 2.0 with Commons Clause
-
-### Is apollo Open-Source
-
-No. The Commons Clause that is attached to the Apache 2.0 license takes away some rights. Hence, according to the definition of the Open Source Initiative (OSI), apollo is not open-source. Nonetheless, the source code is open and everyone (individuals and companies) can use it for free. However, it is not allowed to make money directly with apollo.
+No. The Commons Clause that is attached to the Custom license takes away some rights. Hence, according to the definition of the Open Source Initiative (OSI), apollo is not open-source. Nonetheless, the source code is open and everyone (individuals and companies) can use it for free. However, it is not allowed to make money directly with apollo.
 
 For instance, one cannot charge others to host or support apollo. However, to make things simpler, we grant everyone (individuals and companies) the right to offer consulting or support without prior permission as long as it is less than 20,000 EUR (€20k) per annum. If your revenue from services based on apollo is greater than €20k per annum, we'd invite you to become a partner and apply for a license. If you have any questions about this, feel free to reach out to us at info@p3r.one.
 
-### Why is apollo not open-source but fair-code licensed instead
+## Why is apollo not open-source but fair-code licensed instead
 
 We love open-source and the idea that everybody can freely use and extend what we wrote. Our community is at the heart of everything that we do and we understand that people who contribute to a project are the main drivers that push a project forward. So to make sure that the project continues to evolve and stay alive in the longer run, we decided to attach the Commons Clause. This ensures that no other person or company can make money directly with apollo. Especially if it competes with how we plan to finance our further development. For the greater majority of the people, it will not make any difference at all. At the same time, it protects the project.
 
@@ -270,11 +161,7 @@ As apollo itself depends on and uses a lot of other open-source projects, it is 
 
 We have already started with the first monthly contributions via Open Collective. It is not much yet, but we hope to be able to ramp that up substantially over time.
 
-## Acknowledgments
-
-There's so many people to thank for being awesome and providing open source software and support for it.
-
-## Disclaimer
+# Disclaimer
 
 This software is maintained and commercially supported by [p3r.](https://www.p3r.one). You can reach us here:
 
@@ -283,4 +170,3 @@ This software is maintained and commercially supported by [p3r.](https://www.p3r
 - [GitLab](https://gitlab.com/p3r.one)
 - [GitHub](https://github.com/wearep3r/)
 - [LinkedIn](https://www.linkedin.com/company/wearep3r)
-

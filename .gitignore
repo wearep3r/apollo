@@ -50,3 +50,10 @@ terraform.rc
 **/nodes.apollo.env
 **/*.env
 _modules
+_apollo
+_docs
+_inventory
+_playbooks
+.pytest_cache
+node_modules
+package-lock.json

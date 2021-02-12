@@ -1,7 +1,0 @@
----
-- name: restart cadvisor
-  become: true
-  systemd:
-    daemon_reload: true
-    name: cadvisor
-    state: restarted

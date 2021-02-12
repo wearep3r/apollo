@@ -1,3 +1,0 @@
-echo "" > /var/lib/node_exporter/restic.prom
-#restic snapshots --json | jq -r 'max_by(.time) | .time | sub("(?<time>T[0-9:]+)(\\.\\d+)?(?<tz>Z|[+\\-]\\d{2}:?(\\d\\d)?)$"; .time + .tz) | strptime("%Y-%m-%dT%H:%M:%S%z") | "restic_stats_last_snapshot_timestamp \(.)"' > /var/lib/node_exporter/restic.prom
-restic stats --json latest | jq -r '"restic_stats_total_size_bytes \(.total_size)\nrestic_stats_total_file_count \(.total_file_count)"' >> /var/lib/node_exporter/restic.prom

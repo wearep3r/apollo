@@ -1,6 +1,0 @@
----
-nfs_exports: 
-  - "{{ arc['data']['volumes_dir'] }} *(rw,sync,no_root_squash,no_subtree_check,insecure_locks,insecure)"
-
-nfs_rpcbind_state: started
-nfs_rpcbind_enabled: true

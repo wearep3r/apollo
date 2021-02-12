@@ -1,0 +1,37 @@
+- hosts: k3s_cluster
+  gather_facts: yes
+  become: yes
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: prereq
+    - role: download
+    - role: raspberrypi
+
+- hosts: master
+  become: yes
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: k3s/master
+  tasks:
+    - name: Copy kubeconfig
+      fetch:
+        src: /root/.kube/config
+        dest: "{{ inventory_dir }}/kubeconfig.yml"
+        flat: yes
+      ignore_errors: False
+
+- hosts: node
+  become: yes
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: k3s/node
+
+# CSI
+- hosts: k3s_cluster
+  vars_files:
+     - defaults.yml
+  roles:
+    - role: "providers/{{ csi['provider'] }}/csi"

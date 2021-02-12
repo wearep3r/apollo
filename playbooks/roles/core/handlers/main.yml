@@ -1,8 +1,0 @@
----
-- name: restart resolvconf
-  service:
-    name: resolvconf
-    state: restarted
-
-- name: restart postfix
-  service: name=postfix state=restarted
