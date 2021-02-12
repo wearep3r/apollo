@@ -42,3 +42,11 @@ dev: .SHELLFLAGS = ${DOCKER_SHELLFLAGS}
 dev: SHELL := docker
 dev:
 > @dev
+
+.PHONY: install
+install:
+> @npm install @semantic-release/git @semantic-release/gitlab @semantic-release/changelog -D
+
+.PHONY: release
+release:
+> @npx semantic-release
