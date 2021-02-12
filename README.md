@@ -27,7 +27,7 @@ pip3 install -r requirements.txt
 
 ## Create your inventory
 
-Your inventory defines the machines you want to build your cluster upon.
+Your inventory defines the machines you want to build your cluster upon. The composition of the cluster is out of scope for apollo. apollo expects a minimum of 1 master node.
 
 Create a directory (the `inventory_dir`) for your new cluster:
 
@@ -93,20 +93,20 @@ csi:
 apollo consumes an inventory and optional configuration to build a k3s cluster:
 
 ```bash
-ansible-playbook provision.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml --flush-cache
+ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml --flush-cache
 ```
 
 Upon completion, apollo will save your Kubernetes credentials in `$inventory_dir/kubeconfig.yml`. Use this file to connect to the cluster.
 
 # Configuration
 
-Default configuration options can be found in `defaults.yml`. This file will be loaded by `provision.yml`. Additional configuration options can be set in multiple ways:
+Default configuration options can be found in `defaults.yml`. This file will be loaded by `apollo.yml`. Additional configuration options can be set in multiple ways:
 
 - changing the value in `defaults.yml`
-- creating an additional configuration file (e.g. `staging.yml`) containing your configuration and feeding it to ansible when executing the playbook: `ansible-playbook provision.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/staging.yml --flush-cache`
+- creating an additional configuration file (e.g. `staging.yml`) containing your configuration and feeding it to ansible when executing the playbook: `ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/staging.yml --flush-cache`
 - setting environment variables (see table below) before running the playbook
 - overwriting variables directly in the playbooks or roles
-- injecting configuration by using ansible's `--extra-vars` flag: `ansible-playbook provision.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml -e "k3s_version=v1.20.2+k3s1"`
+- injecting configuration by using ansible's `--extra-vars` flag: `ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml -e "k3s_version=v1.20.2+k3s1"`
 
 > NOTE: sensitive configuration options like secrets and credentials that don't have a default need to be set before executing the playbook - either via EnvVar or as an Ansible extra-var. The playbook fails when these are not set correctly. You need to specifiy these configs **EVERY TIME** you run the playbook - if you change values for a configuration option Ansible will reflect this by changing the data saved to Kubernetes. Make sure to keep configuration scoped and available each time you run the playbook or you might get unxepected results
 
@@ -131,7 +131,11 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 # Versioning
 
-We use SemVer for versioning, automated by [shipmate](https://gitlab.com/peter.saarland/shipmate). For the versions available, see the tags on this repository.
+We use SemVer for versioning. For the versions available see the tags on this repository.
+
+## Older versions
+
+Versions below 3.0.0 have a different feature-set. apollo v3+ is backwards incompatible. If you're running clusters based on older versions of apollo, make sure to use the correct version.
 
 # Authors
 
@@ -157,7 +161,7 @@ As apollo itself depends on and uses a lot of other open-source projects, it is 
 
 We have already started with the first monthly contributions via Open Collective. It is not much yet, but we hope to be able to ramp that up substantially over time.
 
-## Disclaimer
+# Disclaimer
 
 This software is maintained and commercially supported by [p3r.](https://www.p3r.one). You can reach us here:
 
@@ -166,4 +170,3 @@ This software is maintained and commercially supported by [p3r.](https://www.p3r
 - [GitLab](https://gitlab.com/p3r.one)
 - [GitHub](https://github.com/wearep3r/)
 - [LinkedIn](https://www.linkedin.com/company/wearep3r)
-
