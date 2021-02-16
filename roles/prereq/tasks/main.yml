@@ -63,6 +63,17 @@
     validate: 'visudo -cf %s'
   when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
 
+
+- name: Add SSH keys
+  block:
+    - name: Set up authorized keys
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: '{{ item }}'
+      with_items: "{{ ssh_public_keys }}"
+  when: ssh_public_keys is defined and (ssh_public_keys|length>0)
+
 - name: Update firewall
   block:
     - name: Check if k3s zone already exists
