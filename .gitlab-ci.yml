@@ -51,10 +51,9 @@ build-cnab:
     - apk add bash curl
     - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
-    - export PATH=$PATH:~/.porter
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - porter build --name apollo --version $(cat VERSION.txt)
-    - porter publish --reference $CI_REGISTRY_IMAGE:$(cat VERSION.txt)
+    - ~/.porter/porter build --name apollo --version $(cat VERSION.txt)
+    - ~/.porter/porter publish --reference $CI_REGISTRY_IMAGE:$(cat VERSION.txt)
 
 release:
   image: node:13
