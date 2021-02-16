@@ -41,7 +41,7 @@ generate-non-semantic-version:
 build-cnab:
   image: 
     name: getporter/porter
-    entrypoint: ["/bin/ash"]
+    entrypoint: [""]
   stage: build
   services:
     - docker:19.03.12-dind
