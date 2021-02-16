@@ -44,11 +44,11 @@ build-cnab:
     entrypoint: [""]
   stage: build
   services:
-    - docker:19.03.12-dind
+    - docker:20.10.3-dind
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   before_script:
-    - apk add bash
+    - apk add bash curl
     - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
