@@ -39,8 +39,9 @@ generate-non-semantic-version:
     - VERSION.txt
 
 build-cnab:
-  image: getporter/porter
-  entrypoint: ["/bin/sh"]
+  image: 
+    name: getporter/porter
+    entrypoint: ["/bin/sh"]
   stage: build
   services:
     - docker:19.03.12-dind
