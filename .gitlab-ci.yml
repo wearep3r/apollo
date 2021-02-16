@@ -41,8 +41,14 @@ generate-non-semantic-version:
 build-cnab:
   image: getporter/porter
   stage: build
+  services:
+    - docker:19.03.12-dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - porter build --name apollo --version $(cat VERSION.txt)
+    - porter publish --reference $IMAGE_TAG
 
 release:
   image: node:13
