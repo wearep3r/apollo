@@ -23,7 +23,7 @@
     update_cache: yes
   when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
 
-- name: Check if k3s zone already exists
+- name: Enable iscsid 
   ansible.builtin.systemd:
     name: iscsid
     state: started

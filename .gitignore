@@ -1,3 +1,5 @@
+Dockerfile
+.cnab/
 .ssh
 **/_*
 tmp

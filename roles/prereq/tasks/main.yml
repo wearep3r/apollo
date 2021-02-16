@@ -76,7 +76,7 @@
 
 - name: Update firewall
   block:
-    - name: Check if k3s zone already exists
+    - name: Make sure firewall is started
       ansible.builtin.systemd:
         name: firewalld
         state: started
