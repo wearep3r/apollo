@@ -41,7 +41,7 @@ generate-non-semantic-version:
 build-cnab:
   image: 
     name: getporter/porter
-    entrypoint: ["/bin/sh"]
+    entrypoint: ["/bin/ash"]
   stage: build
   services:
     - docker:19.03.12-dind
@@ -50,7 +50,7 @@ build-cnab:
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - porter build --name apollo --version $(cat VERSION.txt)
-    - porter publish --reference $IMAGE_TAG
+    - porter publish --reference $CI_REGISTRY_IMAGE:$(cat VERSION.txt)
 
 release:
   image: node:13
