@@ -40,7 +40,7 @@ generate-non-semantic-version:
 
 build-cnab:
   image: 
-    name: getporter/porter
+    name: docker
     entrypoint: [""]
   stage: build
   services:
@@ -49,7 +49,7 @@ build-cnab:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   before_script:
     - apk add bash
-    - which sh
+    - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - porter build --name apollo --version $(cat VERSION.txt)
