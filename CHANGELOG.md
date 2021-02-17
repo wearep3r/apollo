@@ -1,3 +1,10 @@
+## [2.10.1](https://gitlab.com/p3r.one/apollo/compare/v2.10.0...v2.10.1) (2021-02-17)
+
+
+### Bug Fixes
+
+* CI ([0312baa](https://gitlab.com/p3r.one/apollo/commit/0312baa4278f629c94dd482d36c98d41bf0d44af))
+
 # [2.10.0](https://gitlab.com/p3r.one/apollo/compare/v2.9.0...v2.10.0) (2021-02-17)
 
 
