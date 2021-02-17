@@ -7,7 +7,7 @@ name: apollo
 version: 2.10.0
 description: "Porter configuration for apollo"
 # TODO: update the registry to your own, e.g. myregistry
-registry: registry.gitlab.com/p3r.one/apollo
+registry: wearep3r
 
 # If you want to customize the Dockerfile in use, uncomment the line below and update the referenced file. 
 # See https://porter.sh/custom-dockerfile/
