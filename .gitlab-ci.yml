@@ -2,10 +2,9 @@ include:
   - template: Security/Secret-Detection.gitlab-ci.yml
 
 variables:
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_TLS_VERIFY: 1
-  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  #DOCKER_TLS_VERIFY: 0
 
 stages:
   - fetch-version
