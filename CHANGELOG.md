@@ -1,3 +1,34 @@
+# [2.10.0](https://gitlab.com/p3r.one/apollo/compare/v2.9.0...v2.10.0) (2021-02-17)
+
+
+### Bug Fixes
+
+* CI ([4cd2386](https://gitlab.com/p3r.one/apollo/commit/4cd2386fa105f99cce7c0e9ee5b75c62df04b0c0))
+* CI ([d0aba6d](https://gitlab.com/p3r.one/apollo/commit/d0aba6dd6ed5374c6c875b465b017d34164da702))
+* CI ([f5f9b51](https://gitlab.com/p3r.one/apollo/commit/f5f9b51b0bc82f15986935cea2dc3848690c127c))
+* CI ([a82e6ee](https://gitlab.com/p3r.one/apollo/commit/a82e6ee8dd808e92f75deb818dc4f8a796c7d8bb))
+* CI ([882bee5](https://gitlab.com/p3r.one/apollo/commit/882bee5eac3ac7445512efed098bbfd41ceb9613))
+* exchange base image for CI ([4a3c6bb](https://gitlab.com/p3r.one/apollo/commit/4a3c6bb6c7a0d2a7b79d94d40d214fc51bbb5bad))
+* exchange base image for CI ([7257137](https://gitlab.com/p3r.one/apollo/commit/7257137190be023b10930b1818c33c6a8073a81f))
+* Longhorn multipathd errors ([a328f2e](https://gitlab.com/p3r.one/apollo/commit/a328f2e4de2a6200826f554d98a4f20ac7e2b4dd))
+* missing dev depnendency ([3ba6a9f](https://gitlab.com/p3r.one/apollo/commit/3ba6a9fa10cd1f7dc8b83f4eda1633f329ba4620))
+
+
+### Features
+
+* added ssh keys ([66ce3a0](https://gitlab.com/p3r.one/apollo/commit/66ce3a0e178d1f014a0f0dd9d407a7387ec0f9f4))
+* implemented CNAB ([9c0f2aa](https://gitlab.com/p3r.one/apollo/commit/9c0f2aa3a674c8f805c27a9570ced2acd5b8cf4f))
+* implemented CNAB ([995d0d4](https://gitlab.com/p3r.one/apollo/commit/995d0d41ae56eab08ca17a6f5e37e34aed297e73))
+* implemented CNAB ([aed2267](https://gitlab.com/p3r.one/apollo/commit/aed22677219389718fd8b1e8827edf39b2b2f082))
+* implemented CNAB ([8daf6fa](https://gitlab.com/p3r.one/apollo/commit/8daf6fa980b523a1d5b1e50ae9e5c3b4cf929756))
+* implemented CNAB ([52296c3](https://gitlab.com/p3r.one/apollo/commit/52296c3c14824f5ac32073d83bce91dd4e941904))
+* implemented CNAB ([24dc1f0](https://gitlab.com/p3r.one/apollo/commit/24dc1f08421142d9940dcd715e8995f78a8ebeca))
+* implemented CNAB ([b6781ee](https://gitlab.com/p3r.one/apollo/commit/b6781ee7725bccdfc38752f587eb332021690d37))
+* implemented CNAB ([ce850de](https://gitlab.com/p3r.one/apollo/commit/ce850de848ce639519b6fb60360d2bea0e0ecb17))
+* implemented CNAB ([970cac3](https://gitlab.com/p3r.one/apollo/commit/970cac3fb99ab11258174e78b1e5b108893240b9))
+* implemented CNAB ([5abe1d9](https://gitlab.com/p3r.one/apollo/commit/5abe1d9a198d16133b828e45ee3069344469427f))
+* implemented CNAB ([9cbe219](https://gitlab.com/p3r.one/apollo/commit/9cbe219181017d5e0e4cb936d006be1c1350868f))
+
 # [2.9.0](https://gitlab.com/p3r.one/apollo/compare/v2.8.0...v2.9.0) (2021-02-12)
 
 
