@@ -4,10 +4,10 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: apollo
-version: 2.9.0
+version: 2.10.0
 description: "Porter configuration for apollo"
 # TODO: update the registry to your own, e.g. myregistry
-registry: getporter
+registry: registry.gitlab.com/p3r.one
 
 # If you want to customize the Dockerfile in use, uncomment the line below and update the referenced file. 
 # See https://porter.sh/custom-dockerfile/

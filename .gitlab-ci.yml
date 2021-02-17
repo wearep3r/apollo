@@ -64,9 +64,11 @@ build-cnab:
   #   - apk add bash curl
   #   - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
+    - export SEMANTIC_VERSION=$(cat VERSION.txt)
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - /root/.porter/porter build --name apollo --version $(cat VERSION.txt)
-    - /root/.porter/porter publish --reference $CI_REGISTRY_IMAGE:$(cat VERSION.txt)
+    - make porter-update-version
+    - /root/.porter/porter build --name apollo --version ${SEMANTIC_VERSION}
+    - /root/.porter/porter publish --reference $CI_REGISTRY_IMAGE:${SEMANTIC_VERSION}
 
 release:
   image: node:13
