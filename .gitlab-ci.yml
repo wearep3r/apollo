@@ -1,6 +1,12 @@
 include:
   - template: Security/Secret-Detection.gitlab-ci.yml
 
+variables:
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+
 stages:
   - fetch-version
   - build
@@ -40,7 +46,7 @@ fetch-semantic-version:
 
 build-cnab:
   image: 
-    name: docker
+    name: wearep3r/docker:latest
     entrypoint: [""]
   stage: build
   services:
@@ -55,13 +61,13 @@ build-cnab:
     - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ 
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  before_script:
-    - apk add bash curl
-    - curl https://cdn.porter.sh/latest/install-linux.sh | bash
+  # before_script:
+  #   - apk add bash curl
+  #   - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - ~/.porter/porter build --name apollo --version $(cat VERSION.txt)
-    - ~/.porter/porter publish --reference $CI_REGISTRY_IMAGE:$(cat VERSION.txt)
+    - /root/.porter/porter build --name apollo --version $(cat VERSION.txt)
+    - /root/.porter/porter publish --reference $CI_REGISTRY_IMAGE:$(cat VERSION.txt)
 
 release:
   image: node:13
