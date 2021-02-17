@@ -54,8 +54,8 @@ version:
 
 .PHONY: porter-update-version
 porter-update-version:
-> @echo ${SEMANTIC_VERSION} || exit 1
-> @sed -i "" -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
+> @echo "${SEMANTIC_VERSION}" || exit 1
+> @sed -i '' -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
 
 .PHONY: porter-build
 porter-build:
