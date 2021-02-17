@@ -27,6 +27,7 @@ export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 export DOCKER_BUILDKIT=1
 SHIPMATE_BRANCH_NAME= "$(shell git rev-parse --abbrev-ref HEAD)"
 SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}:$(shell git rev-parse HEAD)"
+export CI_REGISTRY_IMAGE=registry.gitlab.com/p3r.one/apollo
 
 .PHONY: help
 help:
@@ -51,6 +52,18 @@ install-deps:
 version:
 > @npx semantic-release --generate-notes false --dry-run
 
+.PHONY: porter-update-version
+porter-update-version:
+> @echo ${SEMANTIC_VERSION} || exit 1
+> @sed -i "" -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
+
+.PHONY: porter-build
+porter-build:
+> @${HOME}/.porter/porter build --name apollo --version ${SEMANTIC_VERSION}
+
+.PHONY: porter-publish
+porter-publish:
+> @${HOME}/.porter/porter publish --reference ${CI_REGISTRY_IMAGE}:${SEMANTIC_VERSION}
 
 .PHONY: release
 release:
