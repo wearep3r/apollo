@@ -45,6 +45,14 @@ build-cnab:
   stage: build
   services:
     - docker:20.10.3-dind
+  only:
+    refs:
+    - master
+    - alpha
+    # This matches maintenance branches
+    - /^(([0-9]+)\.)?([0-9]+)\.x/
+    # This matches pre-releases
+    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ 
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   before_script:

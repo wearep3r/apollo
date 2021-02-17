@@ -41,6 +41,21 @@
       run_once: true
       delegate_to: localhost
 
+    - name: correct multipath config
+      ansible.builtin.template:
+        src: multipath.conf.j2
+        dest: /etc/multipath.conf
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
+    - name: Restart multipathd 
+      ansible.builtin.systemd:
+        name: multipathd
+        state: restarted
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
     - name: adding repository
       community.kubernetes.helm_repository:
         name: longhorn
@@ -48,17 +63,36 @@
       run_once: true
       delegate_to: localhost
 
+    - name: determine replica count
+      set_fact:
+        replicaCount: 1
+      when: groups['node'] | length < 2
+
+    - name: determine replica count
+      set_fact:
+        replicaCount: 2
+      when: groups['node'] | length < 3
+
+    - name: determine replica count
+      set_fact:
+        replicaCount: 3
+      when: groups['node'] | length >= 3
+
     - name: deploying
       community.kubernetes.helm:
         release_name: "longhorn"
         chart_ref: longhorn/longhorn
         release_namespace: "{{ longhorn_namespace }}"
-        release_values:
         update_repo_cache: True
         wait: yes
         chart_version: "{{ longhorn_version }}"
         wait_timeout: 10m0s
         kubeconfig: "{{ inventory_dir }}/kubeconfig.yml"
+        values:
+          persistence:
+            defaultClassReplicaCount: "{{ replicaCount }}"
+          defaultSettings:
+            defaultReplicaCount: "{{ replicaCount }}"
       run_once: true
       delegate_to: localhost
   when: inventory_hostname == hostvars[groups['master'][0]]['inventory_hostname']
