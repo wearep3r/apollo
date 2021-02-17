@@ -23,20 +23,20 @@ fetch-semantic-version:
     paths:
     - VERSION.txt
 
-generate-non-semantic-version:
-  image: node:13
-  stage: fetch-version
-  except:
-    refs:
-    - master
-    - alpha
-    - /^(([0-9]+)\.)?([0-9]+)\.x/ # This matches maintenance branches
-    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ # This matches pre-releases
-  script:
-    - echo build-$CI_PIPELINE_ID > VERSION.txt
-  artifacts:
-    paths:
-    - VERSION.txt
+# generate-non-semantic-version:
+#   image: node:13
+#   stage: fetch-version
+#   except:
+#     refs:
+#     - master
+#     - alpha
+#     - /^(([0-9]+)\.)?([0-9]+)\.x/ # This matches maintenance branches
+#     - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/ # This matches pre-releases
+#   script:
+#     - echo build-$CI_PIPELINE_ID > VERSION.txt
+#   artifacts:
+#     paths:
+#     - VERSION.txt
 
 build-cnab:
   image: 

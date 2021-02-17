@@ -45,7 +45,7 @@ dev:
 
 .PHONY: install-deps
 install-deps:
-> @npm install @semantic-release/git @semantic-release/gitlab @semantic-release/changelog -D
+> @npm install @semantic-release/exec @semantic-release/git @semantic-release/gitlab @semantic-release/changelog -D
 
 .PHONY: version
 version:
