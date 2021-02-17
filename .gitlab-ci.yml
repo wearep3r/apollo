@@ -69,7 +69,7 @@ build-cnab:
     #- make porter-update-version
     - sed -i -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
     - /root/.porter/porter build --name apollo --version ${SEMANTIC_VERSION}
-    - /root/.porter/porter publish --reference $CI_REGISTRY_IMAGE:${SEMANTIC_VERSION}
+    - /root/.porter/porter publish
 
 release:
   image: node:13
