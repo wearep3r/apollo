@@ -43,9 +43,14 @@ dev: SHELL := docker
 dev:
 > @dev
 
-.PHONY: install
-install:
+.PHONY: install-deps
+install-deps:
 > @npm install @semantic-release/git @semantic-release/gitlab @semantic-release/changelog -D
+
+.PHONY: version
+version:
+> @npx semantic-release --generate-notes false --dry-run
+
 
 .PHONY: release
 release:

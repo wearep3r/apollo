@@ -1,0 +1,85 @@
+# This is the configuration for Porter
+# You must define steps for each action, but the rest is optional
+# See https://porter.sh/author-bundles for documentation on how to configure your bundle
+# Uncomment out the sections below to take full advantage of what Porter can do!
+
+name: apollo
+version: 2.9.0
+description: "Porter configuration for apollo"
+# TODO: update the registry to your own, e.g. myregistry
+registry: getporter
+
+# If you want to customize the Dockerfile in use, uncomment the line below and update the referenced file. 
+# See https://porter.sh/custom-dockerfile/
+dockerfile: Dockerfile.tmpl
+
+required:
+  - docker
+
+mixins:
+  - exec
+
+install:
+  - exec:
+      description: "Install apollo"
+      command: ./helpers.sh
+      arguments:
+        - install
+      flags:
+        extra-vars: "@{{ bundle.parameters.vars }}"
+        inventory: "{{ bundle.parameters.inventory }}"
+      outputs:
+        - name: kubeconfig
+          path: "kubeconfig.yml"
+
+upgrade:
+  - exec:
+      description: "Install apollo"
+      command: ./helpers.sh
+      arguments:
+        - upgrade
+      flags:
+        extra-vars: "@{{ bundle.parameters.vars }}"
+        inventory: "{{ bundle.parameters.inventory }}"
+      outputs:
+        - name: kubeconfig
+          path: "kubeconfig.yml"
+
+uninstall:
+  - exec:
+      description: "Uninstall apollo"
+      command: ./helpers.sh
+      arguments:
+        - uninstall
+      flags:
+        extra-vars: "@{{ bundle.parameters.vars }}"
+        inventory: "{{ bundle.parameters.inventory }}"
+
+# Below is an example of how to define credentials
+# See https://porter.sh/author-bundles/#credentials
+# credentials:
+#  - name: kubeconfig
+#    path: /root/.kube/config
+#  - name: username
+#    env: USERNAME
+credentials:
+  - name: ssh_private_key
+    path: /root/.ssh/id_rsa
+  - name: ssh_public_key
+    path: /root/.ssh/id_rsa.pub
+
+# Below is an example of how to define parameters
+# See https://porter.sh/author-bundles/#parameters
+parameters:
+  - name: vars
+    type: file
+    path: /cnab/app/inventory/vars.yml
+    
+  - name: inventory
+    type: file
+    path: /cnab/app/inventory/hosts.yml
+
+  - name: ansible_host_key_checking
+    type: string
+    default: "False"
+    
