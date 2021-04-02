@@ -1,3 +1,10 @@
+# [2.11.0](https://gitlab.com/p3r.one/apollo/compare/v2.10.1...v2.11.0) (2021-04-02)
+
+
+### Features
+
+* added longhorn csi integration ([929480c](https://gitlab.com/p3r.one/apollo/commit/929480c55d15127844a76b3fac59e9f4575eafb5))
+
 ## [2.10.1](https://gitlab.com/p3r.one/apollo/compare/v2.10.0...v2.10.1) (2021-02-17)
 
 
