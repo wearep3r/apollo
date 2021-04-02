@@ -1,4 +1,95 @@
 - hosts: k3s_cluster
+  gather_facts: no
+  become: yes
+  vars_files:
+     - defaults.yml
+  tasks:
+    - name: check if host is accessible on configured ssh port
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_ssh_port }}"
+        state: started
+        delay: 0
+        timeout: 1
+      register: configured_port_accessible
+      ignore_errors: yes
+      ignore_unreachable: yes
+    
+    - meta: clear_host_errors
+
+    - name: check if host is accessible on alternative ssh port 
+      block:
+        - name: set original_ssh_port
+          set_fact:
+            original_ssh_port: "{{ ansible_ssh_port }}"
+
+        - name: set ansible_ssh_port
+          set_fact:
+            ansible_ssh_port: "{{ alternative_ssh_port }}"
+
+        - name: connect to host
+          wait_for:
+            host: "{{ ansible_host }}"
+            port: "{{ alternative_ssh_port }}"
+            state: started
+            delay: 0
+            timeout: 1
+          register: alternative_port_accessible
+          ignore_errors: yes
+          ignore_unreachable: yes
+
+        - name: stop playbook
+          fail:
+            msg: "Could not connect on any port"
+          when: alternative_port_accessible.unreachable is defined and alternative_port_accessible.unreachable|bool
+
+        - name: Setup alternate SSHd port
+          lineinfile:
+            dest: /etc/ssh/sshd_config
+            regexp: '^#Port'
+            line: "Port {{ original_ssh_port }}"
+
+        - name: Disable SSH password authentication
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            regexp: '^#PasswordAuthentication yes'
+            line: 'PasswordAuthentication no'
+
+        - name: Set SSH UsePrivilegeSeparation
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            state: present
+            line: 'UsePrivilegeSeparation sandbox'
+
+        - name: Set SSH loglevel to verbose
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            regexp: '^#LogLevel INFO'
+            line: 'LogLevel VERBOSE'
+
+        - name: Set SSH AuthenticationMethods
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            state: present
+            line: 'AuthenticationMethods publickey'
+        
+        - name: Setup root login permissions
+          lineinfile:
+            dest: /etc/ssh/sshd_config
+            regexp: '^#PermitRootLogin'
+            line: 'PermitRootLogin without-password'
+
+        - name: Restart SSHd
+          service:
+            name: sshd
+            state: restarted
+
+        - name: set ansible_ssh_port
+          set_fact:
+            ansible_ssh_port: "{{ original_ssh_port }}"
+      when: configured_port_accessible.unreachable is defined and configured_port_accessible.unreachable|bool
+
+- hosts: k3s_cluster
   gather_facts: yes
   become: yes
   vars_files:

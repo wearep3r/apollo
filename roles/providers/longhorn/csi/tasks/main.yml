@@ -19,6 +19,7 @@
     name: 
       - iscsi-initiator-utils
       - curl
+      - multipath-tools
     state: present
     update_cache: yes
   when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
@@ -48,13 +49,19 @@
         owner: root
         group: root
         mode: '0644'
+      notify: 
+        - Restart multipathd
       when: ansible_distribution in ['Debian', 'Ubuntu']
 
-    - name: Restart multipathd 
-      ansible.builtin.systemd:
-        name: multipathd
-        state: restarted
-      when: ansible_distribution in ['Debian', 'Ubuntu']
+    # - name: Restart multipathd 
+    #   ansible.builtin.systemd:
+    #     name: multipathd
+    #     state: restarted
+    #     daemon_reload: yes
+    #     enabled: yes
+    #   notify: 
+    #     - Restart multipathd
+    #   when: ansible_distribution in ['Debian', 'Ubuntu']
 
     - name: adding repository
       community.kubernetes.helm_repository:
@@ -93,6 +100,7 @@
             defaultClassReplicaCount: "{{ replicaCount }}"
           defaultSettings:
             defaultReplicaCount: "{{ replicaCount }}"
+            allowVolumeCreationWithDegradedAvailability: False
       run_once: true
       delegate_to: localhost
   when: inventory_hostname == hostvars[groups['master'][0]]['inventory_hostname']
