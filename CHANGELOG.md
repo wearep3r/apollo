@@ -1,3 +1,10 @@
+# [2.12.0](https://gitlab.com/p3r.one/apollo/compare/v2.11.0...v2.12.0) (2021-04-02)
+
+
+### Features
+
+* finished Makefile ([5ba9294](https://gitlab.com/p3r.one/apollo/commit/5ba9294a732641f7d16c2e9b7974cc381aca5b48))
+
 # [2.11.0](https://gitlab.com/p3r.one/apollo/compare/v2.10.1...v2.11.0) (2021-04-02)
 
 
