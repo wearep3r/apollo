@@ -1,10 +1,12 @@
 ansible_user: "{{ lookup('env', 'ANSIBLE_USER') | default('root', True) }}"
+ansible_ssh_port: "{{ lookup('env', 'ANSIBLE_SSH_PORT') | default('3519', True) }}"
+alternative_ssh_port: "{{ lookup('env', 'ALTERNATIVE_SSH_PORT') | default('22', True) }}"
 
 in_ci: "{{ lookup('env', 'CI') | default(False, True) }}"
 
 k3s_extra_agent_args: "{{ lookup('env', 'K3S_EXTRA_AGENT_ARGS') | default('', True) }}"
-k3s_extra_server_args: "{{ lookup('env', 'K3S_EXTRA_SERVER_ARGS') | default('--disable traefik,local-storage', True) }}"
-k3s_version: "{{ lookup('env', 'K3S_VERSION') | default('v1.20.2+k3s1', True) }}"
+k3s_extra_server_args: "{{ lookup('env', 'K3S_EXTRA_SERVER_ARGS') | default('--disable traefik,local-storage --disable-cloud-controller --node-taint CriticalAddonsOnly=true:NoExecute', True) }}"
+k3s_version: "{{ lookup('env', 'K3S_VERSION') | default('v1.20.4+k3s1', True) }}"
 
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
 

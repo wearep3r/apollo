@@ -68,8 +68,8 @@ build-cnab:
     -  - echo "$DOCKER_HUB_PASSWORD" | docker login --username $DOCKER_HUB_USER --password-stdin
     - make porter-update-version
     #- sed -i -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
-    - /root/.porter/porter build --name apollo --version ${SEMANTIC_VERSION}
-    - /root/.porter/porter publish
+    - make porter-build
+    - make porter-publish
 
 release:
   image: node:13
