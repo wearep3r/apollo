@@ -65,8 +65,9 @@ build-cnab:
   #   - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
     - git describe --abbrev=0 --tags
-    - export SEMANTIC_VERSION=$(cat VERSION.txt || git describe --abbrev=0 --tags)
-    - echo "VERSION ${SEMANTIC_VERSION}"
+    # https://stackoverflow.com/questions/6594085/remove-first-character-of-a-string-in-bash/20195713
+    - export SEMANTIC_VERSION=$(cat VERSION.txt || git describe --abbrev=0 --tags | cut -c2-)
+    - echo "VERSION=${SEMANTIC_VERSION}"
     - echo "$DOCKER_HUB_PASSWORD" | docker login --username $DOCKER_HUB_USER --password-stdin
     - make porter-update-version
     #- sed -i -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
