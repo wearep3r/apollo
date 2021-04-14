@@ -14,8 +14,11 @@ Depending on the provider of your machines (bare-metal or a supported cloud-prov
 
 # Prerequisites
 
-- ansible >= 2.10
-- helm / kubectl
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) >= 2.10
+- [Python OpenShift](https://pypi.org/project/openshift/)
+- [Helm](https://helm.sh)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Porter](https://porter.sh) (optional)
 
 ## Install with pip
 
@@ -81,7 +84,7 @@ edit inventory/my-cluster/vars.yml
 
 Setup your cluster configuration:
 
-```bash
+```yaml
 # inventory/my-cluster/vars.yml
 ansible_ssh_user: root
 csi:
@@ -93,42 +96,54 @@ csi:
 apollo consumes an inventory and optional configuration to build a k3s cluster:
 
 ```bash
-ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml --flush-cache
+ansible-playbook install.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml --flush-cache
 ```
 
 Upon completion, apollo will save your Kubernetes credentials in `$inventory_dir/kubeconfig.yml`. Use this file to connect to the cluster.
 
-# Use Porter
+## Use Porter
 
-## Generate credential set
+apollo is packaged as a [Cloud Native Application Bundle](https://cnab.io) (CNAB) and can be installed with the help of [Porter](https://porter.sh).
+
+Instructions how to install Porter can be found in the [official documentation](https://porter.sh/install/).
+
+### Generate credential set
+
+For a new deployment, create a new credential set:
 
 ```bash
-porter credential generate ssh_keys
+porter credential generate myinstallation
 ```
 
-## Generate parameter set
+### Generate parameter set
 
 For a new deployment, create a new parameter set:
 
 ```bash
-porter parameters generate cluster
+porter parameters generate myinstallation
 ```
 
-## Install Bundle
+### Install Bundle
 
 ```bash
-porter install -c ssh_keys -p cluster
+porter install --cred myinstallation --parameter-set myinstallation --reference wearep3r/apollo myinstallation
+```
+
+### Get kubeconfig
+
+```bash
+porter installations output show kubeconfig -i myinstallation
 ```
 
 # Configuration
 
-Default configuration options can be found in `defaults.yml`. This file will be loaded by `apollo.yml`. Additional configuration options can be set in multiple ways:
+Default configuration options can be found in `defaults.yml`. This file will be loaded by `install.yml`. Additional configuration options can be set in multiple ways:
 
 - changing the value in `defaults.yml`
-- creating an additional configuration file (e.g. `staging.yml`) containing your configuration and feeding it to ansible when executing the playbook: `ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/staging.yml --flush-cache`
+- creating an additional configuration file (e.g. `staging.yml`) containing your configuration and feeding it to ansible when executing the playbook: `ansible-playbook install.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/staging.yml --flush-cache`
 - setting environment variables (see table below) before running the playbook
 - overwriting variables directly in the playbooks or roles
-- injecting configuration by using ansible's `--extra-vars` flag: `ansible-playbook apollo.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml -e "k3s_version=v1.20.2+k3s1"`
+- injecting configuration by using ansible's `--extra-vars` flag: `ansible-playbook install.yml -e @inventory/default-cluster/vars.yml -i inventory/default-cluster/hosts.yml -e "k3s_version=v1.20.2+k3s1"`
 
 > NOTE: sensitive configuration options like secrets and credentials that don't have a default need to be set before executing the playbook - either via EnvVar or as an Ansible extra-var. The playbook fails when these are not set correctly. You need to specifiy these configs **EVERY TIME** you run the playbook - if you change values for a configuration option Ansible will reflect this by changing the data saved to Kubernetes. Make sure to keep configuration scoped and available each time you run the playbook or you might get unxepected results
 
