@@ -1,5 +1,5 @@
-include:
-  - template: Security/Secret-Detection.gitlab-ci.yml
+# include:
+#   - template: Security/Secret-Detection.gitlab-ci.yml
 
 variables:
   DOCKER_HOST: tcp://docker:2375
@@ -64,7 +64,8 @@ build-cnab:
   #   - apk add bash curl
   #   - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
-    - export SEMANTIC_VERSION=$(cat VERSION.txt) || export SEMANTIC_VERSION=$(git describe --abbrev=0 --tags)
+    - git describe --abbrev=0 --tags
+    - export SEMANTIC_VERSION=$(cat VERSION.txt || git describe --abbrev=0 --tags)
     - echo "VERSION ${SEMANTIC_VERSION}"
     - echo "$DOCKER_HUB_PASSWORD" | docker login --username $DOCKER_HUB_USER --password-stdin
     - make porter-update-version
