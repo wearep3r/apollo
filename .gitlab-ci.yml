@@ -64,8 +64,8 @@ build-cnab:
   #   - apk add bash curl
   #   - curl https://cdn.porter.sh/latest/install-linux.sh | bash
   script:
-    - export SEMANTIC_VERSION=$(cat VERSION.txt)
-    -  - echo "$DOCKER_HUB_PASSWORD" | docker login --username $DOCKER_HUB_USER --password-stdin
+    - export SEMANTIC_VERSION=$(cat VERSION.txt) || export SEMANTIC_VERSION=$(git describe --abbrev=0 --tags)
+    - echo "$DOCKER_HUB_PASSWORD" | docker login --username $DOCKER_HUB_USER --password-stdin
     - make porter-update-version
     #- sed -i -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
     - make porter-build
