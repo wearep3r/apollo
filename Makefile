@@ -15,19 +15,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-APOLLO_WHITELABEL_NAME ?= apollo
-APOLLO_VERSION ?= latest
-APOLLO_SPACE ?= ${APOLLO_WHITELABEL_NAME}
-APOLLO_SPACE_DIR ?= ${HOME}/.${APOLLO_WHITELABEL_NAME}/.spaces
-ENVIRONMENT_DIR ?= ${APOLLO_SPACE_DIR}
-export HISTFILE="${APOLLO_SPACE_DIR}/.history"
-DOCKER_SHELLFLAGS ?= run --rm -it --hostname apollo-dev -v ${HOME}/.docker:/root/.docker -v ${HOME}/.ssh:/root/.ssh -v ${HOME}/.gitconfig:/root/.gitconfig -v ${PWD}:/${APOLLO_WHITELABEL_NAME} -v ${HOME}/.${APOLLO_WHITELABEL_NAME}/:/root/.${APOLLO_WHITELABEL_NAME} ${APOLLO_WHITELABEL_NAME}:${APOLLO_VERSION}
-VERBOSITY ?= 0
-export ANSIBLE_VERBOSITY ?= ${VERBOSITY}
 export DOCKER_BUILDKIT=1
-SHIPMATE_BRANCH_NAME= "$(shell git rev-parse --abbrev-ref HEAD)"
-SHIPMATE_CARGO_VERSION = "${SHIPMATE_BRANCH_NAME}:$(shell git rev-parse HEAD)"
-export CI_REGISTRY_IMAGE=registry.gitlab.com/p3r.one/apollo
 
 .PHONY: help
 help:
@@ -55,7 +43,7 @@ version:
 .PHONY: porter-update-version
 porter-update-version:
 > @echo "${SEMANTIC_VERSION}" || exit 1
-> sed -i -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
+> @sed -i -r "s|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+|${SEMANTIC_VERSION}|g" porter.yaml
 
 .PHONY: porter-build
 porter-build:
