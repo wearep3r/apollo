@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+bootstrap() {
+  echo "ansible-playbook install.yml $@"
+  chmod 0700 /root/.ssh/id_rsa
+  ansible-playbook install.yml "$@"
+}
+
 install() {
   echo "ansible-playbook install.yml $@"
   chmod 0700 /root/.ssh/id_rsa
@@ -8,9 +14,9 @@ install() {
 }
 
 upgrade() {
-  echo "ansible-playbook upgrade.yml $@"
+  echo "ansible-playbook install.yml $@"
   chmod 0700 /root/.ssh/id_rsa
-  ansible-playbook upgrade.yml "$@"
+  ansible-playbook install.yml "$@"
 }
 
 uninstall() {

@@ -4,17 +4,10 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: apollo
-version: 2.10.0
+version: 2.12.0
 description: "Porter configuration for apollo"
 # TODO: update the registry to your own, e.g. myregistry
 registry: wearep3r
-
-# If you want to customize the Dockerfile in use, uncomment the line below and update the referenced file. 
-# See https://porter.sh/custom-dockerfile/
-dockerfile: Dockerfile.tmpl
-
-required:
-  - docker
 
 mixins:
   - exec
@@ -30,11 +23,11 @@ install:
         inventory: "{{ bundle.parameters.inventory }}"
       outputs:
         - name: kubeconfig
-          path: "kubeconfig.yml"
+          path: "/cnab/app/inventory/kubeconfig.yml"
 
 upgrade:
   - exec:
-      description: "Install apollo"
+      description: "Upgrade apollo"
       command: ./helpers.sh
       arguments:
         - upgrade
@@ -43,7 +36,7 @@ upgrade:
         inventory: "{{ bundle.parameters.inventory }}"
       outputs:
         - name: kubeconfig
-          path: "kubeconfig.yml"
+          path: "/cnab/app/inventory/kubeconfig.yml"
 
 uninstall:
   - exec:
@@ -55,13 +48,6 @@ uninstall:
         extra-vars: "@{{ bundle.parameters.vars }}"
         inventory: "{{ bundle.parameters.inventory }}"
 
-# Below is an example of how to define credentials
-# See https://porter.sh/author-bundles/#credentials
-# credentials:
-#  - name: kubeconfig
-#    path: /root/.kube/config
-#  - name: username
-#    env: USERNAME
 credentials:
   - name: ssh_private_key
     path: /root/.ssh/id_rsa
@@ -74,12 +60,29 @@ parameters:
   - name: vars
     type: file
     path: /cnab/app/inventory/vars.yml
+    applyTo:
+      - install
+      - upgrade
+      - uninstall
     
   - name: inventory
     type: file
     path: /cnab/app/inventory/hosts.yml
+    source:
+      output: bootstrap_inventory
+    applyTo:
+      - install
+      - upgrade
+      - uninstall
 
   - name: ansible_host_key_checking
     type: string
     default: "False"
+    applyTo:
+      - install
+      - upgrade
     
+outputs:
+  - name: kubeconfig
+    type: file
+    path: /cnab/app/inventory/kubeconfig.yml
