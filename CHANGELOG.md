@@ -1,3 +1,10 @@
+## [2.12.1](https://gitlab.com/p3r.one/apollo/compare/v2.12.0...v2.12.1) (2021-05-03)
+
+
+### Bug Fixes
+
+* pinned kubernetes and openshift to earlier versions (https://github.com/kubernetes-client/python/issues/1333) ([59f247b](https://gitlab.com/p3r.one/apollo/commit/59f247bd67ec10af76d52d687dfc0e4f878144e3))
+
 # [2.12.0](https://gitlab.com/p3r.one/apollo/compare/v2.11.0...v2.12.0) (2021-04-02)
 
 
