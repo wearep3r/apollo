@@ -1,3 +1,10 @@
+## [2.12.2](https://gitlab.com/p3r.one/apollo/compare/v2.12.1...v2.12.2) (2021-05-03)
+
+
+### Bug Fixes
+
+* pip version ([aae4b12](https://gitlab.com/p3r.one/apollo/commit/aae4b122b5a966d99fefcacdaa581a761863a8d5))
+
 ## [2.12.1](https://gitlab.com/p3r.one/apollo/compare/v2.12.0...v2.12.1) (2021-05-03)
 
 
