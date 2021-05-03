@@ -1,3 +1,10 @@
+## [2.12.5](https://gitlab.com/p3r.one/apollo/compare/v2.12.4...v2.12.5) (2021-05-03)
+
+
+### Bug Fixes
+
+* stuff ([f5429d3](https://gitlab.com/p3r.one/apollo/commit/f5429d3794b95a8cdcc4d358dce137ed207fd37f))
+
 ## [2.12.4](https://gitlab.com/p3r.one/apollo/compare/v2.12.3...v2.12.4) (2021-05-03)
 
 
