@@ -88,6 +88,7 @@ release:
   script:
     - touch CHANGELOG.md
     - make install-deps
+    - make porter-update-version
     - make release
   artifacts:
     paths:

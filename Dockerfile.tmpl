@@ -3,9 +3,15 @@ FROM python:slim-buster
 ARG BUNDLE_DIR
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y ca-certificates python3-pip sshpass git openssh-client && \
+    apt-get install -y curl ca-certificates python3-pip sshpass git openssh-client && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
+
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && chmod +x ./kubectl \
+    && mv ./kubectl /usr/local/bin/kubectl \
+    && curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 \
+    && chmod +x get_helm.sh && ./get_helm.sh
 
 COPY requirements.txt requirements.txt
 
