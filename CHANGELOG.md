@@ -1,3 +1,10 @@
+## [2.12.4](https://gitlab.com/p3r.one/apollo/compare/v2.12.3...v2.12.4) (2021-05-03)
+
+
+### Bug Fixes
+
+* install helm and kubectl in dockerfile instead of mixin ([a6ee2a7](https://gitlab.com/p3r.one/apollo/commit/a6ee2a75211d82e1ab80fb8f4095cdfa09595c71))
+
 ## [2.12.3](https://gitlab.com/p3r.one/apollo/compare/v2.12.2...v2.12.3) (2021-05-03)
 
 
