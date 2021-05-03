@@ -88,6 +88,8 @@ release:
   script:
     - touch CHANGELOG.md
     - make install-deps
+    - export SEMANTIC_VERSION=$(cat VERSION.txt || git describe --abbrev=0 --tags | cut -c2-)
+    - echo "VERSION=${SEMANTIC_VERSION}"
     - make porter-update-version
     - make release
   artifacts:
