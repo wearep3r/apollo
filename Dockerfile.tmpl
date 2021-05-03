@@ -8,9 +8,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get clean
 
 RUN pip3 install --upgrade pip cffi && \
-    pip install ansible==2.10.3 && \
-    pip install jmespath openshift && \
-    pip install --upgrade pywinrm
+    #pip3 install ansible==2.10.3 && \
+    #pip3 install jmespath openshift && \
+    #pip3 install --upgrade pywinrm
+    pip3 install -r requirements.txt pywinrm
 
 RUN mkdir /ansible && \
     mkdir -p /etc/ansible && \
