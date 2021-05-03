@@ -9,6 +9,8 @@ description: "Porter configuration for apollo"
 # TODO: update the registry to your own, e.g. myregistry
 registry: wearep3r
 
+dockerfile: Dockerfile.tmpl
+
 mixins:
   - exec
 
