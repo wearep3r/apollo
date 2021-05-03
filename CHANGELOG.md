@@ -1,3 +1,10 @@
+## [2.12.3](https://gitlab.com/p3r.one/apollo/compare/v2.12.2...v2.12.3) (2021-05-03)
+
+
+### Bug Fixes
+
+* missing config in porter.yaml ([75affcd](https://gitlab.com/p3r.one/apollo/commit/75affcd57d6020dbb1c2819f6dfbf263720636c8))
+
 ## [2.12.2](https://gitlab.com/p3r.one/apollo/compare/v2.12.1...v2.12.2) (2021-05-03)
 
 
