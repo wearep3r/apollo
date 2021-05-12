@@ -102,6 +102,7 @@
           defaultSettings:
             defaultReplicaCount: "{{ replicaCount }}"
             allowVolumeCreationWithDegradedAvailability: False
+            nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
       run_once: true
       delegate_to: localhost
   when: inventory_hostname == hostvars[groups['master'][0]]['inventory_hostname']
