@@ -1,3 +1,10 @@
+# [2.13.0](https://gitlab.com/p3r.one/apollo/compare/v2.12.5...v2.13.0) (2021-05-12)
+
+
+### Features
+
+* **longhorn:** set nodeDownPodDeletionPolicy to delete-both-statefulset-and-deployment-pod ([605f1a7](https://gitlab.com/p3r.one/apollo/commit/605f1a7749669ec775427b4404a3b4e3d0fdc434))
+
 ## [2.12.5](https://gitlab.com/p3r.one/apollo/compare/v2.12.4...v2.12.5) (2021-05-03)
 
 
